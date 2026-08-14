@@ -345,3 +345,14 @@
 - Decisions / assumptions: نخستین snapshot باید database dump streamed، media volume و configuration لازم را بدون چاپ secret پوشش دهد. سپس retention/job و restore rehearsal جداگانه اجرا و ثبت می‌شوند.
 - Deferred or risk IDs: `RISK-0003` همچنان High/Open است؛ first snapshot، job، retention و restore rehearsal باقی مانده‌اند.
 - Rollback / recovery: repository تازه هیچ snapshotی ندارد؛ revoke OAuth دسترسی آینده را قطع می‌کند ولی داده‌ای حذف نمی‌کند. حذف repository معتبر فقط با approval صریح مالک و inventory تازه مجاز است.
+
+## LOG-0031 — 2026-08-14 — P0-A verification / first backup source preflight
+
+- Outcome: preflight فقط‌خواندنی برای نخستین backup واقعی PASS شد: PostgreSQL container دارای `POSTGRES_USER` و executable `pg_dumpall` است؛ media volume، Caddyfile و هر دو Compose file قابل‌خواندن‌اند.
+- Why: قبل از snapshot باید sourceهای backup و روش stream شدن dump تأیید شوند تا backup ناقص یا نمایش secret رخ ندهد.
+- Scope / files: فقط همین Work Log.
+- Commands or actions actually performed: مالک command بدون نمایش مقدار environment برای PostgreSQL و `test`های read-only برای media/Caddy/Compose اجرا کرد؛ سپس file-name inventory محدود repository انجام شد. هیچ dump، تغییر container یا تغییر Caddy/Compose رخ نداد و هیچ secret یا push remote ثبت نشد.
+- Verification actually performed and result: همهٔ چهار preflight exit code `0` داشتند. inventory سطح اول repository فقط فایل‌های غیرمحرمانهٔ Compose، مثال environment و metadata را نشان داد؛ هیچ production environment file در همان سطح مشاهده نشد.
+- Decisions / assumptions: نخستین snapshot شامل stream `pg_dumpall`، media volume، Caddyfile و هر دو Compose file خواهد بود. چون production environment file در inventory مشاهده نشد، چیزی حدس زده یا به backup اضافه نمی‌شود.
+- Deferred or risk IDs: `RISK-0003` High/Open؛ first snapshot/job/retention/restore هنوز pending هستند.
+- Rollback / recovery: preflight read-only است و rollback ندارد. اگر backup command خطا دهد، snapshot status پیش از هر retry بررسی می‌شود.
