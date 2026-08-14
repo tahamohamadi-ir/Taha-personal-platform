@@ -17,7 +17,7 @@ database, Caddy configuration, or the scheduled backup timer.
 
 - Verify no `taha-platform-backup.service` execution is active.
 - Restore the selected PostgreSQL snapshot and selected media/config snapshot
-  to one new `0700` directory under `/dev/shm`.
+  to one new, unique `0700` directory created by `mktemp -d` under `/dev/shm`.
 - Verify the SQL dump is non-empty and restored configuration matches the
   current source files byte-for-byte.
 - Record only non-sensitive success/failure metadata and remove the exact
@@ -37,7 +37,8 @@ database, Caddy configuration, or the scheduled backup timer.
 1. `taha-platform-backup.timer` is enabled and active; its service is inactive.
 2. The selected snapshot IDs are listed from the successful systemd run.
 3. `/dev/shm` has sufficient free space for the selected restore set.
-4. The exact temporary target does not already exist.
+4. `mktemp -d -p /dev/shm taha-platform-restore-XXXXXXXX` creates a unique
+   root-owned target; no pre-existing target may be reused.
 
 ## Acceptance criteria
 
@@ -60,5 +61,5 @@ temporary-target test.
   the failure without retry loops or deletion.
 - If verification fails, preserve the root-only temporary target for diagnosis
   and record the failure. Do not import any SQL or alter the live service.
-- Cleanup is permitted only for the explicit temporary path created by this
-  Task Spec after a successful verification.
+- Cleanup is permitted only for the exact `mktemp` path created by this Task
+  Spec after a successful verification.

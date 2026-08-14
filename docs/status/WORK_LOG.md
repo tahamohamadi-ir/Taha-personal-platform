@@ -433,3 +433,14 @@
 - Decisions / assumptions: temporary target زیر `/dev/shm` با permission `0700` انتخاب می‌شود تا plaintext restore persistent نشود. این test `RISK-0003` را به‌تنهایی نمی‌بندد، زیرا database import در staging واقعی را آزمایش نمی‌کند.
 - Deferred or risk IDs: `RISK-0003` High/Open؛ restore rehearsal و سپس staging database import evidence باقی می‌ماند.
 - Rollback / recovery: تا اجرای task تغییری برای rollback نیست. هر failure restore production را دست‌نخورده می‌گذارد و target موقت برای diagnosis نگه داشته می‌شود.
+
+## LOG-0039 — 2026-08-14 — P0-A diagnosis / restore rehearsal guard blocked pre-existing target
+
+- Outcome: restore rehearsal پیش از هر restore به‌دلیل وجود target ثابت از قبل موجود متوقف شد. guard این رفتار را عمداً رد کرد؛ هیچ داده‌ای restore، overwrite یا حذف نشد.
+- Why: target ثابت replay-safe نبود و وجود آن به‌معنای نامشخص بودن ownership/محتوا بود. حذف یا reuse بدون inventory با قرارداد recovery سازگار نیست.
+- Scope / files: Task Spec restore rehearsal و همین Work Log.
+- Commands or actions actually performed: مالک script restore را ابتدا در context کاربر غیر-root و سپس root اجرا کرد؛ هر دو بار precondition مسیر موجود را تشخیص دادند و قبل از فراخوانی restic خارج شدند. هیچ secret، snapshot، container، database یا production file تغییر نکرد و هیچ push remote انجام نشد.
+- Verification actually performed and result: پیام `Refusing to reuse restore target` اثبات می‌کند guard قبل از write عمل کرده است. محتوای target قدیمی هنوز inventory نشده و نباید حذف شود.
+- Decisions / assumptions: Task Spec برای ایجاد target یکتای `mktemp -d` اصلاح شد. inventory non-sensitive مسیر قدیمی فقط برای ثبت وضعیت انجام می‌شود؛ rehearsal بعدی هرگز آن را reuse نمی‌کند.
+- Deferred or risk IDs: `RISK-0003` High/Open؛ restore rehearsal هنوز اجرا نشده است.
+- Rollback / recovery: تغییری رخ نداده است. مسیر قدیمی تا تعیین ownership محفوظ می‌ماند؛ target یکتای بعدی فقط پس از verification موفق پاک می‌شود.
