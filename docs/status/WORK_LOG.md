@@ -330,7 +330,7 @@
 - Why: init به password file محلی و remote معتبر نیاز داشت، اما interruption پیش از آن رخ داد؛ اجرای command بعدی نمی‌تواند init ناقص را جایگزین کند.
 - Scope / files: فقط همین Work Log.
 - Commands or actions actually performed: مالک directory/password file محلی را ایجاد و environment مربوط به rclone/restic را تنظیم کرد، سپس `restic init` و `restic snapshots` را اجرا کرد. init با context canceled تمام شد و snapshots config پیدا نکرد. هیچ password، token، یا backup data در Git یا Work Log ثبت نشد و هیچ push remote انجام نشد.
-- Verification actually performed and result: خطای `repository does not exist` نشان می‌دهد config repository در مسیر موردنظر قابل‌خواندن نیست. وجود یا نبود artifact ناقص در Drive هنوز باید فقط با listing read-only بررسی شود.
-- Decisions / assumptions: تا نتیجهٔ listing read-only روشن نشود، هیچ حذف یا retry انجام نمی‌شود. در صورت خالی بودن مسیر، init با یک اجرای بدون interruption تکرار خواهد شد؛ در غیر این صورت تصمیم recovery جداگانه ثبت می‌شود.
+- Verification actually performed and result: نخستین listing با interrupt متوقف شد (exit `130`)؛ تکرار بدون interrupt نشان داد parent دارای تنها directory `restic-repository/` است و درون آن فقط `data/`، `index/`، `keys/`، `locks/` و `snapshots/` وجود دارند. در root repository فایل `config` وجود ندارد، پس repository معتبر نیست.
+- Decisions / assumptions: تا شمارش read-only محتوا انجام نشود، هیچ حذف یا retry انجام نمی‌شود. اگر شمارش فقط همین artifact ناقص را تأیید کند، پاک‌سازی صریح همان مسیر و retry init با اجرای بدون interruption در یک Work Log جدید ثبت می‌شود.
 - Deferred or risk IDs: `RISK-0003` High/Open؛ repository/job/retention/restore هنوز pending هستند.
 - Rollback / recovery: بررسی بعدی فقط read-only است. حذف احتمالی artifact ناقص بدون inventory صریح و تأیید مالک انجام نمی‌شود.
