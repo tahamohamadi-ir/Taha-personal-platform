@@ -92,8 +92,8 @@ Node.js public production runtime
 
 ## Open decisions and gate blockers
 
-- Rotate root credential and define non-root SSH-key access (`RISK-0002`).
-- Configure DNS/HTTPS and prove control of production and staging domains.
-- Set up and test encrypted Google Drive backup, retention and restore (`RISK-0003`).
+- Rotate root credential and define non-root SSH-key access (`RISK-0002`) via `docs/governance/SERVER_ACCESS_RUNBOOK.md`.
+- Configure DNS/HTTPS and prove control of production and staging domains; the approved staging record is defined in the same runbook.
+- Set up and test encrypted Google Drive backup, retention and restore (`RISK-0003`) after secure access and audit, per `docs/governance/BACKUP_POLICY.md`.
 - Select production WSGI/ASGI server, worker count, media layout, monitoring and exact deploy mechanics in P0-A ADRs.
 - Install the latest supported Python 3.12 patch and add the first locked dependency manifests only when P0-A/P3 explicitly authorizes scaffolding.
