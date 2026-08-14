@@ -30,6 +30,7 @@ Establish a safe, evidence-based starting point for P0-A operations without scaf
 
 - Cloudflare screenshots supplied by the owner on 2026-08-14 show: the production root `A` record and `www` CNAME are proxied; no staging record exists yet; zone encryption mode is currently **Full**.
 - Owner terminal evidence on 2026-08-14 shows an existing non-root account already accepts SSH public-key authentication. Direct account-creation commands were rejected because that session is not root; no account or authorization file was created by the failed attempt.
+- The existing account is a member of `sudo`, but its non-interactive sudo check requires interactive authentication and the available password attempt did not authenticate. The current root SSH connection also rejects the available authentication method. There is therefore no verified owner-controlled privileged SSH path yet.
 - The VPS is the owner-provided production target. Its address is intentionally not repeated here because it is already managed as infrastructure configuration, not repository data.
 - `RISK-0002` remains a hard blocker until the root credential is rotated and key-only non-root SSH access is proved.
 
@@ -37,7 +38,8 @@ Establish a safe, evidence-based starting point for P0-A operations without scaf
 
 1. Owner rotates the root password in the provider panel or active root session and stores it only in a password manager.
 2. Owner exits the failed editor without saving and performs the runbook's read-only privilege check on the existing SSH account.
-3. If that account has verified sudo access, the owner installs the new public key for it and proves a fresh key login in a second terminal. If it lacks safe sudo access, the owner uses the provider/root console to create a separate named non-root account instead.
+3. Because the observed account currently requires an unavailable interactive sudo password, the owner recovers privileged access through the provider console/rescue path or provider-controlled root-password reset; no further SSH password guesses are permitted.
+4. From the recovered root/provider console, the owner sets a new unique password for the existing operator account or creates a separate named non-root account, adds the new public key, and proves a fresh key login in a second terminal.
 4. Owner adds the `staging` Cloudflare record described in the runbook; DNS propagation is checked from an external resolver. The record alone must not be represented as an application deployment.
 5. Codex performs an explicitly authorized, read-only SSH audit and records non-sensitive evidence.
 6. With a dedicated Google Drive folder and owner-available OAuth consent, restic/rclone are configured on the audited server; a scheduled job, retention observation and staging restore rehearsal provide closure evidence for `RISK-0003`.

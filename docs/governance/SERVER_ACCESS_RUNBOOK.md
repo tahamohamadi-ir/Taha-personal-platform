@@ -37,7 +37,7 @@ sudo -n whoami
 sudo -n -l
 ```
 
-Expected success is `root` from `sudo -n whoami` and a valid sudo policy listing. This check does not change the server. If it instead reports that a password is required or the account is not allowed to use sudo, stop and use the provider/root console for the next section; do not guess a password or retry the failed commands.
+Expected success is `root` from `sudo -n whoami` and a valid sudo policy listing. This check does not change the server. If it reports that a password is required or the account is not allowed to use sudo, stop. Never try the root password as the operator account's sudo password, and do not guess or retry passwords. Recover access through the provider/root console or the provider's documented password-reset/rescue path.
 
 ## 4. Select or create the named non-root account on the VPS
 
@@ -66,6 +66,16 @@ chown tahaops:tahaops /home/tahaops/.ssh/authorized_keys
 chmod 600 /home/tahaops/.ssh/authorized_keys
 sudo -l -U tahaops
 ```
+
+### Existing account has sudo but its password is unavailable
+
+Use the provider console or rescue workflow to obtain a root shell. Do not try to make root SSH accept passwords remotely. In the root console, set a new unique password for the existing operator account and store it only in the owner's password manager:
+
+```bash
+passwd <EXISTING_OPERATOR_USER>
+```
+
+Then add the owner's new public key as described in the existing-account path, test a fresh key login, and validate sudo using the new operator password. A separate account is optional only after this recovery path is assessed; it is not a response to password guessing.
 
 The `adduser` password is only a temporary local-account setup detail; it is not an SSH credential after step 5. Do not record it.
 
