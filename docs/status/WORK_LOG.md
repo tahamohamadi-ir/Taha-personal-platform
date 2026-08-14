@@ -334,3 +334,14 @@
 - Decisions / assumptions: پاک‌سازی فقط target صریح `gdrive_taha_backup:taha-personal-platform-backups/restic-repository` را در بر می‌گیرد و تنها به‌دلیل شمارش صفر/نبود config مجاز است. بعد از cleanup، init با اجرای بدون interruption تکرار و جداگانه ثبت می‌شود.
 - Deferred or risk IDs: `RISK-0003` High/Open؛ repository/job/retention/restore هنوز pending هستند.
 - Rollback / recovery: بررسی بعدی فقط read-only است. حذف احتمالی artifact ناقص بدون inventory صریح و تأیید مالک انجام نمی‌شود.
+
+## LOG-0030 — 2026-08-14 — P0-A execution / encrypted restic repository initialized
+
+- Outcome: artifact ناقصِ صفر-bایت از مسیر دقیق repository پاک‌سازی شد و `restic init` در retry بدون interruption یک repository رمزنگاری‌شدهٔ format-v2 ساخت. `restic snapshots` آن را با موفقیت باز کرد؛ هنوز snapshotی وجود ندارد.
+- Why: repository معتبر و password file خارج از Git پیش‌نیاز backup واقعی، retention و restore rehearsal هستند.
+- Scope / files: `PROJECT_MANIFEST.md`، `docs/governance/BACKUP_POLICY.md`، `docs/plan/P0-A-server-access-dns-backup-task-spec.md`، `docs/status/RISK_REGISTER.md` و همین Work Log.
+- Commands or actions actually performed: مالک با `rclone purge` فقط مسیر inventory‌شدهٔ صفر-bایت را پاک کرد، متغیرهای repository/password file را در root shell تنظیم کرد و `restic init` و `restic snapshots` را اجرا کرد. password، token، شناسهٔ کامل repository یا دادهٔ backup در Git یا Work Log ثبت نشد و هیچ push remote انجام نشد.
+- Verification actually performed and result: init repository را ایجاد کرد و snapshots آن را بدون خطا باز کرد؛ ایجاد cache محلی restic نیز گزارش شد. این evidence ایجاد repository را ثابت می‌کند، نه backup شدن هیچ source data.
+- Decisions / assumptions: نخستین snapshot باید database dump streamed، media volume و configuration لازم را بدون چاپ secret پوشش دهد. سپس retention/job و restore rehearsal جداگانه اجرا و ثبت می‌شوند.
+- Deferred or risk IDs: `RISK-0003` همچنان High/Open است؛ first snapshot، job، retention و restore rehearsal باقی مانده‌اند.
+- Rollback / recovery: repository تازه هیچ snapshotی ندارد؛ revoke OAuth دسترسی آینده را قطع می‌کند ولی داده‌ای حذف نمی‌کند. حذف repository معتبر فقط با approval صریح مالک و inventory تازه مجاز است.
