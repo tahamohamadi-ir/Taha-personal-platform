@@ -224,3 +224,14 @@
 - Decisions / assumptions: staging DNS حفظ می‌شود اما تا inventory routeهای Caddy، TLS/configuration change انجام نمی‌شود؛ `RISK-0004` blocker باقی می‌ماند.
 - Deferred or risk IDs: `RISK-0001`، `RISK-0003` تا `RISK-0006`؛ `RISK-0004` High/Blocked.
 - Rollback / recovery: حذف رکورد staging در Cloudflare تنها rollback DNS است؛ فعلاً به‌دلیل عدم اثر production آن انجام نمی‌شود. هر Caddy fix باید پیش از اجرا rollback صریح داشته باشد.
+
+## LOG-0020 — 2026-08-14 — P0-A evidence / live production stack identified
+
+- Outcome: metadata inventory نشان داد یک Compose project زنده با سه container healthy (frontend، backend و PostgreSQL) در مسیر production موجود اجرا می‌شود. Caddy system service فقط دو hostname production root و `www` را در Caddyfile دارد.
+- Why: این evidence علت محتمل 525 staging را مشخص و تأیید می‌کند که hostname جدید نباید برای رفع سریع به stack database/backend production وصل شود.
+- Scope / files: `PROJECT_MANIFEST.md`، `docs/plan/P0-A-server-access-dns-backup-task-spec.md`، `docs/status/RISK_REGISTER.md` و همین Work Log.
+- Commands or actions actually performed: owner metadata-only Docker container/Compose/Caddy version، systemd unit location و Caddyfile hostname match را اجرا کرد؛ evidence در یک commit محلی ثبت شد. هیچ config، container، volume، service، DNS یا backup setting و هیچ push remote تغییر نکرد.
+- Verification actually performed and result: frontend/backend/PostgreSQL healthy مشاهده شدند؛ frontend/backend فقط روی loopback publish شده‌اند؛ Compose file production location ثبت شد؛ Caddyfile staging hostname ندارد. نتیجه با Cloudflare 525 بیرونی سازگار است، ولی علت نهایی TLS فقط پس از config inventory قابل اثبات است.
+- Decisions / assumptions: `Taha-personal-platform` از stack زنده مستقل می‌ماند؛ staging آینده هرگز DB/backend production را share نمی‌کند. پیش از تصمیم staging باید metadata volume/data-path و Caddy routing امن inventory شود و capacity co-hosting ارزیابی گردد.
+- Deferred or risk IDs: `RISK-0001`، `RISK-0003` تا `RISK-0007`؛ `RISK-0004` و `RISK-0007` High/Blocked.
+- Rollback / recovery: چون فقط metadata خوانده شد، rollback ندارد؛ stack موجود بدون تغییر باقی مانده و هر تغییر بعدی باید rollback مستقل داشته باشد.

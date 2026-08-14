@@ -27,7 +27,7 @@
 | Backend/CMS/API | Python 3.12 (latest supported patch) + Django 5.2 LTS + Wagtail 7.4 LTS + Django Ninja | Not scaffolded |
 | Database | PostgreSQL | Not provisioned |
 | Public search | Pagefind at the approved phase | Not provisioned |
-| Deployment | Docker Compose + Caddy on VPS | Caddy and Docker are pre-existing on the production host; project-specific configuration is not provisioned and must be inventoried before change |
+| Deployment | Docker Compose + Caddy on VPS | Existing live stack: Caddy plus a healthy frontend/backend/PostgreSQL Compose project; project-specific configuration is not provisioned and must remain isolated from it |
 | Git/CI | GitHub + GitHub Actions hosted standard runners | Workflow not created; P0-A only |
 | Backup | Encrypted restic repository through rclone on Google Drive | Not provisioned; P0-A only |
 
