@@ -422,3 +422,14 @@
 - Decisions / assumptions: backup automation عملیاتی است؛ از re-run غیرضروری snapshots بلافاصله پس از interrupt خودداری می‌شود. evidence بعدی باید restore rehearsal روی staging مستقل باشد.
 - Deferred or risk IDs: `RISK-0003` High/Open؛ restore rehearsal باقی مانده است.
 - Rollback / recovery: timer را می‌توان بدون حذف snapshot با `systemctl disable --now taha-platform-backup.timer` متوقف کرد. interrupt listing هیچ recovery لازم ندارد.
+
+## LOG-0038 — 2026-08-14 — P0-A planning / isolated restore rehearsal defined
+
+- Outcome: یک Task Spec مستقل برای restore rehearsal غیرمخرب ایجاد شد؛ scope آن فقط recovery به target موقت root-only و verification فایل‌ها است.
+- Why: restore عملیاتی HIGH-RISK است و نباید با backup موفق یا staging placeholder اشتباه گرفته شود. scope صریح مانع restore ناخواسته روی production می‌شود.
+- Scope / files: `docs/plan/P0-A-restore-rehearsal-task-spec.md` و همین Work Log.
+- Commands or actions actually performed: فقط Task Spec و evidence requirements ایجاد شدند. هیچ restore، cleanup، container، database import، service/timer یا production file تغییر نکرد و هیچ push remote انجام نشد.
+- Verification actually performed and result: preconditionها از evidence LOG-0036/0037 قابل‌ارزیابی‌اند، اما اجرای restore هنوز pending است.
+- Decisions / assumptions: temporary target زیر `/dev/shm` با permission `0700` انتخاب می‌شود تا plaintext restore persistent نشود. این test `RISK-0003` را به‌تنهایی نمی‌بندد، زیرا database import در staging واقعی را آزمایش نمی‌کند.
+- Deferred or risk IDs: `RISK-0003` High/Open؛ restore rehearsal و سپس staging database import evidence باقی می‌ماند.
+- Rollback / recovery: تا اجرای task تغییری برای rollback نیست. هر failure restore production را دست‌نخورده می‌گذارد و target موقت برای diagnosis نگه داشته می‌شود.
