@@ -235,3 +235,14 @@
 - Decisions / assumptions: `Taha-personal-platform` از stack زنده مستقل می‌ماند؛ staging آینده هرگز DB/backend production را share نمی‌کند. پیش از تصمیم staging باید metadata volume/data-path و Caddy routing امن inventory شود و capacity co-hosting ارزیابی گردد.
 - Deferred or risk IDs: `RISK-0001`، `RISK-0003` تا `RISK-0007`؛ `RISK-0004` و `RISK-0007` High/Blocked.
 - Rollback / recovery: چون فقط metadata خوانده شد، rollback ندارد؛ stack موجود بدون تغییر باقی مانده و هر تغییر بعدی باید rollback مستقل داشته باشد.
+
+## LOG-0021 — 2026-08-14 — P0-A decision / isolated staging placeholder
+
+- Outcome: container mounts، Compose skeleton و Caddyfile routeها inventory شد. تصمیم ADR-0015 برای یک staging placeholder مستقل با automatic Caddy TLS و پاسخ 503 ثبت شد؛ هنوز تغییری روی سرور اعمال نشده است.
+- Why: staging DNS موجود 525 می‌دهد چون Caddy hostname آن را ندارد. proxy کردن آن به Compose production خطر data leak و production interference دارد؛ پاسخ 503 مستقل حداقل مسیر امن و reversible است.
+- Scope / files: `docs/adr/0015-isolated-staging-placeholder.md`، `docs/adr/README.md`، `docs/plan/P0-A-server-access-dns-backup-task-spec.md`، `docs/status/RISK_REGISTER.md` و همین Work Log.
+- Commands or actions actually performed: owner Docker mount metadata، Compose skeleton و بخش Caddyfile را فقط‌خواندنی مشاهده کرد؛ Codex مستندات رسمی Caddy و Cloudflare را بررسی و decision را در یک commit محلی ثبت کرد. هیچ Caddyfile write/reload، Docker/Compose action، DNS write، TLS mode change یا backup action و هیچ push remote انجام نشد.
+- Verification actually performed and result: PostgreSQL و media در Docker volumeهای مستقل دیده شدند؛ Caddy automatic TLS در site blockهای production برقرار است و staging route غایب است. مستندات رسمی Caddy syntax `tls internal` و `respond` و مستندات Cloudflare Full/Full(strict) بررسی شد؛ تصمیم استفاده از automatic certificate existing Caddy به‌جای internal CA ثبت شد.
+- Decisions / assumptions: staging placeholder production backend/database را proxy نمی‌کند؛ Cloudflare Full فعلاً باقی می‌ماند؛ Full(strict) فقط بعد از certificate valid برای همهٔ hostnameها و تأیید مالک بررسی می‌شود.
+- Deferred or risk IDs: `RISK-0001`، `RISK-0003` تا `RISK-0007`؛ `RISK-0004` IN PROGRESS با ADR-0015.
+- Rollback / recovery: قبل از هر edit، Caddyfile backup گرفته می‌شود؛ validation failure مانع reload است؛ rollback restore backup + validate + reload است.

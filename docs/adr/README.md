@@ -10,5 +10,6 @@ ADRها immutable هستند: تغییر تصمیم با ADR جدید انجام
 | 0010 | Encrypted Google Drive backup | Accepted target; not provisioned/tested |
 | 0011 | Bilingual URL behavior | Accepted |
 | 0014 | `/admin/` boundary | Accepted for route; hardening deferred |
+| 0015 | Isolated staging placeholder | Accepted P0-A route; not yet applied |
 
 The technology baseline still governs the remaining architecture decisions. Create a new ADR only when a decision is non-obvious, expensive to reverse, security/operations relevant, or changes a frozen contract.
