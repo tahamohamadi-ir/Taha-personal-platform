@@ -9,7 +9,7 @@ The backup set covers PostgreSQL dumps once PostgreSQL exists, CMS/media assets 
 
 ## Target design
 
-- Tooling: Ubuntu-signed `restic` 0.18.1 and `rclone` 1.60.1 build are installed on the VPS; no credentials, repository or scheduled job exist yet.
+- Tooling: Ubuntu-signed `restic` 0.18.1 and `rclone` 1.60.1 build are installed on the VPS. Google Drive OAuth and read access to the target folder were verified through the rclone remote; no restic repository or scheduled job exists yet.
 - Source: production VPS only after its access hardening is complete.
 - Destination: encrypted restic repository accessed through rclone in the owner-created `taha-personal-platform-backups` folder on the approved Google Drive account.
 - Credentials: Google OAuth, rclone configuration and restic password live only in an approved password manager/secret store; never in Git, a shell history, CI log or `WORK_LOG.md`.
@@ -26,7 +26,7 @@ The backup set covers PostgreSQL dumps once PostgreSQL exists, CMS/media assets 
 
 ## Required evidence before closing `RISK-0003`
 
-1. Secret handling and Google Drive access configured without logging sensitive values.
+1. Secret handling and Google Drive access configured without logging sensitive values. **Completed for the rclone OAuth/access portion on 2026-08-14; the restic password is still not created.**
 2. A scheduled job completes and records a non-sensitive success/failure result.
 3. Retention is observed and documented.
 4. A restore to staging is performed and verified against expected files/database state.

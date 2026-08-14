@@ -312,3 +312,14 @@
 - Decisions / assumptions: remote جدید ساخته نمی‌شود؛ reconnect از طریق localhost SSH tunnel انجام و سپس همان read-only listing تکرار می‌شود.
 - Deferred or risk IDs: `RISK-0003` High/Open؛ OAuth/repository/job/restore همچنان pending.
 - Rollback / recovery: reconnect ناموفق فقط config بدون token باقی می‌گذارد؛ در صورت نیاز remote ناقص بعداً حذف و مجدداً ساخته می‌شود، بدون اثر بر دادهٔ Drive.
+
+## LOG-0028 — 2026-08-14 — P0-A execution / Google Drive OAuth and target access verified
+
+- Outcome: reconnect ریموت موجود rclone از طریق tunnel موقت localhost کامل شد و دسترسی read-only به پوشهٔ تأییدشدهٔ Google Drive با exit code `0` اثبات شد.
+- Why: قبل از ایجاد repository رمزنگاری‌شده، باید اتصال remote و دسترسی واقعی به پوشهٔ مقصد بدون ثبت credential در مستندات تأیید می‌شد.
+- Scope / files: `PROJECT_MANIFEST.md`، `docs/governance/BACKUP_POLICY.md`، `docs/status/RISK_REGISTER.md` و همین Work Log.
+- Commands or actions actually performed: مالک روی VPS `rclone config reconnect` را برای همان remote موجود اجرا کرد، auto-config را از tunnel موقت localhost تکمیل کرد، و سپس `rclone lsd` را برای پوشهٔ مقصد اجرا کرد؛ Google هیچ Shared Drive در حساب نشان نداد، بنابراین remote به Drive معمولی متصل است. هیچ token، config-token، password یا محتوای backup در Git یا Work Log ثبت نشد و هیچ push remote انجام نشد.
+- Verification actually performed and result: `rclone lsd` برای مسیر target با `rclone_target_exit=0` تمام شد. خروجی خالی با پوشهٔ مقصد بدون زیرپوشه سازگار است؛ این فقط اثبات دسترسی است، نه ایجاد repository یا snapshot.
+- Decisions / assumptions: remote موجود حفظ می‌شود؛ مرحلهٔ بعد فقط پس از ایجاد امن password file خارج از Git، `restic init` و نخستین snapshot کنترل‌شده انجام می‌شود. tunnel پس از پایان OAuth باید بسته شود.
+- Deferred or risk IDs: `RISK-0003` همچنان High/Open است؛ repository، password، job، retention و restore rehearsal هنوز انجام نشده‌اند.
+- Rollback / recovery: اگر دسترسی Drive در آینده revoke شود، remote دیگر repository را قابل‌دسترسی نمی‌کند اما هیچ داده‌ای حذف نمی‌شود؛ قبل از هر عملیات destructive باید restore/runbook بررسی شود.
