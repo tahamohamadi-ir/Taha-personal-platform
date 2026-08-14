@@ -400,3 +400,25 @@
 - Decisions / assumptions: timer روزانه 03:20 UTC با jitter ده دقیقه‌ای، lock عدم هم‌پوشانی و retention 7 daily/4 weekly/12 monthly خواهد داشت. service فقط sourceهای inventory‌شده را backup می‌کند و database dump را بدون plaintext file stream می‌کند.
 - Deferred or risk IDs: `RISK-0003` High/Open؛ server installation، timer evidence و staging restore rehearsal باقی مانده‌اند.
 - Rollback / recovery: تا قبل از install rollback لازم نیست. پس از install، disable timer و حذف فقط فایل‌های مشخص‌شده در runbook automation را متوقف می‌کند، بدون حذف snapshotها.
+
+## LOG-0036 — 2026-08-14 — P0-A execution / installed systemd backup service succeeded
+
+- Outcome: backup service نصب‌شده تحت systemd با status `0/SUCCESS` پایان یافت، دو snapshot جدید PostgreSQL و media/config ساخت و retention policy را با evidence واقعی اعمال کرد.
+- Why: artifactهای repository به‌تنهایی automation نیستند؛ باید service واقعی روی VPS اجرا و رفتار آن با journal/status تأیید می‌شد.
+- Scope / files: `PROJECT_MANIFEST.md`، Backup Policy/Runbook، Task Spec، Risk Register و همین Work Log.
+- Commands or actions actually performed: مالک artifactهای version-controlled را با permissionهای تعریف‌شده نصب کرد، daemon-reload و unit/calendar validation را اجرا کرد، timer را enable/start کرد و service را دستی برای smoke واقعی اجرا کرد. هیچ secret، dump plaintext یا push remote ثبت نشد.
+- Verification actually performed and result: service به‌صورت clean deactivated شد و `ExecStart` با `status=0/SUCCESS` تمام شد. journal snapshotهای PostgreSQL و media/config را نشان داد؛ retention برای هر دو گروه دو snapshot را نگه داشت. wall-clock حدود 5m39s، peak memory حدود 64.5MB و CPU حدود 2.1s گزارش شد. timer نیز `enabled` و `active` است و systemd زمان اجرای بعدی را گزارش کرد.
+- Decisions / assumptions: service lock، timeout دو ساعته و retention جاری حفظ می‌شوند. restore rehearsal فقط در staging مستقل مجاز است.
+- Deferred or risk IDs: `RISK-0003` High/Open؛ فقط staging restore rehearsal باقی مانده است.
+- Rollback / recovery: در صورت نیاز، `systemctl disable --now taha-platform-backup.timer` اجرای آینده را متوقف می‌کند و snapshotها را حذف نمی‌کند. هیچ rollbackی در این اجرا لازم نشد.
+
+## LOG-0037 — 2026-08-14 — P0-A verification / timer active and harmless interrupted listing
+
+- Outcome: timer backup به‌صورت `enabled` و `active` تأیید شد و systemd زمان trigger بعدی را نمایش داد. فرمان read-only `restic snapshots` پس از این evidence با interrupt متوقف شد؛ هیچ backup job، timer یا snapshotی قطع نشد.
+- Why: تشخیص باید بین interruption یک command مشاهده‌ای و interruption service backup تمایز بگذارد.
+- Scope / files: `PROJECT_MANIFEST.md`، Backup Policy، Task Spec، Risk Register و همین Work Log.
+- Commands or actions actually performed: مالک `systemctl is-enabled`، `systemctl is-active`، `systemctl status` و `systemctl list-timers` را اجرا کرد. خروجی list-timers در pager نشان داده شد و سپس فرمان `restic snapshots` با Ctrl+C متوقف شد. هیچ secret یا push remote ثبت نشد.
+- Verification actually performed and result: timer enabled/active بود و next elapse برای روز بعد در UTC ثبت شد. service قبلی status موفق داشت. خطای signal interrupt فقط مربوط به command listing است و نشانگر repository corruption یا failure backup نیست.
+- Decisions / assumptions: backup automation عملیاتی است؛ از re-run غیرضروری snapshots بلافاصله پس از interrupt خودداری می‌شود. evidence بعدی باید restore rehearsal روی staging مستقل باشد.
+- Deferred or risk IDs: `RISK-0003` High/Open؛ restore rehearsal باقی مانده است.
+- Rollback / recovery: timer را می‌توان بدون حذف snapshot با `systemctl disable --now taha-platform-backup.timer` متوقف کرد. interrupt listing هیچ recovery لازم ندارد.

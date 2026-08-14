@@ -1,6 +1,6 @@
 # Backup Policy
 
-**Status:** P0-A partially provisioned — PostgreSQL/media/config snapshots and a successful repository check exist; scheduled job and restore rehearsal remain.  
+**Status:** P0-A partially provisioned — PostgreSQL/media/config snapshots, repository check, retention and an enabled/active systemd timer exist; restore rehearsal remains.  
 **Decision ADR:** `docs/adr/0010-encrypted-google-drive-backup.md`
 **Operational runbook:** `BACKUP_RUNBOOK.md`
 
@@ -10,7 +10,7 @@ The backup set covers PostgreSQL dumps once PostgreSQL exists, CMS/media assets 
 
 ## Target design
 
-- Tooling: Ubuntu-signed `restic` 0.18.1 and `rclone` 1.60.1 build are installed on the VPS. Google Drive OAuth/read access and a restic format-v2 repository are verified; separate PostgreSQL and media/config snapshots exist and `restic check` passed, but no scheduled job exists yet.
+- Tooling: Ubuntu-signed `restic` 0.18.1 and `rclone` 1.60.1 build are installed on the VPS. Google Drive OAuth/read access and a restic format-v2 repository are verified; separate PostgreSQL and media/config snapshots exist, `restic check` passed, and the installed systemd service completed a real backup/retention run successfully.
 - Source: production VPS only after its access hardening is complete.
 - Destination: encrypted restic repository accessed through rclone in the owner-created `taha-personal-platform-backups` folder on the approved Google Drive account.
 - Credentials: Google OAuth, rclone configuration and restic password live only in an approved password manager/secret store; never in Git, a shell history, CI log or `WORK_LOG.md`.
