@@ -367,3 +367,14 @@
 - Decisions / assumptions: retry PostgreSQL باید از syntax مستند `--stdin-from-command -- <command>` استفاده کند؛ نتیجهٔ آن جداگانه با `restic snapshots --tag postgres` تأیید می‌شود. retention policy در همین slice با evidence واقعی اعمال شده است.
 - Deferred or risk IDs: `RISK-0003` High/Open؛ PostgreSQL snapshot، scheduled job و restore rehearsal باقی مانده‌اند.
 - Rollback / recovery: snapshot موفق media/config حفظ می‌شود. command ناموفق snapshot ایجاد نکرد، بنابراین retry بعدی به cleanup نیاز ندارد؛ هر failure بعدی پیش از retry با snapshots بررسی می‌شود.
+
+## LOG-0033 — 2026-08-14 — P0-A execution / complete initial encrypted backup verified
+
+- Outcome: retry PostgreSQL با syntax درست stream موفق شد؛ snapshot database ایجاد شد و `restic check` هر دو snapshot موجود را بدون خطا تأیید کرد. نخستین backup کاملِ sourceهای تأییدشده اکنون وجود دارد.
+- Why: backup اولیه باید database، media و configuration را پوشش دهد و repository integrity پیش از automation تأیید شود.
+- Scope / files: `PROJECT_MANIFEST.md`، `docs/governance/BACKUP_POLICY.md`، `docs/plan/P0-A-server-access-dns-backup-task-spec.md`، `docs/status/RISK_REGISTER.md` و همین Work Log.
+- Commands or actions actually performed: مالک retry `restic backup --stdin-from-command -- docker exec ... pg_dumpall` را اجرا کرد، سپس snapshotهای tag PostgreSQL و `restic check` را اجرا کرد. syntax separator از راهنمای رسمی restic تأیید شد. هیچ dump plaintext، password یا token ثبت نشد و هیچ push remote انجام نشد.
+- Verification actually performed and result: snapshot PostgreSQL با فایل `postgres-all.sql` ذخیره شد؛ check هر دو snapshot/index/blob را بررسی و `no errors were found` گزارش کرد. snapshot پیشین media/config نیز حفظ شد.
+- Decisions / assumptions: automation روزانه باید همین دو backup operation، retention فعلی و lock عدم هم‌پوشانی را اجرا کند. restore rehearsal همچنان فقط در staging مستقل مجاز است.
+- Deferred or risk IDs: `RISK-0003` High/Open؛ scheduled job و staging restore rehearsal باقی مانده‌اند.
+- Rollback / recovery: snapshotهای معتبر حفظ می‌شوند. اگر automation بعداً fail شود، هیچ snapshotی حذف نمی‌شود؛ journal و snapshot metadata بررسی و رخداد جداگانه ثبت می‌شود.
