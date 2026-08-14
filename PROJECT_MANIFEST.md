@@ -1,6 +1,6 @@
 # Project Manifest
 
-**Status:** P0-G0 draft — `RISK-0002` و `RISK-0003` باید پیش از عبور gate بسته یا مطابق Release Policy پذیرفته شوند.  
+**Status:** P0-G0 draft — `RISK-0001` و `RISK-0003` باید پیش از عبور gate بسته یا مطابق Release Policy پذیرفته شوند.  
 **Last verified:** 2026-08-14  
 **Source of truth for commands:** این فایل؛ دستور تأییدنشده را اجرا یا مستند نکنید.
 
@@ -58,7 +58,7 @@ Production host is an active Ubuntu VPS with 1 vCPU, 2 GB RAM and 30 GB NVMe. It
 
 ## Security and operations constraints
 
-- No SSH connection or deployment is permitted until `RISK-0002` is closed: rotate the exposed root credential and replace password/root access with a named non-root deploy user and SSH keys.
+- Any Codex SSH connection or deployment requires explicit owner approval and a completed Task Spec. `RISK-0002` is closed on the owner's attestation that the exposed root credential was independently rotated; the key-only named non-root operator path is verified.
 - SSH VPN is additional access protection, not a replacement for SSH key authentication, firewall policy, patching or least privilege.
 - The backup destination is Google Drive, but its OAuth credential, restic password and rclone configuration must live outside Git in a password manager/approved secret store.
 - GitHub Actions artifacts and caches are CI outputs, never the backup system of record.

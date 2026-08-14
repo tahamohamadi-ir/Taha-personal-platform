@@ -1,6 +1,6 @@
 # Task Spec — P0-A server access, staging DNS and backup bootstrap
 
-**Status:** Blocked — owner currently declines rotation of the exposed root credential.  
+**Status:** In progress — secure-access acceptance is complete; DNS, audit and backup remain.  
 **Date:** 2026-08-14  
 **Owner:** Project owner  
 **Risk IDs:** `RISK-0001`, `RISK-0002`, `RISK-0003`
@@ -41,7 +41,8 @@ Establish a safe, evidence-based starting point for P0-A operations without scaf
 3. The existing account's interactive sudo path is verified; the owner uses that controlled root session to rotate the exposed root password, set a new unique operator password, add the new public key, and prove a fresh key login in a second terminal.
 4. The new public key and sudo test have succeeded; root credential rotation is still pending because no `passwd` evidence was provided.
 5. Effective SSH daemon configuration was inspected read-only: root login, password authentication and keyboard-interactive authentication are disabled; public-key authentication and an explicit operator allow-list are active. No SSH configuration change or reload is required.
-6. Root credential rotation remains the only unresolved `RISK-0002` acceptance item. The owner currently declines this action; no Codex SSH connection, deployment, backup provisioning or gate advancement is permitted while this condition remains.
+6. Owner attested that the exposed root credential was independently rotated; together with the verified key-only operator and effective SSH policy, `RISK-0002` is closed.
+7. Next: create the staging DNS record, perform the authorized read-only server audit, then provision and restore-test the encrypted backup path.
 4. Owner adds the `staging` Cloudflare record described in the runbook; DNS propagation is checked from an external resolver. The record alone must not be represented as an application deployment.
 5. Codex performs an explicitly authorized, read-only SSH audit and records non-sensitive evidence.
 6. With a dedicated Google Drive folder and owner-available OAuth consent, restic/rclone are configured on the audited server; a scheduled job, retention observation and staging restore rehearsal provide closure evidence for `RISK-0003`.
