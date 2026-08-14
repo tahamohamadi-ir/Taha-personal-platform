@@ -444,3 +444,14 @@
 - Decisions / assumptions: Task Spec برای ایجاد target یکتای `mktemp -d` اصلاح شد. inventory non-sensitive مسیر قدیمی فقط برای ثبت وضعیت انجام می‌شود؛ rehearsal بعدی هرگز آن را reuse نمی‌کند.
 - Deferred or risk IDs: `RISK-0003` High/Open؛ restore rehearsal هنوز اجرا نشده است.
 - Rollback / recovery: تغییری رخ نداده است. مسیر قدیمی تا تعیین ownership محفوظ می‌ماند؛ target یکتای بعدی فقط پس از verification موفق پاک می‌شود.
+
+## LOG-0040 — 2026-08-14 — P0-A execution / isolated encrypted restore rehearsal passed
+
+- Outcome: PostgreSQL و media/config snapshotهای انتخاب‌شده با موفقیت به یک target یکتای root-only در `/dev/shm` restore شدند؛ dump non-empty بود، سه configuration file با source برابر بودند، count فایل‌های media برابر بود و target جدید پس از verification حذف شد.
+- Why: backup و repository check به‌تنهایی recoverability را اثبات نمی‌کنند. این rehearsal مسیر decrypt/read/restore را بدون تغییر production اثبات می‌کند.
+- Scope / files: Manifest، Backup Policy/Runbook، هر دو Task Spec، Risk Register، Deferred Validation و همین Work Log.
+- Commands or actions actually performed: مالک capacity `/dev/shm` را بررسی کرد، target یکتا با `mktemp` ساخت، دو snapshot را restore کرد، test/cmp/count غیرمحرمانه را اجرا و فقط همان target یکتا را حذف کرد. target قدیمی deploy-owned صرفاً با owner/mode/type مشاهده و دست‌نخورده ماند. هیچ SQL import، container، service/timer، production file یا push remote تغییر نکرد.
+- Verification actually performed and result: restore PostgreSQL یک فایل در حدود 143KiB را در حدود یک ثانیه و restore media/config چهارده entry را در حدود پنجاه ثانیه گزارش کرد. تمام assertionها PASS و `restore_rehearsal=PASS` چاپ شد؛ cleanup target یکتا نیز PASS بود.
+- Decisions / assumptions: این evidence file-level recovery را می‌بندد، اما import دیتابیس در staging runtime جداگانه همچنان برای closure `RISK-0003` لازم است. directory قدیمی deploy-owned در `DEFER-0006` ثبت شد.
+- Deferred or risk IDs: `RISK-0003` High/Open؛ `DEFER-0006` Low/Open.
+- Rollback / recovery: restore به production ننوشت و target یکتای rehearsal حذف شد؛ rollback لازم نیست. برای مرحلهٔ بعدی فقط staging runtime جداگانه و Task Spec مجاز است.

@@ -1,6 +1,6 @@
 # Task Spec — P0-A isolated backup restore rehearsal
 
-**Status:** Ready for owner execution.  
+**Status:** Completed for file-level restore integrity; staging database import remains out of scope.  
 **Date:** 2026-08-14  
 **Owner:** Project owner  
 **Type:** HIGH-RISK operational verification  
@@ -50,10 +50,10 @@ database, Caddy configuration, or the scheduled backup timer.
 
 ## Known limit and follow-up
 
-This rehearsal proves encrypted recovery and file-level integrity, but does
-**not** prove a database import into an isolated staging runtime. That later
-step remains the open portion of `RISK-0003` and must not be replaced by this
-temporary-target test.
+This rehearsal proved encrypted recovery and file-level integrity on
+2026-08-14, but does **not** prove a database import into an isolated staging
+runtime. That later step remains the open portion of `RISK-0003` and must not
+be replaced by this temporary-target test.
 
 ## Rollback / failure handling
 

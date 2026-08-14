@@ -33,7 +33,7 @@ Establish a safe, evidence-based starting point for P0-A operations without scaf
 - The existing account is a member of `sudo`; its non-interactive sudo check requires interactive authentication, and a later owner-controlled interactive sudo session successfully reached root. The current root SSH connection rejects the available authentication method, which is expected to remain the case after hardening.
 - The VPS is the owner-provided production target. Its address is intentionally not repeated here because it is already managed as infrastructure configuration, not repository data.
 - `RISK-0002` remains a hard blocker until the root credential is rotated and key-only non-root SSH access is proved.
-- Google Drive OAuth/access was verified through rclone; encrypted PostgreSQL and media/config snapshots were created, a `restic check` found no errors, and the installed systemd service/timer completed and is enabled/active. Restore rehearsal evidence remains.
+- Google Drive OAuth/access was verified through rclone; encrypted PostgreSQL and media/config snapshots were created, a `restic check` found no errors, the installed systemd service/timer completed and is enabled/active, and an isolated file-level restore rehearsal passed. Staging database import evidence remains.
 
 ## Ordered execution and acceptance criteria
 

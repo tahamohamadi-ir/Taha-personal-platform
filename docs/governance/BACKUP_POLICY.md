@@ -1,6 +1,6 @@
 # Backup Policy
 
-**Status:** P0-A partially provisioned — PostgreSQL/media/config snapshots, repository check, retention and an enabled/active systemd timer exist; restore rehearsal remains.  
+**Status:** P0-A partially provisioned — PostgreSQL/media/config snapshots, repository check, retention, enabled timer and isolated file-level restore rehearsal exist; staging database import remains.  
 **Decision ADR:** `docs/adr/0010-encrypted-google-drive-backup.md`
 **Operational runbook:** `BACKUP_RUNBOOK.md`
 
@@ -30,5 +30,5 @@ The backup set covers PostgreSQL dumps once PostgreSQL exists, CMS/media assets 
 1. Secret handling and Google Drive access configured without logging sensitive values. **Completed for the rclone OAuth/access portion on 2026-08-14; the restic password is still not created.**
 2. A scheduled job completes and records a non-sensitive success/failure result.
 3. Retention is observed and documented.
-4. A restore to staging is performed and verified against expected files/database state.
+4. A restore to staging is performed and verified against expected files/database state. **The file-level encrypted restore and source-file comparison passed on 2026-08-14; an isolated staging database import is still required.**
 5. Runbook and recovery owner are recorded in `WORK_LOG.md`.

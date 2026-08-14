@@ -1,6 +1,6 @@
 # Backup and Recovery Runbook
 
-**Status:** P0-A operational runbook; automation is installed and its first systemd run succeeded.  
+**Status:** P0-A operational runbook; automation and an isolated file-level restore rehearsal succeeded.  
 **Owner:** Project owner  
 **Policy:** `BACKUP_POLICY.md`  
 **Task Spec:** `../plan/P0-A-server-access-dns-backup-task-spec.md`
