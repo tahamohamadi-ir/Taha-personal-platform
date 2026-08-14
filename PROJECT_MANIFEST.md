@@ -51,7 +51,7 @@ docs/templates/         task specifications
 | Environment | Purpose | State | Data rule |
 |---|---|---|---|
 | `dev` | Local Windows control plane; WSL only for Linux/Docker tests | Available | fake/sanitized only |
-| `staging` | `staging.tahamohamadi.ir` | Planned | non-sensitive representative data |
+| `staging` | `staging.tahamohamadi.ir` | DNS record exists; external TLS origin handshake currently fails (Cloudflare 525); application not deployed | non-sensitive representative data |
 | `prod` | `tahamohamadi.ir` | Existing VPS; application not deployed | published, approved and backed-up data only |
 
 Production host is an active Ubuntu VPS with 1 vCPU, 2 GB RAM and 30 GB NVMe. It is sufficient for the static-first baseline and a modest Django/PostgreSQL runtime, but it is **not** approved for Gitea, a CI runner, Redis, Celery, OpenSearch, Neo4j, Kubernetes or other additional always-on services.
