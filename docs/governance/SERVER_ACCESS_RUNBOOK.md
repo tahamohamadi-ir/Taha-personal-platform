@@ -6,9 +6,9 @@
 
 ## Security boundary
 
-The operating account is `tahaops`. It belongs to the owner, not to an agent; it exists so work is attributable and key-based rather than dependent on root/password access. Do not send the private key, a password or any token through chat, Git, GitHub issues, CI logs or this document.
+The operating account belongs to the owner, not to an agent; it exists so work is attributable and key-based rather than dependent on root/password access. An existing named non-root SSH account has been observed, but its sudo authority is not yet verified. Do not send the private key, a password or any token through chat, Git, GitHub issues, CI logs or this document.
 
-Keep the existing root console connected until a new, separate terminal has proved the `tahaops` SSH-key login. Do not run the SSH-lockdown step before that proof.
+Keep an existing provider/root console connected until a new, separate terminal has proved the designated operator's SSH-key login. Do not run the SSH-lockdown step before that proof.
 
 ## 1. Rotate the exposed root credential
 
@@ -26,9 +26,36 @@ Get-Content "$opsKey.pub"
 
 Choose a strong passphrase when prompted. The private file without `.pub` must remain only on your laptop (and, if desired, your encrypted password-manager attachment).
 
-## 3. Create the named non-root account on the VPS
+## 3. First inspect the existing non-root SSH account (read-only)
 
-In the still-open **root** server console, run the following. At the editor step, paste exactly the one-line public key printed by the previous command; never paste the private key.
+If a previous account-creation attempt failed with an error stating that only root may add a user, do **not** continue that attempt. Exit any editor without saving (`Ctrl+X`, then `N`) and run the following in the existing SSH session:
+
+```bash
+whoami
+id -nG
+sudo -n whoami
+sudo -n -l
+```
+
+Expected success is `root` from `sudo -n whoami` and a valid sudo policy listing. This check does not change the server. If it instead reports that a password is required or the account is not allowed to use sudo, stop and use the provider/root console for the next section; do not guess a password or retry the failed commands.
+
+## 4. Select or create the named non-root account on the VPS
+
+### Existing account passes the privilege check
+
+Use the existing account as the operator account. From its approved sudo session, add the new public key without removing the currently working key:
+
+```bash
+install -d -m 700 "$HOME/.ssh"
+nano "$HOME/.ssh/authorized_keys"
+chmod 600 "$HOME/.ssh/authorized_keys"
+```
+
+Append the one-line public key from step 2, save, then test it in a fresh terminal. Do not modify SSH daemon settings yet.
+
+### Existing account is unsuitable
+
+In the still-open **root** provider/server console, create an owner-controlled account called `tahaops`. At the editor step, paste exactly the one-line public key printed by the previous command; never paste the private key.
 
 ```bash
 adduser tahaops
@@ -42,16 +69,16 @@ sudo -l -U tahaops
 
 The `adduser` password is only a temporary local-account setup detail; it is not an SSH credential after step 5. Do not record it.
 
-## 4. Prove key login before locking SSH down
+## 5. Prove key login before locking SSH down
 
 Open a **new** local PowerShell window. Replace `<SERVER_IP>` with the VPS address, then run:
 
 ```powershell
 $opsKey = Join-Path $env:USERPROFILE '.ssh\taha-platform-ops'
-ssh -i $opsKey -o IdentitiesOnly=yes tahaops@<SERVER_IP>
+ssh -i $opsKey -o IdentitiesOnly=yes <OPERATOR_USER>@<SERVER_IP>
 ```
 
-After login, run these commands; the results must be `root` and then `tahaops`, respectively. Leave the original root console open.
+After login, run these commands; the results must be `root` and then the selected operator account, respectively. Leave the original root/provider console open.
 
 ```bash
 sudo -v
@@ -59,7 +86,7 @@ sudo -n whoami
 whoami
 ```
 
-## 5. Disable root and password SSH login
+## 6. Disable root and password SSH login
 
 Only after step 4 succeeds, return to the root console and create this file with `nano /etc/ssh/sshd_config.d/99-taha-platform.conf`:
 
@@ -68,7 +95,7 @@ PermitRootLogin no
 PasswordAuthentication no
 KbdInteractiveAuthentication no
 PubkeyAuthentication yes
-AllowUsers tahaops
+AllowUsers <OPERATOR_USER>
 MaxAuthTries 3
 LoginGraceTime 30
 X11Forwarding no
@@ -81,14 +108,15 @@ sshd -t
 systemctl reload ssh
 ```
 
-Repeat the step-4 connection from the second terminal. A password or root SSH attempt must now be rejected; the key-only `tahaops` login must work. Only then may the root session be closed.
+Replace `<OPERATOR_USER>` with the one verified account before saving the drop-in. Repeat the step-5 connection from the second terminal. A password or root SSH attempt must now be rejected; the key-only operator login must work. Only then may the root session be closed.
 
 ## 6. What to send back
 
 Reply with only these non-sensitive facts:
 
 - root credential rotated: yes/no;
-- key-based `tahaops` login: yes/no;
+- current account's read-only sudo check: result only (no full output);
+- key-based selected-operator login: yes/no;
 - `sudo -l` succeeded: yes/no;
 - `sshd -t` and post-reload login: yes/no;
 - explicit authorization for a read-only SSH audit: yes/no.

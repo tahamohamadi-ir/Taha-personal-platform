@@ -7,12 +7,13 @@
 
 ## Goal
 
-Establish a safe, evidence-based starting point for P0-A operations without scaffolding the application or deploying any service: replace the exposed root-password access path with a named SSH-key operator account, create the isolated staging DNS record, and prepare the encrypted Google Drive backup bootstrap.
+Establish a safe, evidence-based starting point for P0-A operations without scaffolding the application or deploying any service: validate the existing named non-root SSH-key operator account (or create one only if it is unsuitable), create the isolated staging DNS record, and prepare the encrypted Google Drive backup bootstrap.
 
 ## In scope
 
 - Rotate the exposed root credential outside this repository.
-- Create `tahaops` as the owner-controlled, named, non-root Ubuntu operator account with a dedicated SSH key.
+- Perform a read-only privilege check on the existing named, non-root SSH-key operator account before any account or SSH configuration change.
+- Adopt that account and add the owner's new dedicated SSH key only if it has the required owner-controlled sudo path; otherwise create a separate account from provider/root console.
 - After a second-session key-login test succeeds, disable root and password SSH login using the documented drop-in configuration.
 - Add the proxied Cloudflare `A` record `staging.tahamohamadi.ir` to the existing VPS address.
 - Perform a read-only server audit only after the secure key-based account is confirmed.
@@ -28,14 +29,15 @@ Establish a safe, evidence-based starting point for P0-A operations without scaf
 ## Inputs and observed evidence
 
 - Cloudflare screenshots supplied by the owner on 2026-08-14 show: the production root `A` record and `www` CNAME are proxied; no staging record exists yet; zone encryption mode is currently **Full**.
+- Owner terminal evidence on 2026-08-14 shows an existing non-root account already accepts SSH public-key authentication. Direct account-creation commands were rejected because that session is not root; no account or authorization file was created by the failed attempt.
 - The VPS is the owner-provided production target. Its address is intentionally not repeated here because it is already managed as infrastructure configuration, not repository data.
 - `RISK-0002` remains a hard blocker until the root credential is rotated and key-only non-root SSH access is proved.
 
 ## Ordered execution and acceptance criteria
 
 1. Owner rotates the root password in the provider panel or active root session and stores it only in a password manager.
-2. Owner creates the local `ed25519` key and installs its public part for `tahaops` using [SERVER_ACCESS_RUNBOOK.md](../governance/SERVER_ACCESS_RUNBOOK.md).
-3. Owner proves a fresh `tahaops` key login in a second terminal; only then the SSH hardening drop-in is validated and loaded.
+2. Owner exits the failed editor without saving and performs the runbook's read-only privilege check on the existing SSH account.
+3. If that account has verified sudo access, the owner installs the new public key for it and proves a fresh key login in a second terminal. If it lacks safe sudo access, the owner uses the provider/root console to create a separate named non-root account instead.
 4. Owner adds the `staging` Cloudflare record described in the runbook; DNS propagation is checked from an external resolver. The record alone must not be represented as an application deployment.
 5. Codex performs an explicitly authorized, read-only SSH audit and records non-sensitive evidence.
 6. With a dedicated Google Drive folder and owner-available OAuth consent, restic/rclone are configured on the audited server; a scheduled job, retention observation and staging restore rehearsal provide closure evidence for `RISK-0003`.
@@ -48,8 +50,7 @@ Establish a safe, evidence-based starting point for P0-A operations without scaf
 
 ## Verification to record
 
-- `sudo -l` for `tahaops`, a separate `ssh -i` login, `sshd -t`, and a post-reload key-only login.
+- Read-only privilege check for the existing account, a separate `ssh -i` login, `sshd -t`, and a post-reload key-only login.
 - DNS resolution for `staging.tahamohamadi.ir` and Cloudflare proxy state.
 - Read-only audit outputs summarized without secrets.
 - Backup job status, restic snapshot/retention metadata, and staging restore evidence without credentials.
-
