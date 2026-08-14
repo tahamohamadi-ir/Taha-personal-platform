@@ -378,3 +378,14 @@
 - Decisions / assumptions: automation روزانه باید همین دو backup operation، retention فعلی و lock عدم هم‌پوشانی را اجرا کند. restore rehearsal همچنان فقط در staging مستقل مجاز است.
 - Deferred or risk IDs: `RISK-0003` High/Open؛ scheduled job و staging restore rehearsal باقی مانده‌اند.
 - Rollback / recovery: snapshotهای معتبر حفظ می‌شوند. اگر automation بعداً fail شود، هیچ snapshotی حذف نمی‌شود؛ journal و snapshot metadata بررسی و رخداد جداگانه ثبت می‌شود.
+
+## LOG-0034 — 2026-08-14 — P0-A hardening / Linux line-ending contract for backup artifacts
+
+- Outcome: Git attribute policy اکنون برای script، systemd unit، timer و environment template backup صراحتاً LF را الزام می‌کند.
+- Why: Git روی Windows هنگام stage کردن artifactهای Linux هشدار conversion داد. بدون contract صریح، checkout یا انتقال آینده می‌توانست CRLF و در نتیجه failure shebang/systemd ایجاد کند.
+- Scope / files: `.gitattributes` و همین Work Log.
+- Commands or actions actually performed: `git ls-files --eol` و `git check-attr` برای artifactها اجرا شد؛ قبل از fix attribute مربوط به آن‌ها unspecified بود. policy محدود LF افزوده شد و `bash -n` script و `git diff --check` موفق شدند. هیچ server file یا secret تغییر نکرد و هیچ push remote انجام نشد.
+- Verification actually performed and result: هر چهار artifact backup اکنون `text: set` و `eol: lf` گزارش می‌شوند؛ syntax check shell نیز PASS است.
+- Decisions / assumptions: همهٔ artifactهای قابل‌انتقال به Linux در `infra/backup/` باید LF بمانند؛ sourceها تنها پس از این guard به VPS منتقل می‌شوند.
+- Deferred or risk IDs: `RISK-0003` High/Open؛ automation و restore rehearsal هنوز اجرا نشده‌اند.
+- Rollback / recovery: تغییر فقط Git attribute است؛ حذف rule فقط در صورت تغییر target execution platform و همراه با evidence جدید مجاز است.

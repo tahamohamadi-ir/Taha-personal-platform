@@ -1,3 +1,9 @@
 # Markdown uses two trailing spaces for intentional hard line breaks in the
 # baseline documents. Preserve them and normalize the repository representation.
 *.md text eol=lf whitespace=-trailing-space
+
+# These artifacts are copied to and executed by Linux/systemd on the VPS.
+infra/backup/*.sh text eol=lf
+infra/backup/*.service text eol=lf
+infra/backup/*.timer text eol=lf
+infra/backup/*.example text eol=lf
