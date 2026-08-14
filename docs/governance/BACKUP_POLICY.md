@@ -10,7 +10,7 @@ The backup set covers PostgreSQL dumps once PostgreSQL exists, CMS/media assets 
 ## Target design
 
 - Source: production VPS only after its access hardening is complete.
-- Destination: encrypted restic repository accessed through rclone on the owner-approved Google Drive account.
+- Destination: encrypted restic repository accessed through rclone in the owner-created `taha-personal-platform-backups` folder on the approved Google Drive account.
 - Credentials: Google OAuth, rclone configuration and restic password live only in an approved password manager/secret store; never in Git, a shell history, CI log or `WORK_LOG.md`.
 - Schedule: daily automated backup, with failure recorded and owner alerting configured in P0-A.
 - Retention proposal: 7 daily, 4 weekly and 12 monthly snapshots; adjust only after storage use is measured.
