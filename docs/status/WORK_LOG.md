@@ -301,3 +301,14 @@
 - Decisions / assumptions: از یک SSH `-L` temporary tunnel و auto-config استفاده می‌شود؛ tunnel پس از OAuth بسته می‌شود. token در chat یا Work Log وارد نمی‌شود.
 - Deferred or risk IDs: `RISK-0003` High/Open؛ OAuth provisioning هنوز pending است.
 - Rollback / recovery: چون config کامل نشد، server-side rollback ندارد؛ tunnel temporary و بدون persistence است.
+
+## LOG-0027 — 2026-08-14 — P0-A diagnosis / incomplete rclone OAuth token
+
+- Outcome: rclone remote entry ایجاد شده اما validation آن با `empty token found` رد شد؛ OAuth callback پیش از ذخیرهٔ token کامل نشده است.
+- Why: وجود نام remote به‌تنهایی authentication معتبر نیست؛ قبل از init repository باید ریموت با یک read-only listing واقعی اثبات شود.
+- Scope / files: همین Work Log.
+- Commands or actions actually performed: owner remote را از rclone config خارج و `rclone lsd` برای فولدر target اجرا کرد؛ command با خطای empty token و exit code 1 تمام شد. evidence در یک commit محلی ثبت شد؛ هیچ repository، backup data یا credential در Git ثبت و هیچ push remote انجام نشد.
+- Verification actually performed and result: remote configuration نام‌دار وجود دارد اما OAuth token خالی است. temporary SSH tunnel فعال است و remote باید با `rclone config reconnect` تکمیل شود.
+- Decisions / assumptions: remote جدید ساخته نمی‌شود؛ reconnect از طریق localhost SSH tunnel انجام و سپس همان read-only listing تکرار می‌شود.
+- Deferred or risk IDs: `RISK-0003` High/Open؛ OAuth/repository/job/restore همچنان pending.
+- Rollback / recovery: reconnect ناموفق فقط config بدون token باقی می‌گذارد؛ در صورت نیاز remote ناقص بعداً حذف و مجدداً ساخته می‌شود، بدون اثر بر دادهٔ Drive.
