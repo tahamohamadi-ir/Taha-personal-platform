@@ -1,0 +1,10 @@
+# Deferred Validation and Skipped Work
+
+> فقط کاری را ثبت کنید که آگاهانه skip/defer شده است. این فایل به معنی تأیید یا تکمیل نیست؛ برای سیاست کامل به `docs/governance/DOCUMENTATION_POLICY.md` مراجعه کنید.
+
+| ID | Phase/Slice | Severity | Description | Why deferred | Owner | Target phase/date | Mitigation/fallback | Evidence/command | Status |
+|---|---|---|---|---|---|---|---|---|---|
+| DEFER-0001 | P0-G0 / Inventory | Low | فهرست کامل Python launcher با `py -0p` ثبت نشد. | فرمان inventory تجمیعی timeout شد؛ candidateهای موردنیاز جداگانه تأیید شدند. | Project owner | پیش از freeze `PROJECT_MANIFEST.md` | تا انتخاب نسخهٔ Python، هیچ `.venv` یا dependency پروژه‌ای ساخته نمی‌شود. | inventory session 2026-08-14؛ Python 3.14.4 و Hermes Python 3.11.15 جداگانه بررسی شدند. | OPEN |
+| DEFER-0002 | P0-G0 / Tooling | Low | اتصال Context7/MCP راه‌اندازی نشده است. | طبق گزارش مالک، OAuth/endpoint با Security Checkpoint یا 403 مسدود شد؛ blocker توسعه نیست. | Project owner | پس از P0-G0، پیش از نیاز واقعی به Context7 | اتصال manual با API key و نسخهٔ واقعی OpenCode؛ تا آن زمان از منابع رسمی و محلی استفاده شود. | گزارش ارائه‌شده توسط مالک در 2026-08-14. | OPEN |
+| DEFER-0003 | P0-G0 / Python environment | Low | محیط پروژه‌ای `.venv` ساخته نشده و Python 3.12 هنوز روی control plane نصب نشده است. | baseline اکنون Python 3.12 است، اما bootstrap CMS و `pyproject.toml` هنوز مجاز نیستند؛ Python پیش‌فرض متعلق به Hermes است. | Project owner | هنگام bootstrap مجاز CMS، پس از Manifest/ADR | نصب آخرین patch پشتیبانی‌شدهٔ Python 3.12 و ساخت `.venv` مستقل با `uv`؛ استفاده از Hermes ممنوع است. | `where.exe python`، version inventory LOG-0004 و Python decision LOG-0007. | OPEN |
+| DEFER-0004 | P0-G0 / CI platform | Low | Gitea و self-hosted runner پیاده‌سازی نشده‌اند. | تصمیم CI گرفته شد: GitHub Actions hosted برای repository عمومی رایگان است و VPS برای runner/Gitea ظرفیت کافی ندارد. | Project owner | Closed 2026-08-14 | GitHub Actions hosted در ADR-0009؛ بازنگری فقط با ADR و evidence جدید. | LOG-0006 و LOG-0007؛ ADR-0009. | CLOSED |

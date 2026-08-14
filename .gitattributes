@@ -1,0 +1,3 @@
+# Markdown uses two trailing spaces for intentional hard line breaks in the
+# baseline documents. Preserve them and normalize the repository representation.
+*.md text eol=lf whitespace=-trailing-space
