@@ -356,3 +356,14 @@
 - Decisions / assumptions: نخستین snapshot شامل stream `pg_dumpall`، media volume، Caddyfile و هر دو Compose file خواهد بود. چون production environment file در inventory مشاهده نشد، چیزی حدس زده یا به backup اضافه نمی‌شود.
 - Deferred or risk IDs: `RISK-0003` High/Open؛ first snapshot/job/retention/restore هنوز pending هستند.
 - Rollback / recovery: preflight read-only است و rollback ندارد. اگر backup command خطا دهد، snapshot status پیش از هر retry بررسی می‌شود.
+
+## LOG-0032 — 2026-08-14 — P0-A execution / partial first snapshot and PostgreSQL command correction
+
+- Outcome: نخستین snapshot media/config با موفقیت ذخیره و retention policy اعمال شد، اما PostgreSQL command پیش از اجرای dump شکست خورد؛ بنابراین snapshot دیتابیس ساخته نشد و backup هنوز جزئی است.
+- Why: `restic backup --stdin-from-command` نیاز دارد پیش از command separator `--` قرار گیرد؛ بدون آن restic آرگومان `-ceu` مربوط به shell داخل container را به‌عنوان فلگ خودش parse کرد.
+- Scope / files: `PROJECT_MANIFEST.md`، `docs/governance/BACKUP_POLICY.md`، `docs/status/RISK_REGISTER.md` و همین Work Log.
+- Commands or actions actually performed: مالک command stream PostgreSQL، backup مستقیم media/Caddy/Compose، `restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 12 --prune` و `restic snapshots` را اجرا کرد. command PostgreSQL با خطای flag متوقف شد. backup media/config با سه file و یازده directory جدید ذخیره شد و policy همان snapshot را نگه داشت. هیچ dump plaintext، password یا token ثبت نشد و هیچ push remote انجام نشد.
+- Verification actually performed and result: repository یک snapshot با tagهای `production,media,config` و pathهای media/Caddy/Compose نشان داد. هیچ snapshot با tag PostgreSQL یا فایل dump ایجاد نشده است.
+- Decisions / assumptions: retry PostgreSQL باید از syntax مستند `--stdin-from-command -- <command>` استفاده کند؛ نتیجهٔ آن جداگانه با `restic snapshots --tag postgres` تأیید می‌شود. retention policy در همین slice با evidence واقعی اعمال شده است.
+- Deferred or risk IDs: `RISK-0003` High/Open؛ PostgreSQL snapshot، scheduled job و restore rehearsal باقی مانده‌اند.
+- Rollback / recovery: snapshot موفق media/config حفظ می‌شود. command ناموفق snapshot ایجاد نکرد، بنابراین retry بعدی به cleanup نیاز ندارد؛ هر failure بعدی پیش از retry با snapshots بررسی می‌شود.
