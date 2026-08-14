@@ -290,3 +290,14 @@
 - Decisions / assumptions: headless OAuth با flow رسمی `rclone config` → local `rclone authorize` انجام می‌شود؛ token/config-token در chat، Git، Work Log یا command history ثبت نمی‌شود.
 - Deferred or risk IDs: `RISK-0001`، `RISK-0003` تا `RISK-0007`؛ `RISK-0003` High/Open.
 - Rollback / recovery: package installation قابل uninstall است اما تا پایان provisioning حفظ می‌شود؛ عدم موفقیت OAuth هیچ داده یا backup repository ایجاد نمی‌کند.
+
+## LOG-0026 — 2026-08-14 — P0-A diagnosis / headless Google OAuth callback
+
+- Outcome: نخستین rclone configuration پیش از ذخیرهٔ remote قطع شد. browser callback localhost به VPS tunnel نشده بود، بنابراین اتصال browser رد شد و OAuth کامل نشد.
+- Why: auto-config روی headless VPS listener را روی localhost خود سرور باز می‌کند؛ localhost مرورگر لپ‌تاپ همان endpoint نیست.
+- Scope / files: `docs/governance/BACKUP_POLICY.md` و همین Work Log.
+- Commands or actions actually performed: owner rclone config را شروع، Google Drive/type/scope را انتخاب و در callback browser flow وقفه ایجاد کرد؛ سپس با Ctrl+C خارج شد. procedure در یک commit محلی ثبت شد. هیچ token/config-token در project ثبت، remote/repository/job ایجاد یا push remote انجام نشد.
+- Verification actually performed and result: browser `127.0.0.1:53682` را unavailable نشان داد که با نبود SSH local tunnel سازگار است. flow جایگزین localhost-only SSH tunnel انتخاب شد.
+- Decisions / assumptions: از یک SSH `-L` temporary tunnel و auto-config استفاده می‌شود؛ tunnel پس از OAuth بسته می‌شود. token در chat یا Work Log وارد نمی‌شود.
+- Deferred or risk IDs: `RISK-0003` High/Open؛ OAuth provisioning هنوز pending است.
+- Rollback / recovery: چون config کامل نشد، server-side rollback ندارد؛ tunnel temporary و بدون persistence است.
