@@ -118,6 +118,8 @@ sshd -t
 systemctl reload ssh
 ```
 
+If `sshd -T` already shows the desired effective values (`permitrootlogin no`, `passwordauthentication no`, `kbdinteractiveauthentication no`, public-key authentication enabled, and an explicit allow-list containing the verified operator), do not write a duplicate drop-in or reload SSH. Record the read-only evidence instead.
+
 Replace `<OPERATOR_USER>` with the one verified account before saving the drop-in. Repeat the step-5 connection from the second terminal. A password or root SSH attempt must now be rejected; the key-only operator login must work. Only then may the root session be closed.
 
 ## 6. What to send back
