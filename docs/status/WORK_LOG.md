@@ -246,3 +246,14 @@
 - Decisions / assumptions: staging placeholder production backend/database را proxy نمی‌کند؛ Cloudflare Full فعلاً باقی می‌ماند؛ Full(strict) فقط بعد از certificate valid برای همهٔ hostnameها و تأیید مالک بررسی می‌شود.
 - Deferred or risk IDs: `RISK-0001`، `RISK-0003` تا `RISK-0007`؛ `RISK-0004` IN PROGRESS با ADR-0015.
 - Rollback / recovery: قبل از هر edit، Caddyfile backup گرفته می‌شود؛ validation failure مانع reload است؛ rollback restore backup + validate + reload است.
+
+## LOG-0022 — 2026-08-14 — P0-A execution / isolated staging placeholder live
+
+- Outcome: Caddyfile با backup موجود، validation موفق و reload active، برای staging یک پاسخ ثابت 503 مستقل ارائه می‌دهد. external Cloudflare check از 525 به 503 تغییر کرد؛ production route تغییر نکرد.
+- Why: رفع 525 باید بدون proxy کردن staging به frontend/backend/PostgreSQL production انجام می‌شد.
+- Scope / files: `PROJECT_MANIFEST.md`، `docs/adr/0015-isolated-staging-placeholder.md`، `docs/plan/P0-A-server-access-dns-backup-task-spec.md`، `docs/status/RISK_REGISTER.md`، `docs/status/deferred-validation.md` و همین Work Log.
+- Commands or actions actually performed: owner از root shell Caddyfile را به مسیر backup کپی، site block staging مستقل اضافه، `caddy validate` را اجرا، Caddy را reload و active بودن آن را تأیید کرد. سپس direct-origin curl و external Cloudflare HTTPS header check اجرا شد؛ evidence در یک commit محلی ثبت شد. Codex هیچ server command و هیچ push remote اجرا نکرد.
+- Verification actually performed and result: Caddy validation `Valid configuration` بود و service active باقی ماند. external staging HTTPS پاسخ 503 با headerهای امنیتی مورد انتظار داد. direct-origin curl با TLS internal alert شکست خورد؛ این failure به `DEFER-0005` ثبت شد و مانع تغییر Cloudflare TLS mode است.
+- Decisions / assumptions: placeholder فعلاً complete و isolated است؛ warning formatting Caddyfile به‌علت عدم ارتباط و ریسک rewrite config زنده عمداً اصلاح نشد. Cloudflare Full باقی می‌ماند؛ Full(strict) و staging واقعی تا رفع DEFER-0005 و gates بعدی ممنوع‌اند.
+- Deferred or risk IDs: `DEFER-0005`؛ `RISK-0001`، `RISK-0003` تا `RISK-0007`؛ `RISK-0004` IN PROGRESS.
+- Rollback / recovery: در خطای جدید staging یا اثر production، backup Caddyfile restore، validate و reload می‌شود؛ production Compose/volumes در این change لمس نشده‌اند.

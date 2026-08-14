@@ -1,6 +1,6 @@
 # ADR-0015: Isolated staging placeholder before application deployment
 
-**Status:** Accepted for P0-A; Caddy change not yet applied.  
+**Status:** Accepted; placeholder applied and externally verified on 2026-08-14.  
 **Date:** 2026-08-14
 
 ## Context
@@ -17,6 +17,6 @@ The production VPS already runs an unrelated live frontend/backend/PostgreSQL Co
 ## Consequences
 
 - The public staging hostname becomes deliberately unavailable rather than leaking or sharing production data.
-- The current 525 should be replaced by an explicit 503 once the validated Caddy change is applied.
+- The initial 525 is replaced by an explicit external 503. Direct-origin TLS probe investigation remains required before Full (strict) or a real staging application.
 - A future real staging app must remain an isolated Compose project with independent data/configuration; it can replace this placeholder only after capacity and backup gates pass.
 - Rollback is restoring the timestamped Caddyfile backup, validating it and reloading Caddy.
