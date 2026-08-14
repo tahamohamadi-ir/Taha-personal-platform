@@ -257,3 +257,14 @@
 - Decisions / assumptions: placeholder فعلاً complete و isolated است؛ warning formatting Caddyfile به‌علت عدم ارتباط و ریسک rewrite config زنده عمداً اصلاح نشد. Cloudflare Full باقی می‌ماند؛ Full(strict) و staging واقعی تا رفع DEFER-0005 و gates بعدی ممنوع‌اند.
 - Deferred or risk IDs: `DEFER-0005`؛ `RISK-0001`، `RISK-0003` تا `RISK-0007`؛ `RISK-0004` IN PROGRESS.
 - Rollback / recovery: در خطای جدید staging یا اثر production، backup Caddyfile restore، validate و reload می‌شود؛ production Compose/volumes در این change لمس نشده‌اند.
+
+## LOG-0023 — 2026-08-14 — P0-A diagnosis / staging certificate issuance race
+
+- Outcome: Caddy log نشان داد نخستین direct-origin TLS probe پیش از پایان certificate issuance اجرا شده بود. پس از fallback موفق HTTP-01، Caddy برای staging یک certificate ACME دریافت کرد؛ re-test مستقیم هنوز لازم است.
+- Why: تشخیص دقیق مانع اعمال تغییر نامرتبط در Caddy یا Cloudflare می‌شود؛ external 503 به‌تنهایی چرایی alert probe اول را توضیح نمی‌داد.
+- Scope / files: `docs/plan/P0-A-server-access-dns-backup-task-spec.md`، `docs/status/deferred-validation.md` و همین Work Log.
+- Commands or actions actually performed: owner log محدود Caddy را با filter TLS/certificate/staging خواند و evidence در یک commit محلی ثبت شد. هیچ Caddyfile edit/reload، DNS/TLS-mode change، container action یا backup action و هیچ push remote انجام نشد.
+- Verification actually performed and result: log ابتدا شکست TLS-ALPN، سپس HTTP-01 challenge موفق و در نهایت `certificate obtained successfully` برای staging را نشان داد. alert direct curl قبل از پایان صدور certificate رخ داده بود. خطای local-CA installation به route IP موجود مربوط است و برای hostname public staging علت ثبت نشده است.
+- Decisions / assumptions: یک direct-origin curl پس از صدور certificate، تنها check باقی‌مانده برای بستن `DEFER-0005` است؛ تا آن زمان Cloudflare Full حفظ می‌شود.
+- Deferred or risk IDs: `DEFER-0005` OPEN؛ `RISK-0001`، `RISK-0003` تا `RISK-0007`.
+- Rollback / recovery: هیچ تغییر جدیدی انجام نشد؛ rollback همان backup Caddyfile ADR-0015 باقی می‌ماند.
