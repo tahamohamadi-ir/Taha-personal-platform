@@ -268,3 +268,14 @@
 - Decisions / assumptions: یک direct-origin curl پس از صدور certificate، تنها check باقی‌مانده برای بستن `DEFER-0005` است؛ تا آن زمان Cloudflare Full حفظ می‌شود.
 - Deferred or risk IDs: `DEFER-0005` OPEN؛ `RISK-0001`، `RISK-0003` تا `RISK-0007`.
 - Rollback / recovery: هیچ تغییر جدیدی انجام نشد؛ rollback همان backup Caddyfile ADR-0015 باقی می‌ماند.
+
+## LOG-0024 — 2026-08-14 — P0-A verification / staging placeholder complete
+
+- Outcome: post-issuance direct-origin test برای staging HTTP/2 503 پاسخ داد؛ external Cloudflare و direct-origin هر دو placeholder ایزوله را تأیید می‌کنند و `DEFER-0005` بسته شد.
+- Why: direct-origin verification شرط باقی‌مانده پس از certificate issuance بود و نشان می‌دهد 525 اولیه و alert race برطرف شده‌اند.
+- Scope / files: `PROJECT_MANIFEST.md`، `docs/plan/P0-A-server-access-dns-backup-task-spec.md`، `docs/status/deferred-validation.md` و همین Work Log.
+- Commands or actions actually performed: owner ابتدا همان syntax curl را در PowerShell اجرا کرد که به alias `Invoke-WebRequest` map شد و بدون تغییر خطا داد؛ سپس re-test معتبر را در root shell اجرا و evidence را در یک commit محلی ثبت کرد. هیچ server configuration، DNS/TLS-mode، container یا backup setting و هیچ push remote تغییر نکرد.
+- Verification actually performed and result: direct-origin curl با hostname/SNI staging پاسخ HTTP/2 503 و headerهای امنیتی مورد انتظار داد. placeholder مستقل است و به production proxy نمی‌شود.
+- Decisions / assumptions: برای PowerShell در آینده از `curl.exe` استفاده می‌شود؛ ADR-0015 placeholder complete است. Full(strict) و real staging همچنان scope جداگانه و gateهای خود را دارند.
+- Deferred or risk IDs: `DEFER-0005` CLOSED؛ `RISK-0001`، `RISK-0003` تا `RISK-0007` باقی مانده‌اند.
+- Rollback / recovery: rollback Caddyfile backup ADR-0015 حفظ می‌شود؛ چون verification تغییر جدیدی نداشت، rollback فوری لازم نیست.
