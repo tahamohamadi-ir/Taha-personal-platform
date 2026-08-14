@@ -323,3 +323,14 @@
 - Decisions / assumptions: remote موجود حفظ می‌شود؛ مرحلهٔ بعد فقط پس از ایجاد امن password file خارج از Git، `restic init` و نخستین snapshot کنترل‌شده انجام می‌شود. tunnel پس از پایان OAuth باید بسته شود.
 - Deferred or risk IDs: `RISK-0003` همچنان High/Open است؛ repository، password، job، retention و restore rehearsal هنوز انجام نشده‌اند.
 - Rollback / recovery: اگر دسترسی Drive در آینده revoke شود، remote دیگر repository را قابل‌دسترسی نمی‌کند اما هیچ داده‌ای حذف نمی‌شود؛ قبل از هر عملیات destructive باید restore/runbook بررسی شود.
+
+## LOG-0029 — 2026-08-14 — P0-A diagnosis / interrupted restic repository initialization
+
+- Outcome: نخستین `restic init` پیش از تکمیل با signal interrupt متوقف شد؛ `restic snapshots` بلافاصله پس از آن نبودن repository config را گزارش کرد. repository معتبر یا snapshot ایجادشده اثبات نشده است.
+- Why: init به password file محلی و remote معتبر نیاز داشت، اما interruption پیش از آن رخ داد؛ اجرای command بعدی نمی‌تواند init ناقص را جایگزین کند.
+- Scope / files: فقط همین Work Log.
+- Commands or actions actually performed: مالک directory/password file محلی را ایجاد و environment مربوط به rclone/restic را تنظیم کرد، سپس `restic init` و `restic snapshots` را اجرا کرد. init با context canceled تمام شد و snapshots config پیدا نکرد. هیچ password، token، یا backup data در Git یا Work Log ثبت نشد و هیچ push remote انجام نشد.
+- Verification actually performed and result: خطای `repository does not exist` نشان می‌دهد config repository در مسیر موردنظر قابل‌خواندن نیست. وجود یا نبود artifact ناقص در Drive هنوز باید فقط با listing read-only بررسی شود.
+- Decisions / assumptions: تا نتیجهٔ listing read-only روشن نشود، هیچ حذف یا retry انجام نمی‌شود. در صورت خالی بودن مسیر، init با یک اجرای بدون interruption تکرار خواهد شد؛ در غیر این صورت تصمیم recovery جداگانه ثبت می‌شود.
+- Deferred or risk IDs: `RISK-0003` High/Open؛ repository/job/retention/restore هنوز pending هستند.
+- Rollback / recovery: بررسی بعدی فقط read-only است. حذف احتمالی artifact ناقص بدون inventory صریح و تأیید مالک انجام نمی‌شود.
