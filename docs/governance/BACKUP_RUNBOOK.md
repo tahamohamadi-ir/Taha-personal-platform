@@ -1,6 +1,6 @@
 # Backup and Recovery Runbook
 
-**Status:** P0-A operational runbook; automation artifacts are ready for server installation.  
+**Status:** P0-A operational runbook; automation is installed and its first systemd run succeeded.  
 **Owner:** Project owner  
 **Policy:** `BACKUP_POLICY.md`  
 **Task Spec:** `../plan/P0-A-server-access-dns-backup-task-spec.md`
