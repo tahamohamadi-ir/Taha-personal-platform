@@ -29,7 +29,7 @@
 | Public search | Pagefind at the approved phase | Not provisioned |
 | Deployment | Docker Compose + Caddy on VPS | Existing live stack: Caddy plus a healthy frontend/backend/PostgreSQL Compose project; project-specific configuration is not provisioned and must remain isolated from it |
 | Git/CI | GitHub + GitHub Actions hosted standard runners | Workflow not created; P0-A only |
-| Backup | Encrypted restic repository through rclone on Google Drive | Not provisioned; P0-A only |
+| Backup | Encrypted restic repository through rclone on Google Drive | restic 0.18.1 and Ubuntu rclone 1.60.1 build installed; OAuth/repository/job/restore still pending |
 
 Python 3.12 is selected for ecosystem maturity and remains security-supported through October 2028. Wagtail 7.4 LTS and Django 5.2 LTS officially support this combination. Exact patch versions are selected together in the first dependency lockfile, not guessed in this Manifest.
 

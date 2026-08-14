@@ -279,3 +279,14 @@
 - Decisions / assumptions: برای PowerShell در آینده از `curl.exe` استفاده می‌شود؛ ADR-0015 placeholder complete است. Full(strict) و real staging همچنان scope جداگانه و gateهای خود را دارند.
 - Deferred or risk IDs: `DEFER-0005` CLOSED؛ `RISK-0001`، `RISK-0003` تا `RISK-0007` باقی مانده‌اند.
 - Rollback / recovery: rollback Caddyfile backup ADR-0015 حفظ می‌شود؛ چون verification تغییر جدیدی نداشت، rollback فوری لازم نیست.
+
+## LOG-0025 — 2026-08-14 — P0-A execution / backup tooling installed
+
+- Outcome: restic 0.18.1 و Ubuntu rclone 1.60.1 build روی VPS نصب و version آن‌ها تأیید شد؛ OS گزارش داد هیچ service/container restart نشده است.
+- Why: provisioning backup رمزنگاری‌شده به executableهای stable و signed نیاز داشت؛ نصب از repository Ubuntu برای reproducibility انتخاب شد.
+- Scope / files: `PROJECT_MANIFEST.md`، `docs/governance/BACKUP_POLICY.md`، `docs/status/RISK_REGISTER.md` و همین Work Log.
+- Commands or actions actually performed: owner package index را refresh کرد، candidate versionها را بررسی و سپس `restic` و `rclone` را با exact package versionهای Ubuntu نصب و version commandها را اجرا کرد؛ evidence در یک commit محلی ثبت شد. هیچ push remote انجام نشد.
+- Verification actually performed and result: restic 0.18.1 و rclone 1.60.1 build گزارش شدند؛ installer اعلام کرد kernel/service/container/session restart لازم نیست. OAuth، rclone remote، restic repository، password file، job و restore هنوز ایجاد نشده‌اند.
+- Decisions / assumptions: headless OAuth با flow رسمی `rclone config` → local `rclone authorize` انجام می‌شود؛ token/config-token در chat، Git، Work Log یا command history ثبت نمی‌شود.
+- Deferred or risk IDs: `RISK-0001`، `RISK-0003` تا `RISK-0007`؛ `RISK-0003` High/Open.
+- Rollback / recovery: package installation قابل uninstall است اما تا پایان provisioning حفظ می‌شود؛ عدم موفقیت OAuth هیچ داده یا backup repository ایجاد نمی‌کند.

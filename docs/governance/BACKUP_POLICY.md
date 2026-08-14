@@ -9,6 +9,7 @@ The backup set covers PostgreSQL dumps once PostgreSQL exists, CMS/media assets 
 
 ## Target design
 
+- Tooling: Ubuntu-signed `restic` 0.18.1 and `rclone` 1.60.1 build are installed on the VPS; no credentials, repository or scheduled job exist yet.
 - Source: production VPS only after its access hardening is complete.
 - Destination: encrypted restic repository accessed through rclone in the owner-created `taha-personal-platform-backups` folder on the approved Google Drive account.
 - Credentials: Google OAuth, rclone configuration and restic password live only in an approved password manager/secret store; never in Git, a shell history, CI log or `WORK_LOG.md`.
