@@ -389,3 +389,14 @@
 - Decisions / assumptions: همهٔ artifactهای قابل‌انتقال به Linux در `infra/backup/` باید LF بمانند؛ sourceها تنها پس از این guard به VPS منتقل می‌شوند.
 - Deferred or risk IDs: `RISK-0003` High/Open؛ automation و restore rehearsal هنوز اجرا نشده‌اند.
 - Rollback / recovery: تغییر فقط Git attribute است؛ حذف rule فقط در صورت تغییر target execution platform و همراه با evidence جدید مجاز است.
+
+## LOG-0035 — 2026-08-14 — P0-A implementation / scheduled backup artifacts and recovery runbook
+
+- Outcome: source-controlled daily backup script، systemd service/timer، non-secret environment template و recovery runbook آماده شدند؛ هنوز هیچ‌کدام روی VPS نصب یا enabled نشده‌اند.
+- Why: نخستین snapshot کامل و check موفق، baseline لازم برای automation کنترل‌شده را فراهم کرد. artifactها باید version-controlled، قابل‌بررسی و بدون secret باشند.
+- Scope / files: `infra/backup/`، `docs/governance/BACKUP_RUNBOOK.md`، `docs/governance/BACKUP_POLICY.md`، `PROJECT_MANIFEST.md`، Task Spec، Risk Register و همین Work Log.
+- Commands or actions actually performed: artifactها در repository ایجاد شدند؛ script با `bash -n` بررسی شد و policy LF با `git check-attr` تأیید شد. runbook نصب، monitoring، retention، failure response و restore صرفاً در staging را تعیین می‌کند. هیچ systemd unit، server file یا scheduled job روی VPS تغییر نکرد و هیچ push remote انجام نشد.
+- Verification actually performed and result: source script syntax-valid است و unit/timer/template تحت Git contract LF قرار دارند. installation/daemon-reload/manual service run هنوز evidence ندارند.
+- Decisions / assumptions: timer روزانه 03:20 UTC با jitter ده دقیقه‌ای، lock عدم هم‌پوشانی و retention 7 daily/4 weekly/12 monthly خواهد داشت. service فقط sourceهای inventory‌شده را backup می‌کند و database dump را بدون plaintext file stream می‌کند.
+- Deferred or risk IDs: `RISK-0003` High/Open؛ server installation، timer evidence و staging restore rehearsal باقی مانده‌اند.
+- Rollback / recovery: تا قبل از install rollback لازم نیست. پس از install، disable timer و حذف فقط فایل‌های مشخص‌شده در runbook automation را متوقف می‌کند، بدون حذف snapshotها.
