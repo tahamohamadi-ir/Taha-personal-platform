@@ -499,3 +499,14 @@
 - Decisions / assumptions: package manager `npm`، Node 24.16.0، Astro static-first؛ React/Tailwind/shadcn/Motion/GSAP/D3/Three/Pagefind/analytics/dark mode همه برای R2 `NOT USED IN R2`؛ font/logo/media `OPEN` وابسته به مالک. ADRها به‌صورت `Proposed` ثبت شدند تا در G0-06 پذیرفته شوند.
 - Deferred or risk IDs: `RISK-0001` BLOCKED (تصمیم gate و scaffold باقی است)؛ تغییری در ریسک‌های دیگر نبود.
 - Rollback / recovery: فقط مستندات؛ بازگشت با Git.
+
+## LOG-0045 — 2026-08-14 — G0-02/G0-03/G0-06 / gate decision and P0-G0 PASS (static-only P1)
+
+- Outcome: تصمیم مالک برای first live ثبت و گیت به `P0-G0: PASS for static-only P1` منتقل شد: `RISK-0001` بسته شد، `RISK-0003` با پذیرش محدود static-only ثبت شد، header Manifest/AGENTS به‌روز شد و content pack پیشنهادی `fa`/`en` ساخته شد.
+- Why: بدون تصمیم مکتوب مالک، scaffold مجاز نیست؛ این slice شرط G0-06 را برآورده می‌کند و scope را صریحاً به static P1 محدود می‌کند.
+- Scope / files: `docs/status/RISK_REGISTER.md`، `PROJECT_MANIFEST.md`، `AGENTS.md`، `docs/plan/P0-G0-content-pack-proposal.md`، `docs/plan/P0-G0-gate-decision-task-spec.md` و همین Work Log.
+- Commands or actions actually performed: فقط به‌روزرسانی مستندات و ثبت تصمیم؛ هیچ scaffold، dependency، API، Docker/Caddy، DNS، VPS، backup، CI یا deploy اجرا نشد.
+- Verification actually performed and result: `git diff --check` بدون خطا. مالک سه تصمیم را تأیید کرد: پذیرش محدود `RISK-0003` برای static-only P1، تهیهٔ پیش‌نویس content pack توسط agent و تأیید توسط مالک، و text-mark + فونت self-host حداقلی.
+- Decisions / assumptions: PASS فقط برای static P1 است؛ PASS کلی CMS اعلام نشده و CMS/DB/contact persistence تا P3 مسدودند. content pack پیشنهادی است و هیچ metric/link/evidence حدسی ندارد.
+- Deferred or risk IDs: `RISK-0001` CLOSED؛ `RISK-0003` ACCEPTED (limited, static-only P1) با expiry trigger قبل از P3؛ `RISK-0004` تا `RISK-0007` تغییر نکردند.
+- Rollback / recovery: بازگشت فقط مستندی؛ در صورت بازگشایی هر risk، گیت دوباره بررسی می‌شود.

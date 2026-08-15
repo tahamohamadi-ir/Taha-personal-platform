@@ -4,7 +4,7 @@ Read this file, `PROJECT_MANIFEST.md`, `docs/governance/RELEASE_POLICY.md`, `doc
 
 ## Current gate
 
-The project is in **P0-G0**. Do not scaffold Astro/Django, add package manifests, install application dependencies, create an API/schema, provision Docker services, connect to the VPS, configure DNS or deploy unless a subsequent task explicitly moves the gate and has a complete Task Spec.
+P0-G0 is **PASS for static-only P1** (2026-08-14). Scaffolding the Astro public frontend (`apps/web/`) for the static P1 release (Language Gateway + bilingual landing) is authorized with a complete Task Spec. Django/Wagtail/PostgreSQL, contact persistence, media upload, API/schema, Docker services for this project, VPS connection, DNS changes and deployment remain blocked until a subsequent phase (P3 or later) explicitly moves the gate with a complete Task Spec.
 
 ## Ownership
 

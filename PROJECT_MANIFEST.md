@@ -1,6 +1,6 @@
 # Project Manifest
 
-**Status:** P0-G0 draft — `RISK-0001` و `RISK-0003` باید پیش از عبور gate بسته یا مطابق Release Policy پذیرفته شوند.  
+**Status:** P0-G0 — `PASS for static-only P1` (2026-08-14). `RISK-0001` بسته و `RISK-0003` با پذیرش محدود static-only ثبت شده است؛ PASS کلی CMS اعلام نشده و scaffold فقط برای static P1 مجاز است.  
 **Last verified:** 2026-08-14  
 **Source of truth for commands:** این فایل؛ دستور تأییدنشده را اجرا یا مستند نکنید.
 
