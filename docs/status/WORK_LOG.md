@@ -796,6 +796,17 @@
 - Deferred or risk IDs: بدون ID جدید؛ `DEFER-0010` (browser QA) همچنان READY بعد از restart.
 - Rollback / recovery: revert کامیت‌های code/docs؛ هیچ runtime/deploy state تغییر نکرد.
 
+## LOG-0078 — 2026-08-15 — R2 / production P1 live (owner-executed snippet switch) + production smoke
+
+- Outcome: مالک با ویرایش دستی snippet `taha_application_routes` در Caddyfile — به‌جای پروکسی legacy (13000/18080) — `root * /opt/taha/site/current` + `file_server` گذاشت و production را روی `release-d55d44e` (checksum e49e46c7) سوییچ کرد؛ `tahamohamadi.ir` اکنون سایت static P1 را live سرو می‌کند. `prod-p1.sh` (A2) به‌دلیل این تغییر مکانیک، برای این Caddyfile قابل اجرا نیست (بلوک production را با handlers فونت/presentation مالک بازنویسی می‌کرد) و استفاده نشد. Legacy containers (13000/18080) همچنان running و دست‌نخورده‌اند.
+- Why: production smoke و ثبت وضعیت واقعی، بخش پایانی R2 (P1-14/P1-15) است.
+- Scope / files: `docs/status/WORK_LOG.md`، `docs/plan/RELEASE-P1.md`، `docs/plan/S-PLAN-STATE.md`، `Task-list.md` §5.
+- Commands or actions actually performed: `bash infra/deploy/smoke.sh https://tahamohamadi.ir` → 7 PASS (root، en، fa، robots، sitemap، nonexistent-qa، health body) / exit 0؛ `curl` production robots از مسیر Cloudflare (intercept «content signals») و direct-origin (robots صحیح)؛ `cat -n /etc/caddy/Caddyfile` فقط‌خواندنی؛ `curl` مستقیم 13000 (legacy Vite app هنوز آن‌جاست). هیچ تغییر سرور توسط agent انجام نشد.
+- Verification actually performed and result: production P1 live و سالم؛ DEFER-0011 برای production هم تأیید شد (Cloudflare edge robots را intercept می‌کند). نسخهٔ سروشده d55d44e فاقد fix کنتراست (df6ca39) است؛ به‌روزرسانی به `release-d7db929` (روی سرور در `~/taha-stage/`) با switch اتمیک `current` توصیه شد — بدون هیچ تغییری در Caddyfile (handlers فونت/presentation دست‌نخورده).
+- Decisions / assumptions: مکانیک deploy فعلی snippet-based است (ADR-0017 با switch اتمیک `current`)؛ prod-p1.sh برای این Caddyfile منسوخ و در runbook باید به‌روز شود. A4 با اجرای مالک DONE تلقی می‌شود.
+- Deferred or risk IDs: `DEFER-0011` OPEN (robots edge)؛ بدون ID جدید.
+- Rollback / recovery: برگرداندن `current` به release قبلی و/یا restore بکاپ Caddyfile؛ legacy containers برای rollback کامل همچنان در دسترس‌اند.
+
 ## LOG-0074 — 2026-08-15 — S-Plan / B5 visual-interaction adoption brief
 
 - Outcome: brief نوشته شد در `docs/plan/B5-VISUAL-INTERACTION-ADOPTION.md` با شش section دقیقاً طبق دستور: «Goal & gate»، «Candidate interactions»، «Adoption checklist»، «QA plan»، «Escalation rule» و «Explicit non-goal». سه interaction candidate فقط پیشنهاد شدند (بدون پیاده‌سازی): (۱) hero identity-constellation entrance با CSS/Motion و fallback = constellation استاتیک فعلی؛ (۲) hover/transition کارت‌های «Explore by Perspective» با Motion؛ (۳) timeline reveal برای Journey/About با GSAP scroll trigger و fallback کامل استاتیک. برای هر candidate: route، user-value، library، bundle-cost و fallback reduced-motion/no-JS ثبت شد. Adoption checklist کلمه‌به‌کلمه از design.md §98 کپی شد. بند explicit non-goal: هیچ import از motion/gsap/three در سایت P1 و هیچ کپی از Beautiful UI حالا.

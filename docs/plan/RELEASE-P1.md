@@ -83,9 +83,15 @@
 ## Owner approval (required, NOT granted by this record)
 
 - This record does not itself authorize deployment.
-- Production switch (task A4, owner executes, no agent):
-  `sudo bash ~/taha-stage/prod-p1.sh ~/taha-stage/release-fa3c813`
-  (fresh artifact staged from HEAD; staging currently serves `release-d55d44e`).
+- Status 2026-08-15: the owner EXECUTED the production switch directly by
+  editing the `taha_application_routes` snippet in `/etc/caddy/Caddyfile`
+  (proxies replaced with `root * /opt/taha/site/current` + `file_server`).
+  `tahamohamadi.ir` now serves the static P1 site; production smoke → 7 PASS
+  (LOG-0078). Served release: `release-d55d44e` (checksum `e49e46c7`).
+- `infra/deploy/prod-p1.sh` is superseded for this Caddyfile (it rewrites the
+  whole `tahamohamadi.ir` block, which would drop the owner's `/fonts` and
+  `/presentation` handlers); updates are now done with an atomic `current`
+  symlink switch, no Caddyfile change.
 
 ## Preconditions
 
