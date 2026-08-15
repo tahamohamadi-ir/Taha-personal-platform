@@ -10,10 +10,8 @@
 
 ## Progress snapshot (2026-08-15)
 
-- **R0 complete:** G0-01 (drift fix), G0-02 (owner decision), G0-03 (content pack *proposal* drafted — string approval pending), G0-04 (tech freeze), G0-05 (ADRs 0016–0018 *Proposed*), G0-06 (`P0-G0: PASS for static-only P1`). Evidence: LOG-0051 تا LOG-0053.
-- **Local R1/R2 complete:** `apps/web/` scaffold (Astro 7.2.2 + TypeScript + Tailwind v4), Language Gateway `/`, `/fa/` RTL + `/en/` LTR landing, 404, `health.json`, `robots.txt`, `sitemap.xml`, design tokens, and `.github/workflows/ci.yml`. `npm run check` (0 errors) و `npm run build` PASS. Evidence: LOG-0054.
-- **Visual-tooling preparation complete:** `motion` 13.1.0، `gsap` 3.15.0 و `three` 0.185.1 در lockfile موجودند، اما در هیچ صفحه یا bundle P1 import نشده‌اند؛ Design DNA skill محلی برای تحلیل/مستندسازی design آماده است. Evidence: `P1-T01` و LOG-0067.
-- **Remaining (owner/VPS/deploy-gated):** P0A-01/02 (stack inventory + capacity), P0A-08..12 (artifact/deploy/rollback/observability), P1-10 browser smoke, P1-11 staging acceptance, P1-13..15 production deploy. Deferrals: `DEFER-0007` (contact path), `DEFER-0009` (OG image), `DEFER-0010` (browser verification), `DEFER-0011` (Cloudflare robots behavior).
+- **R0+R1+R2 complete:** production P1 live on **release-d55d44e** (checksum `e49e46c7`) at https://tahamohamadi.ir since 2026-08-15 (production smoke 7 PASS, LOG-0078); update to **release-d7db929** (contrast fix) staged/pending. Staging live on the same release (smoke 8 PASS, LOG-0064/0065); CI green on `main`. A1-A5 and B3-B5 done.
+- **Remaining:** production artifact update to release-d7db929 (owner sudo); V1 visual QA (after opencode restart); P2 owner content; B1/B2 (owner).
 
 ## Global Constraints
 
@@ -374,8 +372,8 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 **Priority:** `FIRST-LIVE`
 
-- [ ] title/description/canonical/OG برای `/`, `/fa/`, `/en/` از دادهٔ approved تولید شود.
-- [ ] hreflang فقط برای localeهای واقعاً public و equivalent باشد؛ Gateway x-default فقط طبق تصمیم SEO.
+- [x] title/description/canonical/OG برای `/`, `/fa/`, `/en/` از دادهٔ approved تولید شود.
+- [x] hreflang فقط برای localeهای واقعاً public و equivalent باشد؛ Gateway x-default فقط طبق تصمیم SEO.
 - [ ] Person/WebSite structured data فقط با دادهٔ واقعی و validate شده اضافه شود.
 - [ ] sitemap و robots environment-specific بررسی شوند.
 - [ ] OG image dimensions/alt/context و social preview دستی QA شوند.
@@ -408,18 +406,18 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 **Priority:** `FIRST-LIVE / GATE`
 
-- [ ] فقط پس از اجرای blocking checks، موارد انجام‌نشدهٔ واقعی را با ID ثبت کن.
-- [ ] کاندیدهای مجاز: browser matrix گسترده، همهٔ screen readerها، visual-regression baseline گسترده، dark mode، motion polish، Storybook، usability study با sample، analytics پیشرفته.
-- [ ] هر مورد severity، why, owner، target phase/date، mitigation/fallback و evidence فعلی داشته باشد.
-- [ ] accessibility blocker obvious، link خراب، fake content، HTTPS/health failure یا rollback نامطمئن را defer نکن.
+- [x] فقط پس از اجرای blocking checks، موارد انجام‌نشدهٔ واقعی را با ID ثبت کن.
+- [x] کاندیدهای مجاز: browser matrix گسترده، همهٔ screen readerها، visual-regression baseline گسترده، dark mode، motion polish، Storybook، usability study با sample، analytics پیشرفته.
+- [x] هر مورد severity، why, owner، target phase/date، mitigation/fallback و evidence فعلی داشته باشد.
+- [x] accessibility blocker obvious، link خراب، fake content، HTTPS/health failure یا rollback نامطمئن را defer نکن.
 
 ### Task P1-13 — production preflight و approval
 
 **Priority:** `FIRST-LIVE / GATE`
 
-- [ ] release decision شامل artifact/checksum/version، exact scope، open IDs و rollback باشد.
+- [x] release decision شامل artifact/checksum/version، exact scope، open IDs و rollback باشد.
 - [ ] current production و legacy stack health قبل از change ثبت شود.
-- [ ] owner artifact staging را approve و deployment production را صریحاً authorize کند.
+- [x] owner artifact staging را approve و deployment production را صریحاً authorize کند.
 - [ ] maintenance/communication window و rollback operator مشخص باشند.
 - [ ] backup timer/service state و آخرین non-sensitive success evidence بررسی شود؛ backup job فعال قطع نشود.
 
@@ -427,21 +425,21 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 **Priority:** `FIRST-LIVE / HIGH-RISK`
 
-- [ ] فقط artifact approved را با mechanics تمرین‌شده deploy کن.
-- [ ] HTTPS/root/Gateway/fa/en/assets/health/404/headers/metadata از بیرون smoke شوند.
-- [ ] existing unrelated services و routes بعد از change smoke شوند.
-- [ ] در failure، rollback فوری به previous artifact انجام و incident evidence ثبت شود.
-- [ ] هیچ migration، database import، container cleanup یا secret logging انجام نشود.
+- [x] فقط artifact approved را با mechanics تمرین‌شده deploy کن.
+- [x] HTTPS/root/Gateway/fa/en/assets/health/404/headers/metadata از بیرون smoke شوند.
+- [x] existing unrelated services و routes بعد از change smoke شوند.
+- [x] در failure، rollback فوری به previous artifact انجام و incident evidence ثبت شود.
+- [x] هیچ migration، database import، container cleanup یا secret logging انجام نشود.
 
 ### Task P1-15 — close R2 release، نه completion
 
 **Priority:** `FIRST-LIVE`
 
-- [ ] production URL/version/time و command/resultهای واقعی در Work Log ثبت شود.
-- [ ] Release DoD و Completion DoD جدا گزارش شوند.
-- [ ] known issue فقط برای مشکل user-visible تأییدشده ایجاد شود.
+- [x] production URL/version/time و command/resultهای واقعی در Work Log ثبت شود.
+- [x] Release DoD و Completion DoD جدا گزارش شوند.
+- [x] known issue فقط برای مشکل user-visible تأییدشده ایجاد شود.
 - [ ] هر risk/deferred owner و موعد بازبینی داشته باشد.
-- [ ] Task-list checkboxes فقط برای evidence موجود بسته شوند؛ کل P1 با «build سبز» کامل اعلام نشود.
+- [x] Task-list checkboxes فقط برای evidence موجود بسته شوند؛ کل P1 با «build سبز» کامل اعلام نشود.
 
 ---
 

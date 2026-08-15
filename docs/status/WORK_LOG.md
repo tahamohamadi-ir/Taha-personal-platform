@@ -856,3 +856,15 @@
 - Decisions / assumptions: Type STANDARD per RELEASE_POLICY (new public routes, static, no auth/data/secret). Completion DoD = `NOT MEASURED` because deferred/risk items remain open and enumerated. No risk/deferred status was changed. Production switch remains owner-only (A4) and is not authorized by this record.
 - Deferred or risk IDs: listed verbatim in RELEASE-P1.md — RISK-0001 CLOSED; RISK-0004 IN PROGRESS, RISK-0005/0006 OPEN, RISK-0007 BLOCKED; DEFER-0007, 0009, 0010, 0011, 0012 OPEN; DEFER-0008 CLOSED. No status changed.
 - Rollback / recovery: release decision record is additive documentation; rollback = Git revert of this commit. No server state was touched.
+
+## LOG-0079 — 2026-08-15 — R2 / parallel polish batch + A5 close-out
+
+- Outcome: چهار workstream موازی مستقل اجرا و همه تأیید شدند: (1) پولیش LOWهای audit — meta description/og:locale/og:url گیت‌وی، skip-link در gateway/404، <bdi> برای سال فوتر؛ (2) گزارش لایسنس LICENSES.md — ۳۰۱ پکیج، ۰ missing؛ flag: gsap (لایسنس اختصاصی، locked-unused)، sharp (LGPL در زنجیرهٔ build)، lightningcss (MPL-2.0)؛ (3) acceptance عمیق production — **PROD-ACCEPTED-WITH-NOTES**: یافتهٔ اصلی: 404 production بدنهٔ خالی (handle_errors در snippet نیست)؛ http→https در لبه 308؛ robots proxy-injection (DEFER-0011)؛ (4) بستن A5 — tickهای Task-list §5 با evidence واقعی (P1-13/14/15 و بخش‌های تکمیل‌شدهٔ P1-09/P1-12)، snapshot به‌روز، RELEASE-P1 نهایی.
+- Why: سرعت با sub-agentهای موازی + کیفیت/دقت با ریویو مرکزی L-model؛ یافتهٔ 404 برای تجربهٔ کاربر production مهم است.
+- Scope / files: pps/web/src/pages/{index,404}.astro، pps/web/src/components/Footer.astro، docs/plan/{LICENSES,PROD-ACCEPTANCE,RELEASE-P1}.md، Task-list.md §5 و snapshot، و همین Work Log.
+- Commands or actions actually performed: چهار task موازی؛ سپس 
+pm run check (0 error)؛ git diff --check؛ بازبینی مستقل diffها.
+- Verification actually performed and result: پولیش build/check سبز؛ لایسنس‌ها ۰ missing (۲۹۵ permissive + ۶ flagged مستند)؛ production acceptance 7/8 PASS با 1 NOTE (404)؛ Task-list فقط خطوط دارای evidence tick شد.
+- Decisions / assumptions: gsap/three/motion در P1 باندل نمی‌شوند (فقط locked)؛ fix 404 production به‌روزرسانی snippet Caddy نیاز دارد (owner sudo) — به‌همراه switch به release جدید در دستور update مالک گنجانده می‌شود. DEFER-0010 (browser QA) و DEFER-0011 باز ماندند.
+- Deferred or risk IDs: بدون ID جدید؛ DEFER-0011 باز؛ gsap license به‌عنوان شرط adoption B5 ثبت شد.
+- Rollback / recovery: revert کامیت‌های این batch؛ هیچ server/runtime state توسط agent تغییر نکرد.

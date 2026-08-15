@@ -8,7 +8,7 @@
 
 - Type: STANDARD (new public routes `/`, `/fa/`, `/en/` and static assets; no auth,
   no data, no secret, no migration)
-- Release DoD: PASS
+- Release DoD: PASS (blocking checks done; production smoke PASS — LOG-0078)
 - Completion DoD: NOT MEASURED (deferred/risk items remain enumerated and open; no
   Completion percentage is claimed)
 
@@ -47,6 +47,7 @@
 - `readlink /opt/taha/site/current` → `/opt/taha/site/releases/release-d55d44e`
 - `releases/` contains: `release-a2720d9`, `release-d55d44e`
 - `release-d55d44e/health.json` → `{"status":"ok","service":"static","version":"0.1.0"}`
+- Production live: https://tahamohamadi.ir on **release-d55d44e** (checksum `e49e46c7`) since 2026-08-15; **release-d7db929** (contrast fix) staged for update, not yet deployed.
 - Note (pending verification flag): the task prompt referenced `release-fa3c813`,
   which does NOT match the served artifact on staging. The verified served release
   is `release-d55d44e` (checksum `e49e46c7`). `release-fa3c813` (built from HEAD,
