@@ -1,7 +1,7 @@
 # Project Manifest
 
 **Status:** P0-G0 — `PASS for static-only P1` (2026-08-14). `RISK-0001` بسته و `RISK-0003` با پذیرش محدود static-only ثبت شده است؛ PASS کلی CMS اعلام نشده و scaffold فقط برای static P1 مجاز است.  
-**Last verified:** 2026-08-14  
+**Last verified:** 2026-08-15  
 **Source of truth for commands:** این فایل؛ دستور تأییدنشده را اجرا یا مستند نکنید.
 
 ## Product and repository
@@ -92,6 +92,20 @@ npm audit          # dependency security scan — verified: 0 vulnerabilities
 ```
 
 CMS install/build/migrate/deploy and server-side deploy commands remain unapproved; they are added only after the corresponding app/infrastructure exists and is verified on a clean checkout.
+
+## Agent tooling (developer workstation, verified 2026-08-15)
+
+| Tool | Verified state | Boundary |
+|---|---|---|
+| OpenCode | `1.18.18`; project config remains under `.opencode/` | Developer tooling only; it does not enter the application artifact |
+| RTK | Official Windows `rtk-ai/rtk` `0.45.0` binary at `C:\Users\Taha\.local\bin\rtk.exe`; official OpenCode plugin installed at `C:\Users\Taha\.config\opencode\plugins\rtk.ts` | Global OpenCode shell-output compaction only; no Claude shell-wide hook, project dependency, provider/model change, CI change or production effect |
+
+RTK's token figures are local estimates of compacted command output, not a
+billing guarantee. Fresh OpenCode main-agent and delegated general sub-agent
+sessions both demonstrated automatic rewriting; already-running sessions must
+be restarted to load the plugin. Operational rules and rollback are in
+`docs/plan/SMALL-MODEL-EXECUTION-PLAN.md` and
+`docs/plan/R0-rtk-opencode-task-spec.md`.
 
 ## P1 first-live technical decisions (G0-04 freeze)
 

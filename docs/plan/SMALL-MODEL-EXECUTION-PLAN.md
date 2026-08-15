@@ -1,6 +1,6 @@
 # S-Plan — Small-Model Execution Plan
 
-> **Status:** Active playbook. Version 1.0 — 2026-08-15.  
+> **Status:** Active playbook. Version 1.1 — 2026-08-15.  
 > **Purpose:** let a small/cheap model (S-model) implement tasks at maximum
 > quality, while a large model (L-model) is used ONLY for planning, review and
 > guidance. This file is the single source of truth for execution until a new
@@ -35,6 +35,29 @@ cheap multimodal agent — never on the L-model.
    ask the L-model to split the task.
 4. Re-verification runs use the cheap executor or the `infra/deploy/smoke.sh`
    script — never repeated heavy builds on the primary model.
+
+### 0.1 RTK output-compaction policy
+
+The official RTK `0.45.0` OpenCode plugin is installed globally. A fresh
+OpenCode session automatically rewrites eligible `bash`/`shell` tool commands
+for both the main agent and delegated sub-agents; no prompt prefix is required.
+
+1. Prefer RTK compaction for verbose Git history/status, test, build and log
+   output. Restart OpenCode after installing or updating the plugin.
+2. RTK output reduction and `rtk gain` token counts are estimates; never report
+   them as provider billing savings or assume a universal percentage.
+3. If exact raw output is part of an acceptance gate, a failure is ambiguous,
+   or compaction may have hidden required context, recover and inspect the full
+   raw output before deciding. RTK's failure tee may also retain raw diagnostics;
+   do not cite a compact summary as the only evidence for a blocker.
+4. Run `rtk gain --history` at task boundaries or during tooling audits, not
+   after every command. Use it to find high-volume candidates, not to optimize
+   away correctness evidence.
+5. Do not install third-party OpenCode RTK wrappers while the official plugin is
+   active. Do not add RTK to application dependencies, CI or production images.
+6. Rollback is `rtk init -g --opencode --uninstall`, followed by an OpenCode
+   restart. Remove `C:\Users\Taha\.local\bin\rtk.exe` only after confirming the
+   plugin is absent and no other local workflow depends on the binary.
 
 ---
 
