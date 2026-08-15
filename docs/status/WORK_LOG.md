@@ -698,3 +698,37 @@
 - Decisions / assumptions: Design DNA خروجی تحلیلی تولید می‌کند و هرگز design system را override نمی‌کند؛ external UI تا ثبت source/version/use-right تحت `DEFER-0012` فقط inspiration است.
 - Deferred or risk IDs: `DEFER-0012` بدون تغییر؛ Risk جدیدی ایجاد نشد.
 - Rollback / recovery: revert فایل‌های documentation task-owned؛ هیچ runtime/deploy state تغییر نکرده است.
+
+## LOG-0070 — 2026-08-15 — S-Plan / B3 uptime check definition
+
+- Outcome: the existing "Observability (P0A-11)" section of `DEPLOY_RUNBOOK.md`
+  was extended (no duplicate Observability heading, rest of the file untouched)
+  with a concrete definition: an external uptime provider chosen by the owner
+  (free tier acceptable) performs an HTTP GET on `https://<host>/health.json`
+  every 5 minutes on staging and production; alert target is the owner's email
+  (see password manager); deploy-version lookup is `curl https://<host>/health.json`
+  returning the served artifact version; the owner reviews the Caddy error log
+  on alert and checks `df -h /` monthly (30 GB disk, alert under 20% free); no
+  agent may sign up for any monitoring service — provider selection and account
+  creation are owner-only steps.
+- Why: B3 (Phase B hardening) requires the uptime/observability contract to be
+  written down so no agent invents a provider or creates accounts, and the owner
+  has a concrete alert, log-review and disk-threshold procedure.
+- Scope / files: `docs/governance/DEPLOY_RUNBOOK.md`,
+  `docs/status/WORK_LOG.md`, `docs/plan/S-PLAN-STATE.md`.
+- Commands or actions actually performed: read AGENTS.md,
+  `docs/plan/SMALL-MODEL-EXECUTION-PLAN.md` §6 B3, `docs/plan/S-PLAN-STATE.md`
+  and `docs/governance/DEPLOY_RUNBOOK.md` fully; extended the existing
+  Observability (P0A-11) bullet list with the concrete definition; appended this
+  WORK_LOG entry; marked B3 NEEDS_REVIEW and appended a review-log row in
+  S-PLAN-STATE.md.
+- Verification actually performed and result: `git diff --check` → exit 0
+  (PASS); `grep "^#.*Observability" docs/governance/DEPLOY_RUNBOOK.md` → exactly
+  1 match (`## Observability (P0A-11)` at line 95); no provider names, no email
+  addresses, no new URLs beyond the existing `<host>` placeholder from the task.
+- Decisions / assumptions: provider choice, account creation and the email
+  address remain owner-only (address intentionally not recorded); the 5-minute
+  cadence and 30 GB / under-20%-free numbers are taken verbatim from task B3.
+- Deferred or risk IDs: none new; `DEFER`/`RISK` sets unchanged.
+- Rollback / recovery: revert this documentation commit; no runtime, server or
+  deploy state was changed.

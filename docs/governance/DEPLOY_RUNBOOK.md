@@ -98,3 +98,14 @@ ln -sfn releases/release-<previous-version>-<checksum8> "$SITE_ROOT/current"
   bounded.
 - A basic external uptime check targets `/health.json`; 5xx visibility, disk
   threshold and deploy-version lookup have an owner.
+- External uptime check: an external uptime provider chosen by the owner
+  performs an HTTP GET on `https://<host>/health.json` every 5 minutes, for both
+  staging and production (free tier acceptable; agents create no accounts).
+- Alert target: the owner's email (see password manager).
+- Deploy-version lookup: `curl https://<host>/health.json` returns the served
+  artifact version.
+- 5xx visibility: the owner reviews the Caddy error log on alert; disk
+  threshold: the owner checks `df -h /` monthly (30 GB disk, alert under 20%
+  free).
+- No agent may sign up for any monitoring service; provider selection and
+  account creation are owner-only steps.
