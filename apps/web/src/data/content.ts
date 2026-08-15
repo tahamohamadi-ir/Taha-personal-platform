@@ -37,6 +37,14 @@ export interface LocaleContent {
     label: string;
     heading: string;
   };
+  sections?: {
+    experience: string;
+    education: string;
+    skills: string;
+    publications: string;
+    research: string;
+    certificates: string;
+  };
   notfound: {
     code: string;
     skip: string;
@@ -116,6 +124,14 @@ export const content: Record<LocaleCode, LocaleContent> = {
     about: {
       label: "02 · Identity",
       heading: "About",
+    },
+    sections: {
+      experience: "Experience",
+      education: "Education",
+      skills: "Skills",
+      publications: "Publications",
+      research: "Research",
+      certificates: "Certificates",
     },
     notfound: {
       code: "404",

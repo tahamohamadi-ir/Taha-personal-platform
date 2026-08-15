@@ -55,3 +55,6 @@
 | C4 | Resume/CV pages + downloads | BLOCKED(C1-gaps) | - | files+details (title/type/size/route) pending owner |
 | C6 | Navigation update | DONE | S-model | About link in header; LOG-0085 |
 | C7 | P2 verification + release | IN_PROGRESS | L-model | deploy to staging+prod pending after this batch |
+| C1 | Owner content inventory (P2) | DONE | owner | full master CV + SOP delivered; en full, fa per approved-Persian-only rule |
+| C2 | Typed profile contract | DONE | S-model | full contract (experience/education/publications/research/certs/socials); LOG-0087 |
+| C3 | About pages | DONE | S-model | en full / fa minimal; deployed after this batch; LOG-0087 |

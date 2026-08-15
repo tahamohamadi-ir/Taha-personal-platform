@@ -951,3 +951,16 @@ pm run build (6 pages)؛ git diff --check.
 - Decisions / assumptions: برچسب switch از «EN» به «English» تغییر کرد (داده‌محور و مطابق design.md §59)؛ نماد «©» از ooter.copyrightMark خوانده می‌شود.
 - Deferred or risk IDs: بدون ID جدید.
 - Rollback / recovery: revert؛ deploy قبلی دست‌نخورده.
+
+## LOG-0087 — 2026-08-15 — P2 / full master-profile content on About (C2/C3 completion)
+
+- Outcome: مالک دو منبع محتوای واقعی تحویل داد (Taha_Mohammadi_Master_CV_Website_Profile.md و Taha_Mohammadi_Master_SOP_FA_Final.md). قرارداد typed گسترش یافت (experience/education/publications/researchProjects/certificates/socials/longBio + alidateProfile با بررسی URL و فیلدهای اجباری)؛ profile.en.ts با محتوای verbatim CV پر شد (short/long bio، ۵۸ مهارت در ۸ دسته، ۵ تجربه با bullets، ۲ education با GPA، ۳ publication، ۳ research project، ۷ certificate، socials LinkedIn/ORCID)؛ profile.fa.ts فقط محتوای مصوب فارسی را نگه داشت (طبق قانون «نبود ترجمه = عدم انتشار بخش»)؛ About.astro با بخش‌های شرطی (فقط دادهٔ موجود رندر می‌شود) بازنویسی شد؛ برچسب‌های بخش (en) در content.ts.sections اضافه شدند. ایمیل/تلفن منتشر نشدند (تصمیم تماس DEFER-0007).
+- Why: تکمیل C1/C2/C3 با محتوای واقعی مالک؛ بدون هیچ ترجمه/اختراع agent.
+- Scope / files: pps/web/src/data/{profile.ts,profile.en.ts,profile.fa.ts,content.ts}، pps/web/src/components/About.astro و همین Work Log.
+- Commands or actions actually performed: 
+pm run check (0 error)؛ 
+pm run build (6 pages)؛ assertions روی dist: ۹ مورد en حاضر، fa فاقد experience و دارای availability.
+- Verification actually performed and result: en About شامل MCI/Shahed/PARS-SQL/LinkedIn/ORCID/Certificates/Publications/availability/GPA؛ fa About بدون بخش‌های بدون-ترجمه؛ validation روی build اجرا می‌شود.
+- Decisions / assumptions: CV master منبع وب‌سایت است (طبق متن خود فایل)؛ socials فقط LinkedIn/ORCID (بدون email/phone)؛ fa بخش‌های جدید ندارد تا ترجمهٔ فارسی مصوب برسد.
+- Deferred or risk IDs: DEFER-0013 (mobile matrix) OPEN؛ بدون ID جدید.
+- Rollback / recovery: revert کامیت؛ deploy قبلی سالم.

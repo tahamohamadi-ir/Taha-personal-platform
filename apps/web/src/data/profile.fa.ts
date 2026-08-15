@@ -1,5 +1,9 @@
 import type { Profile } from "./profile";
 
+// fa locale: only owner-approved Persian content is published here.
+// English-only sections (experience/education/publications/research/certificates)
+// have no approved Persian translation yet and are therefore empty (not published
+// on fa, per "missing translation = section not published").
 export const profileFa: Profile = {
   shortBio:
     "در مرز طراحی، تعامل، مهندسی، داده و هوش مصنوعی کار می‌کنم تا سیستم‌های هوشمند انسان‌محور بسازم. استدلال و شواهد پشت آن‌ها را ثبت می‌کنم.",
@@ -40,6 +44,12 @@ export const profileFa: Profile = {
       source: "Owner research presentation",
     },
   ],
+  experience: [],
+  education: [],
+  publications: [],
+  researchProjects: [],
+  certificates: [],
+  socials: [],
   availability:
     "برای فرصت‌های دکتری، همکاری پژوهشی و فرصت‌های حرفه‌ای آمادهٔ گفتگو هستم.",
 };
