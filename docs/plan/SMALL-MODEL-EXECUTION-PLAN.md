@@ -23,6 +23,19 @@
 reads only: task diff, verify output, WORK_LOG entry. Visual QA runs on the
 cheap multimodal agent — never on the L-model.
 
+**Hard cost guards (violation of any = the task must stop):**
+1. Implementation dispatches MUST target the registered `s-executor` agent
+   (free tier). Dispatching an implementation task to `general`/`explore`/the
+   primary session model is a cost violation.
+2. Visual QA MUST use the registered `visual-reviewer` agent — never the
+   primary/L-model.
+3. The primary model is reserved for: writing/updating this plan, reviewing
+   diffs, unblocking escalations. If a task cannot proceed without a
+   primary-model call beyond a diff review, that is a planning defect → STOP and
+   ask the L-model to split the task.
+4. Re-verification runs use the cheap executor or the `infra/deploy/smoke.sh`
+   script — never repeated heavy builds on the primary model.
+
 ---
 
 ## 1. Non-negotiable rules for the S-model (read before ANY task)
@@ -118,6 +131,9 @@ Escalate (`ESCALATE: <one-line reason>`) when ANY of these is true:
   `DEFER-0011` Cloudflare robots, `DEFER-0012` external design resources,
   `RISK-0004..0007`, `DEBT-0001`. `motion` 13.1.0, `gsap` 3.15.0 and `three`
   0.185.1 are locked for future use but are not imported or active in P1
+- Cost posture: primary model is the cheaper tier set in
+  `.opencode/opencode.json` (NOT glm-5.3); implementation via `s-executor`;
+  visual QA via `visual-reviewer`; see "Hard cost guards" in §0.
   (LOG-0067 / P1-T01).
 - Canonical commands live in `PROJECT_MANIFEST.md` §"Canonical commands".
 

@@ -762,3 +762,14 @@
 - Deferred or risk IDs: none new; `DEFER`/`RISK` sets unchanged.
 - Rollback / recovery: revert this documentation commit; no runtime, server or
   deploy state was changed.
+
+## LOG-0072 — 2026-08-15 — Infra / cost posture: cheaper primary model and hard cost guards
+
+- Outcome: پیکربندی پروژهٔ `.opencode/opencode.json` ایجاد شد تا مدل اصلی از tier گران (glm-5.3) به گزینهٔ ارزان‌تر (`opencode-go/deepseek-v4-pro`) و `small_model` به tier رایگان (`opencode/deepseek-v4-flash-free`) تغییر کند. S-Plan §0 «Hard cost guards» و snapshot §5 با وضعیت هزینه تکمیل شدند: اجرای تسک‌ها فقط از طریق `s-executor`، QA تصویری فقط از طریق `visual-reviewer`، مدل اصلی فقط برای ریویو/پلن، و re-verification با اسکریپت `smoke.sh` به‌جای buildهای پرهزینه.
+- Why: مالک اعلام کرد glm-5.3 گران است و باید هزینه مدیریت شود در حالی‌که کیفیت/دقت حفظ شود؛ dispatchهای قبلی از طریق `general` روی همان مدل گران اجرا شده‌اند.
+- Scope / files: `.opencode/opencode.json`، `docs/plan/SMALL-MODEL-EXECUTION-PLAN.md` و همین Work Log. هیچ مدل/کلید/provider جدیدی ساخته نشد.
+- Commands or actions actually performed: بررسی `~/.config/opencode/opencode.jsonc` (فقط plugins) و نبود config پروژه‌ای؛ سپس نوشتن config و ویرایش پلن. `git diff --check` PASS.
+- Verification actually performed and result: config فقط از فیلدهای معتبر `model`/`small_model`/`$schema` استفاده می‌کند؛ guardها صریح و قابل تخطی نیستند. فعال‌سازی نیازمند restart opencode است.
+- Decisions / assumptions: `deepseek-v4-pro` به‌عنوان تعادل هزینه/کیفیت برای مدل اصلی انتخاب شد؛ قیمت‌گذاری واقعی provider ممکن است متفاوت باشد و مالک می‌تواند با یک خط در config جایگزین کند. GLM-5.3 دیگر برای هیچ نقشی استفاده نمی‌شود.
+- Deferred or risk IDs: بدون ID جدید.
+- Rollback / recovery: حذف `.opencode/opencode.json` یا تغییر `model`؛ بازگشت به وضعیت قبلی صرفاً با revert مستند.
