@@ -632,3 +632,14 @@
 - Decisions / assumptions: پیشنهادهای ناسازگار skill (neon/cyberpunk/motion-heavy/Exo) رد شدند؛ فقط الگوهای سازگار (editorial، touch targets، sticky nav، focus/contrast) اعمال شدند.
 - Deferred or risk IDs: `DEFER-0010` (browser matrix) همچنان OPEN؛ سایر IDها بدون تغییر.
 - Rollback / recovery: بازگشت با Git؛ staging با اجرای دوبارهٔ stage script توسط مالک به‌روز می‌شود.
+
+## LOG-0064 — 2026-08-15 — R2 / A1 reusable HTTP smoke script
+
+- Outcome: added `infra/deploy/smoke.sh`, a read-only reusable HTTP smoke script for staging/production: asserts `/`, `/en/`, `/fa/`, `/robots.txt`, `/sitemap.xml` → 200, `/health.json` → 200 with body containing `"status":"ok"`, `/nonexistent-qa` → 404, and with `--expect-noindex` also `x-robots-tag` containing `noindex` on `/`. Prints one `PASS|FAIL <name>` line per check and exits non-zero on any FAIL.
+- Why: S-Plan task A1 — one reusable post-deploy verifier instead of ad-hoc curl commands (reused in A4 and C7).
+- Scope / files: `infra/deploy/smoke.sh` (new), `docs/status/WORK_LOG.md`, `docs/plan/S-PLAN-STATE.md`.
+- Commands or actions actually performed: `bash -n infra/deploy/smoke.sh`; `bash infra/deploy/smoke.sh https://staging.tahamohamadi.ir --expect-noindex`. No SSH, no sudo, no site changes.
+- Verification actually performed and result: `bash -n` → exit 0 (no output). Live run → exit 0, all lines PASS: `PASS root /`، `PASS locale /en/`، `PASS locale /fa/`، `PASS robots.txt`، `PASS sitemap.xml`، `PASS nonexistent-qa`، `PASS health.json body`، `PASS noindex /`.
+- Decisions / assumptions: a curl connection failure surfaces as status `000` → FAIL; exit code equals the number of failed checks; `x-robots-tag` match is case-insensitive; the script asserts exactly the checks listed in task A1, nothing more.
+- Deferred or risk IDs: none new (`DEFER-0011` note: `/robots.txt` returned 200 through the edge in this run).
+- Rollback / recovery: script is additive and read-only; rollback = Git revert of this commit.
