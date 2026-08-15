@@ -1,4 +1,4 @@
-# Work Log
+﻿# Work Log
 
 > مرجع chronological و append-only برای فعالیت‌های انجام‌شده. برای سیاست و قالب کامل، `docs/governance/DOCUMENTATION_POLICY.md` را بخوانید.
 
@@ -478,7 +478,19 @@
 - Deferred or risk IDs: `RISK-0008`.
 - Rollback / recovery: حذف entry فقط در صورت اثبات اینکه exposure رخ نداده بود مجاز است؛ remediation واقعی revoke/rotate credential در dashboard 9Router است.
 
-## LOG-0043 — 2026-08-14 — G0-01 / documentation snapshot and drift fix
+
+## LOG-0043 — 2026-08-14 — P0-G0 / Repository metadata publish
+
+- Outcome: Task Spec «P0-G0 repository metadata publish» ایجاد شد؛ `README.md` با نقطهٔ ورود/وضعیت/چیدمانِ مستند به‌عنوان منبع به‌روزرسانی شد و `.gitignore` guardهایی برای فایل‌های environment پشتیبان، artifactهای OS/editor و وضعیت agent-local به دست آورد؛ همین entry ثبت شد. `LOG-0043` استفاده شده است چون worktree اصلی دارای رکوردهای owner-held و uncommitted با شماره‌های `LOG-0041` و `LOG-0042` است.
+- Why: README و ignore file باید فقط بر پایهٔ مستندات رسمی repository دقیق می‌بودند و ثبت هر کار طبق Documentation Policy الزامی است.
+- Scope / files: `docs/plan/P0-G0-repository-metadata-task-spec.md`، `README.md`، `.gitignore` و `docs/status/WORK_LOG.md`؛ هیچ فایل دیگری تغییر نکرد.
+- Commands or actions actually performed: Task Spec ایجاد شد؛ `README.md` و `.gitignore` ویرایش و همین entry ثبت شد. هیچ تغییر runtime، deployment، dependency، infrastructure، secret یا server انجام نشد.
+- Verification actually performed and result: قرارداد مستندات (`PROJECT_MANIFEST.md`، `AGENTS.md` و governance policies) خوانده شد؛ لینک‌های نسبی مستندات README وجود دارند؛ `git diff --check` PASS شد.
+- Decisions / assumptions: شمارهٔ `LOG-0043` به‌کار رفته است چون worktree اصلی دارای رکوردهای owner-held و uncommitted با شماره‌های `LOG-0041` و `LOG-0042` است و این branch تمیز باید ledger append-only را بدون collision ادامه دهد.
+- Deferred or risk IDs: ندارد؛ هیچ deferral یا ریسک جدیدی ایجاد نشد.
+- Rollback / recovery: بازگردانی همان چهار فایل task (`docs/plan/P0-G0-repository-metadata-task-spec.md`، `README.md`، `.gitignore`، `docs/status/WORK_LOG.md`).
+
+## LOG-0051 — 2026-08-14 — G0-01 / documentation snapshot and drift fix
 
 - Outcome: وضعیت مستندات با evidence عملیاتی P0-A (LOG-0024 تا LOG-0040) هم‌تراز شد: مسیر نمونهٔ URL admin در Technology Baseline از `/cms/` به `/admin/` (مصوب ADR-0014) اصلاح شد؛ وضعیت عملیاتی ADR-0008 و ADR-0010 در index و خود ADRها به‌روز شد؛ جملهٔ قدیمی «restic password is still not created» در BACKUP_POLICY اصلاح شد؛ شماره‌گذاری تکراری و status قدیمی Task Spec سرور رفع شد؛ و توصیف `RISK-0001` به موانع واقعاً باقی‌مانده (PASS رسمی G0-06، تصمیم مالک، scaffold/CI/deploy) محدود شد.
 - Why: G0-01 نخستین task مسیر بحرانی first live است و باید از تناقض مستندات بالادستی دربارهٔ provisioning امروز جلوگیری کند؛ تصمیم‌های ADR پذیرفته‌شده تغییر نکردند.
@@ -489,7 +501,7 @@
 - Deferred or risk IDs: `RISK-0001` همچنان BLOCKED (باقی‌مانده: تصمیم gate، scaffold/CI/deploy)؛ `RISK-0003` و `RISK-0004` تا `RISK-0007` تغییر نکردند.
 - Rollback / recovery: همهٔ تغییرها صرفاً مستندی و با Git قابل بازگشت‌اند؛ هیچ runtime data یا server state لمس نشده است.
 
-## LOG-0044 — 2026-08-14 — G0-04/G0-05 / first-live technical freeze and minimum ADRs
+## LOG-0052 — 2026-08-14 — G0-04/G0-05 / first-live technical freeze and minimum ADRs
 
 - Outcome: تصمیم‌های فنی حداقلی R2 در `PROJECT_MANIFEST.md` freeze شد و سه ADR پیشنهادی (0016 static-first Astro + React islands، 0017 artifact نسخه‌دار + atomic switch/rollback، 0018 P1 design/hydration/font minimum) به‌همراه ثبت در index و اصلاح status کهنهٔ ADR-0015 ایجاد شد.
 - Why: G0-04/G0-05 بخشی از closure گیت R0 هستند و باید تصمیم‌های غیربدیهی first live را از حافظه/چت جدا کنند؛ بدون scaffold یا install.
@@ -500,7 +512,7 @@
 - Deferred or risk IDs: `RISK-0001` BLOCKED (تصمیم gate و scaffold باقی است)؛ تغییری در ریسک‌های دیگر نبود.
 - Rollback / recovery: فقط مستندات؛ بازگشت با Git.
 
-## LOG-0045 — 2026-08-14 — G0-02/G0-03/G0-06 / gate decision and P0-G0 PASS (static-only P1)
+## LOG-0053 — 2026-08-14 — G0-02/G0-03/G0-06 / gate decision and P0-G0 PASS (static-only P1)
 
 - Outcome: تصمیم مالک برای first live ثبت و گیت به `P0-G0: PASS for static-only P1` منتقل شد: `RISK-0001` بسته شد، `RISK-0003` با پذیرش محدود static-only ثبت شد، header Manifest/AGENTS به‌روز شد و content pack پیشنهادی `fa`/`en` ساخته شد.
 - Why: بدون تصمیم مکتوب مالک، scaffold مجاز نیست؛ این slice شرط G0-06 را برآورده می‌کند و scope را صریحاً به static P1 محدود می‌کند.
@@ -511,7 +523,7 @@
 - Deferred or risk IDs: `RISK-0001` CLOSED؛ `RISK-0003` ACCEPTED (limited, static-only P1) با expiry trigger قبل از P3؛ `RISK-0004` تا `RISK-0007` تغییر نکردند.
 - Rollback / recovery: بازگشت فقط مستندی؛ در صورت بازگشایی هر risk، گیت دوباره بررسی می‌شود.
 
-## LOG-0046 — 2026-08-14 — P0A-03..06 / P1-01..09 static P1 frontend scaffold and bilingual landing
+## LOG-0054 — 2026-08-14 — P0A-03..06 / P1-01..09 static P1 frontend scaffold and bilingual landing
 
 - Outcome: `apps/web/` به‌صورت static-first Astro + TypeScript + Tailwind v4 scaffold شد و P1 کامل ساخته شد: Language Gateway در `/`، صفحات `/fa/` (RTL) و `/en/` (LTR)، 404 locale-aware، `health.json`، `robots.txt`، `sitemap.xml`، design tokens از `design.md`، و workflow CI در `.github/workflows/ci.yml`. محتوای اصلی بدون JavaScript خوانا است و هیچ React/heavy dependency نصب نشده است.
 - Why: پس از `P0-G0: PASS for static-only P1`، scaffold `apps/web/` مجاز شد و این slice خروجی ایستای قابل build برای P1 را فراهم می‌کند.
@@ -522,7 +534,7 @@
 - Deferred or risk IDs: بدون ID جدید؛ `RISK-0004` تا `RISK-0007` (deploy/ظرفیت/patch/SSH) برای فاز استقرار باقی‌اند. موارد باقی‌ماندهٔ P1 (viewport/accessibility/visual smoke، OG image، فونت نهایی، staging/prod deploy) برای فاز deploy ثبت می‌شوند.
 - Rollback / recovery: `apps/web/` تازه است؛ حذف آن و `ci.yml` تغییر را برمی‌گرداند؛ هیچ server/runtime state لمس نشده است.
 
-## LOG-0047 — 2026-08-14 — P1 / independent verification, content QA and deploy mechanics
+## LOG-0055 — 2026-08-14 — P1 / independent verification, content QA and deploy mechanics
 
 - Outcome: دو subagent مستقل (explore و general) به‌صورت read-only پروژه را بازبینی کردند: acceptance ده‌گانهٔ P1 همه PASS و content pack از نظر ترجمه/واقعیت امن بود. چند اصلاح جزئی اعمال شد؛ مکانیک deploy (runbook + Caddy candidate + اسکریپت‌های deploy/rollback) طبق ADR-0017 ایجاد شد و `DEFER-0007` تا `DEFER-0010` ثبت شد.
 - Why: verification مستقل، تشخیص مسائل RTL/محتوا و آماده‌سازی مسیر deploy ایستا برای دستیابی به release gate.
@@ -533,7 +545,7 @@
 - Deferred or risk IDs: `DEFER-0007` (contact path)، `DEFER-0008` (font)، `DEFER-0009` (OG image)، `DEFER-0010` (browser verification) OPEN؛ `RISK-0004` تا `RISK-0007` برای فاز deploy بازند.
 - Rollback / recovery: تغییرات frontend/infra فقط؛ اسکریپت‌های deploy/rollback عملیات سرور انجام نمی‌دهند تا inventory و تأیید مالک.
 
-## LOG-0048 — 2026-08-14 — P1 / HTTP verification, gateway polish and deploy-prep documentation
+## LOG-0056 — 2026-08-14 — P1 / HTTP verification, gateway polish and deploy-prep documentation
 
 - Outcome: سایت با preview server واقعی از نظر HTTP اعتبارسنجی شد (همهٔ routeهای public 200، 404 صحیح، بدون link شکسته، CSS سالم)؛ Gateway با SVG field ایستای غیر-blocking و theme-color مطابق design.md §60.5 بهبود یافت؛ Task Spec inventory فقط‌خواندنی P0A-01 برای مالک، entry DEBT-0001 و وضعیت به‌روز queue تصمیم مالک ثبت شد.
 - Why: تأیید خروجی پیش از استقرار و آماده‌سازی گام‌های بعدی (deploy روی VPS) به‌صورت turnkey و بدون حدس.
@@ -544,18 +556,18 @@
 - Deferred or risk IDs: `DEBT-0001` OPEN؛ `DEFER-0007` تا `DEFER-0010` OPEN؛ `RISK-0004`/`RISK-0007` پس از inventory به‌روز می‌شوند.
 - Rollback / recovery: تغییرات فقط frontend/docs؛ build دوباره تمام قدیم را برمی‌گرداند.
 
-## LOG-0049 — 2026-08-14 — P1 / canonical commands, dependency scan and status sync
+## LOG-0057 — 2026-08-14 — P1 / canonical commands, dependency scan and status sync
 
 - Outcome: فرمان‌های تأییدشدهٔ `apps/web/` در `PROJECT_MANIFEST.md` به‌عنوان canonical ثبت شدند، `npm audit` اجرا شد (0 vulnerability)، وضعیت scaffold در Manifest و README هم‌تراز واقعیت شد.
 - Why: طبق P0A-03، فرمان‌های app فقط پس از اجرای واقعی و ثبت در Manifest canonical می‌شوند؛ README/Manifest نباید وضعیت کهنه را نمایش دهند.
 - Scope / files: `PROJECT_MANIFEST.md`، `README.md` و همین Work Log.
-- Commands or actions actually performed: در `apps/web/`: `npm audit --audit-level=high` → `found 0 vulnerabilities`. فرمان‌های install/check/build/preview قبلاً با evidence LOG-0046/0048 اجرا شده‌اند.
+- Commands or actions actually performed: در `apps/web/`: `npm audit --audit-level=high` → `found 0 vulnerabilities`. فرمان‌های install/check/build/preview قبلاً با evidence LOG-0054/0056 اجرا شده‌اند.
 - Verification actually performed and result: audit بدون vulnerability؛ ساختار canonical commands در Manifest با فرمان‌های واقعاً اجراشده یکسان است.
 - Decisions / assumptions: فرمان‌های CMS/deploy همچنان canonical نیستند و تا slice مربوطه ثبت نمی‌شوند.
 - Deferred or risk IDs: بدون ID جدید.
 - Rollback / recovery: تغییرات مستندی؛ بازگشت با Git.
 
-## LOG-0050 — 2026-08-14 — P1 / favicon, OG locale and CI artifact verification
+## LOG-0058 — 2026-08-14 — P1 / favicon, OG locale and CI artifact verification
 
 - Outcome: favicon SVG مشتق از text-mark مصوب (`TM` روی Navy با Turquoise)، `og:locale` (fa_IR/en_US) و مرحلهٔ verification در CI (کامل‌بودن artifact + scan الگوی secret) اضافه و به‌صورت محلی اعتبارسنجی شد.
 - Why: polish امن/کوچک پیش از release: favicon برای تب مرورگر، metadata OG صحیح، و gate CI که artifact ناقص یا حاوی الگوی secret را رد کند.

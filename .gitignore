@@ -3,6 +3,11 @@
 .env.*
 !.env.example
 
+# Backup automation secrets: the real environment file lives at
+# /etc/taha-backup.env on the VPS and never in Git; only the .example is tracked.
+infra/backup/*.env
+!infra/backup/*.env.example
+
 # Python
 .venv/
 __pycache__/
@@ -24,6 +29,20 @@ coverage/
 media/
 staticfiles/
 postgres-data/
+
+# OS file-system artifacts
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors and IDEs
+.idea/
+.vscode/
+
+# Agent-local control-plane state (OpenCode, Serena, Claude Code)
+.opencode/
+.serena/
+.claude/
 
 # Local worktrees
 .worktrees/
