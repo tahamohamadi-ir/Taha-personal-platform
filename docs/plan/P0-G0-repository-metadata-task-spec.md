@@ -15,10 +15,10 @@
 
 ## Scope
 
-- In scope:
-  - This Task Spec at the permitted documentation path.
-  - `README.md` content updated using only facts from `PROJECT_MANIFEST.md`, `AGENTS.md` and `docs/status/` ledgers.
-  - `.gitignore` guard-only additions: backup environment-file guard, OS/editor artifacts, agent-local state directories.
+- In scope — the actual four-file scope, no other file is touched:
+  - `docs/plan/P0-G0-repository-metadata-task-spec.md`: this Task Spec at the permitted documentation path, updated to record the four-file scope and `LOG-0043` accounting.
+  - `README.md`: content updated using only facts from `PROJECT_MANIFEST.md`, `AGENTS.md` and `docs/status/` ledgers.
+  - `.gitignore`: guard-only additions — backup environment-file guard, OS/editor artifacts, agent-local state directories.
   - `docs/status/WORK_LOG.md` entry `LOG-0043` appended in this run.
 - Non-goals:
   - No scaffold, package manifest, dependency, CI workflow, endpoint, model, DNS, deploy or server change; the P0-G0 gate is unchanged.
