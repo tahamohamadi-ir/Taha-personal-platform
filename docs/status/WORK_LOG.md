@@ -1109,3 +1109,14 @@ ode --check و YAML validation توسط agent.
 - Decisions / assumptions: header safe-layout از commit پیشین حفظ شد، اما علت نهایی بدون شواهد selector-specific ادعا نمی‌شود. assertion/matrix ضعیف نشد؛ diagnostic فقط روی failure چاپ می‌شود.
 - Deferred or risk IDs: `DEFER-0013` unchanged/Open برای zoom واقعی. hosted CI rerun pending.
 - Rollback / recovery: revert commit CTA hardening و در صورت نیاز revert commit header regression؛ هیچ deploy/SSH انجام نشده است.
+
+## LOG-0101 — 2026-08-15 — P2 / selector-confirmed Linux overflow closure
+
+- Outcome: failure diagnostic از CI run `31903254960` منبع‌های باقی‌مانده را دقیقاً نشان داد: `.section-heading` در content box `136px` تا `164px` scroll می‌کرد و footer انگلیسی (`.footer-brand-copy`/name/tagline) به `176px` می‌رسید. عنوان Landing و متن brand/footer اکنون `overflow-wrap: anywhere` دارند؛ flex container/footer copy هم `min-width: 0` دارند. هیچ label، route یا control حذف نشد.
+- Why: دو retry قبلی نشان دادند فرضِ یک root cause کافی نبود. QA باید failure را با selector/box evidence گزارش کند تا fix بعدی دقیق باشد.
+- Scope / files: `apps/web/src/components/Footer.astro`، `apps/web/src/components/Landing.astro`، `apps/web/qa/mobile-overflow.spec.mjs`، `docs/plan/P2-mobile-overflow-ci-regression-task-spec.md` و همین Work Log.
+- Commands or actions actually performed: `gh run view 31903254960 --log-failed` با diagnostic source؛ `npm run check` (0 error/warning/hint)؛ `npm run build` (6 pages)؛ `node --check qa/mobile-overflow.spec.mjs`؛ preview تازه؛ و full mobile-overflow matrix با Chrome واقعی PASS.
+- Verification actually performed and result: همهٔ route/viewport/dir/control checkهای local PASS شدند. diagnostic CI، width و selector دقیق را ثبت کرد؛ hosted Linux rerun پس از push تنها evidence باقی‌مانده است.
+- Decisions / assumptions: فقط قواعد shrink/wrap روی عناصر proven اضافه شد؛ overflow assertion، viewport matrix و `DEFER-0013` تغییر نکردند.
+- Deferred or risk IDs: `DEFER-0013` OPEN برای zoom واقعی؛ CI final rerun pending.
+- Rollback / recovery: revert این commit و در صورت نیاز commitهای پیشین regression fix؛ production untouched و هیچ deploy/SSH انجام نشده است.

@@ -63,6 +63,7 @@ const switchLang = otherLang;
     display: flex;
     align-items: center;
     gap: 0.875rem;
+    min-width: 0;
   }
 
   .footer-mark {
@@ -82,16 +83,19 @@ const switchLang = otherLang;
     display: flex;
     flex-direction: column;
     gap: 0.125rem;
+    min-width: 0;
   }
 
   .footer-name {
     color: var(--color-ink);
     font-weight: 600;
+    overflow-wrap: anywhere;
   }
 
   .footer-tagline {
     color: var(--color-ink-secondary);
     font-size: 0.875rem;
+    overflow-wrap: anywhere;
   }
 
   .footer-meta {

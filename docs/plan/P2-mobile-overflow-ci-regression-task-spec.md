@@ -1,6 +1,6 @@
 # Task Spec — P2 mobile-overflow CI regression
 
-**Status:** Implemented and locally verified; second hosted CI rerun pending.  
+**Status:** Implemented and locally verified; final hosted CI rerun pending.  
 **Date:** 2026-08-15  
 **Owner:** Project owner (agent-assisted)  
 **Release type:** `STANDARD` UI regression fix  
@@ -22,7 +22,7 @@ minimum touch targets.
   new dependency, client JavaScript, React, deployment, server access or a
   fake real-zoom claim.
 - Allowed files: `apps/web/src/components/Header.astro`,
-  `apps/web/src/components/Landing.astro`,
+  `apps/web/src/components/Footer.astro`, `apps/web/src/components/Landing.astro`,
   `apps/web/qa/mobile-overflow.spec.mjs`, this Task Spec and
   `docs/status/WORK_LOG.md`.
 - Forbidden files: every other file, including global tokens, package files,
@@ -77,6 +77,10 @@ the fallback; no deployment is part of this task.
 - The English landing CTA also receives a zero minimum width, safe word wrapping
   and a full-width tiny-viewport layout with reduced inline padding. This removes
   its fallback-font min-content pressure without changing its label or target.
+- Failure diagnostics from `31903254960` identified the remaining sources:
+  `.section-heading` overflowed its 136px content box to 164px, and
+  `.footer-brand-copy` rendered the English name/tagline beyond the footer.
+  Both now have safe shrink/wrap rules; the diagnostic remains failure-only.
 - Local verification: `npm run check` (0 errors/warnings/hints), `npm run
   build` (6 pages), and `PREVIEW_URL=http://127.0.0.1:4323
   PLAYWRIGHT_CHANNEL=chrome node qa/mobile-overflow.spec.mjs` (all checks
