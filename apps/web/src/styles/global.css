@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+/*
+  Design tokens — source of truth: docs/design.md (light theme).
+  Raw primitives are mapped to semantic tokens; components consume semantic
+  tokens only. Dark mode is out of R2 scope.
+*/
+
+@theme {
+  /* primitives */
+  --color-navy-950: #071225;
+  --color-navy-900: #0b1630;
+  --color-navy-800: #122343;
+  --color-turquoise-500: #16b8a6;
+  --color-turquoise-600: #0d9689;
+  --color-turquoise-700: #087c73;
+  --color-gold-500: #c89b3c;
+  --color-gold-600: #a77b28;
+  --color-purple-500: #6047b8;
+  --color-emerald-500: #137a62;
+
+  /* semantic */
+  --color-canvas: #f7f8f5;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f1f4f2;
+  --color-ink: #182328;
+  --color-ink-secondary: #657278;
+  --color-inverse: #ffffff;
+  --color-brand: #087c73;
+  --color-brand-emphasis: #0d9689;
+  --color-brand-soft: #e4f7f4;
+  --color-signature: #a77b28;
+  --color-signature-soft: #f3e8cf;
+  --color-research: #6047b8;
+  --color-research-soft: #eeeaf9;
+  --color-context: #137a62;
+  --color-context-soft: #e5f2ed;
+  --color-border-subtle: #dde5e3;
+  --color-border-strong: #b9c7c3;
+  --color-focus: #087c73;
+
+  /* radius / spacing in design.md */
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  /* font families (self-hosted families are an owner decision; system stack for now) */
+  --font-sans:
+    "Vazirmatn", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial,
+    sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Code", Consolas,
+    monospace;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :lang(fa) {
+    line-height: 1.9;
+  }
+
+  :lang(en) {
+    line-height: 1.65;
+  }
+
+  ::selection {
+    background-color: var(--color-brand-soft);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .skip-link {
+    position: absolute;
+    inset-inline-start: 1rem;
+    top: -3rem;
+    z-index: 50;
+    background-color: var(--color-brand);
+    color: var(--color-inverse);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    transition: top 140ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .skip-link:focus {
+    top: 1rem;
+  }
+}

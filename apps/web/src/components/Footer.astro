@@ -1,0 +1,72 @@
+---
+import type { LocaleContent } from "../data/content";
+
+interface Props {
+  content: LocaleContent;
+  alternateHref?: string | null;
+}
+
+const { content } = Astro.props;
+const switchHref = content.lang === "fa" ? "/en/" : "/fa/";
+const switchLabel = content.lang === "fa" ? "EN" : "فارسی";
+const switchLang = content.lang === "fa" ? "en" : "fa";
+---
+
+<footer class="site-footer">
+  <p class="footer-tagline">{content.footer.tagline}</p>
+  <div class="footer-meta">
+    <a href={switchHref} hreflang={switchLang} lang={switchLang} class="footer-switch">
+      {switchLabel}
+    </a>
+    <span class="contact-state" aria-label={content.contact.heading}>
+      {content.contact.unavailable}
+    </span>
+  </div>
+  <p class="footer-identity">© {new Date().getFullYear()} {content.name}</p>
+</footer>
+
+<style>
+  .site-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding-block: 2.5rem;
+    padding-inline: clamp(1rem, 5vw, 2.5rem);
+    max-width: 1280px;
+    margin-inline: auto;
+    width: 100%;
+    border-block-start: 1px solid var(--color-border-subtle);
+  }
+
+  .footer-tagline {
+    color: var(--color-ink);
+    font-weight: 600;
+  }
+
+  .footer-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .footer-switch {
+    color: var(--color-brand);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .footer-switch:hover {
+    text-decoration: underline;
+  }
+
+  .contact-state {
+    color: var(--color-ink-secondary);
+    font-size: 0.875rem;
+  }
+
+  .footer-identity {
+    color: var(--color-ink-secondary);
+    font-size: 0.8125rem;
+  }
+</style>

@@ -1,0 +1,69 @@
+---
+import "../styles/global.css";
+import { site } from "../data/site";
+
+const canonical = new URL("/404/", site.url).href;
+---
+
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Page not found · Taha Mohammadi</title>
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={canonical} />
+  </head>
+  <body class="notfound">
+    <main class="notfound-panel">
+      <h1 class="notfound-code">404</h1>
+      <p class="notfound-title" lang="en">Page not found</p>
+      <p class="notfound-title" lang="fa" dir="rtl">صفحه پیدا نشد</p>
+      <nav class="notfound-actions" aria-label="Site home">
+        <a href="/">Gateway · خانه</a>
+        <a href="/en/" hreflang="en" lang="en">English</a>
+        <a href="/fa/" hreflang="fa" lang="fa" dir="rtl">فارسی</a>
+      </nav>
+    </main>
+  </body>
+</html>
+
+<style>
+  .notfound {
+    margin: 0;
+    min-height: 100vh;
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    display: grid;
+    place-items: center;
+  }
+
+  .notfound-panel {
+    text-align: center;
+    padding: 2rem;
+  }
+
+  .notfound-code {
+    font-size: clamp(4rem, 3rem + 6vw, 8rem);
+    color: var(--color-brand);
+    margin: 0;
+    line-height: 1;
+  }
+
+  .notfound-title {
+    margin: 0.5rem 0;
+  }
+
+  .notfound-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-block-start: 1.5rem;
+  }
+
+  .notfound-actions a {
+    color: var(--color-brand);
+    font-weight: 600;
+  }
+</style>

@@ -1,0 +1,11 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Landing from "../../components/Landing.astro";
+import { content } from "../../data/content";
+
+const en = content.en;
+---
+
+<BaseLayout content={en} alternateHref="/fa/">
+  <Landing content={en} />
+</BaseLayout>

@@ -1,0 +1,135 @@
+---
+import "../styles/global.css";
+import { site } from "../data/site";
+import { content } from "../data/content";
+
+const en = content.en;
+const fa = content.fa;
+const title = "Taha Mohammadi · طه محمدی";
+const canonical = new URL("/", site.url).href;
+---
+
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="x-default" href={canonical} />
+    <link rel="alternate" hreflang="en" href={new URL("/en/", site.url).href} />
+    <link rel="alternate" hreflang="fa" href={new URL("/fa/", site.url).href} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+  </head>
+  <body class="gateway">
+    <main class="gateway-stage">
+      <div class="gateway-panel">
+        <span class="gateway-mark" aria-hidden="true">TM</span>
+        <h1 class="gateway-name">
+          <span lang="en">Taha Mohammadi</span>
+          <span lang="fa">· طه محمدی</span>
+        </h1>
+        <p class="gateway-prompt" lang="en">{en.gateway.prompt}</p>
+        <nav class="gateway-actions" aria-label={en.gateway.prompt}>
+          <a class="gateway-action" href="/en/" hreflang="en" lang="en">
+            {en.gateway.englishLabel}
+          </a>
+          <a class="gateway-action gateway-action--alt" href="/fa/" hreflang="fa" lang="fa">
+            {fa.gateway.persianLabel}
+          </a>
+        </nav>
+      </div>
+    </main>
+  </body>
+</html>
+
+<style>
+  .gateway {
+    margin: 0;
+    min-height: 100vh;
+    background-color: var(--color-navy-950);
+    color: #fff;
+    display: grid;
+    place-items: center;
+  }
+
+  .gateway-stage {
+    width: 100%;
+    display: grid;
+    place-items: center;
+    padding: 2rem;
+  }
+
+  .gateway-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    text-align: center;
+    max-width: 30rem;
+    background-color: rgba(11, 22, 48, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-lg);
+    padding: 3rem 2rem;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.24);
+  }
+
+  .gateway-mark {
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    background-color: var(--color-turquoise-500);
+    color: var(--color-navy-950);
+    border-radius: var(--radius-md);
+    font-weight: 800;
+    font-size: 1.25rem;
+  }
+
+  .gateway-name {
+    font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
+    line-height: 1.4;
+    font-weight: 700;
+  }
+
+  .gateway-name span[lang="fa"] {
+    font-weight: 500;
+  }
+
+  .gateway-prompt {
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  .gateway-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .gateway-action {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-md);
+    background-color: var(--color-turquoise-500);
+    color: var(--color-navy-950);
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  .gateway-action:hover {
+    background-color: var(--color-turquoise-600);
+  }
+
+  .gateway-action--alt {
+    background-color: transparent;
+    color: var(--color-gold-500);
+    border: 1px solid var(--color-gold-500);
+  }
+
+  .gateway-action--alt:hover {
+    background-color: rgba(200, 155, 60, 0.12);
+  }
+</style>

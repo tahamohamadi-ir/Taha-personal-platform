@@ -7,3 +7,8 @@ infra/backup/*.sh text eol=lf
 infra/backup/*.service text eol=lf
 infra/backup/*.timer text eol=lf
 infra/backup/*.example text eol=lf
+
+# CI workflows run on GitHub-hosted Linux runners; frontend source is consumed
+# cross-platform. Keep LF in the repository representation.
+.github/** text eol=lf
+apps/web/** text eol=lf

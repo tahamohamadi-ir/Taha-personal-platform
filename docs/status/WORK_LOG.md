@@ -510,3 +510,14 @@
 - Decisions / assumptions: PASS فقط برای static P1 است؛ PASS کلی CMS اعلام نشده و CMS/DB/contact persistence تا P3 مسدودند. content pack پیشنهادی است و هیچ metric/link/evidence حدسی ندارد.
 - Deferred or risk IDs: `RISK-0001` CLOSED؛ `RISK-0003` ACCEPTED (limited, static-only P1) با expiry trigger قبل از P3؛ `RISK-0004` تا `RISK-0007` تغییر نکردند.
 - Rollback / recovery: بازگشت فقط مستندی؛ در صورت بازگشایی هر risk، گیت دوباره بررسی می‌شود.
+
+## LOG-0046 — 2026-08-14 — P0A-03..06 / P1-01..09 static P1 frontend scaffold and bilingual landing
+
+- Outcome: `apps/web/` به‌صورت static-first Astro + TypeScript + Tailwind v4 scaffold شد و P1 کامل ساخته شد: Language Gateway در `/`، صفحات `/fa/` (RTL) و `/en/` (LTR)، 404 locale-aware، `health.json`، `robots.txt`، `sitemap.xml`، design tokens از `design.md`، و workflow CI در `.github/workflows/ci.yml`. محتوای اصلی بدون JavaScript خوانا است و هیچ React/heavy dependency نصب نشده است.
+- Why: پس از `P0-G0: PASS for static-only P1`، scaffold `apps/web/` مجاز شد و این slice خروجی ایستای قابل build برای P1 را فراهم می‌کند.
+- Scope / files: `apps/web/**` (source، config، lockfile)، `.github/workflows/ci.yml`، `docs/plan/P0-A-web-scaffold-task-spec.md` و همین Work Log.
+- Commands or actions actually performed: در `apps/web/` اجرا شد: `npm install` (294 package)، `npm run check` (astro check: 0 error / 0 warning / 0 hint)، `npm run build` (static output شامل `/`, `/en/index.html`, `/fa/index.html`, `/404.html`, `/health.json`, `/robots.txt`, `/sitemap.xml`). بررسی دستی خروجی `dist/` برای `lang`/`dir`/`canonical`/`hreflang` انجام شد.
+- Verification actually performed and result: build و check هر دو PASS؛ `fa` خروجی `lang="fa" dir="rtl"` و canonical/hreflang صحیح دارد؛ `health.json` مقدار `{"status":"ok","service":"static","version":"0.1.0"}` را برمی‌گرداند؛ محتوای فارسی UTF-8 صحیح است.
+- Decisions / assumptions: npm به‌عنوان package manager؛ Node 24.16.0؛ Astro 7.2.2؛ Tailwind v4 CSS-first. فونت self-host نهایی نشده (system stack تا تأیید مالک)؛ OG image و contact مقصد ندارند و صادقانه حذف/inactive شده‌اند. CI هنوز روی runner واقعی اجرا نشده است.
+- Deferred or risk IDs: بدون ID جدید؛ `RISK-0004` تا `RISK-0007` (deploy/ظرفیت/patch/SSH) برای فاز استقرار باقی‌اند. موارد باقی‌ماندهٔ P1 (viewport/accessibility/visual smoke، OG image، فونت نهایی، staging/prod deploy) برای فاز deploy ثبت می‌شوند.
+- Rollback / recovery: `apps/web/` تازه است؛ حذف آن و `ci.yml` تغییر را برمی‌گرداند؛ هیچ server/runtime state لمس نشده است.
