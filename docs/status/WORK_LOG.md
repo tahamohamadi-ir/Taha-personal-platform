@@ -964,3 +964,16 @@ pm run build (6 pages)؛ assertions روی dist: ۹ مورد en حاضر، fa ف
 - Decisions / assumptions: CV master منبع وب‌سایت است (طبق متن خود فایل)؛ socials فقط LinkedIn/ORCID (بدون email/phone)؛ fa بخش‌های جدید ندارد تا ترجمهٔ فارسی مصوب برسد.
 - Deferred or risk IDs: DEFER-0013 (mobile matrix) OPEN؛ بدون ID جدید.
 - Rollback / recovery: revert کامیت؛ deploy قبلی سالم.
+
+## LOG-0088 — 2026-08-15 — P2 / GitHub links from resume variants (en+fa)
+
+- Outcome: دو resume variant دیگر مالک (Senior Backend BluePay و Industry Resume Software AI) دو واقعیت جدید تأییدشده داشتند: GitHub profile (https://github.com/tahamohamadi-ir) و repo پروژهٔ PARS-SQL/VTD-Edge (https://github.com/tahamohamadi-ir/ADHD-VTD). به socials هر دو locale (en+fa — نام پلتفرم proper noun است) و به‌عنوان url+linkLabel پروژه در en اضافه شد؛ ResearchProject با url/linkLabel توسعه یافت و About پروژه را با لینک data-driven رندر می‌کند. bullets تجربهٔ master CV (canonical) تغییر نکرد.
+- Why: لینک‌های اجتماعی/پروژه بخشی از هویت عمومی هستند و در منابع مصوب آمده‌اند.
+- Scope / files: pps/web/src/data/{profile.ts,profile.en.ts,profile.fa.ts}، pps/web/src/components/About.astro و همین Work Log.
+- Commands or actions actually performed: 
+pm run check (0 error)؛ 
+pm run build (6 pages)؛ smoke نسخهٔ قبلی (7 PASS) و تأیید /about/ ها (200) پیش از تغییر.
+- Verification actually performed and result: build سبز؛ لینک GitHub پروژه data-driven (بدون هاردکد).
+- Decisions / assumptions: ایمیل/تلفن از resumeها منتشر نشد (تصمیم تماس پابرجا)؛ «Django Rebuild» به‌عنوان پروژهٔ سایت منتشر نشد (site ما Astro است — این فقط framing رزومه است).
+- Deferred or risk IDs: بدون ID جدید.
+- Rollback / recovery: revert کامیت؛ deploy قبلی سالم.

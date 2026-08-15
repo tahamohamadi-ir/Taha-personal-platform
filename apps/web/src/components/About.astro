@@ -114,7 +114,14 @@ const sections = content.sections;
           {
             profile.researchProjects.map((project) => (
               <article class="entry">
-                <h3 class="entry-title">{project.title}</h3>
+                <h3 class="entry-title">
+                  {project.title}
+                  {project.url && project.linkLabel && (
+                    <a class="entry-link" href={project.url} rel="noopener" target="_blank">
+                      {" "}· {project.linkLabel}
+                    </a>
+                  )}
+                </h3>
                 <p class="entry-text">{project.summary}</p>
               </article>
             ))

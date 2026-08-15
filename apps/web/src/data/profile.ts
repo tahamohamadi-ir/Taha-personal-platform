@@ -34,6 +34,8 @@ export interface PublicationEntry {
 export interface ResearchProject {
   title: string;
   summary: string;
+  url?: string;
+  linkLabel?: string;
 }
 
 export interface Certificate {

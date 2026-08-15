@@ -49,7 +49,11 @@ export const profileFa: Profile = {
   publications: [],
   researchProjects: [],
   certificates: [],
-  socials: [],
+  socials: [
+    { platform: "LinkedIn", url: "https://linkedin.com/in/taha-mohammadi-95770986" },
+    { platform: "GitHub", url: "https://github.com/tahamohamadi-ir" },
+    { platform: "ORCID", url: "https://orcid.org/0009-0006-7736-7638" },
+  ],
   availability:
     "برای فرصت‌های دکتری، همکاری پژوهشی و فرصت‌های حرفه‌ای آمادهٔ گفتگو هستم.",
 };

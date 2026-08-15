@@ -167,6 +167,8 @@ export const profileEn: Profile = {
   researchProjects: [
     {
       title: "PARS-SQL / VTD-Edge",
+      url: "https://github.com/tahamohamadi-ir/ADHD-VTD",
+      linkLabel: "GitHub",
       summary:
         "Local, privacy-first Persian Text-to-SQL system for mental-health and lifestyle analytics. Supports colloquial Persian, typos, Finglish, mixed Persian-English, Jalali date expressions, ambiguity handling, unsafe-query routing, validation, abstention, and explainable output. Research runtime and edge runtime share a common normalization, linking, validation, execution, and formatting core. Evaluation plan prioritizes reliability, safety, robustness, latency, memory, dataset documentation, human agreement, and reproducibility.",
     },
@@ -192,6 +194,7 @@ export const profileEn: Profile = {
   ],
   socials: [
     { platform: "LinkedIn", url: "https://linkedin.com/in/taha-mohammadi-95770986" },
+    { platform: "GitHub", url: "https://github.com/tahamohamadi-ir" },
     { platform: "ORCID", url: "https://orcid.org/0009-0006-7736-7638" },
   ],
   availability:
