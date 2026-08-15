@@ -49,8 +49,9 @@
 - `release-d55d44e/health.json` → `{"status":"ok","service":"static","version":"0.1.0"}`
 - Note (pending verification flag): the task prompt referenced `release-fa3c813`,
   which does NOT match the served artifact on staging. The verified served release
-  is `release-d55d44e` (checksum `e49e46c7`); the production switch at A4 should
-  reference the real artifact name.
+  is `release-d55d44e` (checksum `e49e46c7`). `release-fa3c813` (built from HEAD,
+  same site content) is staged on the server for the production switch; A4 should
+  reference the fresh artifact `release-fa3c813`.
 
 ## Open risk/deferred IDs (verbatim from the current ledgers; status NOT changed)
 
@@ -83,9 +84,8 @@
 
 - This record does not itself authorize deployment.
 - Production switch (task A4, owner executes, no agent):
-  `sudo bash ~/taha-stage/prod-p1.sh ~/taha-stage/release-d55d44e`
-  (real served artifact per staging deploy.log; pending owner/plan confirmation of
-  the final artifact name before execution).
+  `sudo bash ~/taha-stage/prod-p1.sh ~/taha-stage/release-fa3c813`
+  (fresh artifact staged from HEAD; staging currently serves `release-d55d44e`).
 
 ## Preconditions
 

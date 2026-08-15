@@ -9,8 +9,8 @@
 | ID | Title | State | Assignee | Notes |
 |---|---|---|---|---|
 | A1 | Reusable smoke script | DONE | S-model | approved e2d7796 by L-model 2026-08-15 (independent re-run PASS) |
-| A2 | Production Caddy script (write only) | NEEDS_REVIEW | L-model | written per task A2; diff vs stage-p1.sh limited to heredoc marker/block, backup suffix, echo/usage text; LOG-0075; L-model must review line-by-line before owner runs |
-| A3 | Release decision record P1 | NEEDS_REVIEW | L-model | record written per task A3; served artifact verified live release-d55d44e/e49e46c7; LOG-0076; L-model must review line-by-line |
+| A2 | Production Caddy script (write only) | DONE | S-model | approved fdc430b by L-model 2026-08-15; owner runs A4 |
+| A3 | Release decision record P1 | DONE | S-model | approved eb95caf by L-model 2026-08-15 |
 | A4 | Production switch (owner sudo) | BLOCKED(A2,A3,owner) | owner | — |
 | A5 | Close R2 / P1-15 | BLOCKED(A4) | — | — |
 | B1 | Pending updates inventory | BLOCKED(owner) | owner | paste count + caddy/docker package names only |
@@ -35,6 +35,9 @@
 | 2026-08-15 | B3 | APPROVE | L-model | diff=allowed only; 1 Observability heading; no invented provider/email/URL; LOG-0070 complete |
 | 2026-08-15 | B4 | APPROVE | L-model | diff=allowed only; 1 Restore-drill heading; no invented dates/RPO-RTO; LOG-0071 complete |
 | 2026-08-15 | B5 | APPROVE | L-model | diff=allowed only; 6 exact headings; no motion/gsap/three imports in src (independent grep clean); LOG-0074 complete |
+| 2026-08-15 | A2 | APPROVE | L-model | diff stage→prod only usage/backup-suffix/marker/no-X-Robots-Tag/echo; bash -n OK; LOG-0075 |
+| 2026-08-15 | A3 | APPROVE | L-model | record=REAL data (deploy.log verbatim, checksum e49e46c7); smoke re-run 8 PASS; CI green; owner command uses fresh artifact fa3c813; LOG-0076 |
+| 2026-08-15 | parallel audit | APPROVE | L-model | SEV-HIGH gold contrast fixed (ink+gold rule); token discipline (#fff→inverse, glass tokens) applied; CI smoke+audit steps; RELEASE-QA RELEASE-READY; LOG-0077 |
 | 2026-08-15 | A1 | submitted for review | S-model | smoke.sh verified against https://staging.tahamohamadi.ir --expect-noindex; all checks PASS |
 | 2026-08-15 | B4 | submitted for review | S-model | Restore drill cadence section appended; git diff --check exit 0; single heading; no invented dates/RPO-RTO/owners beyond Project owner |
 | 2026-08-15 | B3 | submitted for review | S-model | Observability (P0A-11) section extended per task; git diff --check exit 0; single Observability heading at line 95 |

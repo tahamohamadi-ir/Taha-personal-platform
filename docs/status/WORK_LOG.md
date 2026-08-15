@@ -785,6 +785,17 @@
 - Deferred or risk IDs: `DEFER-0012` به‌روز (split: Beautiful UI=MIT reference؛ UI8=pending license).
 - Rollback / recovery: revert سه فایل مستند؛ هیچ runtime/deploy state تغییر نکرد.
 
+## LOG-0077 — 2026-08-15 — P1 / parallel workstreams: audit, contrast fix, CI hardening, release QA
+
+- Outcome: سه workstream موازی مستقل اجرا شدند (بدون تداخل فایل): (1) audit read-only کد → ۸/۱۰ معیار PASS، یک **SEV-HIGH**: خط positioning هیرو با Gold `#A77B28` روی canvas = 3.58:1 (نقض WCAG AA و design.md §9.1) + MEDهای token discipline؛ (2) تقویت CI → مرحلهٔ smoke محلی (`preview` + `smoke.sh` روی localhost) و `npm audit`؛ (3) گزارش `RELEASE-QA.md` → RELEASE-READY (۱۹ فایل، ۳۶۹KB، بدون secret، fonts 321KB self-host).
+- Why: سرعت توسعه با چند agent و کیفیت/دقت بالا؛ یافتهٔ کنتراست پیش از production باید رفع می‌شد.
+- Scope / files: `apps/web/src/components/Landing.astro` (gold→ink + accent rule gold، `#fff`→`var(--color-inverse)`)، `apps/web/src/pages/{index,404}.astro` و `Header.astro` (glass tokens از design.md §14 در `@theme` + مصرف)، `.github/workflows/ci.yml`، `docs/plan/RELEASE-QA.md`، `docs/plan/RELEASE-P1.md` و همین Work Log.
+- Commands or actions actually performed: سه task موازی (explore/general)؛ سپس اصلاحات دستی؛ `npm run check` (0 error) و `npm run build` PASS؛ YAML توسط agent با PyYAML اعتبارسنجی شد؛ `git diff --check` PASS.
+- Verification actually performed and result: gold دیگر text نیست (accent rule 3px)؛ `#fff`→`var(--color-inverse)`؛ glass tokens در `@theme`؛ CI یامال معتبر با مسیر نسبی درست (`../infra/deploy/smoke.sh`)؛ RELEASE-QA همهٔ checks PASS و verdict RELEASE-READY.
+- Decisions / assumptions: MED token discipline رفع شد (glass/`#fff`)؛ موارد LOW (skip-link gateway، meta description gateway، footer bidi year) به‌عنوان پالایش آینده ثبت شدند. A3/RELEASE-P1 به artifact تازهٔ `release-fa3c813` برای production اشاره کرد.
+- Deferred or risk IDs: بدون ID جدید؛ `DEFER-0010` (browser QA) همچنان READY بعد از restart.
+- Rollback / recovery: revert کامیت‌های code/docs؛ هیچ runtime/deploy state تغییر نکرد.
+
 ## LOG-0074 — 2026-08-15 — S-Plan / B5 visual-interaction adoption brief
 
 - Outcome: brief نوشته شد در `docs/plan/B5-VISUAL-INTERACTION-ADOPTION.md` با شش section دقیقاً طبق دستور: «Goal & gate»، «Candidate interactions»، «Adoption checklist»، «QA plan»، «Escalation rule» و «Explicit non-goal». سه interaction candidate فقط پیشنهاد شدند (بدون پیاده‌سازی): (۱) hero identity-constellation entrance با CSS/Motion و fallback = constellation استاتیک فعلی؛ (۲) hover/transition کارت‌های «Explore by Perspective» با Motion؛ (۳) timeline reveal برای Journey/About با GSAP scroll trigger و fallback کامل استاتیک. برای هر candidate: route، user-value، library، bundle-cost و fallback reduced-motion/no-JS ثبت شد. Adoption checklist کلمه‌به‌کلمه از design.md §98 کپی شد. بند explicit non-goal: هیچ import از motion/gsap/three در سایت P1 و هیچ کپی از Beautiful UI حالا.
