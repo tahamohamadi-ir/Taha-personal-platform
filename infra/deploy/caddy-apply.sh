@@ -19,27 +19,33 @@ path = sys.argv[1]
 with open(path, encoding="utf-8") as f:
     text = f.read()
 
-idx = text.find("(taha_application_routes) {")
-if idx == -1:
+start = text.find("(taha_application_routes) {")
+if start == -1:
     print("error: taha_application_routes snippet not found", file=sys.stderr)
     sys.exit(1)
 
-# snippet region: from the snippet header up to its closing brace at column 0
-end = text.find("\n}", idx)
-region = text[idx : end if end != -1 else len(text)]
+close = text.find("\n}", start)
+if close == -1:
+    print("error: snippet closing brace not found", file=sys.stderr)
+    sys.exit(1)
 
+region = text[start:close]
 if "handle_errors" in region:
     print("handle_errors already present in snippet; no change")
     sys.exit(0)
 
-fs = region.find("file_server")
-if fs == -1:
-    print("error: file_server not found inside snippet", file=sys.stderr)
-    sys.exit(1)
-
-line_end = text.find("\n", idx + fs)
-insert = "\n\thandle_errors {\n\t\trewrite * /404.html\n\t\tfile_server\n\t}"
-new_text = text[: line_end + 1] + insert + text[line_end + 1 :]
+# canonical snippet rewrite: balanced braces, closing } on its own line
+new_snippet = (
+    "(taha_application_routes) {\n"
+    "\troot * /opt/taha/site/current\n"
+    "\tfile_server\n"
+    "\thandle_errors {\n"
+    "\t\trewrite * /404.html\n"
+    "\t\tfile_server\n"
+    "\t}\n"
+    "}\n"
+)
+new_text = text[:start] + new_snippet + text[close + 2 :]
 
 with open(path, "w", encoding="utf-8") as f:
     f.write(new_text)

@@ -890,3 +890,14 @@ pm run check (0 error)؛ git diff --check؛ بازبینی مستقل diffها.
 - Decisions / assumptions: اعطای NOPASSWD عمداً فقط به دو فرمان ثابت؛ هر تغییر Caddy آینده نیازمند ویرایش اسکریپت root-owned یا grant جدید است.
 - Deferred or risk IDs: بدون ID جدید.
 - Rollback / recovery: m /etc/sudoers.d/taha-deploy && visudo -c grant را فوراً لغو می‌کند.
+
+## LOG-0082 — 2026-08-15 — Infra / caddy-apply idempotency and brace bug fixed
+
+- Outcome: اجرای اول caddy-apply.sh با خطای parse مواجه شد («unexpected token '}'»): (الف) چک idempotency سراسری بود و handle_errors بلوک staging را می‌دید، بنابراین در اجرای قبلی snippet تولید اصلاح نشد؛ (ب) روش insert قبلی \t} را درست قبل از } اصلی می‌گذاشت → }} روی یک خط که parser سیدی رد می‌کند. اصلاح: چک محدود به region snippet + بازنویسی canonical کل snippet (براکت‌های متوازن، } در خط خودش). تست faithful روی سرور: caddy validate --config <mod2> --adapter caddyfile → **Valid configuration**.
+- Why: fix 404 تولید باید بدون شکستن Caddy اعمال شود؛ backup/validate/restore طراحی قبلی به‌درستی کار کرد (Caddy ری‌لود نشد، فایل restore شد).
+- Scope / files: infra/deploy/caddy-apply.sh و همین Work Log.
+- Commands or actions actually performed: بازتولید محلی با بایت‌های واقعی فایل (scp از سرور)؛ scp خروجی به سرور؛ caddy validate --adapter caddyfile روی فایل تست → PASS؛ ash -n؛ git diff --check.
+- Verification actually performed and result: snippet نهایی شامل handle_errors با ساختار متوازن و «Valid configuration» روی سرور؛ فایل اصلی Caddy دست‌نخورده (restore قبلی) و production سالم.
+- Decisions / assumptions: نسخهٔ نهایی اسکریپت نیازمند reinstall در /opt/taha/bin توسط مالک و سپس اجرای sudo -n است.
+- Deferred or risk IDs: بدون ID جدید.
+- Rollback / recovery: در صورت خطای validate، اسکریپت بکاپ را restore می‌کند و reload نمی‌شود.
