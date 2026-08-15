@@ -33,9 +33,12 @@ fi
 install -d -o root -g root -m 0755 "$SITE_ROOT/releases"
 touch "$SITE_ROOT/deploy.log"
 
-# 2. install artifact (idempotent copy)
+# 2. install artifact (idempotent copy) and normalize ownership/permissions so
+#    the caddy user can traverse the tree (scp artifacts arrive mode 0700)
 install -d -o root -g root -m 0755 "$SITE_ROOT/releases/$(basename "$RELEASE_DIR")"
 cp -a "$RELEASE_DIR/." "$SITE_ROOT/releases/$(basename "$RELEASE_DIR")/"
+chown -R root:root "$SITE_ROOT/releases/$(basename "$RELEASE_DIR")"
+chmod -R a+rX "$SITE_ROOT/releases/$(basename "$RELEASE_DIR")"
 
 # 3. atomic switch of the current pointer
 ln -sfn "$SITE_ROOT/releases/$(basename "$RELEASE_DIR")" "$SITE_ROOT/current.tmp"
@@ -66,8 +69,6 @@ new_block = """staging.tahamohamadi.ir {
 \theader {
 \t\tX-Robots-Tag "noindex, nofollow"
 \t}
-
-\ttry_files {path} {path}/ /404.html
 
 \thandle_errors {
 \t\trewrite * /404.html
