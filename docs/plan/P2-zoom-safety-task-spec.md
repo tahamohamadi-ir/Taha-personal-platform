@@ -1,6 +1,6 @@
 # Task Spec — P2 zoom-safety for gateway, landing and 404
 
-**Status:** Implemented and fully locally verified; hosted CI pending.  
+**Status:** Complete — implemented, locally verified, and hosted CI green (run `31903433836`, commit `d69b0e9`; later docs commit `e1fcac0` run `31904100378` also green).  
 **Date:** 2026-08-15  
 **Owner:** Project owner (agent-assisted)  
 **Release type:** `STANDARD` presentation/robustness change  
@@ -120,5 +120,6 @@ untouched (no deployment happens in this task).
 - Files changed (task-owned only): the six allowed files.
 - Verification actually run (command + result): recorded in `LOG-0097`.
 - Deferred/risk IDs: existing `DEFER-0013` unchanged; no new IDs.
-- Explicit blockers and next input: obtain owner/hosted-CI evidence; real 200%
-  browser zoom remains separate.
+- Explicit blockers and next input: hosted-CI evidence obtained (run
+  `31903433836` PASS, run `31904100378` PASS); real 200% browser zoom remains
+  separate and open in `DEFER-0013`.

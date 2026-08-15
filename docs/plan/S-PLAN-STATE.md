@@ -18,14 +18,14 @@
 | B3 | Uptime check definition | DONE | S-model | approved 4ef9541 by L-model 2026-08-15 |
 | B4 | Restore drill cadence | DONE | S-model | approved ae8a854 by L-model 2026-08-15 |
 | B5 | Visual-interaction adoption brief | DONE | S-model | approved e21fbfe by L-model 2026-08-15 |
-| V1 | Screenshot visual QA (DEFER-0010) | READY-AFTER-RESTART | visual-reviewer | agent NOT registered in current session (verified); after opencode restart dispatch visual-reviewer with the 7 screenshots 003016..003052; checklist in .opencode/agent/visual-reviewer.md |
-| C1 | Owner content inventory (P2) | BLOCKED(owner) | owner | fill docs/plan/P2-C1-CONTENT-REQUEST.md (created 2026-08-15) — bio/experience/education/skills/CV/Resume/contact per locale |
-| C2 | Typed profile contract | BLOCKED(C1) | — | — |
-| C3 | About pages | BLOCKED(C2) | — | — |
-| C4 | Resume/CV pages + downloads | BLOCKED(C1) | — | — |
-| C5 | Contact path | BLOCKED(owner) | owner | DEFER-0007 decision |
-| C6 | Navigation update | BLOCKED(C3,C4) | — | — |
-| C7 | P2 verification + release | BLOCKED(C6) | — | — |
+| V1 | Screenshot visual QA (DEFER-0010) | DONE | visual-reviewer | 7/7 ACCEPT-WITH-NOTES; report VISUAL-QA-P1.md; DEFER-0010 closed, DEFER-0013 (mobile/zoom) open |
+| C1 | Owner content inventory (P2) | DONE | owner | form P2-C1 filled; full master CV + SOP delivered; en full, fa per approved-Persian-only rule |
+| C2 | Typed profile contract | DONE | S-model | profile.ts + en/fa + validateProfile; full contract; LOG-0085/LOG-0087 |
+| C3 | About pages | DONE | S-model | /en/about/ + /fa/about/ live in build; en full / fa minimal; LOG-0085/LOG-0087 |
+| C4 | Resume/CV pages + downloads | BLOCKED(owner) | owner | approved CV/Resume files+details (title/type/size/route) pending owner |
+| C5 | Contact path | DONE | owner | decision: omit in P2 (DEFER-0007 closed); honest state stays |
+| C6 | Navigation update | DONE | S-model | About link in header; LOG-0085 |
+| C7 | P2 verification + release | BLOCKED(C4) | — | blocked by C4; no deployment claimed |
 
 ## Review log (append-only)
 

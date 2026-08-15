@@ -1,6 +1,6 @@
 # Task Spec — P2 About tabs and justified bilingual reading layout
 
-**Status:** In progress — amended 2026-08-15 (centered intro contract; 200% zoom evidence deferred to `DEFER-0013`).  
+**Status:** Complete for the implemented, locally verified, and hosted-CI-verified scope (CI run `31903433836`); real 200% browser-zoom/manual visual evidence remains open in `DEFER-0013`.  
 **Date:** 2026-08-15  
 **Owner:** Project owner (agent-assisted)  
 **Release type:** `STANDARD` UI/content presentation change  
@@ -57,6 +57,9 @@ readable measure and are horizontally centered on the page in both RTL and LTR.
   click activation and locale-switch links remain intact.
 - 200% browser zoom: manual/deferred visual evidence tracked in `DEFER-0013`
   (real zoom cannot be faithfully simulated by a synthetic viewport).
+- Hosted CI evidence: run `31903433836` (commit `d69b0e9`) — About tabs
+  regression (Playwright) PASS at all six widths for both locales; run
+  `31904100378` (docs commit `e1fcac0`) also PASS.
 
 ## Rollback
 

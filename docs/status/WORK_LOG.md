@@ -1142,3 +1142,14 @@ ode --check و YAML validation توسط agent.
 - Decisions / assumptions: this is documentation-only and does not authorize CMS bootstrap, deployment or a route implementation.
 - Deferred or risk IDs: no status changed; existing P0/P3 risks and deferrals remain as recorded.
 - Rollback / recovery: revert this documentation-only commit; no runtime state is affected.
+
+## LOG-0104 — 2026-08-15 — P2 / evidence-state reconciliation
+
+- Outcome: P2 About-tabs and zoom-safety task specs now record completion only for their implemented, locally verified, and hosted-CI-verified scope. The P2/V1 execution rows now match the current evidence; C4 remains `BLOCKED(owner)` and C7 remains blocked by C4 with no deployment claim.
+- Why: reconcile stale execution-state and deferred-evidence wording without closing the distinct real-browser 200% zoom/manual visual deferral.
+- Scope / files: `docs/plan/P2-evidence-state-reconciliation-task-spec.md`, `docs/plan/P2-about-tabs-task-spec.md`, `docs/plan/P2-zoom-safety-task-spec.md`, `docs/plan/S-PLAN-STATE.md`, `docs/status/deferred-validation.md` and this Work Log.
+- Commands or actions actually performed: read the repository contracts and target documents; queried GitHub Actions runs `31903433836` and `31904100378` with `gh run view`; performed the scoped text searches required by this Task Spec; edited only the six allowed documentation files.
+- Verification actually performed and result: both referenced CI runs reported `success`, including type check, build, smoke, Mobile overflow Playwright, About tabs Playwright, dependency audit, artifact completeness/no-secret and upload steps; review-log history was not edited; deployment, SSH and runtime actions were not performed.
+- Decisions / assumptions: `DEFER-0013` remains `OPEN`; synthetic viewports do not prove real 200% browser zoom. This is documentation-only and does not authorize deployment or close C4/C7.
+- Deferred or risk IDs: `DEFER-0013` remains OPEN; C4 remains `BLOCKED(owner)`; C7 remains blocked by C4.
+- Rollback / recovery: revert the documentation-only commit; no runtime state is affected.
