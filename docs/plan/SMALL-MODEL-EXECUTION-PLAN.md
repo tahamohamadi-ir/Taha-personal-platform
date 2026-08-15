@@ -130,7 +130,10 @@ Escalate (`ESCALATE: <one-line reason>`) when ANY of these is true:
 - Open IDs: `DEFER-0007` contact, `DEFER-0009` OG, `DEFER-0010` browser QA,
   `DEFER-0011` Cloudflare robots, `DEFER-0012` external design resources,
   `RISK-0004..0007`, `DEBT-0001`. `motion` 13.1.0, `gsap` 3.15.0 and `three`
-  0.185.1 are locked for future use but are not imported or active in P1
+  0.185.1 are locked for future use but are not imported or active in P1;
+  Beautiful UI is an MIT source-reference (not an npm package), UI8 DNA is a
+  paid asset pending owner license. Toolchain adoption runs through S-Plan task
+  B5 (post-P1).
 - Cost posture: primary model is the cheaper tier set in
   `.opencode/opencode.json` (NOT glm-5.3); implementation via `s-executor`;
   visual QA via `visual-reviewer`; see "Hard cost guards" in §0.

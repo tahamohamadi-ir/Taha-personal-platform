@@ -2412,8 +2412,10 @@ Before adopting a 21st.dev/community component:
 
 Design DNA می‌تواند reference را به token/pattern قابل‌بحث تبدیل کند، اما نباید
 palette، typography، RTL/LTR، accessibility یا component policy همین سند را
-override کند. Beautiful UI و UI8 DNA تا دریافت artifact versioned و حق استفادهٔ
-تأییدشده، inspiration هستند نه source قابل ship (`DEFER-0012`).
+override کند. Beautiful UI دارای مجوز MIT است و به‌عنوان source-reference
+استفاده می‌شود (کپی فقط در slice مصوب با ثبت منبع و استفاده از tokenهای خود
+پروژه)؛ UI8 DNA تا دریافت artifact/لایسنس تأییدشدهٔ مالک، inspiration باقی
+می‌ماند، نه source قابل ship (`DEFER-0012`).
 
 ---
 

@@ -773,3 +773,14 @@
 - Decisions / assumptions: `deepseek-v4-pro` به‌عنوان تعادل هزینه/کیفیت برای مدل اصلی انتخاب شد؛ قیمت‌گذاری واقعی provider ممکن است متفاوت باشد و مالک می‌تواند با یک خط در config جایگزین کند. GLM-5.3 دیگر برای هیچ نقشی استفاده نمی‌شود.
 - Deferred or risk IDs: بدون ID جدید.
 - Rollback / recovery: حذف `.opencode/opencode.json` یا تغییر `model`؛ بازگشت به وضعیت قبلی صرفاً با revert مستند.
+
+## LOG-0073 — 2026-08-15 — P1-T01 / external design resources re-verified and documented
+
+- Outcome: درخواست مالک برای نصب Beautiful UI، Three.js، GSAP، Design DNA، UI8 DNA و Motion راستی‌آزمایی شد: `motion` 13.1.0، `gsap` 3.15.0، `three` 0.185.1 و Design DNA (skill محلی Codex) از قبل نصب شده‌اند؛ **Beautiful UI** وب‌سایت copy-paste با مجوز **MIT** است (نه پکیج npm) و به‌عنوان source-reference تأیید شد؛ **UI8 DNA** محصول تجاری/paid است و بدون خرید/لایسنس مالک قابل نصب نیست. DEFER-0012 به وضعیت split به‌روز شد و design.md §98 و S-Plan snapshot با این واقعیت‌ها هم‌تراز شدند.
+- Why: مالک درخواست نصب داد؛ باید وضعیت واقعی هر منبع بدون حدس ثبت شود — MIT یعنی حق استفادهٔ Beautiful UI تأیید است، UI8 نیازمند لایسنس مالک.
+- Scope / files: `docs/status/deferred-validation.md`، `docs/design.md`، `docs/plan/SMALL-MODEL-EXECUTION-PLAN.md` و همین Work Log.
+- Commands or actions actually performed: `npm ls motion gsap three @fontsource-variable/inter` (همگی نصب)؛ `Test-Path` برای SKILL طراحی‌دی‌ان‌ای (موجود)؛ `webfetch` صفحهٔ BeautifulUI → MIT License و copy-paste (بدون بستهٔ npm)؛ بررسی DEFER-0012 و design.md §98. هیچ بسته یا asset جدیدی نصب/کپی نشد.
+- Verification actually performed and result: ۴/۶ منبع از قبل نصب‌اند؛ Beautiful UI منبع MIT است؛ UI8 بدون لایسنس در دسترس نیست. `git diff --check` PASS.
+- Decisions / assumptions: Beautiful UI فقط در slice مصوب (B5) و با استفادهٔ منحصراً از tokenهای خود پروژه copy می‌شود؛ UI8 تا تهیهٔ فایل/لایسنس توسط مالک در DEFER-0012 می‌ماند. هیچ library در P1 فعال نشد (static-first حفظ شد).
+- Deferred or risk IDs: `DEFER-0012` به‌روز (split: Beautiful UI=MIT reference؛ UI8=pending license).
+- Rollback / recovery: revert سه فایل مستند؛ هیچ runtime/deploy state تغییر نکرد.
