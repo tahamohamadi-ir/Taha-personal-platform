@@ -1125,15 +1125,13 @@ https://tahamohamadi.ir/api/*   → Caddy → Django
 - Contact API ساده‌تر؛
 - public API URL پایدار.
 
-Admin می‌تواند:
+Admin مسیر same-origin مصوب را دارد:
 
 ```text
-https://tahamohamadi.ir/cms/
+https://tahamohamadi.ir/admin/
 ```
 
-یا subdomain اختصاصی داشته باشد.
-
-تصمیم دقیق در P0 ADR.
+تصمیم canonical در `ADR-0014` ثبت شده است (`/admin/` به‌عنوان مرز امنیتی).
 
 ---
 
@@ -1896,7 +1894,7 @@ flowchart LR
     U[Visitor] --> C[Caddy]
     C -->|/, /fa, /en, assets| S[Astro Static Build]
     C -->|/api/*| D[Django + Wagtail + Django Ninja]
-    C -->|/cms/*| D
+    C -->|/admin/*| D
     D --> P[(PostgreSQL)]
     D --> M[(Media / S3-compatible storage)]
 ```

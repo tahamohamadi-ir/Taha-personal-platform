@@ -27,7 +27,7 @@ The backup set covers PostgreSQL dumps once PostgreSQL exists, CMS/media assets 
 
 ## Required evidence before closing `RISK-0003`
 
-1. Secret handling and Google Drive access configured without logging sensitive values. **Completed for the rclone OAuth/access portion on 2026-08-14; the restic password is still not created.**
+1. Secret handling and Google Drive access configured without logging sensitive values. **Completed for the rclone OAuth/access portion and the restic repository password on 2026-08-14; the password value itself is never recorded here.**
 2. A scheduled job completes and records a non-sensitive success/failure result.
 3. Retention is observed and documented.
 4. A restore to staging is performed and verified against expected files/database state. **The file-level encrypted restore and source-file comparison passed on 2026-08-14; an isolated staging database import is still required.**

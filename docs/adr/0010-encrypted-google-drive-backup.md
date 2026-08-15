@@ -1,6 +1,6 @@
 # ADR-0010: Encrypted off-site backup on Google Drive
 
-**Status:** Accepted as the target design; not provisioned or restore-tested.  
+**Status:** Accepted as the target design; provisioned and file-level restore-tested on 2026-08-14, isolated staging database import remains.  
 **Date:** 2026-08-14
 
 ## Context

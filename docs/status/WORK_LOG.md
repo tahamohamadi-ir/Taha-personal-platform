@@ -455,3 +455,36 @@
 - Decisions / assumptions: این evidence file-level recovery را می‌بندد، اما import دیتابیس در staging runtime جداگانه همچنان برای closure `RISK-0003` لازم است. directory قدیمی deploy-owned در `DEFER-0006` ثبت شد.
 - Deferred or risk IDs: `RISK-0003` High/Open؛ `DEFER-0006` Low/Open.
 - Rollback / recovery: restore به production ننوشت و target یکتای rehearsal حذف شد؛ rollback لازم نیست. برای مرحلهٔ بعدی فقط staging runtime جداگانه و Task Spec مجاز است.
+
+## LOG-0041 — 2026-08-14 — P0-G0 planning / fast safe-live implementation backlog
+
+- Outcome: یک backlog اجرایی ریشه‌ای در `Task-list.md` ساخته شد که ۸۱ task و ۳۲۴ checkbox را از closure گیت P0-G0 تا P11 پوشش می‌دهد و مسیر بحرانی first live را به یک release ایستای P1 بدون CMS/database/contact persistence جدید محدود می‌کند.
+- Why: هدف مالک کوتاه‌کردن time-to-live همراه با انتقال صریح تست‌ها و hardening غیرحیاتی به بعد از release بود؛ برنامه باید بین defer مجاز و Stop-the-line/Minimum Safe Gate تمایز می‌گذاشت.
+- Scope / files: `Task-list.md`، `docs/plan/P0-G0-fast-safe-live-task-list-task-spec.md` و همین Work Log. هیچ application، dependency، infrastructure، server، DNS، backup، CI یا deployment state تغییر نکرد.
+- Commands or actions actually performed: inventory فایل‌ها و Git/history، خواندن قراردادهای حاکم و evidenceهای P0-A، فهرست کامل sectionهای Product/Architecture/IA/Design baseline و بررسی بخش‌های مرتبط با phaseها، release، locale، security، operations و P1 انجام شد؛ سپس Task Spec و task list ایجاد شدند.
+- Verification actually performed and result: بررسی programmatic وجود G0/P0A/P0B/P1 تا P11، risk/locale/admin/deferred contracts PASS شد؛ ۸۱ task ID یکتا و ۳۲۴ checkbox شمارش شد؛ scan عبارت‌های placeholder و مسیرهای legacy PASS و `git diff --check` بدون خطا تمام شد.
+- Decisions / assumptions: مسیر پیشنهادی `R0 Gate closure → R1 static deployment spine → R2 bilingual P1 production` است. defer کردن staging database import فقط با پذیرش صریح و محدود مالک برای static-only P1 مجاز است؛ تصمیم مالک، inventory/rollback stack موجود و production approval همچنان blocker واقعی اجرای برنامه‌اند.
+- Deferred or risk IDs: هیچ ID جدیدی ایجاد نشد چون این slice فقط برنامه‌ریزی است. برنامه وضعیت فعلی `RISK-0001`، `RISK-0003` تا `RISK-0007` و `DEFER-0001` تا `DEFER-0006` را تغییر نمی‌دهد.
+- Rollback / recovery: این تغییر کاملاً مستندی است؛ rollback فقط حذف دو فایل جدید task-owned و بازگرداندن همین entry است و هیچ runtime data یا server state را لمس نمی‌کند.
+
+## LOG-0042 — 2026-08-14 — Agent tooling / 9Router credential exposure report
+
+- Outcome: یک credential ارسال‌شده در گفت‌وگو به‌عنوان exposure ثبت و `RISK-0008` با وضعیت `BLOCKED` ایجاد شد.
+- Why: credential گفتگو نباید در repository، log، output یا configuration پایدار بازنشر شود و تا rotation نباید برای اتصال agentها استفاده شود.
+- Scope / files: فقط `docs/status/RISK_REGISTER.md` و همین Work Log.
+- Commands or actions actually performed: Risk Register بدون درج مقدار credential به‌روزرسانی شد؛ هیچ اتصال 9Router، config OpenCode، provider، VPS یا secret store تغییر نکرد.
+- Verification actually performed and result: entry جدید `RISK-0008` شامل owner، trigger، mitigation و شرط rotation است و هیچ مقدار credential در diff وجود ندارد.
+- Decisions / assumptions: 9Router تا rotation مستقل credential و اتصال تعاملی امن، فقط یک capability بالقوه است و مسیر اجرای R0.1 به آن وابسته نیست.
+- Deferred or risk IDs: `RISK-0008`.
+- Rollback / recovery: حذف entry فقط در صورت اثبات اینکه exposure رخ نداده بود مجاز است؛ remediation واقعی revoke/rotate credential در dashboard 9Router است.
+
+## LOG-0043 — 2026-08-14 — G0-01 / documentation snapshot and drift fix
+
+- Outcome: وضعیت مستندات با evidence عملیاتی P0-A (LOG-0024 تا LOG-0040) هم‌تراز شد: مسیر نمونهٔ URL admin در Technology Baseline از `/cms/` به `/admin/` (مصوب ADR-0014) اصلاح شد؛ وضعیت عملیاتی ADR-0008 و ADR-0010 در index و خود ADRها به‌روز شد؛ جملهٔ قدیمی «restic password is still not created» در BACKUP_POLICY اصلاح شد؛ شماره‌گذاری تکراری و status قدیمی Task Spec سرور رفع شد؛ و توصیف `RISK-0001` به موانع واقعاً باقی‌مانده (PASS رسمی G0-06، تصمیم مالک، scaffold/CI/deploy) محدود شد.
+- Why: G0-01 نخستین task مسیر بحرانی first live است و باید از تناقض مستندات بالادستی دربارهٔ provisioning امروز جلوگیری کند؛ تصمیم‌های ADR پذیرفته‌شده تغییر نکردند.
+- Scope / files: `docs/plan/P0-G0-documentation-drift-task-spec.md`، `docs/taha-personal-platform-technology-architecture-baseline-fa.md`، `docs/adr/README.md`، `docs/adr/0008-...`، `docs/adr/0010-...`، `docs/governance/BACKUP_POLICY.md`، `docs/plan/P0-A-server-access-dns-backup-task-spec.md`، `docs/status/RISK_REGISTER.md` و همین Work Log.
+- Commands or actions actually performed: `git diff --check`؛ grep `/cms/` روی Technology Baseline؛ script بررسی لینک‌های محلی روی فایل‌های لمس‌شده. هیچ scaffold، dependency، API/schema، Docker/Caddy، DNS، VPS، backup، CI یا deploy اجرا نشد.
+- Verification actually performed and result: `git diff --check` بدون خطا (PASS)؛ Technology Baseline اکنون هیچ URL-route `/cms/` ندارد و تنها `apps/cms/` به‌عنوان مسیر source باقی است؛ link-check محلی فایل‌های لمس‌شده PASS بود.
+- Decisions / assumptions: `apps/cms/` به‌عنوان مسیر source canonical است و تغییر نمی‌کند؛ فقط نمونهٔ URL route به `/admin/` هم‌سو شد. هیچ تصمیم ADR بازنویسی نشد.
+- Deferred or risk IDs: `RISK-0001` همچنان BLOCKED (باقی‌مانده: تصمیم gate، scaffold/CI/deploy)؛ `RISK-0003` و `RISK-0004` تا `RISK-0007` تغییر نکردند.
+- Rollback / recovery: همهٔ تغییرها صرفاً مستندی و با Git قابل بازگشت‌اند؛ هیچ runtime data یا server state لمس نشده است.

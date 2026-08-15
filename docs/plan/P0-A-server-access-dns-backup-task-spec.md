@@ -1,6 +1,6 @@
 # Task Spec — P0-A server access, staging DNS and backup bootstrap
 
-**Status:** In progress — secure access and isolated staging placeholder are complete; backup repository is initialized, while first snapshot/job/restore remain.  
+**Status:** Completed for secure access, isolated staging placeholder and encrypted backup (PostgreSQL/media/config snapshots, `restic check`, retention, enabled daily timer and file-level restore rehearsal). Isolated staging database import remains open and is tracked under `RISK-0003`.  
 **Date:** 2026-08-14  
 **Owner:** Project owner  
 **Risk IDs:** `RISK-0001`, `RISK-0002`, `RISK-0003`
@@ -47,9 +47,9 @@ Establish a safe, evidence-based starting point for P0-A operations without scaf
 8. The owner-created Google Drive folder is the approved logical backup destination. Provision and restore-test restic/rclone only after the existing stack and its data paths are understood.
 9. The existing live Compose project contains healthy frontend, backend and PostgreSQL services, while Caddy names only production root and `www`. The observed 525 is consistent with the absent staging hostname TLS route. A future staging environment must use a distinct Compose project, database/volumes, ports, configuration and Caddy route; it must never reverse-proxy into the live production backend/database.
 10. ADR-0015 was applied: Caddyfile backup/validation/reload succeeded and external Cloudflare behavior is explicit 503. Post-issuance direct-origin re-test also returned 503, closing the temporary TLS validation item. Do not use `tls internal`, proxy to production, or change Cloudflare zone mode in this slice.
-4. Owner adds the `staging` Cloudflare record described in the runbook; DNS propagation is checked from an external resolver. The record alone must not be represented as an application deployment.
-5. Codex performs an explicitly authorized, read-only SSH audit and records non-sensitive evidence.
-6. With a dedicated Google Drive folder and owner-available OAuth consent, restic/rclone are configured on the audited server; a scheduled job, retention observation and staging restore rehearsal provide closure evidence for `RISK-0003`.
+11. Owner adds the `staging` Cloudflare record described in the runbook; DNS propagation is checked from an external resolver. The record alone must not be represented as an application deployment. *(Completed 2026-08-14.)*
+12. Codex performs an explicitly authorized, read-only SSH audit and records non-sensitive evidence. *(Completed 2026-08-14; no server write performed.)*
+13. With a dedicated Google Drive folder and owner-available OAuth consent, restic/rclone are configured on the audited server; a scheduled job, retention observation and file-level restore rehearsal provide closure evidence for `RISK-0003`. *(Completed 2026-08-14; the isolated staging database import is the only remaining piece for `RISK-0003` closure.)*
 
 ## Rollback / fallback
 

@@ -1,6 +1,6 @@
 # ADR-0008: Deployment baseline — Docker Compose and Caddy
 
-**Status:** Accepted for P0-A implementation; not provisioned.  
+**Status:** Accepted for P0-A implementation; existing live Caddy and Compose stack audited on 2026-08-14, project-specific Compose/Caddy configuration not yet provisioned.  
 **Date:** 2026-08-14
 
 ## Context

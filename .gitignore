@@ -28,3 +28,6 @@ postgres-data/
 # Local worktrees
 .worktrees/
 worktrees/
+
+# Local editor/agent tooling state
+.serena/
