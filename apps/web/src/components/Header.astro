@@ -1,4 +1,4 @@
----
+﻿---
 import type { LocaleContent } from "../data/content";
 
 interface Props {
@@ -43,7 +43,7 @@ const switchLang = content.lang === "fa" ? "en" : "fa";
 
   @supports (backdrop-filter: blur(10px)) {
     .site-header {
-      background-color: rgba(247, 248, 245, 0.82);
+      background-color: var(--glass-bg-light);
       -webkit-backdrop-filter: blur(10px) saturate(120%);
       backdrop-filter: blur(10px) saturate(120%);
     }

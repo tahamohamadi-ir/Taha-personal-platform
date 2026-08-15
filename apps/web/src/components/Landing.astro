@@ -141,10 +141,19 @@ const { content } = Astro.props;
   }
 
   .hero-positioning {
-    color: var(--color-signature);
+    color: var(--color-ink);
     font-weight: 600;
     font-size: clamp(1.125rem, 1rem + 0.8vw, 1.5rem);
     margin-block-end: 1rem;
+  }
+
+  .hero-positioning::after {
+    content: "";
+    display: block;
+    width: 3.5rem;
+    height: 3px;
+    margin-block-start: 0.875rem;
+    background-color: var(--color-gold-500);
   }
 
   .hero-proposition {
@@ -176,7 +185,7 @@ const { content } = Astro.props;
 
   .cta--primary {
     background-color: var(--color-brand);
-    color: #fff;
+    color: var(--color-inverse);
   }
 
   .cta--primary:hover {

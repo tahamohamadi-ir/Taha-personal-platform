@@ -45,6 +45,12 @@
   --radius-md: 12px;
   --radius-lg: 16px;
 
+  /* glass tokens (design.md §14) */
+  --glass-bg-dark: rgba(11, 22, 48, 0.62);
+  --glass-border-dark: rgba(255, 255, 255, 0.12);
+  --glass-shadow-dark: 0 16px 48px rgba(0, 0, 0, 0.24);
+  --glass-bg-light: rgba(247, 248, 245, 0.82);
+
   /* self-hosted bilingual font pair; decision recorded in ADR-0019 */
   --font-latin: "Inter", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
   --font-persian: "Vazirmatn", "Inter", "Segoe UI", system-ui, sans-serif;

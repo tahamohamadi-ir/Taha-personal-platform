@@ -1,4 +1,4 @@
----
+﻿---
 import "../styles/global.css";
 import { site } from "../data/site";
 import { content } from "../data/content";
@@ -120,7 +120,7 @@ const canonical = new URL("/", site.url).href;
     min-height: 100svh;
     overflow: hidden;
     background-color: var(--color-navy-950);
-    color: #fff;
+    color: var(--color-inverse);
     display: grid;
     place-items: center;
   }
@@ -153,11 +153,11 @@ const canonical = new URL("/", site.url).href;
     text-align: center;
     width: min(100%, 34rem);
     position: relative;
-    background-color: rgba(11, 22, 48, 0.62);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background-color: var(--glass-bg-dark);
+    border: 1px solid var(--glass-border-dark);
     border-radius: var(--radius-lg);
     padding: clamp(2rem, 7vw, 3.5rem) clamp(1.25rem, 6vw, 2.5rem);
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.24);
+    box-shadow: var(--glass-shadow-dark);
     -webkit-backdrop-filter: blur(16px) saturate(120%);
     backdrop-filter: blur(16px) saturate(120%);
   }
@@ -256,7 +256,7 @@ const canonical = new URL("/", site.url).href;
     padding: 0.75rem 1.5rem;
     border-radius: var(--radius-md);
     background-color: rgba(255, 255, 255, 0.04);
-    color: #fff;
+    color: var(--color-inverse);
     border: 1px solid transparent;
     text-decoration: none;
     font-weight: 700;
@@ -288,7 +288,7 @@ const canonical = new URL("/", site.url).href;
   }
 
   .gateway-action:focus-visible {
-    outline-color: #fff;
+    outline-color: var(--color-inverse);
     outline-offset: 3px;
   }
 
