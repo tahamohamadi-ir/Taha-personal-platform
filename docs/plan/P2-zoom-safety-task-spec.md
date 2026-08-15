@@ -1,6 +1,6 @@
 # Task Spec — P2 zoom-safety for gateway, landing and 404
 
-**Status:** Implemented and locally verified; integration/hosted CI pending.  
+**Status:** Implemented and fully locally verified; hosted CI pending.  
 **Date:** 2026-08-15  
 **Owner:** Project owner (agent-assisted)  
 **Release type:** `STANDARD` presentation/robustness change  
@@ -83,8 +83,8 @@ manifest).
 - Playwright on local preview (`:4321`):
   - `PREVIEW_URL=http://127.0.0.1:4322 PLAYWRIGHT_CHANNEL=chrome node qa/mobile-overflow.spec.mjs`
     — 128 PASS / 0 FAIL across the route-specific matrix;
-  - About routes are covered at all six standard widths here; the dedicated
-    About-tabs regression is rerun after integration with `LOG-0096`.
+  - About routes are covered at all six standard widths here; after rebase onto
+    `LOG-0096`, the dedicated About-tabs regression also passed 78/78.
 - `git diff --check` PASS; `git status` shows only the allowed files modified.
 
 ## QA matrix and naming
@@ -120,6 +120,5 @@ untouched (no deployment happens in this task).
 - Files changed (task-owned only): the six allowed files.
 - Verification actually run (command + result): recorded in `LOG-0097`.
 - Deferred/risk IDs: existing `DEFER-0013` unchanged; no new IDs.
-- Explicit blockers and next input: integrate after `LOG-0096`, rerun the
-  dedicated About regression, then obtain owner/hosted-CI evidence; real 200%
+- Explicit blockers and next input: obtain owner/hosted-CI evidence; real 200%
   browser zoom remains separate.
