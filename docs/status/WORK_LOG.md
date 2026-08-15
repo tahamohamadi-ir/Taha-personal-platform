@@ -1002,3 +1002,13 @@ ode --check و YAML validation توسط agent.
 - Decisions / assumptions: labels فارسی بخش‌ها (`سوابق کاری`, `تحصیلات`, `مهارت‌ها`, `انتشارات`, `پژوهش`, `گواهی‌ها`) با درخواست صریح مالک اضافه شدند؛ empty future section render نمی‌شود.
 - Deferred or risk IDs: `DEFER-0013` برای visual mobile QA/CI result باز است.
 - Rollback / recovery: revert commit؛ deploy فعلی untouched تا check/CI و artifact جدید.
+
+## LOG-0091 — 2026-08-15 — CI / mobile overflow fix for English header at 320px
+
+- Outcome: Playwright CI correctly found `overflow=30px` on `/en/` and `/en/about/` at 320×568 while all fa/390 checks passed. Root cause was the longer English header brand plus About/language controls; responsive header rules now shrink spacing/labels, allow brand ellipsis and keep controls within the viewport.
+- Why: `DEFER-0013` mobile overflow check is a blocking quality gate, not a check to disable.
+- Scope / files: `apps/web/src/components/Header.astro` and this Work Log.
+- Commands or actions actually performed: CI run `31889672810` failure reviewed; responsive media rule added; local check/build had passed before push.
+- Verification actually performed and result: CI rerun required after this fix; no threshold or test was weakened.
+- Deferred or risk IDs: `DEFER-0013` remains open until the next CI run passes all viewport/page cases.
+- Rollback / recovery: revert the responsive header commit; previous behavior remains available.

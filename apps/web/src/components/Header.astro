@@ -118,4 +118,35 @@ const switchLang = otherLang;
     color: var(--color-brand);
     background-color: var(--color-brand-soft);
   }
+
+  @media (max-width: 32rem) {
+    .site-header-inner {
+      gap: 0.25rem;
+      padding-inline: 0.75rem;
+    }
+
+    .brand {
+      min-width: 0;
+      flex: 1 1 auto;
+      gap: 0.5rem;
+    }
+
+    .brand-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 0.9rem;
+    }
+
+    .header-nav-group {
+      flex: 0 0 auto;
+      gap: 0;
+    }
+
+    .header-link {
+      padding-inline: 0.5rem;
+      font-size: 0.875rem;
+    }
+  }
 </style>
