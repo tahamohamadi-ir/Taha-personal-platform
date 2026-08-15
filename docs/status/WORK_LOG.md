@@ -1186,3 +1186,14 @@ ode --check و YAML validation توسط agent.
 - Decisions / assumptions: P2 closes without CV (C4 owner); gate P3 code-first per owner instruction; production settings fail-closed without env vars; media private default (`is_active=False`); rich text allowlist frozen; rebuild trigger disabled by default; deploy/migrate/media-exposure commands remain unapproved in Manifest.
 - Deferred or risk IDs: `RISK-0007` BLOCKED (capacity, owner), `RISK-0003` ACCEPTED limited (DB-import evidence required before any CMS DB deploy), `DEFER-0003` CLOSED (Python 3.12.13 + .venv evidence), C4 BLOCKED(owner), C7 partial, `DEFER-0009`/`DEFER-0013`/`KI-0001` OPEN (owner).
 - Rollback / recovery: CMS is code-only; revert commits; web artifact and server untouched; no deploy performed.
+
+## LOG-0108 - 2026-08-15 - P3 / CMS CI fixes (setup-uv pin + media unignore)
+
+- Outcome: the first CMS CI runs failed twice and both root causes were fixed on `main`: (1) `astral-sh/setup-uv@v10` does not resolve because setup-uv does not alias major tags — pinned to the verified release tag `v10.0.1` (run `31910863185` failure → fixed in `6d231ca`); (2) the `.gitignore` `media/` runtime pattern silently excluded `apps/cms/apps/media/`, so `ModuleNotFoundError: apps.media` failed `manage.py check` (run `31910863187` failure → negation added in `53ec945`; stray `__pycache__` files were unstaged).
+- Why: both were CI-only defects (local Windows runs passed because the working tree had the media files present); hosted Linux CI exposed them.
+- Scope / files: `.github/workflows/ci-cms.yml`, `.gitignore` and this Work Log.
+- Commands or actions actually performed: `gh run view --log-failed` for `31910863191`/`31910863185`/`31910863187`; `gh api repos/astral-sh/setup-uv/releases/latest` (v10.0.1) and `/tags`; `git rm --cached -r` for `__pycache__`; `git check-ignore` verification of `apps/cms/apps/media/models.py`; `git ls-files` counts before/after.
+- Verification actually performed and result: hosted CMS CI run `31910918522` → success (27s, all 6 steps PASS incl. pytest 62); hosted web CI run `31910918416` → success (1m52s, all 13 steps PASS). Both workflows green on the final `main` HEAD `53ec945`.
+- Decisions / assumptions: `.gitignore` negation `!apps/cms/apps/media/**` keeps runtime `media/` ignored while the app package stays tracked.
+- Deferred or risk IDs: none new; P3 runtime deploy remains BLOCKED (`RISK-0007`/`RISK-0009`).
+- Rollback / recovery: revert the two fix commits; CI would regress to the same failures, no runtime impact.
