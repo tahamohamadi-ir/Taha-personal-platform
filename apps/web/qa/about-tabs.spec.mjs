@@ -8,11 +8,19 @@ const pages = [
 const viewports = [
   { width: 320, height: 568 },
   { width: 390, height: 844 },
+  { width: 768, height: 1024 },
+  { width: 1024, height: 768 },
   { width: 1280, height: 800 },
+  { width: 1440, height: 900 },
 ];
+const desktopWidths = [1024, 1280, 1440];
+const centerTolerance = 2;
 
 let failures = 0;
-const browser = await chromium.launch();
+const executablePath = process.env.PW_EXECUTABLE_PATH;
+const browser = executablePath
+  ? await chromium.launch({ executablePath })
+  : await chromium.launch();
 
 try {
   for (const viewport of viewports) {
@@ -20,6 +28,60 @@ try {
       const page = await browser.newPage({ viewport });
       try {
         await page.goto(`${baseUrl}${target.path}`, { waitUntil: "networkidle" });
+
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - window.innerWidth,
+        );
+        if (overflow > 1) {
+          failures += 1;
+          console.log(`FAIL overflow ${target.path}@${viewport.width} overflow=${overflow}px`);
+        } else {
+          console.log(`PASS overflow ${target.path}@${viewport.width}`);
+        }
+
+        const intro = await page.evaluate((tol) => {
+          const about = document.querySelector(".about");
+          const blocks = [...document.querySelectorAll(".about-bio, .about-bio-long")];
+          if (!about || blocks.length !== 2) {
+            return { ok: false, reason: `about or intro blocks missing (${blocks.length})` };
+          }
+          const aboutRect = about.getBoundingClientRect();
+          const aboutCenter = aboutRect.left + aboutRect.width / 2;
+          const deltas = blocks.map((block) => {
+            const rect = block.getBoundingClientRect();
+            return Math.abs(rect.left + rect.width / 2 - aboutCenter);
+          });
+          return { ok: deltas.every((delta) => delta <= tol), deltas };
+        }, centerTolerance);
+        if (intro.ok) {
+          const maxDelta = Math.max(...intro.deltas);
+          console.log(`PASS intro-centered ${target.path}@${viewport.width} maxDelta=${maxDelta.toFixed(2)}px`);
+        } else {
+          failures += 1;
+          console.log(`FAIL intro-centered ${target.path}@${viewport.width} ${JSON.stringify(intro)}`);
+        }
+
+        if (desktopWidths.includes(viewport.width)) {
+          const wider = await page.evaluate(() => {
+            const bio = document.querySelector(".about-bio")?.getBoundingClientRect();
+            const visiblePanel = [...document.querySelectorAll(".about-tab-panel")].find(
+              (panel) =>
+                getComputedStyle(panel).display !== "none" &&
+                getComputedStyle(panel).visibility !== "hidden",
+            );
+            const card = visiblePanel?.querySelector(".entry")?.getBoundingClientRect();
+            if (!bio || !card) return { ok: false, reason: "bio or entry card in visible panel missing" };
+            return { ok: card.width > bio.width, bioWidth: bio.width, cardWidth: card.width };
+          });
+          if (wider.ok) {
+            console.log(
+              `PASS cards-wider ${target.path}@${viewport.width} card=${Math.round(wider.cardWidth)}px bio=${Math.round(wider.bioWidth)}px`,
+            );
+          } else {
+            failures += 1;
+            console.log(`FAIL cards-wider ${target.path}@${viewport.width} ${JSON.stringify(wider)}`);
+          }
+        }
 
         const geometry = await page.evaluate(() => {
           const controls = document.querySelector(".about-tab-controls");
