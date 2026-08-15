@@ -1,0 +1,37 @@
+# Candidate static-site blocks for the P1 artifact (ADR-0017 / ADR-0015).
+# NOT applied: reconcile with the existing Caddyfile only after the P0A-01
+# read-only inventory and explicit owner approval. Validate with `caddy validate`
+# and back up the current Caddyfile before any reload.
+#
+# $SITE_ROOT is finalized in P0A-01 (example: /opt/taha/site). The staging block
+# replaces the ADR-0015 503 placeholder; the production block replaces the
+# currently served site only with owner authorization and a rollback path.
+
+{$SITE_ROOT:error "SITE_ROOT env var is required"}
+
+staging.tahamohamadi.ir {
+	root * {$SITE_ROOT}/current
+	encode zstd gzip
+	file_server
+	header {
+		X-Robots-Tag "noindex, nofollow"
+		-Server
+	}
+	handle_errors {
+		rewrite * /404.html
+		file_server
+	}
+}
+
+tahamohamadi.ir, www.tahamohamadi.ir {
+	root * {$SITE_ROOT}/current
+	encode zstd gzip
+	file_server
+	header {
+		-Server
+	}
+	handle_errors {
+		rewrite * /404.html
+		file_server
+	}
+}

@@ -1,8 +1,5 @@
 ---
 import "../styles/global.css";
-import { site } from "../data/site";
-
-const canonical = new URL("/404/", site.url).href;
 ---
 
 <!doctype html>
@@ -12,7 +9,6 @@ const canonical = new URL("/404/", site.url).href;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Page not found · Taha Mohammadi</title>
     <meta name="robots" content="noindex" />
-    <link rel="canonical" href={canonical} />
   </head>
   <body class="notfound">
     <main class="notfound-panel">

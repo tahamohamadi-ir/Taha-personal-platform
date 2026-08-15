@@ -4,7 +4,7 @@ Read this file, `PROJECT_MANIFEST.md`, `docs/governance/RELEASE_POLICY.md`, `doc
 
 ## Current gate
 
-P0-G0 is **PASS for static-only P1** (2026-08-14). Scaffolding the Astro public frontend (`apps/web/`) for the static P1 release (Language Gateway + bilingual landing) is authorized with a complete Task Spec. Django/Wagtail/PostgreSQL, contact persistence, media upload, API/schema, Docker services for this project, VPS connection, DNS changes and deployment remain blocked until a subsequent phase (P3 or later) explicitly moves the gate with a complete Task Spec.
+P0-G0 is **PASS for static-only P1** (2026-08-14). The Astro public frontend (`apps/web/`) scaffold and the static P1 release (Language Gateway + bilingual landing) are authorized with a complete Task Spec. Static-only VPS staging/production deployment of that artifact is authorized only with owner approval, a documented rollback path and a passing release gate. Django/Wagtail/PostgreSQL, contact persistence, media upload, API/schema and project-specific Docker services remain blocked until a subsequent phase (P3 or later) explicitly moves the gate with a complete Task Spec.
 
 ## Ownership
 

@@ -8,6 +8,12 @@
 
 **Tech Stack:** Astro + TypeScript؛ Tailwind و Design Tokens حداقلی؛ React Islands فقط در صورت نیاز؛ GitHub Actions hosted؛ Docker Compose + Caddy؛ از P3 به بعد Python 3.12 + Django 5.2 LTS + Wagtail 7.4 LTS + Django Ninja + PostgreSQL.
 
+## Progress snapshot (2026-08-14)
+
+- **R0 complete:** G0-01 (drift fix), G0-02 (owner decision), G0-03 (content pack *proposal* drafted — string approval pending), G0-04 (tech freeze), G0-05 (ADRs 0016–0018 *Proposed*), G0-06 (`P0-G0: PASS for static-only P1`). Evidence: LOG-0043 تا LOG-0045.
+- **Local R1/R2 complete:** `apps/web/` scaffold (Astro 7.2.2 + TypeScript + Tailwind v4), Language Gateway `/`, `/fa/` RTL + `/en/` LTR landing, 404, `health.json`, `robots.txt`, `sitemap.xml`, design tokens, and `.github/workflows/ci.yml`. `npm run check` (0 errors) و `npm run build` PASS. Evidence: LOG-0046.
+- **Remaining (owner/VPS/deploy-gated):** P0A-01/02 (stack inventory + capacity), P0A-08..12 (artifact/deploy/rollback/observability), P1-10 browser smoke, P1-11 staging acceptance, P1-13..15 production deploy. Deferrals: `DEFER-0007` (contact path), `DEFER-0008` (font), `DEFER-0009` (OG image), `DEFER-0010` (browser verification).
+
 ## Global Constraints
 
 - وضعیت فعلی gate برابر `P0-G0` است. هیچ scaffold، manifest برنامه، dependency، API، schema، service یا deploy پیش از PASS/exception مستند و Task Spec مجاز نیست.

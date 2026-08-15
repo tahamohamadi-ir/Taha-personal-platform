@@ -521,3 +521,14 @@
 - Decisions / assumptions: npm به‌عنوان package manager؛ Node 24.16.0؛ Astro 7.2.2؛ Tailwind v4 CSS-first. فونت self-host نهایی نشده (system stack تا تأیید مالک)؛ OG image و contact مقصد ندارند و صادقانه حذف/inactive شده‌اند. CI هنوز روی runner واقعی اجرا نشده است.
 - Deferred or risk IDs: بدون ID جدید؛ `RISK-0004` تا `RISK-0007` (deploy/ظرفیت/patch/SSH) برای فاز استقرار باقی‌اند. موارد باقی‌ماندهٔ P1 (viewport/accessibility/visual smoke، OG image، فونت نهایی، staging/prod deploy) برای فاز deploy ثبت می‌شوند.
 - Rollback / recovery: `apps/web/` تازه است؛ حذف آن و `ci.yml` تغییر را برمی‌گرداند؛ هیچ server/runtime state لمس نشده است.
+
+## LOG-0047 — 2026-08-14 — P1 / independent verification, content QA and deploy mechanics
+
+- Outcome: دو subagent مستقل (explore و general) به‌صورت read-only پروژه را بازبینی کردند: acceptance ده‌گانهٔ P1 همه PASS و content pack از نظر ترجمه/واقعیت امن بود. چند اصلاح جزئی اعمال شد؛ مکانیک deploy (runbook + Caddy candidate + اسکریپت‌های deploy/rollback) طبق ADR-0017 ایجاد شد و `DEFER-0007` تا `DEFER-0010` ثبت شد.
+- Why: verification مستقل، تشخیص مسائل RTL/محتوا و آماده‌سازی مسیر deploy ایستا برای دستیابی به release gate.
+- Scope / files: `apps/web/src/data/content.ts`، `apps/web/src/pages/404.astro`، `docs/governance/DEPLOY_RUNBOOK.md`، `infra/caddy/static-site.caddy`، `infra/deploy/deploy.sh`، `infra/deploy/rollback.sh`، `.gitattributes`، `AGENTS.md`، `docs/status/deferred-validation.md`، `Task-list.md` و همین Work Log.
+- Commands or actions actually performed: دو subagent (explore/general) اجرا شدند؛ `npm run check` (0 error) و `npm run build` پس از اصلاحات PASS؛ `bash -n` روی هر دو اسکریپت deploy PASS. هیچ VPS/Caddy/DNS/deploy واقعی اجرا نشد.
+- Verification actually performed and result: verification report ده مورد PASS و بدون blocker؛ اصلاحات: حذف token مختلط RTL («R&D» → «تحقیق و توسعه»)، بهبود واژگان fa، حذف canonical شبح‌وار در 404. اسکریپت‌ها syntax-valid و LF هستند.
+- Decisions / assumptions: deploy mechanics از ADR-0017 پیاده‌سازی شد؛ مسیرهای مطلق (`SITE_ROOT`) و switch تولید تا inventory P0A-01 نهایی می‌مانند. Caddy candidate اعمال نشده و فقط candidate است.
+- Deferred or risk IDs: `DEFER-0007` (contact path)، `DEFER-0008` (font)، `DEFER-0009` (OG image)، `DEFER-0010` (browser verification) OPEN؛ `RISK-0004` تا `RISK-0007` برای فاز deploy بازند.
+- Rollback / recovery: تغییرات frontend/infra فقط؛ اسکریپت‌های deploy/rollback عملیات سرور انجام نمی‌دهند تا inventory و تأیید مالک.
