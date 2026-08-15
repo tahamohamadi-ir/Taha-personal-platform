@@ -1023,3 +1023,13 @@ ode --check و YAML validation توسط agent.
 - Verification actually performed and result: CI rerun required after this fix; no threshold or test was weakened.
 - Deferred or risk IDs: `DEFER-0013` remains open until the next CI run passes all viewport/page cases.
 - Rollback / recovery: revert the responsive header commit; previous behavior remains available.
+
+## LOG-0093 — 2026-08-15 — P2 / About tab layout and locale-switch regression fix
+
+- Outcome: audit found the About tab controls and panels were siblings inside one `nowrap` flex container, so desktop panels rendered beside/stretched by the tab strip. Controls are now in a separate horizontally scrollable wrapper and panels render below it. Header/Footer now honor `alternateHref`, so `/en/about/` switches to `/fa/about/` and vice versa instead of the locale root. A Playwright regression script now checks geometry, one-visible-panel behavior, keyboard tab movement, click activation and equivalent locale links at 320/390/1280.
+- Why: this was a real P2 layout blocker and a route-contract violation; overflow-only CI did not detect panel placement or equivalent locale switching.
+- Scope / files: `apps/web/src/components/About.astro`, `Header.astro`, `Footer.astro`, `apps/web/qa/about-tabs.spec.mjs`, `.github/workflows/ci.yml` and this Work Log.
+- Commands or actions actually performed: `npm run check`/`npm run build` (6 pages); `node --check qa/about-tabs.spec.mjs`; `node --check qa/mobile-overflow.spec.mjs`; YAML validation; static assertions for separated controls/panels and equivalent About links.
+- Verification actually performed and result: local checks PASS; CI will run the new About-tabs regression after push. No JS/hydration was added; tabs remain native radio + CSS.
+- Deferred or risk IDs: `DEFER-0013` remains open until the new CI About-tabs suite passes; mobile browser visual review remains separate.
+- Rollback / recovery: revert the layout/test commit; previous release remains on the server until the new artifact is deployed.
