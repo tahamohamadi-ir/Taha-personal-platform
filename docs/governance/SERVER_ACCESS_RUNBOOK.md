@@ -152,3 +152,41 @@ This does not change the existing root `A` or `www` CNAME. Current Cloudflare mo
 ## Backup handoff
 
 Before the audit, create a dedicated Google Drive folder named `taha-personal-platform-backups` under the owner's account. Do not share its OAuth code or credentials. After secure server access is audited, the owner will complete interactive OAuth consent locally and the implementation will configure encrypted restic/rclone, scheduled retention and a staging restore rehearsal according to `docs/governance/BACKUP_POLICY.md`.
+
+## Scoped agent operations (passwordless sudo for two fixed scripts)
+
+To let an agent perform the documented release switch and the 404 Caddy fix
+without the interactive sudo password, the owner may install a scoped sudoers
+grant. The grant covers ONLY two root-owned scripts; it does NOT give general
+sudo, and the scripts cannot be modified by the deploy user.
+
+### Owner one-time setup (run as root on the VPS)
+
+```bash
+install -d -m 0755 /opt/taha/bin
+install -m 0755 /home/deploy/taha-stage/update-release.sh /opt/taha/bin/update-release.sh
+install -m 0755 /home/deploy/taha-stage/caddy-apply.sh    /opt/taha/bin/caddy-apply.sh
+printf 'deploy ALL=(root) NOPASSWD: /opt/taha/bin/update-release.sh *, /opt/taha/bin/caddy-apply.sh\n' \
+  > /etc/sudoers.d/taha-deploy
+chmod 0440 /etc/sudoers.d/taha-deploy
+visudo -c
+```
+
+### What the agent may then run (and nothing else)
+
+```text
+sudo -n /opt/taha/bin/update-release.sh <absolute-release-path>   # atomic current switch
+sudo -n /opt/taha/bin/caddy-apply.sh                              # fixed 404 handle_errors fix
+```
+
+### Security properties and revocation
+
+- The two scripts are `root:root 0755` in `/opt/taha/bin`; the deploy user
+  cannot edit them, so the grant cannot be escalated to arbitrary root code.
+- `caddy-apply.sh` applies a fixed, idempotent transformation (no patch-file
+  argument), with `caddy validate` gate and automatic backup restore on failure.
+- Every run is auditable: `/var/log/auth.log` (sudo), `systemctl status caddy`
+  + Caddy backups (`/etc/caddy/Caddyfile.auto-<ts>`), and `/opt/taha/site/deploy.log`.
+- Revocation: `rm /etc/sudoers.d/taha-deploy && visudo -c` (immediate).
+- The agent must still never read secrets, never touch other services, and
+  never run interactive sudo or arbitrary commands.

@@ -879,3 +879,14 @@ pm run check (0 error)؛ git diff --check؛ بازبینی مستقل diffها.
 - Decisions / assumptions: به‌روزرسانی production فقط نیازمند sudo bash ~/taha-stage/update-release.sh ~/taha-stage/release-1ce6d9a است؛ fix 404 (handle_errors در snippet) به‌عنوان اقدام اختیاری مالک مستند شد.
 - Deferred or risk IDs: DEFER-0011 OPEN؛ بدون ID جدید.
 - Rollback / recovery: revert کامیت‌ها؛ rollback production = switch current به release قبلی.
+
+## LOG-0081 — 2026-08-15 — Infra / scoped agent server operations path
+
+- Outcome: مسیر امن برای اجرای خودکار عملیات سرور توسط agent تعریف شد: infra/deploy/caddy-apply.sh (root-owned، تبدیل ثابت و idempotent برای fix 404 handle_errors در snippet با gate validate و restore خودکار) ساخته و به سرور منتقل شد؛ SERVER_ACCESS_RUNBOOK.md بخش «Scoped agent operations» را گرفت: sudoers محدود به دو اسکریپت root-owned در /opt/taha/bin، بدون sudo عمومی، بدون escalation (اسکریپت‌ها توسط deploy قابل ویرایش نیستند)، audit از طریق auth.log/deploy.log/Caddy backups، و revoke فوری با حذف drop-in.
+- Why: مالک خواست خودش عملیات سرور را انجام ندهد؛ grant باید حداقل‌امتیاز، قابل بازبینی و قابل revoke باشد.
+- Scope / files: infra/deploy/caddy-apply.sh، docs/governance/SERVER_ACCESS_RUNBOOK.md و همین Work Log.
+- Commands or actions actually performed: ash -n infra/deploy/caddy-apply.sh (exit 0)؛ scp به ~/taha-stage/caddy-apply.sh؛ git diff --check. هیچ تغییری روی سرور اعمال نشد (نصب sudoers = اقدام مالک).
+- Verification actually performed and result: اسکریپت syntax-valid؛ منطق idempotent (اگر handle_errors موجود باشد بدون تغییر خارج می‌شود)؛ sudoers فقط دو مسیر دقیق.
+- Decisions / assumptions: اعطای NOPASSWD عمداً فقط به دو فرمان ثابت؛ هر تغییر Caddy آینده نیازمند ویرایش اسکریپت root-owned یا grant جدید است.
+- Deferred or risk IDs: بدون ID جدید.
+- Rollback / recovery: m /etc/sudoers.d/taha-deploy && visudo -c grant را فوراً لغو می‌کند.
