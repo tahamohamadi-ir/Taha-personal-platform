@@ -35,6 +35,19 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Verify artifact completeness and no secrets
+        run: |
+          test -f dist/health.json
+          test -f dist/robots.txt
+          test -f dist/sitemap.xml
+          test -f dist/index.html
+          test -f dist/en/index.html
+          test -f dist/fa/index.html
+          if grep -rIiE '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36}|password\s*[:=]\s*[^ ]{6,})' dist/; then
+            echo "secret-like pattern found in artifact" >&2
+            exit 1
+          fi
+
       - name: Upload static artifact
         uses: actions/upload-artifact@v4
         with:

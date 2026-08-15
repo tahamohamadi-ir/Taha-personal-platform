@@ -21,6 +21,7 @@ const altLang = content.lang === "fa" ? "en" : "fa";
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#f7f8f5" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{content.meta.title}</title>
     <meta name="description" content={content.meta.description} />
     <meta name="generator" content={Astro.generator} />
@@ -32,6 +33,7 @@ const altLang = content.lang === "fa" ? "en" : "fa";
       )
     }
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content={content.lang === "fa" ? "fa_IR" : "en_US"} />
     <meta property="og:title" content={content.meta.title} />
     <meta property="og:description" content={content.meta.description} />
     <meta property="og:url" content={canonical} />

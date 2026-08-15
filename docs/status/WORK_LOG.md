@@ -554,3 +554,14 @@
 - Decisions / assumptions: فرمان‌های CMS/deploy همچنان canonical نیستند و تا slice مربوطه ثبت نمی‌شوند.
 - Deferred or risk IDs: بدون ID جدید.
 - Rollback / recovery: تغییرات مستندی؛ بازگشت با Git.
+
+## LOG-0050 — 2026-08-14 — P1 / favicon, OG locale and CI artifact verification
+
+- Outcome: favicon SVG مشتق از text-mark مصوب (`TM` روی Navy با Turquoise)، `og:locale` (fa_IR/en_US) و مرحلهٔ verification در CI (کامل‌بودن artifact + scan الگوی secret) اضافه و به‌صورت محلی اعتبارسنجی شد.
+- Why: polish امن/کوچک پیش از release: favicon برای تب مرورگر، metadata OG صحیح، و gate CI که artifact ناقص یا حاوی الگوی secret را رد کند.
+- Scope / files: `apps/web/public/favicon.svg`، `apps/web/src/layouts/BaseLayout.astro`، `apps/web/src/pages/index.astro`، `.github/workflows/ci.yml` و همین Work Log.
+- Commands or actions actually performed: `npm run check` (0 error) و `npm run build` PASS؛ اجرای محلی همان تست‌های CI (وجود هفت فایل artifact و grep الگوهای secret) → PASS بدون هیچ hit.
+- Verification actually performed and result: favicon در `dist/favicon.svg` حاضر؛ scan محلی هیچ الگوی secret در `dist/` پیدا نکرد؛ منطق مرحلهٔ CI پیش از push آزمایش شد.
+- Decisions / assumptions: favicon صرفاً مشتق text-mark است و با تأیید لوگوی نهایی جایگزین می‌شود (الگوی مشابه DEFER-0008).
+- Deferred or risk IDs: بدون ID جدید.
+- Rollback / recovery: تغییرات frontend/CI؛ بازگشت با Git.
