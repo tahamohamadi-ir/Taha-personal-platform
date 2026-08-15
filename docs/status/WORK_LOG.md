@@ -643,3 +643,25 @@
 - Decisions / assumptions: a curl connection failure surfaces as status `000` → FAIL; exit code equals the number of failed checks; `x-robots-tag` match is case-insensitive; the script asserts exactly the checks listed in task A1, nothing more.
 - Deferred or risk IDs: none new (`DEFER-0011` note: `/robots.txt` returned 200 through the edge in this run).
 - Rollback / recovery: script is additive and read-only; rollback = Git revert of this commit.
+
+## LOG-0065 — 2026-08-15 — S-Plan / A1 pilot executed by subagent and approved
+
+- Outcome: تسک A1 (smoke script) توسط subagent `general` با پروتکل S-Plan اجرا شد (commit `e2d7796`، LOG-0064). L-model طبق §7 ریویو کرد: diff فقط allowed files، منطق دقیقاً مطابق spec، اجرای مستقل مجدد smoke روی staging → ۸ PASS / exit 0 → **APPROVE** و A1 در S-PLAN-STATE به DONE رفت.
+- Why: اثبات حلقهٔ «مدل کوچک اجرا / مدل بزرگ ریویو» قبل از هزینه‌کرد روی agentهای ارزان.
+- Scope / files: `infra/deploy/smoke.sh`، `docs/status/WORK_LOG.md`، `docs/plan/S-PLAN-STATE.md`.
+- Commands or actions actually performed: `git show --stat e2d7796`؛ `git diff --check HEAD~1 HEAD`؛ خواندن line-by-line اسکریپت؛ اجرای مستقل `bash infra/deploy/smoke.sh https://staging.tahamohamadi.ir --expect-noindex` → 8 PASS، exit 0.
+- Verification actually performed and result: هیچ divergence بین گزارش S-model و اجرای مستقل؛ ورودی‌های FAIL برای خطای اتصال (000) و exit-code=count تعریف شده‌اند.
+- Decisions / assumptions: الگوی S-Plan برای استفاده با مدل‌های ارزان معتبر است.
+- Deferred or risk IDs: بدون ID جدید.
+- Rollback / recovery: مستندات/اسکریپت؛ بازگشت با Git.
+
+## LOG-0066 — 2026-08-15 — Infra / cheap-model agent fleet and visual QA agent
+
+- Outcome: دو agent پروژه‌ای ساخته و version شدند: `.opencode/agent/s-executor.md` (مدل رایگان `opencode/deepseek-v4-flash-free`؛ fallbackهای ارزان: `deepseek-v4-flash`، `mimo-v2.5`) با permissionهای deny-by-default (edit محدود به مسیرهای task، bash محدود به npm/git-local/bash-n/smoke، ssh/sudo/push deny) و `.opencode/agent/visual-reviewer.md` (مدل چندوجهی `opencode-go/gpt-5.6-luna`، read-only با دسترسی فقط به `~/Pictures`/`~/Downloads` برای تصاویر) برای بستن `DEFER-0010`. `.gitignore` به‌روزی شد تا فقط `.opencode/agent/` version شود. S-Plan §0/§2 و state با تسک V1 (visual QA از اسکرین‌شات‌های مالک) تکمیل شد.
+- Why: مالک خواست اجرا با مدل‌های ارزان (DeepSeek/Grok/Luna/Mimo) انجام شود و L-model فقط review/planning بماند؛ بررسی تصویری با agent چندوجهی ارزان ممکن شد.
+- Scope / files: `.opencode/agent/s-executor.md`، `.opencode/agent/visual-reviewer.md`، `.gitignore`، `docs/plan/SMALL-MODEL-EXECUTION-PLAN.md`، `docs/plan/S-PLAN-STATE.md` و همین Work Log.
+- Commands or actions actually performed: `opencode models` (inventory مدل‌ها)؛ خواندن الگوی agentهای global موجود (`r0-docs-executor.md`) برای هم‌سبکی. هیچ مدل/کلید جدیدی نصب یا تنظیم نشد.
+- Verification actually performed and result: agentها مطابق schema (frontmatter مجاز + permission با ترتیب قواعد) نوشته شدند؛ `.gitignore` الگوی `!.opencode/agent/` دارد. فعال‌سازی نیازمند restart opencode است (config در startup لود می‌شود).
+- Decisions / assumptions: executor روی tier رایگان با fallback ارزان؛ visual-reviewer فقط مشاهده‌گر است و پیشنهاد کد نمی‌دهد؛ مدل گران هرگز برای اجرا/بازبینی تصویری استفاده نمی‌شود.
+- Deferred or risk IDs: `DEFER-0010` اکنون مسیر بستن دارد (V1 پس از restart).
+- Rollback / recovery: حذف دو فایل agent + بازگردانی `.gitignore`.

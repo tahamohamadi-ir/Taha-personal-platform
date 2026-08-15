@@ -39,8 +39,10 @@ desktop.ini
 .idea/
 .vscode/
 
-# Agent-local control-plane state (OpenCode, Serena, Claude Code)
-.opencode/
+# Agent-local control-plane state (OpenCode, Serena, Claude Code).
+# Project agent definitions are versioned; everything else stays local.
+.opencode/*
+!.opencode/agent/
 .serena/
 .claude/
 
