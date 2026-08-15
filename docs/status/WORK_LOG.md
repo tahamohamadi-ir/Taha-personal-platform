@@ -784,3 +784,19 @@
 - Decisions / assumptions: Beautiful UI فقط در slice مصوب (B5) و با استفادهٔ منحصراً از tokenهای خود پروژه copy می‌شود؛ UI8 تا تهیهٔ فایل/لایسنس توسط مالک در DEFER-0012 می‌ماند. هیچ library در P1 فعال نشد (static-first حفظ شد).
 - Deferred or risk IDs: `DEFER-0012` به‌روز (split: Beautiful UI=MIT reference؛ UI8=pending license).
 - Rollback / recovery: revert سه فایل مستند؛ هیچ runtime/deploy state تغییر نکرد.
+
+## LOG-0074 — 2026-08-15 — S-Plan / B5 visual-interaction adoption brief
+
+- Outcome: brief نوشته شد در `docs/plan/B5-VISUAL-INTERACTION-ADOPTION.md` با شش section دقیقاً طبق دستور: «Goal & gate»، «Candidate interactions»، «Adoption checklist»، «QA plan»، «Escalation rule» و «Explicit non-goal». سه interaction candidate فقط پیشنهاد شدند (بدون پیاده‌سازی): (۱) hero identity-constellation entrance با CSS/Motion و fallback = constellation استاتیک فعلی؛ (۲) hover/transition کارت‌های «Explore by Perspective» با Motion؛ (۳) timeline reveal برای Journey/About با GSAP scroll trigger و fallback کامل استاتیک. برای هر candidate: route، user-value، library، bundle-cost و fallback reduced-motion/no-JS ثبت شد. Adoption checklist کلمه‌به‌کلمه از design.md §98 کپی شد. بند explicit non-goal: هیچ import از motion/gsap/three در سایت P1 و هیچ کپی از Beautiful UI حالا.
+- Why: task B5 طبق S-Plan خواستار brief پیش از هر implementation است؛ libraries در P1 inactive می‌مانند و adoption فقط پس از release استاتیک P1 (task A5) و تأیید مالک مجاز است.
+- Scope / files: `docs/plan/B5-VISUAL-INTERACTION-ADOPTION.md` (جدید)، `docs/plan/S-PLAN-STATE.md`، `docs/status/WORK_LOG.md`. هیچ فایل دیگری تغییر نکرد.
+- Commands or actions actually performed: ساخت فایل brief؛ append این entry؛ به‌روزرسانی state B5 به NEEDS_REVIEW + ردیف review-log؛ `git diff --check`؛ grep برای import های `motion`/`gsap`/`three` در `apps/web/`.
+- Verification actually performed and result:
+  - `git diff --check` → exit 0 (بدون خطای whitespace).
+  - Heading های فایل جدید (خروجی واقعی):
+    `## Goal & gate`, `## Candidate interactions`, `## Adoption checklist`, `## QA plan`, `## Escalation rule`, `## Explicit non-goal` (هر شش موجود و دقیقاً مطابق دستور).
+  - grep در `apps/web/` برای `from "motion"|"gsap"|"three"|"gsap/ScrollTrigger"` و `import "motion"|"gsap"|"three"` → «No files found»؛ یعنی هیچ import جدیدی از motion/gsap/three در apps/web اضافه نشده است.
+  - grep سراسری تأیید کرد هیچ پیاده‌سازی/code جدیدی خارج از سه فایل مجاز نیست.
+- Decisions / assumptions: adoption فقط پس از release استاتیک P1 (A5)، انتخاب دقیقاً یک library برای هر interaction، عبور از checklist §98 به‌عنوان gate اجباری، و تأیید نهایی interaction+route+library توسط مالک. هیچ library فعال نشد و هیچ کدی import نشد.
+- Deferred or risk IDs: `DEFER-0012` (Beautiful UI فقط در slice مصوب)؛ پیش‌نیازهای B5 شامل مالک‌نام‌کردن interaction نهایی.
+- Rollback / recovery: حذف فایل جدید brief و revert دو فایل state/WORK_LOG؛ هیچ runtime/deploy/dependency change وجود ندارد.
