@@ -23,8 +23,8 @@ jobs:
         uses: actions/checkout@v7.0.1
 
       - name: Set up uv
-        # v10 is the latest setup-uv major verified via gh api (2026-08-15).
-        uses: astral-sh/setup-uv@v10
+        # v10.0.1 is the latest setup-uv release verified via gh api (2026-08-15).
+        uses: astral-sh/setup-uv@v10.0.1
 
       - name: Install dependencies
         run: uv sync --python 3.12
