@@ -14,23 +14,46 @@ const switchLang = content.lang === "fa" ? "en" : "fa";
 ---
 
 <header class="site-header">
-  <a href={`/${content.lang}/`} class="brand" aria-label={content.name}>
-    <span class="brand-mark" aria-hidden="true">{mark}</span>
-    <span class="brand-name">{content.name}</span>
-  </a>
-  <nav class="header-actions" aria-label={content.footer.switchLabel}>
-    <a href={switchHref} hreflang={switchLang} lang={switchLang} class="lang-link">
-      {switchLabel}
+  <div class="site-header-inner">
+    <a href={`/${content.lang}/`} class="brand" aria-label={content.name}>
+      <span class="brand-mark" aria-hidden="true">{mark}</span>
+      <span class="brand-name">{content.name}</span>
     </a>
-  </nav>
+    <nav class="header-actions" aria-label={content.footer.switchLabel}>
+      <a
+        href={switchHref}
+        hreflang={switchLang}
+        lang={switchLang}
+        class="lang-link"
+      >
+        {switchLabel}
+      </a>
+    </nav>
+  </div>
 </header>
 
 <style>
   .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background-color: var(--color-canvas);
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  @supports (backdrop-filter: blur(10px)) {
+    .site-header {
+      background-color: rgba(247, 248, 245, 0.82);
+      -webkit-backdrop-filter: blur(10px) saturate(120%);
+      backdrop-filter: blur(10px) saturate(120%);
+    }
+  }
+
+  .site-header-inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-block: 1rem;
+    padding-block: 0.625rem;
     padding-inline: clamp(1rem, 5vw, 2.5rem);
     max-width: 1280px;
     margin-inline: auto;
@@ -44,6 +67,7 @@ const switchLang = content.lang === "fa" ? "en" : "fa";
     text-decoration: none;
     color: var(--color-ink);
     font-weight: 600;
+    min-height: 2.75rem;
   }
 
   .brand-mark {
@@ -59,11 +83,16 @@ const switchLang = content.lang === "fa" ? "en" : "fa";
   }
 
   .lang-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding-inline: 0.875rem;
     text-decoration: none;
     color: var(--color-ink-secondary);
     font-weight: 600;
-    padding: 0.375rem 0.75rem;
     border-radius: var(--radius-md);
+    transition: color 140ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      background-color 140ms cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
   .lang-link:hover {

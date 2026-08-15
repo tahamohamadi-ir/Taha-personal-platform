@@ -25,12 +25,14 @@ export interface LocaleContent {
     secondaryCta: string;
   };
   perspectives: {
+    label: string;
     heading: string;
     intro: string;
     items: Perspective[];
     note: string;
   };
   about: {
+    label: string;
     heading: string;
     body: string;
   };
@@ -70,6 +72,7 @@ export const content: Record<LocaleCode, LocaleContent> = {
       secondaryCta: "About",
     },
     perspectives: {
+      label: "01 · Paths",
       heading: "Explore by perspective",
       intro:
         "One identity, multiple entry paths. Choose the route that matches why you are here.",
@@ -99,6 +102,7 @@ export const content: Record<LocaleCode, LocaleContent> = {
       note: "These paths open in a later release. For now, this landing introduces the identity and direction.",
     },
     about: {
+      label: "02 · Identity",
       heading: "About",
       body: "I work across design, interaction, engineering, data and AI to build human-centered intelligent systems, and I document the reasoning and evidence behind them.",
     },
@@ -137,6 +141,7 @@ export const content: Record<LocaleCode, LocaleContent> = {
       secondaryCta: "درباره",
     },
     perspectives: {
+      label: "۰۱ · مسیرها",
       heading: "مشاهده از نگاه شما",
       intro:
         "یک هویت، چند مسیر ورود. مسیری را انتخاب کنید که با دلیل آمدن شما هم‌خوان است.",
@@ -166,6 +171,7 @@ export const content: Record<LocaleCode, LocaleContent> = {
       note: "این مسیرها در نسخهٔ بعدی باز می‌شوند. فعلاً این صفحهٔ فرود هویت و مسیر را معرفی می‌کند.",
     },
     about: {
+      label: "۰۲ · هویت",
       heading: "درباره",
       body: "در مرز طراحی، تعامل، مهندسی، داده و هوش مصنوعی کار می‌کنم تا سیستم‌های هوشمند انسان‌محور بسازم و استدلال و شواهد پشت آن‌ها را ثبت کنم.",
     },

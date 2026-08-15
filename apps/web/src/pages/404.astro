@@ -7,17 +7,39 @@ import "../styles/global.css";
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#071225" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Page not found · Taha Mohammadi</title>
     <meta name="robots" content="noindex" />
   </head>
   <body class="notfound">
+    <svg
+      class="notfound-field"
+      aria-hidden="true"
+      viewBox="0 0 1440 900"
+      preserveAspectRatio="xMidYMid slice"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <g stroke="rgba(255,255,255,0.08)" stroke-width="1">
+        <path d="M720 460 L420 260" />
+        <path d="M720 460 L1010 300" />
+        <path d="M720 460 L400 640" />
+        <path d="M720 460 L1040 660" />
+      </g>
+      <circle cx="420" cy="260" r="5" fill="rgba(22,184,166,0.4)" />
+      <circle cx="1010" cy="300" r="5" fill="rgba(22,184,166,0.4)" />
+      <circle cx="400" cy="640" r="5" fill="rgba(22,184,166,0.4)" />
+      <circle cx="1040" cy="660" r="5" fill="rgba(22,184,166,0.4)" />
+    </svg>
     <main class="notfound-panel">
-      <h1 class="notfound-code">404</h1>
-      <p class="notfound-title" lang="en">Page not found</p>
-      <p class="notfound-title" lang="fa" dir="rtl">صفحه پیدا نشد</p>
+      <p class="notfound-code">404</p>
+      <h1 class="notfound-title">
+        <span lang="en" dir="ltr">Page not found</span>
+        <span lang="fa" dir="rtl">صفحه پیدا نشد</span>
+      </h1>
       <nav class="notfound-actions" aria-label="Site home">
         <a href="/">Gateway · خانه</a>
-        <a href="/en/" hreflang="en" lang="en">English</a>
+        <a href="/en/" hreflang="en" lang="en" dir="ltr">English</a>
         <a href="/fa/" hreflang="fa" lang="fa" dir="rtl">فارسی</a>
       </nav>
     </main>
@@ -27,39 +49,97 @@ import "../styles/global.css";
 <style>
   .notfound {
     margin: 0;
-    min-height: 100vh;
-    background-color: var(--color-canvas);
-    color: var(--color-ink);
+    min-height: 100svh;
+    background-color: var(--color-navy-950);
+    color: #fff;
     display: grid;
     place-items: center;
+    overflow: hidden;
+  }
+
+  .notfound-field {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
   }
 
   .notfound-panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
     text-align: center;
-    padding: 2rem;
+    padding: 3rem 2rem;
+    max-width: 34rem;
   }
 
   .notfound-code {
-    font-size: clamp(4rem, 3rem + 6vw, 8rem);
-    color: var(--color-brand);
     margin: 0;
+    font-family: var(--font-mono);
+    font-size: clamp(4rem, 3rem + 6vw, 7rem);
     line-height: 1;
+    font-weight: 700;
+    color: var(--color-turquoise-500);
+    letter-spacing: 0.04em;
   }
 
   .notfound-title {
-    margin: 0.5rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0;
+    font-size: clamp(1.25rem, 1rem + 1.2vw, 1.75rem);
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .notfound-title span {
+    unicode-bidi: isolate;
   }
 
   .notfound-actions {
     display: flex;
-    gap: 1rem;
+    gap: 0.75rem;
     justify-content: center;
     flex-wrap: wrap;
-    margin-block-start: 1.5rem;
+    margin-block-start: 1rem;
   }
 
   .notfound-actions a {
-    color: var(--color-brand);
-    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 3rem;
+    padding: 0.625rem 1.375rem;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    font-weight: 700;
+    color: var(--color-gold-500);
+    border: 1px solid var(--color-gold-500);
+    transition: background-color 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      color 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .notfound-actions a:hover {
+    background-color: var(--color-gold-500);
+    color: var(--color-navy-950);
+  }
+
+  .notfound-actions a:focus-visible {
+    outline-color: #fff;
+  }
+
+  .notfound-actions a:first-child {
+    color: var(--color-turquoise-500);
+    border-color: var(--color-turquoise-500);
+  }
+
+  .notfound-actions a:first-child:hover {
+    background-color: var(--color-turquoise-500);
+    color: var(--color-navy-950);
   }
 </style>

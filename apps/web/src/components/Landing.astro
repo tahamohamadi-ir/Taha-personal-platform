@@ -9,23 +9,78 @@ const { content } = Astro.props;
 ---
 
 <section class="hero">
-  <p class="hero-eyebrow">{content.hero.eyebrow}</p>
-  <h1 class="hero-name">{content.name}</h1>
-  <p class="hero-positioning">{content.positioning}</p>
-  <p class="hero-proposition">{content.proposition}</p>
-  <div class="hero-actions">
-    <a href="#perspectives" class="cta cta--primary">{content.hero.primaryCta}</a>
-    <a href="#about" class="cta cta--ghost">{content.hero.secondaryCta}</a>
+  <div class="hero-grid">
+    <div class="hero-copy">
+      <p class="hero-eyebrow">{content.hero.eyebrow}</p>
+      <h1 class="hero-name">{content.name}</h1>
+      <p class="hero-positioning">{content.positioning}</p>
+      <p class="hero-proposition">{content.proposition}</p>
+      <div class="hero-actions">
+        <a href="#perspectives" class="cta cta--primary">{content.hero.primaryCta}</a>
+        <a href="#about" class="cta cta--ghost">{content.hero.secondaryCta}</a>
+      </div>
+    </div>
+    <div class="hero-visual" aria-hidden="true">
+      <svg
+        class="constellation"
+        viewBox="0 0 440 440"
+        role="presentation"
+        focusable="false"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <g stroke="var(--color-navy-800)" stroke-width="1.5">
+          <path d="M220 240 L100 110" />
+          <path d="M220 240 L340 130" />
+          <path d="M220 240 L80 300" />
+          <path d="M220 240 L360 330" />
+          <path d="M220 240 L225 70" />
+        </g>
+        <g
+          stroke="var(--color-navy-800)"
+          stroke-width="1"
+          stroke-dasharray="4 7"
+          opacity="0.55"
+        >
+          <path d="M100 110 L225 70" />
+          <path d="M340 130 L360 330" />
+          <path d="M80 300 L100 110" />
+        </g>
+        <g stroke="var(--color-border-strong)" stroke-width="1" opacity="0.7">
+          <path d="M28 28 h18 M28 28 v18" />
+          <path d="M412 28 h-18 M412 28 v18" />
+          <path d="M28 412 h18 M28 412 v-18" />
+          <path d="M412 412 h-18 M412 412 v-18" />
+        </g>
+        <circle cx="100" cy="110" r="7" fill="var(--color-turquoise-500)" />
+        <circle cx="340" cy="130" r="7" fill="var(--color-turquoise-500)" />
+        <circle cx="80" cy="300" r="7" fill="var(--color-turquoise-500)" />
+        <circle cx="360" cy="330" r="7" fill="var(--color-turquoise-500)" />
+        <circle cx="225" cy="70" r="9" fill="var(--color-purple-500)" />
+        <circle
+          cx="220"
+          cy="240"
+          r="36"
+          fill="none"
+          stroke="var(--color-gold-500)"
+          stroke-width="1.5"
+          opacity="0.5"
+        />
+        <circle cx="220" cy="240" r="12" fill="var(--color-gold-500)" />
+      </svg>
+    </div>
   </div>
 </section>
 
 <section id="perspectives" class="section">
-  <h2 class="section-heading">{content.perspectives.heading}</h2>
-  <p class="section-intro">{content.perspectives.intro}</p>
+  <div class="section-head">
+    <span class="section-label">{content.perspectives.label}</span>
+    <h2 class="section-heading">{content.perspectives.heading}</h2>
+    <p class="section-intro">{content.perspectives.intro}</p>
+  </div>
   <div class="perspectives-grid">
     {
       content.perspectives.items.map((item) => (
-        <article class="perspective">
+        <article class={`perspective perspective--${item.id}`}>
           <h3 class="perspective-title">{item.title}</h3>
           <p class="perspective-audience">{item.audience}</p>
           <p class="perspective-description">{item.description}</p>
@@ -37,7 +92,11 @@ const { content } = Astro.props;
 </section>
 
 <section id="about" class="section section--muted">
-  <h2 class="section-heading">{content.about.heading}</h2>
+  <div class="section-head">
+    <span class="section-label">{content.about.label}</span>
+    <h2 class="section-heading">{content.about.heading}</h2>
+    <div class="rule" aria-hidden="true"><span></span></div>
+  </div>
   <p class="about-body">{content.about.body}</p>
 </section>
 
@@ -49,6 +108,13 @@ const { content } = Astro.props;
     margin-inline: auto;
   }
 
+  .hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(2rem, 6vw, 4rem);
+    align-items: center;
+  }
+
   .hero-eyebrow {
     color: var(--color-brand);
     font-weight: 700;
@@ -58,11 +124,20 @@ const { content } = Astro.props;
     margin-block-end: 1rem;
   }
 
+  :global(html[dir="rtl"]) .hero-eyebrow {
+    letter-spacing: 0;
+  }
+
   .hero-name {
-    font-size: clamp(2.8rem, 2rem + 4vw, 5rem);
-    line-height: 1.1;
+    font-size: clamp(2.6rem, 1.9rem + 3.6vw, 4.5rem);
+    line-height: 1.12;
     letter-spacing: -0.02em;
     margin-block-end: 1rem;
+    text-wrap: balance;
+  }
+
+  :global(html[dir="rtl"]) .hero-name {
+    letter-spacing: 0;
   }
 
   .hero-positioning {
@@ -86,11 +161,17 @@ const { content } = Astro.props;
   }
 
   .cta {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 3rem;
     padding: 0.75rem 1.5rem;
     border-radius: var(--radius-md);
     text-decoration: none;
     font-weight: 700;
+    transition: background-color 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      color 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      border-color 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
   .cta--primary {
@@ -102,6 +183,10 @@ const { content } = Astro.props;
     background-color: var(--color-brand-emphasis);
   }
 
+  .cta--primary:focus-visible {
+    outline-color: var(--color-navy-950);
+  }
+
   .cta--ghost {
     color: var(--color-brand);
     border: 1px solid var(--color-border-strong);
@@ -109,6 +194,19 @@ const { content } = Astro.props;
 
   .cta--ghost:hover {
     background-color: var(--color-brand-soft);
+    border-color: var(--color-brand);
+  }
+
+  .hero-visual {
+    display: grid;
+    place-items: center;
+  }
+
+  .constellation {
+    width: 100%;
+    max-width: 420px;
+    height: auto;
+    display: block;
   }
 
   .section {
@@ -124,15 +222,52 @@ const { content } = Astro.props;
     border-radius: var(--radius-lg);
   }
 
+  .section-head {
+    margin-block-end: 2rem;
+  }
+
+  .section-label {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-brand);
+    margin-block-end: 0.5rem;
+  }
+
+  :global(html[dir="rtl"]) .section-label {
+    font-family: var(--font-persian);
+    letter-spacing: 0.02em;
+  }
+
   .section-heading {
     font-size: clamp(1.75rem, 1.5rem + 1.5vw, 2.5rem);
     margin-block-end: 0.75rem;
+    text-wrap: balance;
   }
 
   .section-intro {
     color: var(--color-ink-secondary);
     max-width: 60ch;
-    margin-block-end: 2rem;
+    margin-block-end: 0;
+  }
+
+  .rule {
+    position: relative;
+    height: 1px;
+    background-color: var(--color-border-subtle);
+    margin-block: 1.25rem 0 0;
+  }
+
+  .rule span {
+    position: absolute;
+    inset-inline-start: 0;
+    top: -1px;
+    height: 3px;
+    width: 64px;
+    background-color: var(--color-gold-500);
   }
 
   .perspectives-grid {
@@ -145,8 +280,21 @@ const { content } = Astro.props;
   .perspective {
     background-color: var(--color-surface);
     border: 1px solid var(--color-border-subtle);
+    border-inline-start: 3px solid var(--color-brand);
     border-radius: var(--radius-md);
     padding: 1.5rem;
+  }
+
+  .perspective--research {
+    border-inline-start-color: var(--color-research);
+  }
+
+  .perspective--engineering {
+    border-inline-start-color: var(--color-brand);
+  }
+
+  .perspective--writing {
+    border-inline-start-color: var(--color-context);
   }
 
   .perspective-title {
@@ -159,6 +307,14 @@ const { content } = Astro.props;
     font-size: 0.8125rem;
     font-weight: 600;
     margin-block-end: 0.75rem;
+  }
+
+  .perspective--research .perspective-audience {
+    color: var(--color-research);
+  }
+
+  .perspective--writing .perspective-audience {
+    color: var(--color-context);
   }
 
   .perspective-description {
@@ -174,5 +330,20 @@ const { content } = Astro.props;
     max-width: 60ch;
     color: var(--color-ink);
     font-size: 1.125rem;
+  }
+
+  @media (max-width: 60rem) {
+    .hero-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .hero-visual {
+      order: 2;
+    }
+
+    .constellation {
+      max-width: 240px;
+      opacity: 0.9;
+    }
   }
 </style>

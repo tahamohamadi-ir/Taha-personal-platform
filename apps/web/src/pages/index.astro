@@ -26,16 +26,54 @@ const canonical = new URL("/", site.url).href;
     <meta property="og:title" content={title} />
   </head>
   <body class="gateway">
-    <svg class="gateway-field" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      class="gateway-field"
+      aria-hidden="true"
+      viewBox="0 0 1440 900"
+      preserveAspectRatio="xMidYMid slice"
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <defs>
         <pattern id="dot-field" width="28" height="28" patternUnits="userSpaceOnUse">
-          <circle cx="1.5" cy="1.5" r="1.5" fill="rgba(255,255,255,0.10)" />
+          <circle cx="1.5" cy="1.5" r="1.5" fill="rgba(255,255,255,0.05)" />
         </pattern>
       </defs>
-      <rect width="100%" height="100%" fill="url(#dot-field)" />
-      <line x1="8%" y1="18%" x2="92%" y2="18%" stroke="rgba(22,184,166,0.18)" stroke-width="1" />
-      <line x1="18%" y1="8%" x2="18%" y2="92%" stroke="rgba(22,184,166,0.14)" stroke-width="1" />
-      <line x1="78%" y1="26%" x2="92%" y2="72%" stroke="rgba(200,155,60,0.14)" stroke-width="1" />
+      <rect width="1440" height="900" fill="url(#dot-field)" />
+      <g stroke="rgba(255,255,255,0.09)" stroke-width="1">
+        <path d="M430 450 L150 230" />
+        <path d="M430 450 L760 270" />
+        <path d="M430 450 L140 630" />
+        <path d="M430 450 L780 660" />
+        <path d="M430 450 L470 140" />
+      </g>
+      <g
+        stroke="rgba(255,255,255,0.07)"
+        stroke-width="1"
+        stroke-dasharray="3 8"
+      >
+        <path d="M150 230 L470 140" />
+        <path d="M760 270 L780 660" />
+        <path d="M140 630 L150 230" />
+      </g>
+      <circle cx="150" cy="230" r="6" fill="rgba(22,184,166,0.42)" />
+      <circle cx="760" cy="270" r="6" fill="rgba(22,184,166,0.42)" />
+      <circle cx="140" cy="630" r="6" fill="rgba(22,184,166,0.42)" />
+      <circle cx="780" cy="660" r="6" fill="rgba(22,184,166,0.42)" />
+      <circle cx="470" cy="140" r="8" fill="rgba(96,71,184,0.45)" />
+      <circle
+        cx="430"
+        cy="450"
+        r="26"
+        fill="none"
+        stroke="rgba(200,155,60,0.35)"
+        stroke-width="1"
+      />
+      <g stroke="rgba(255,255,255,0.14)" stroke-width="1">
+        <path d="M40 40 h24 M40 40 v24" />
+        <path d="M1400 40 h-24 M1400 40 v24" />
+        <path d="M40 860 h24 M40 860 v-24" />
+        <path d="M1400 860 h-24 M1400 860 v-24" />
+      </g>
     </svg>
     <main class="gateway-stage">
       <div class="gateway-panel">
@@ -247,6 +285,11 @@ const canonical = new URL("/", site.url).href;
 
   .gateway-action--fa:hover {
     background-color: var(--color-gold-500);
+  }
+
+  .gateway-action:focus-visible {
+    outline-color: #fff;
+    outline-offset: 3px;
   }
 
   @media (max-width: 28rem) {

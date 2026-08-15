@@ -7,15 +7,27 @@ interface Props {
 }
 
 const { content } = Astro.props;
+const mark = content.lang === "fa" ? "طه" : "TM";
 const switchHref = content.lang === "fa" ? "/en/" : "/fa/";
 const switchLabel = content.lang === "fa" ? "EN" : "فارسی";
 const switchLang = content.lang === "fa" ? "en" : "fa";
 ---
 
 <footer class="site-footer">
-  <p class="footer-tagline">{content.footer.tagline}</p>
+  <div class="footer-brand">
+    <span class="footer-mark" aria-hidden="true">{mark}</span>
+    <div class="footer-brand-copy">
+      <p class="footer-name">{content.name}</p>
+      <p class="footer-tagline">{content.footer.tagline}</p>
+    </div>
+  </div>
   <div class="footer-meta">
-    <a href={switchHref} hreflang={switchLang} lang={switchLang} class="footer-switch">
+    <a
+      href={switchHref}
+      hreflang={switchLang}
+      lang={switchLang}
+      class="footer-switch"
+    >
       {switchLabel}
     </a>
     <span class="contact-state" aria-label={content.contact.heading}>
@@ -29,7 +41,7 @@ const switchLang = content.lang === "fa" ? "en" : "fa";
   .site-footer {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
     padding-block: 2.5rem;
     padding-inline: clamp(1rem, 5vw, 2.5rem);
     max-width: 1280px;
@@ -38,26 +50,65 @@ const switchLang = content.lang === "fa" ? "en" : "fa";
     border-block-start: 1px solid var(--color-border-subtle);
   }
 
-  .footer-tagline {
+  .footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+  }
+
+  .footer-mark {
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex-shrink: 0;
+    background-color: var(--color-navy-950);
+    color: var(--color-turquoise-500);
+    border-radius: var(--radius-md);
+    font-weight: 700;
+    font-size: 0.875rem;
+  }
+
+  .footer-brand-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .footer-name {
     color: var(--color-ink);
     font-weight: 600;
+  }
+
+  .footer-tagline {
+    color: var(--color-ink-secondary);
+    font-size: 0.875rem;
   }
 
   .footer-meta {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 1.25rem;
     flex-wrap: wrap;
   }
 
   .footer-switch {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding-inline: 0.875rem;
     color: var(--color-brand);
     text-decoration: none;
     font-weight: 600;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
+    transition: border-color 140ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      background-color 140ms cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
   .footer-switch:hover {
-    text-decoration: underline;
+    border-color: var(--color-brand);
+    background-color: var(--color-brand-soft);
   }
 
   .contact-state {
