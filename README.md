@@ -8,8 +8,8 @@ Public repository for the replacement of `tahamohamadi.ir`: a bilingual Persian/
 |---|---|
 | Canonical remote | `https://github.com/tahamohamadi-ir/Taha-personal-platform.git` (public) |
 | Default branch | `main` |
-| Production domain | `tahamohamadi.ir` — not yet served from this repository |
-| Staging domain | `staging.tahamohamadi.ir` — isolated placeholder; static P1 deploy pending |
+| Production domain | `tahamohamadi.ir` — serves the static P1 site (release-d55d44e) |
+| Staging domain | `staging.tahamohamadi.ir` — static P1 site live (isolated, noindex) |
 | Public locale roots | `/` Language Gateway, `/fa/` (RTL) and `/en/` (LTR) |
 | Admin route | `/admin/` — app not yet deployed |
 
@@ -17,7 +17,7 @@ Source of truth for these values: [PROJECT_MANIFEST.md](PROJECT_MANIFEST.md).
 
 ## Current status
 
-P0-G0 passed for static-only P1 (2026-08-14). The Astro public frontend (`apps/web/`) is scaffolded and the static P1 release — a Language Gateway at `/` with `/fa/` (RTL) and `/en/` (LTR) landing pages, 404, health, robots and sitemap — is built and verified locally with CI in `.github/workflows/ci.yml`. Deployment to staging/production on the VPS is not yet performed and requires owner approval per the [Deploy Runbook](docs/governance/DEPLOY_RUNBOOK.md). The production VPS already runs a separate live stack that this repository must not disturb; secure access, the isolated staging placeholder and the encrypted Google Drive backup pipeline are recorded in the [Work Log](docs/status/WORK_LOG.md), and open risks are tracked in the [Risk Register](docs/status/RISK_REGISTER.md). Django/Wagtail/PostgreSQL and contact persistence remain blocked until a later phase.
+P1 production is LIVE at https://tahamohamadi.ir (2026-08-15): the static P1 site (release-d55d44e) from `/opt/taha/site/current` serves the Language Gateway at `/` with `/fa/` (RTL) and `/en/` (LTR) landing pages, 404, health, robots and sitemap — static-first and readable without JavaScript. Staging is also live at `staging.tahamohamadi.ir` (isolated, noindex) and CI is green on `main`. Deployment uses the Caddy snippet `taha_application_routes` (root + `file_server`) with a versioned atomic `current` symlink switch via [infra/deploy/update-release.sh](infra/deploy/update-release.sh); rollback is documented in the [Deploy Runbook](docs/governance/DEPLOY_RUNBOOK.md) and production smoke checks passed (7 PASS). An updated release (contrast fix + polish) is staged for the next atomic switch; legacy Compose containers still run on the VPS but are no longer routed from the public hostnames. CMS (Django/Wagtail), contact persistence and media remain gated until a later phase; PostgreSQL/Pagefind are not provisioned for this project.
 
 ## Where to start
 
@@ -40,7 +40,7 @@ docs/       product, design, architecture, governance, plan and status
 
 ## Approved baseline
 
-Astro + TypeScript (static-first, no client JS in P1) with Tailwind CSS and project design tokens for the public frontend; `motion`, `gsap` and `three` are locked for future, approved islands only and are inactive in P1. Python 3.12 with Django 5.2 LTS, Wagtail 7.4 LTS and Django Ninja for the CMS/API (not yet implemented); PostgreSQL; Docker Compose + Caddy on the VPS; GitHub Actions hosted runners for CI; encrypted restic/rclone backups to Google Drive (daily timer verified; staging database-import rehearsal remains). Exact dependency versions are locked in the `apps/web/` lockfile; CMS versions are locked only when CMS scaffolding is authorized.
+Astro + TypeScript (static-first, no client JS in P1) with Tailwind CSS and project design tokens for the public frontend — static P1 is implemented and live; `motion`, `gsap` and `three` are locked for future, approved islands only and are inactive in P1. Python 3.12 with Django 5.2 LTS, Wagtail 7.4 LTS and Django Ninja for the CMS/API, PostgreSQL and Pagefind search remain future phases (CMS not yet scaffolded; PostgreSQL/Pagefind not provisioned); Docker Compose + Caddy on the VPS; GitHub Actions hosted runners for CI; encrypted restic/rclone backups to Google Drive (daily timer verified; staging database-import rehearsal remains). Exact dependency versions are locked in the `apps/web/` lockfile; CMS versions are locked only when CMS scaffolding is authorized.
 
 ## Safety
 

@@ -22,12 +22,12 @@
 
 | Layer | Approved baseline | Current state |
 |---|---|---|
-| Public frontend | Astro + TypeScript + React Islands | Scaffolded; static-only P1 built (Language Gateway + `/fa/` + `/en/` landing) |
+| Public frontend | Astro + TypeScript + React Islands | Scaffolded; static-only P1 built and deployed (static P1 live on tahamohamadi.ir) — Language Gateway + `/fa/` + `/en/` landing |
 | Styling/UI | Tailwind CSS + project design system + shadcn/Radix | Tailwind v4 + project design tokens applied; shadcn/Radix not used in P1 |
 | Backend/CMS/API | Python 3.12 (latest supported patch) + Django 5.2 LTS + Wagtail 7.4 LTS + Django Ninja | Not scaffolded |
 | Database | PostgreSQL | Not provisioned |
 | Public search | Pagefind at the approved phase | Not provisioned |
-| Deployment | Docker Compose + Caddy on VPS | Existing live stack: Caddy plus a healthy frontend/backend/PostgreSQL Compose project; project-specific configuration is not provisioned and must remain isolated from it |
+| Deployment | Docker Compose + Caddy on VPS | Static P1 deployed on staging+production via Caddy snippet and atomic `/opt/taha/site/current` switch; project-specific Caddy/Compose not otherwise provisioned; Docker services for CMS still blocked |
 | Git/CI | GitHub + GitHub Actions hosted standard runners | Workflow created (`.github/workflows/ci.yml`); not yet run on a hosted runner |
 | Backup | Encrypted restic repository through rclone on Google Drive | restic 0.18.1 and Ubuntu rclone 1.60.1 build installed; OAuth, repository, PostgreSQL/media/config snapshots, `restic check`, retention, enabled daily timer and isolated file-level restore verified; staging database import remains |
 
@@ -51,8 +51,8 @@ docs/templates/         task specifications
 | Environment | Purpose | State | Data rule |
 |---|---|---|---|
 | `dev` | Local Windows control plane; WSL only for Linux/Docker tests | Available | fake/sanitized only |
-| `staging` | `staging.tahamohamadi.ir` | DNS and isolated Caddy placeholder verified externally and direct-origin as 503; application not deployed | non-sensitive representative data |
-| `prod` | `tahamohamadi.ir` | Existing VPS; application not deployed | published, approved and backed-up data only |
+| `staging` | `staging.tahamohamadi.ir` | Static P1 deployed, noindex | non-sensitive representative data |
+| `prod` | `tahamohamadi.ir` | Static P1 deployed (2026-08-15) | published, approved and backed-up data only |
 
 Production host is an active Ubuntu VPS with 1 vCPU, 2 GB RAM and 30 GB NVMe. It is sufficient for the static-first baseline and a modest Django/PostgreSQL runtime, but it is **not** approved for Gitea, a CI runner, Redis, Celery, OpenSearch, Neo4j, Kubernetes or other additional always-on services.
 

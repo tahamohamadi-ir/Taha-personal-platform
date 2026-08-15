@@ -868,3 +868,14 @@ pm run check (0 error)؛ git diff --check؛ بازبینی مستقل diffها.
 - Decisions / assumptions: gsap/three/motion در P1 باندل نمی‌شوند (فقط locked)؛ fix 404 production به‌روزرسانی snippet Caddy نیاز دارد (owner sudo) — به‌همراه switch به release جدید در دستور update مالک گنجانده می‌شود. DEFER-0010 (browser QA) و DEFER-0011 باز ماندند.
 - Deferred or risk IDs: بدون ID جدید؛ DEFER-0011 باز؛ gsap license به‌عنوان شرط adoption B5 ثبت شد.
 - Rollback / recovery: revert کامیت‌های این batch؛ هیچ server/runtime state توسط agent تغییر نکرد.
+
+## LOG-0080 — 2026-08-15 — R2 close-out / release updater, doc sync, CI fingerprint
+
+- Outcome: سه workstream موازی دیگر تکمیل و تأیید شد: (1) infra/deploy/update-release.sh — اسکریپت root-run برای switch اتمیک current (کپی idempotent + chown/chmod + ln -sfn/mv -Tf + checksum در deploy.log) بدون هیچ تغییری در Caddyfile — روی سرور هم قرار گرفت؛ (2) README و PROJECT_MANIFEST با وضعیت live (production/staging P1 deployed، مکانیک snippet + atomic switch) هم‌تراز شدند؛ (3) CI: مرحلهٔ build fingerprint (dist/build-fingerprint.txt) + نام artifact نسخه‌دار web-dist-<sha> + retention 14 روز.
+- Why: بستن R2 و آماده‌سازی به‌روزرسانی production به آخرین build (با fix کنتراست + پولیش) با کمترین اقدام مالک.
+- Scope / files: infra/deploy/update-release.sh، .github/workflows/ci.yml، README.md، PROJECT_MANIFEST.md و همین Work Log.
+- Commands or actions actually performed: سه task موازی؛ ash -n update-release.sh (exit 0)؛ scp اسکریپت به ~/taha-stage/؛ git diff --check؛ YAML با PyYAML اعتبارسنجی شد.
+- Verification actually performed and result: همهٔ خروجی‌ها مطابق spec؛ هیچ تغییر سرور توسط agent؛ artifacts/scrip روی سرور آماده‌اند.
+- Decisions / assumptions: به‌روزرسانی production فقط نیازمند sudo bash ~/taha-stage/update-release.sh ~/taha-stage/release-1ce6d9a است؛ fix 404 (handle_errors در snippet) به‌عنوان اقدام اختیاری مالک مستند شد.
+- Deferred or risk IDs: DEFER-0011 OPEN؛ بدون ID جدید.
+- Rollback / recovery: revert کامیت‌ها؛ rollback production = switch current به release قبلی.
