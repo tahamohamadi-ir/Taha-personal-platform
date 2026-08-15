@@ -1120,3 +1120,14 @@ ode --check و YAML validation توسط agent.
 - Decisions / assumptions: فقط قواعد shrink/wrap روی عناصر proven اضافه شد؛ overflow assertion، viewport matrix و `DEFER-0013` تغییر نکردند.
 - Deferred or risk IDs: `DEFER-0013` OPEN برای zoom واقعی؛ CI final rerun pending.
 - Rollback / recovery: revert این commit و در صورت نیاز commitهای پیشین regression fix؛ production untouched و هیچ deploy/SSH انجام نشده است.
+
+## LOG-0102 — 2026-08-15 — P2 / hosted CI green for tiny-viewport regression
+
+- Outcome: GitHub Actions run `31903433836` برای commit `d69b0e9` سبز شد. Mobile overflow check که سه run قبلی در `/en/@160×284` fail شده بود، اکنون PASS است؛ About-tabs regression، audit، artifact/secret validation و upload نیز PASS شدند.
+- Why: Linux hosted Chromium evidence نهایی این slice است؛ Chrome محلی به‌تنهایی اختلاف metric فونت Linux را اثبات نمی‌کرد.
+- Scope / files: فقط این Task Spec و Work Log برای ثبت evidence نهایی.
+- Commands or actions actually performed: `gh run watch 31903433836 --exit-status` تا completion؛ status/workflow steps از GitHub Actions خوانده شد.
+- Verification actually performed and result: type check، build، smoke، Mobile overflow Playwright، About tabs Playwright، dependency audit، artifact completeness/no-secret و upload artifact همگی PASS؛ مدت workflow 2m4s.
+- Decisions / assumptions: production deploy در scope Task Spec نیست و انجام نشد؛ passing CI release artifact را فراهم می‌کند اما به‌تنهایی deploy authorization نیست.
+- Deferred or risk IDs: `DEFER-0013` همچنان OPEN فقط برای real 200% zoom/manual visual evidence؛ failure CI این slice بسته شد.
+- Rollback / recovery: revert commitهای `d69b0e9`، `6466d72` و `af3d16e` در صورت نیاز؛ artifact production دست‌نخورده است.

@@ -1,6 +1,6 @@
 # Task Spec — P2 mobile-overflow CI regression
 
-**Status:** Implemented and locally verified; final hosted CI rerun pending.  
+**Status:** Complete — locally and hosted-CI verified.  
 **Date:** 2026-08-15  
 **Owner:** Project owner (agent-assisted)  
 **Release type:** `STANDARD` UI regression fix  
@@ -87,3 +87,6 @@ the fallback; no deployment is part of this task.
   passed, now including every `.site-header a` control); `git diff --check`
   passed. The bundled Playwright browser revision was unavailable locally, so
   the existing installed real Chrome channel was used without repository change.
+- Hosted CI run `31903433836` on commit `d69b0e9` passed every job step:
+  type check, build, local smoke, mobile-overflow, About-tabs regression,
+  dependency audit, artifact/secret verification and artifact upload.
