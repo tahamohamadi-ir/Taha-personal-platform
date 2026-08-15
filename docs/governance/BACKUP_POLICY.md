@@ -32,3 +32,12 @@ The backup set covers PostgreSQL dumps once PostgreSQL exists, CMS/media assets 
 3. Retention is observed and documented.
 4. A restore to staging is performed and verified against expected files/database state. **The file-level encrypted restore and source-file comparison passed on 2026-08-14; an isolated staging database import is still required.**
 5. Runbook and recovery owner are recorded in `WORK_LOG.md`.
+
+## Restore drill cadence
+
+- A recurring restore drill is executed quarterly.
+- The recovery owner is the Project owner.
+- The drill is performed ONLY on an isolated target, per
+  `docs/governance/BACKUP_RUNBOOK.md` and the P0-A restore-rehearsal Task Spec;
+  it is never performed against production.
+- At each drill the Project owner records the observed RPO/RTO and the cadence.

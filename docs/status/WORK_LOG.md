@@ -732,3 +732,33 @@
 - Deferred or risk IDs: none new; `DEFER`/`RISK` sets unchanged.
 - Rollback / recovery: revert this documentation commit; no runtime, server or
   deploy state was changed.
+
+## LOG-0071 — 2026-08-15 — S-Plan / B4 restore drill cadence
+
+- Outcome: appended a `## Restore drill cadence` section to
+  `docs/governance/BACKUP_POLICY.md` recording: a recurring restore drill runs
+  quarterly; the recovery owner is the Project owner; the drill is performed
+  ONLY on an isolated target per `docs/governance/BACKUP_RUNBOOK.md` and the
+  P0-A restore-rehearsal Task Spec (never against production); at each drill the
+  Project owner records the observed RPO/RTO and the cadence.
+- Why: B4 (Phase B hardening) requires the restore drill contract to be written
+  down so drills are repeatable, owner-owned and never run against production.
+- Scope / files: `docs/governance/BACKUP_POLICY.md`,
+  `docs/status/WORK_LOG.md`, `docs/plan/S-PLAN-STATE.md`.
+- Commands or actions actually performed: read AGENTS.md,
+  `docs/plan/SMALL-MODEL-EXECUTION-PLAN.md` §6 B4,
+  `docs/plan/S-PLAN-STATE.md`, `docs/governance/BACKUP_POLICY.md` and
+  `docs/governance/BACKUP_RUNBOOK.md` fully plus the P0-A restore-rehearsal Task
+  Spec; appended the section at the end of `BACKUP_POLICY.md` without rewriting
+  any existing content; appended this WORK_LOG entry; marked B4 NEEDS_REVIEW and
+  appended a review-log row in S-PLAN-STATE.md.
+- Verification actually performed and result: `git diff --check` → exit 0
+  (PASS); `Select-String "Restore drill cadence"` on BACKUP_POLICY.md → exactly
+  1 heading (`## Restore drill cadence`); appended facts match task B4 — no
+  invented dates, RPO/RTO numbers, metrics or owners beyond "Project owner".
+- Decisions / assumptions: quarterly cadence and "Project owner" are taken
+  verbatim from task B4; RPO/RTO values are deliberately not invented — they are
+  recorded by the owner at each drill.
+- Deferred or risk IDs: none new; `DEFER`/`RISK` sets unchanged.
+- Rollback / recovery: revert this documentation commit; no runtime, server or
+  deploy state was changed.

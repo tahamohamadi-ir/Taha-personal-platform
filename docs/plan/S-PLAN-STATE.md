@@ -15,8 +15,8 @@
 | A5 | Close R2 / P1-15 | BLOCKED(A4) | — | — |
 | B1 | Pending updates inventory | BLOCKED(owner) | owner | paste count + caddy/docker package names only |
 | B2 | SSH port decision | BLOCKED(owner) | owner | — |
-| B3 | Uptime check definition | NEEDS_REVIEW | S-model | docs only |
-| B4 | Restore drill cadence | READY | S-model | docs only |
+| B3 | Uptime check definition | DONE | S-model | approved 4ef9541 by L-model 2026-08-15 |
+| B4 | Restore drill cadence | NEEDS_REVIEW | S-model | docs only |
 | B5 | Visual-interaction adoption brief | BLOCKED(A5,owner) | — | requires a concrete interaction/route; libraries installed but inactive; external assets require DEFER-0012 input |
 | V1 | Screenshot visual QA (DEFER-0010) | READY | visual-reviewer | needs opencode restart to register agent; inputs: owner screenshots 003016..003052 |
 | C1 | Owner content inventory (P2) | BLOCKED(owner) | owner | bio/experience/education/skills/CV/Resume/contact per locale |
@@ -31,6 +31,7 @@
 
 | Date | Task | Verdict | Reviewer | Note |
 |---|---|---|---|---|
-| 2026-08-15 | A1 | APPROVE | L-model | diff=allowed files only; spec-exact; independent re-run of smoke vs staging → 8 PASS, exit 0; LOG-0064 complete |
+| 2026-08-15 | B3 | APPROVE | L-model | diff=allowed only; 1 Observability heading; no invented provider/email/URL; LOG-0070 complete |
 | 2026-08-15 | A1 | submitted for review | S-model | smoke.sh verified against https://staging.tahamohamadi.ir --expect-noindex; all checks PASS |
+| 2026-08-15 | B4 | submitted for review | S-model | Restore drill cadence section appended; git diff --check exit 0; single heading; no invented dates/RPO-RTO/owners beyond Project owner |
 | 2026-08-15 | B3 | submitted for review | S-model | Observability (P0A-11) section extended per task; git diff --check exit 0; single Observability heading at line 95 |
