@@ -665,3 +665,36 @@
 - Decisions / assumptions: executor روی tier رایگان با fallback ارزان؛ visual-reviewer فقط مشاهده‌گر است و پیشنهاد کد نمی‌دهد؛ مدل گران هرگز برای اجرا/بازبینی تصویری استفاده نمی‌شود.
 - Deferred or risk IDs: `DEFER-0010` اکنون مسیر بستن دارد (V1 پس از restart).
 - Rollback / recovery: حذف دو فایل agent + بازگردانی `.gitignore`.
+
+## LOG-0067 — 2026-08-15 — P1-T01 / visual-prototyping tooling
+
+- Outcome: `motion` 13.1.0، `gsap` 3.15.0 و `three` 0.185.1 به dependencyهای `apps/web/` افزوده و lockfile به‌روزرسانی شد؛ هیچ source عمومی، route، bundle behavior یا deploy تغییر نکرد. Skill محلی `design-dna` از `zanwei/design-dna` نیز در Codex نصب شد. استفاده از Beautiful UI و UI8 DNA به دلیل نبود artifact محلی/مجوز قابل‌اثبات defer شد.
+- Why: مالک این ابزارها را برای آماده‌سازی visual prototyping درخواست کرد؛ scope عمداً tooling-only باقی ماند تا مرز static-first P1 و ممنوعیت motion/WebGL فعلی حفظ شود.
+- Scope / files: `apps/web/{package.json,package-lock.json}`، `docs/plan/P1-T01-visual-prototyping-tooling-task-spec.md`، `docs/status/{WORK_LOG,deferred-validation}.md`؛ نصب skill خارج از repository در `C:\Users\Taha\.codex\skills\design-dna`.
+- Commands or actions actually performed: installer رسمی skill با `--repo zanwei/design-dna --path . --name design-dna`؛ `npm install motion gsap three --save`؛ `npm run check`؛ `npm run build`؛ `npm audit --omit=dev --registry=https://registry.npmjs.org/` در `apps/web/`.
+- Verification actually performed and result: Design DNA شامل `SKILL.md` و references نصب شد؛ `astro check` → 0 errors / 0 warnings / 0 hints؛ static build هر هفت artifact موجود (`/`، `/fa/`، `/en/`، `404`، health، robots و sitemap) را تولید کرد؛ `npm audit` → 0 vulnerabilities؛ `git diff --check` → PASS؛ diff فقط package manifests و task-owned documentation را نشان داد.
+- Decisions / assumptions: `motion`، `gsap` و `three` فقط برای implementation آینده در دسترس‌اند، نه فعال در P1. هر use بعدی به Task Spec مستقل، interaction معنادار، fallback ثابت/no-JS، `prefers-reduced-motion` و lazy/non-render-blocking loading نیاز دارد؛ Motion و GSAP به‌صورت پیش‌فرض هم‌زمان برای یک interaction استفاده نمی‌شوند.
+- Deferred or risk IDs: `DEFER-0010` بدون تغییر؛ `DEFER-0012` برای artifact/licensing خارجی اضافه شد. هیچ ریسک جدیدی ایجاد نشد.
+- Rollback / recovery: revert کردن دو manifest task-owned؛ حذف directory skill `C:\Users\Taha\.codex\skills\design-dna` اگر لازم باشد. هیچ runtime/server state تغییر نکرده است.
+
+## LOG-0068 — 2026-08-15 — P1-T02 / visual-toolchain documentation alignment
+
+- Outcome: Manifest، README، master plan، technical architecture baseline، Task-list و S-Plan با وضعیت واقعی tooling همسو شدند: `motion` 13.1.0، `gsap` 3.15.0 و `three` 0.185.1 در lockfile موجود اما در P1 inactive هستند؛ Design DNA skill محلی agent tooling است؛ D3/R3F/React هنوز نصب نشده‌اند؛ Beautiful UI و UI8 DNA همچنان به `DEFER-0012` وابسته‌اند. شناسهٔ tooling از `P1-10` به `P1-T01` تغییر کرد تا با Task P1-10 (frontend verification) تداخل نداشته باشد. مسیر آینده نیز با Task P0B-04 و S-Plan B5 به یک adoption gate مشخص محدود شد.
+- Why: مالک خواست که documentation، specifications، tasks و plans با ابزارهای تازه‌نصب‌شده منطبق باشند؛ نصب package نباید به‌اشتباه authorization برای import/ship تلقی شود.
+- Scope / files: `PROJECT_MANIFEST.md`، `README.md`، `Task-list.md`، `docs/taha-personal-platform-{development-master-plan,technology-architecture-baseline}-fa.md`، `docs/plan/{P1-T01-visual-prototyping-tooling-task-spec,P1-T02-visual-toolchain-documentation-alignment-task-spec,SMALL-MODEL-EXECUTION-PLAN,S-PLAN-STATE}.md` و همین Work Log؛ manifest/lockfile موجود از P1-T01 تغییر داده نشد.
+- Commands or actions actually performed: جست‌وجوی referenceها با `rg` در plan/ADR/governance و status؛ خواندن contracts/Task Specs/roadmaps مربوط؛ `git diff --check` و scope diff review.
+- Verification actually performed and result: همهٔ referenceهای tooling به `P1-T01` منتقل و `P1-10` صرفاً برای blocking frontend verification حفظ شد؛ `git diff --check` PASS؛ documentation-only diff به‌جز تغییرات از پیش‌موجود P1-T01 در package manifests، هیچ source/config/deploy/runtime file ندارد.
+- Decisions / assumptions: library فقط پس از user value مشخص، انتخاب یک library، Task Spec، lazy island-local import، fallback ثابت/no-JS و reduced-motion، keyboard/RTL/LTR/mobile QA و performance evidence active می‌شود. Three/WebGL هرگز render-blocking hero/main content نیست. Design DNA مرجع design را استخراج می‌کند اما token/asset خارجی را override نمی‌کند.
+- Deferred or risk IDs: `DEFER-0010` و `DEFER-0012` بدون تغییر؛ Risk جدیدی ایجاد نشد.
+- Rollback / recovery: revert فایل‌های documentation این entry و بازگردانی نام P1-T01 در صورت نیاز؛ هیچ runtime/deploy state تغییر نکرده است.
+
+## LOG-0069 — 2026-08-15 — P1-T03 / design-policy toolchain alignment
+
+- Outcome: `docs/design.md` اکنون صریحاً وضعیت installed-but-inactive P1 برای Motion/GSAP/Three، انتخاب یک library برای هر interaction، fallback/QA الزامی، نقش محدود Design DNA و boundary source/version/use-right برای Beautiful UI/UI8 DNA را ثبت می‌کند.
+- Why: این سند source of truth طراحی است؛ همسویی آن با Manifest و roadmap از این سوءبرداشت جلوگیری می‌کند که package یا reference خارجی، مجوز استفاده در public artifact است.
+- Scope / files: `docs/design.md`، `docs/plan/P1-T03-design-policy-toolchain-alignment-task-spec.md` و همین Work Log.
+- Commands or actions actually performed: خواندن sectionهای Motion، Three، third-party acceptance و agent rules؛ جست‌وجوی targeted referenceها؛ `git diff --check`.
+- Verification actually performed and result: policy جدید با static-first، `prefers-reduced-motion`، fallback، RTL/LTR و third-party adaptation rules موجود سازگار است؛ `git diff --check` PASS؛ هیچ code/config/dependency/runtime file تغییر نکرد.
+- Decisions / assumptions: Design DNA خروجی تحلیلی تولید می‌کند و هرگز design system را override نمی‌کند؛ external UI تا ثبت source/version/use-right تحت `DEFER-0012` فقط inspiration است.
+- Deferred or risk IDs: `DEFER-0012` بدون تغییر؛ Risk جدیدی ایجاد نشد.
+- Rollback / recovery: revert فایل‌های documentation task-owned؛ هیچ runtime/deploy state تغییر نکرده است.

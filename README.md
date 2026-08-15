@@ -40,7 +40,7 @@ docs/       product, design, architecture, governance, plan and status
 
 ## Approved baseline
 
-Astro + TypeScript (static-first, no client JS in P1) with Tailwind CSS and project design tokens for the public frontend; Python 3.12 with Django 5.2 LTS, Wagtail 7.4 LTS and Django Ninja for the CMS/API (not yet implemented); PostgreSQL; Docker Compose + Caddy on the VPS; GitHub Actions hosted runners for CI; encrypted restic/rclone backups to Google Drive (daily timer verified; staging database-import rehearsal remains). Exact dependency versions are locked in the `apps/web/` lockfile; CMS versions are locked only when CMS scaffolding is authorized.
+Astro + TypeScript (static-first, no client JS in P1) with Tailwind CSS and project design tokens for the public frontend; `motion`, `gsap` and `three` are locked for future, approved islands only and are inactive in P1. Python 3.12 with Django 5.2 LTS, Wagtail 7.4 LTS and Django Ninja for the CMS/API (not yet implemented); PostgreSQL; Docker Compose + Caddy on the VPS; GitHub Actions hosted runners for CI; encrypted restic/rclone backups to Google Drive (daily timer verified; staging database-import rehearsal remains). Exact dependency versions are locked in the `apps/web/` lockfile; CMS versions are locked only when CMS scaffolding is authorized.
 
 ## Safety
 

@@ -6,12 +6,13 @@
 
 **Architecture:** مسیر عمومی با Astro و HTML ایستا ساخته و به‌صورت artifact نسخه‌دار از Caddy ارائه می‌شود. React فقط برای interaction اثبات‌شده به‌صورت island وارد می‌شود؛ Django/Wagtail/Ninja/PostgreSQL تا P3 یا نیاز واقعی P2 وارد runtime این پروژه نمی‌شوند. فارسی و انگلیسی مستقل ولی مرتبط‌اند و `/` فقط Language Gateway است.
 
-**Tech Stack:** Astro + TypeScript؛ Tailwind و Design Tokens حداقلی؛ React Islands فقط در صورت نیاز؛ GitHub Actions hosted؛ Docker Compose + Caddy؛ از P3 به بعد Python 3.12 + Django 5.2 LTS + Wagtail 7.4 LTS + Django Ninja + PostgreSQL.
+**Tech Stack:** Astro + TypeScript؛ Tailwind و Design Tokens حداقلی؛ React Islands فقط در صورت نیاز؛ `motion`، `gsap` و `three` فقط به‌عنوان dependency قفل‌شده برای slice آینده و بدون استفاده در P1؛ GitHub Actions hosted؛ Docker Compose + Caddy؛ از P3 به بعد Python 3.12 + Django 5.2 LTS + Wagtail 7.4 LTS + Django Ninja + PostgreSQL.
 
-## Progress snapshot (2026-08-14)
+## Progress snapshot (2026-08-15)
 
 - **R0 complete:** G0-01 (drift fix), G0-02 (owner decision), G0-03 (content pack *proposal* drafted — string approval pending), G0-04 (tech freeze), G0-05 (ADRs 0016–0018 *Proposed*), G0-06 (`P0-G0: PASS for static-only P1`). Evidence: LOG-0051 تا LOG-0053.
 - **Local R1/R2 complete:** `apps/web/` scaffold (Astro 7.2.2 + TypeScript + Tailwind v4), Language Gateway `/`, `/fa/` RTL + `/en/` LTR landing, 404, `health.json`, `robots.txt`, `sitemap.xml`, design tokens, and `.github/workflows/ci.yml`. `npm run check` (0 errors) و `npm run build` PASS. Evidence: LOG-0054.
+- **Visual-tooling preparation complete:** `motion` 13.1.0، `gsap` 3.15.0 و `three` 0.185.1 در lockfile موجودند، اما در هیچ صفحه یا bundle P1 import نشده‌اند؛ Design DNA skill محلی برای تحلیل/مستندسازی design آماده است. Evidence: `P1-T01` و LOG-0067.
 - **Remaining (owner/VPS/deploy-gated):** P0A-01/02 (stack inventory + capacity), P0A-08..12 (artifact/deploy/rollback/observability), P1-10 browser smoke, P1-11 staging acceptance, P1-13..15 production deploy. Deferrals: `DEFER-0007` (contact path), `DEFER-0009` (OG image), `DEFER-0010` (browser verification), `DEFER-0011` (Cloudflare robots behavior).
 
 ## Global Constraints
@@ -23,7 +24,7 @@
 - endpoint، DTO، model، slug، metric، copy، translation، asset، secret، service و command تأییدنشده اختراع نشود.
 - فرمان‌های install/test/build/deploy فقط پس از اجرای واقعی و ثبت در `PROJECT_MANIFEST.md` canonical هستند؛ این برنامه عمداً command خیالی ارائه نمی‌کند.
 - `/` Language Gateway، `/fa/` فارسی/RTL و `/en/` انگلیسی/LTR هستند. ترجمهٔ گمشده صریح است و fallback خاموش ممنوع است.
-- main content بدون JavaScript خوانا می‌ماند. heavy motion، canvas، WebGL، D3، GSAP و Three.js برای اولین live لازم نیستند.
+- main content بدون JavaScript خوانا می‌ماند. `motion`، `gsap` و `three` در lockfile آماده‌اند، اما heavy motion، canvas، WebGL، D3 و هر import/runtime آنها برای اولین live لازم نیستند و نباید global یا render-blocking شوند.
 - production و staging هرگز database، media، secret یا backend مشترک ندارند. P1 static می‌تواند بدون staging runtime پایگاه‌داده منتشر شود.
 - هیچ merge، push یا deploy بدون اجازهٔ صریح مالک انجام نمی‌شود؛ فقط فایل‌های task-owned stage/commit می‌شوند.
 
@@ -390,7 +391,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 - [ ] viewportهای 320، 390، 768، 1280 و 1440 بدون overflow/clipping/overlap بررسی شوند.
 - [ ] RTL، LTR و mixed sampleهای URL/English term/number/punctuation بررسی شوند.
 - [ ] metadata/canonical/hreflang/robots/sitemap و no fake inactive link بررسی شوند.
-- [ ] client bundle/hydration inventory نشان دهد heavy dependency global وجود ندارد.
+- [ ] client bundle/hydration inventory نشان دهد هیچ import یا chunk runtime برای `motion`، `gsap` یا `three` در R2 وجود ندارد؛ صرف وجود lockfile مجاز است.
 
 ### Task P1-11 — staging acceptance by persona
 
@@ -475,6 +476,17 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 - [ ] visual regression برای critical pages پس از تثبیت baseline اضافه کن.
 - [ ] dependency/container/security scan policy و triage owner را harden کن.
 - [ ] alert fatigue و data retention/PII در monitoring بررسی شود.
+
+### Task P0B-04 — adoption gate برای visual interaction و assetهای خارجی
+
+**Priority:** `AFTER-LIVE / قبل از هر use`
+
+- [ ] یک user value و یک interaction محدود، route مالک و stateهای آن را مشخص کن؛ «زیباتر شدن» به‌تنهایی معیار کافی نیست.
+- [ ] برای همان interaction دقیقاً یک مسیر انتخاب کن: CSS/native، `motion`، `gsap` یا `three`؛ استفادهٔ هم‌زمان Motion و GSAP به‌صورت پیش‌فرض ممنوع است.
+- [ ] import را route/island-local و lazy نگه دار؛ Three/WebGL هرگز Hero یا مسیر محتوای اصلی را render-blocking نمی‌کند.
+- [ ] static/no-JS fallback، `prefers-reduced-motion` fallback، keyboard semantics، RTL/LTR، 320px/mobile و failure state را پیش از کدنویسی تعریف کن.
+- [ ] budget عملکرد، بررسی bundle/chunk و QA browser برای interaction واقعی ثبت و سپس در Task Spec مستقل verify شوند.
+- [ ] Design DNA فقط برای استخراج/ثبت tokenها و patternهای منطبق با `docs/design.md` است؛ asset/component خارجی فقط با source versioned و حق استفادهٔ تأییدشده وارد می‌شود (`DEFER-0012`).
 
 ---
 
@@ -795,6 +807,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 6. maintenance window برای `RISK-0005` و تصمیم canonical SSH port برای `RISK-0006`. **— PENDING (P0-B).**
 7. capacity/hosting تصمیم P3 staging runtime پیش از database import/CMS. **— PENDING (P3).**
 8. media provider، runtime worker، admin MFA و contact persistence قبل از P3. **— PENDING (P3).**
+9. اگر visual interaction یا asset خارجی انتخاب شد: value/route، library واحد، fallbackها و source/license artifact را تأیید کن. **— PENDING; `P0B-04` / `DEFER-0012`.**
 
 ---
 

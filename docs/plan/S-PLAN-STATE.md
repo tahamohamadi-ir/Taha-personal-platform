@@ -17,6 +17,7 @@
 | B2 | SSH port decision | BLOCKED(owner) | owner | — |
 | B3 | Uptime check definition | READY | S-model | docs only |
 | B4 | Restore drill cadence | READY | S-model | docs only |
+| B5 | Visual-interaction adoption brief | BLOCKED(A5,owner) | — | requires a concrete interaction/route; libraries installed but inactive; external assets require DEFER-0012 input |
 | V1 | Screenshot visual QA (DEFER-0010) | READY | visual-reviewer | needs opencode restart to register agent; inputs: owner screenshots 003016..003052 |
 | C1 | Owner content inventory (P2) | BLOCKED(owner) | owner | bio/experience/education/skills/CV/Resume/contact per locale |
 | C2 | Typed profile contract | BLOCKED(C1) | — | — |

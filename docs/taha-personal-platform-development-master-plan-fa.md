@@ -136,7 +136,7 @@ Canonical commands (copy/paste executable):
 ### 1.6.2 Supply-chain security
 
 - CI باید secret scanning، dependency audit، lockfile integrity/policy و license review dependency جدید را اجرا کند. اگر deployment containerized است، image/container scan نیز blocking است.
-- dependency یا service جدید بدون ثبت در Manifest و ADR مربوطه پذیرفته نمی‌شود.
+- dependency یا service جدید بدون Task Spec، ثبت در Manifest، دلیل/license و lockfile پذیرفته نمی‌شود؛ ADR فقط برای تصمیم معماریِ غیر بدیهی، پرهزینه برای بازگشت یا عملیاتی/امنیتی لازم است.
 
 ### 1.7 Testing، release gate و Definition of Done سراسری
 
@@ -192,7 +192,7 @@ ADRهای لازم پیش از یا در P0: runtime/deployment، domain/DNS/HTT
 
 ### 2.4 استاندارد کدنویسی و CI/CD
 
-- formatter/linter/type checker رسمی هر stack در CI pinned باشد؛ dependency جدید دلیل، license و lockfile تغییر مرتبط می‌خواهد.
+- formatter/linter/type checker رسمی هر stack در CI pinned باشد؛ dependency جدید دلیل، license، lockfile تغییر مرتبط و تفکیک صریحِ «installed / authorized / active» می‌خواهد. نصب به‌تنهایی مجوز import یا release نیست.
 - نام‌ها و error codes پایدار و انگلیسی فنی؛ متن UI از i18n/content layer می‌آید؛ فارسی طبیعی و قابل ویرایش است.
 - CI حداقل: install reproducible → lint/typecheck/tests متناسب با risk → build → secret/dependency/lockfile scan → artifact. staging deploy پس از عبور؛ prod deploy تنها از release قابل ردگیری.
 - CI نباید با secret واقعی تست کند. health check پس از deploy، ثبت release/version و alert حداقلی خطای 5xx ضروری است. visual regression برای component/pageهای critical پس از تثبیت baseline به CI افزوده می‌شود؛ blocker بودن آن در manifest/ADR تعیین می‌شود، نه به‌صورت پیش‌فرض برای P1.
@@ -200,7 +200,7 @@ ADRهای لازم پیش از یا در P0: runtime/deployment، domain/DNS/HTT
 
 ### 2.5 Design System Track
 
-Design System یک track سراسری است، نه deliverable صرف P1: semantic tokens، typography، primitives/components، states، spacing، motion، responsive behavior، RTL/LTR و light/dark strategy در docs تصمیم می‌گیرند؛ source code فقط ارزش‌های اجرایی مصوب را نگه می‌دارد. P1 فقط minimum token/style baseline لازم برای live را می‌سازد. Dark mode، motion کامل، visual-regression baseline گسترده و component library پرحجم می‌توانند پس از P1/P3 harden شوند، اما هیچ صفحه‌ای نباید token یا RTL rule متناقض بسازد.
+Design System یک track سراسری است، نه deliverable صرف P1: semantic tokens، typography، primitives/components، states، spacing، motion، responsive behavior، RTL/LTR و light/dark strategy در docs تصمیم می‌گیرند؛ source code فقط ارزش‌های اجرایی مصوب را نگه می‌دارد. P1 فقط minimum token/style baseline لازم برای live را می‌سازد. Dark mode، motion کامل، visual-regression baseline گسترده و component library پرحجم می‌توانند پس از P1/P3 harden شوند، اما هیچ صفحه‌ای نباید token یا RTL rule متناقض بسازد. `motion`، `gsap` و `three` ممکن است در lockfile موجود باشند، ولی تا interaction مشخص، Task Spec، fallback و performance evidence نداشته باشند active نیستند؛ Design DNA ابزار تحلیل agent است و Beautiful UI/UI8 DNA بدون source و use-right تأییدشده وارد محصول نمی‌شوند (`DEFER-0012`).
 
 ---
 

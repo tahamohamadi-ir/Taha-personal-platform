@@ -243,9 +243,23 @@ React
 Tailwind CSS
 ```
 
-نسخه دقیق هرکدام در P0-G0 از مستندات رسمی بررسی و در `PROJECT_MANIFEST.md` Pin می‌شود.
+نسخه دقیق هرکدام در P0-G0 از مستندات رسمی بررسی و در `PROJECT_MANIFEST.md` و lockfile مربوط Pin می‌شود.
 
 استفاده از `latest` شناور در Production ممنوع است.
+
+### وضعیت verifyشدهٔ فعلی — 2026-08-15
+
+| ابزار | وضعیت | مرز استفاده |
+|---|---|---|
+| `motion` 13.1.0 | در `apps/web` lock شده | بدون import یا client bundle در P1؛ فقط برای island مصوب آینده |
+| `gsap` 3.15.0 | در `apps/web` lock شده | فقط narrative motion منتخب و route-local |
+| `three` 0.185.1 | در `apps/web` lock شده | فقط تجربهٔ سه‌بعدی معنادار با fallback کامل |
+| React / React Three Fiber / D3 | نصب نشده | تنها پس از Task Spec و نیاز مشخص ارزیابی می‌شود |
+| Design DNA | skill محلی Codex، خارج از artifact | برای تحلیل/ثبت design DNA؛ نه dependency runtime |
+| Beautiful UI / UI8 DNA | artifact محلی یا حق استفادهٔ تأییدشده ندارند | تا `DEFER-0012` هیچ asset یا componentی وارد نمی‌شود |
+
+وجود package در lockfile **اجازهٔ import یا ship کردن آن نیست**. تصمیم استفاده برای
+هر interaction در Task Spec مستقل و طبق `PROJECT_MANIFEST.md` ثبت می‌شود.
 
 ---
 
@@ -419,6 +433,11 @@ CSS animations/transitions
 Astro/native View Transitions — selective
 ```
 
+در وضعیت فعلی، `motion` و `gsap` تنها available هستند و P1 هیچ motion runtime
+ندارد. برای یک interaction ابتدا CSS/native بررسی می‌شود؛ اگر کافی نبود، یک
+library انتخاب می‌شود. Motion و GSAP به‌طور پیش‌فرض برای یک interaction مشترک
+به‌کار نمی‌روند.
+
 ## 10.2 اولویت
 
 ### Functional Motion
@@ -481,7 +500,7 @@ distance.lg
 
 # 11. GSAP
 
-GSAP Core Dependency عمومی برای هر component نیست.
+GSAP با وجود lock شدن در project، dependency عمومی برای هر component نیست.
 
 موارد مناسب:
 
@@ -532,6 +551,10 @@ D3 visualization باید:
 
 # 13. Three.js / React Three Fiber
 
+`three` در lockfile موجود است، اما React Three Fiber نصب نشده و P1 هیچ scene یا
+WebGL runtime ندارد. نصب R3F فقط همراه با React island مصوب و Task Spec همان
+feature ارزیابی می‌شود.
+
 ## سیاست
 
 3D یک feature است، نه default style.
@@ -562,6 +585,10 @@ performance budget
 ```
 
 داشته باشد.
+
+همچنین باید user value، route owner، static/text fallback، keyboard path، RTL/LTR
+و mobile behavior، اندازهٔ chunk و performance evidence را پیش از release نشان
+دهد. 3D تزئینی یا import سراسری پذیرفته نیست.
 
 ---
 
@@ -2703,16 +2730,17 @@ frontend:
     - Radix Primitives
   icons: Lucide
   motion:
-    baseline: Motion
+    available_but_gated:
+      - Motion 13.1.0
     selective:
-      - GSAP
+      - GSAP 3.15.0
       - View Transitions
   visualization:
     selective:
       - D3
-      - Three.js
+      - Three.js 0.185.1
       - React Three Fiber
-  package_manager: pnpm
+  package_manager: npm
 
 backend:
   language: Python
@@ -2782,7 +2810,7 @@ ADR-0014 Admin / MFA / Security Boundary
 
 عمداً در P0/P3 تصمیم گرفته شوند:
 
-- exact version numbers
+- exact version numbers outside the verified `apps/web` lockfile
 - exact Linux distribution
 - VPS sizing
 - Gunicorn vs approved ASGI runtime
@@ -2806,10 +2834,14 @@ Agent حق حدس‌زدن این موارد را ندارد.
 | Technology | Status | Trigger |
 |---|---|---|
 | Astro | Core | — |
-| React Islands | Core | interaction واقعی |
-| GSAP | Selective | narrative motion پیچیده |
-| D3 | Selective | custom visualization |
-| Three/R3F | Very Selective | meaningful 3D experience |
+| React Islands | Core, not installed | interaction واقعی + Task Spec |
+| Motion | Installed, gated | interaction functional که CSS/native کافی نیست + Task Spec |
+| GSAP | Installed, selective/gated | narrative motion پیچیده + single-library decision + Task Spec |
+| D3 | Selective, not installed | custom visualization + accessible text/keyboard fallback |
+| Three | Installed, very selective/gated | meaningful 3D experience + static/mobile/reduced-motion fallback + budget |
+| React Three Fiber | Very selective, not installed | React island + meaningful 3D requirement |
+| Design DNA | Local agent tooling | approved reference analysis; output must conform to project tokens |
+| Beautiful UI / UI8 DNA | Deferred external resources | owner-provided source/version/use-right (`DEFER-0012`) |
 | Storybook | Deferred | component system complexity |
 | TanStack Query | Deferred | server-state complexity |
 | Redis | NOT USED | shared cache/queue/state need |

@@ -115,7 +115,10 @@ Escalate (`ESCALATE: <one-line reason>`) when ANY of these is true:
 - CI green on `main` (`.github/workflows/ci.yml`).
 - Production `tahamohamadi.ir` still serves the LEGACY stack (untouched).
 - Open IDs: `DEFER-0007` contact, `DEFER-0009` OG, `DEFER-0010` browser QA,
-  `DEFER-0011` Cloudflare robots, `RISK-0004..0007`, `DEBT-0001`.
+  `DEFER-0011` Cloudflare robots, `DEFER-0012` external design resources,
+  `RISK-0004..0007`, `DEBT-0001`. `motion` 13.1.0, `gsap` 3.15.0 and `three`
+  0.185.1 are locked for future use but are not imported or active in P1
+  (LOG-0067 / P1-T01).
 - Canonical commands live in `PROJECT_MANIFEST.md` §"Canonical commands".
 
 ---
@@ -217,6 +220,29 @@ Escalate (`ESCALATE: <one-line reason>`) when ANY of these is true:
 #### B4 — Restore drill cadence — `P1` — LOW risk
 - State: READY (documentation only): record quarterly cadence + owner in
   `BACKUP_POLICY.md` (append a "Restore drill cadence" section).
+
+#### B5 — Visual-interaction adoption brief — `P1` — LOW risk
+- State: BLOCKED(A5, owner interaction decision)
+- Context to read: `PROJECT_MANIFEST.md`, `docs/design.md`,
+  `docs/taha-personal-platform-technology-architecture-baseline-fa.md`,
+  `Task-list.md` P0B-04, `DEFER-0012` and the relevant route/content contract.
+- Preconditions: owner names one user-facing interaction and its route; any
+  external asset/component comes with a versioned source and verified use-right.
+- Steps:
+  1. Write a dedicated Task Spec before implementation; classify it as
+     FAST-TRACK/STANDARD from the real scope.
+  2. Establish that CSS/native cannot meet the value, then choose exactly one
+     of `motion`, `gsap` or `three`; never default to multiple libraries.
+  3. Specify island-local lazy loading, no-JS/static fallback,
+     `prefers-reduced-motion`, keyboard/RTL/LTR/mobile behavior, error state,
+     bundle/performance budget and browser QA evidence.
+  4. If the choice is Three/WebGL, provide a text/static fallback and show that
+     it cannot delay the hero or primary content.
+- Verify: L-model confirms that every field is concrete, the public content is
+  complete without JavaScript, and the Task Spec names only task-owned files.
+- Deliverables: one approved feature Task Spec; no application code in B5.
+- STOP if: user value, route, library choice, fallback or asset use-right is
+  missing; do not prototype or import anything.
 
 #### V1 — Screenshot visual QA (DEFER-0010 evidence) — `P0` for release — LOW risk
 - State: READY (requires one opencode restart so `visual-reviewer` is registered)

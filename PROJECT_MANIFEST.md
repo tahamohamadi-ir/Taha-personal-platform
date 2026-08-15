@@ -106,7 +106,9 @@ CMS install/build/migrate/deploy and server-side deploy commands remain unapprov
 | Styling | Tailwind CSS v4 + project design tokens from `docs/design.md` | VERIFIED for decision |
 | React islands | Not installed in R2 (no single approved, tested, valuable interaction) | NOT USED IN R2 |
 | shadcn/Radix | Not added until a concrete P1 interaction justifies it | NOT USED IN R2 |
-| Motion/GSAP/D3/Three | Not used in R2 | NOT USED IN R2 |
+| Motion / GSAP / Three.js | Locked in `apps/web/` for a future, explicitly approved island; `motion` 13.1.0, `gsap` 3.15.0 and `three` 0.185.1 are installed but have no import, client bundle or R2 behavior | AVAILABLE, NOT USED IN R2 |
+| D3 / React Three Fiber | Not installed; evaluate only for a documented visualization requirement | NOT USED IN R2 |
+| Design DNA / external UI resources | Design DNA is a local Codex skill, not a production dependency; Beautiful UI and UI8 DNA have no approved local artifact or verified use-right | TOOLING ONLY; `DEFER-0012` |
 | Search (Pagefind) | Not used in R2 | NOT USED IN R2 |
 | Analytics | Not used in R2 (no provider/consent/retention approved) | NOT USED IN R2 |
 | Dark mode | Not in R2; full dark mode deferred with ID | NOT USED IN R2 |

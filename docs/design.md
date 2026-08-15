@@ -1898,6 +1898,17 @@ Good placement:
 
 # 73. Motion system
 
+## Implementation boundary — verified 2026-08-15
+
+`motion`، `gsap` و `three` در `apps/web` lock شده‌اند، اما در P1 هیچ import،
+island، client bundle یا visual behavior فعالی ندارند. وجود package **به‌تنهایی
+اجازهٔ استفاده نیست**. هر implementation آینده باید user value، route، Task Spec
+و evidence عملکرد مستقل داشته باشد.
+
+برای هر interaction ابتدا CSS/native بررسی می‌شود. اگر کافی نبود، دقیقاً یک
+library انتخاب می‌شود؛ Motion و GSAP به‌صورت پیش‌فرض برای یک interaction ترکیب
+نمی‌شوند. `three` فقط برای experience معنادار با static/text fallback است.
+
 Motion is divided into:
 
 ```text
@@ -2395,6 +2406,14 @@ Before adopting a 21st.dev/community component:
 - [ ] Is maintenance acceptable?
 - [ ] Does it duplicate existing Radix/shadcn primitive?
 - [ ] Is license/source acceptable?
+- [ ] Source/version/use-right در workspace یا record مالک قابل‌تأیید است؟
+- [ ] no-JS/static و Reduced Motion fallback تعریف شده است؟
+- [ ] اگر effect runtime دارد، import route/island-local و lazy است؟
+
+Design DNA می‌تواند reference را به token/pattern قابل‌بحث تبدیل کند، اما نباید
+palette، typography، RTL/LTR، accessibility یا component policy همین سند را
+override کند. Beautiful UI و UI8 DNA تا دریافت artifact versioned و حق استفادهٔ
+تأییدشده، inspiration هستند نه source قابل ship (`DEFER-0012`).
 
 ---
 
@@ -3161,6 +3180,10 @@ Agents MUST NOT add:
 
 without task scope and fallback.
 
+برای Motion/GSAP/Three علاوه بر fallback، agent باید انتخاب single-library،
+route/island ownership، lazy loading، keyboard، RTL/LTR، mobile،
+`prefers-reduced-motion` و budget/performance QA را در Task Spec مشخص کند.
+
 ---
 
 # 145. Agent rules — third-party UI
@@ -3538,4 +3561,3 @@ Never invent design tokens or visual systems outside this file.
 > **The site should feel designed, not decorated.**
 
 > **The first impression should be credible enough for a professor, clear enough for a recruiter, technically interesting enough for an engineer, and human enough to be remembered.**
-
