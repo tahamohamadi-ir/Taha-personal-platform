@@ -912,3 +912,14 @@ pm run check (0 error)؛ git diff --check؛ بازبینی مستقل diffها.
 - Decisions / assumptions: NOTE قبلی PROD-ACCEPTANCE (404 خالی) رفع شد؛ DEFER-0011 (robots edge) همچنان باز است.
 - Deferred or risk IDs: DEFER-0011 OPEN.
 - Rollback / recovery: بکاپ‌های timestamped Caddy و switch اتمیک current؛ هر دو مکانیک آزمایش‌شده.
+
+## LOG-0084 — 2026-08-15 — R2/P2 / V1 readiness check and P2 content questionnaire
+
+- Outcome: (1) آزمایش ثبت agent: isual-reviewer در session فعلی ثبت نیست («Unknown agent type») — V1 به‌صورت READY-AFTER-RESTART ثبت شد و دستور dispatch دقیق (۷ اسکرین‌شات 003016..003052) در S-Plan آماده است؛ (2) فرم content پک P2 ساخته شد: docs/plan/P2-C1-CONTENT-REQUEST.md با ۱۰ بخش دوزبانه (identity، bio کوتاه/بلند، تجربه با ستون evidence، تحصیلات، مهارت‌ها بدون درصد ساختگی، تصمیم CV/Resume با مسیر دانلود، تصمیم تماس DEFER-0007 با فیلد مقدار دقیق، URLهای اجتماعی، statement دسترسی، یادآوری قانون evidence).
+- Why: «هر دو» — V1 نیازمند restart است (محدودیت فنی ثبت‌شده)؛ P2 بدون ورودی واقعی مالک ساخته نمی‌شود، پس unblocker آن فرم C1 است.
+- Scope / files: docs/plan/P2-C1-CONTENT-REQUEST.md، docs/plan/S-PLAN-STATE.md و همین Work Log.
+- Commands or actions actually performed: dispatch آزمایشی isual-reviewer (خطای ثبت‌نشده)؛ ساخت فرم توسط sub-agent؛ git diff --check.
+- Verification actually performed and result: فرم شامل تمام ستون‌ها/بخش‌های خواسته‌شده با __blank__ برای متن آزاد؛ مقادیر identity فعلی از content.ts verbatim کپی شد؛ C1 → BLOCKED(owner) با ارجاع فرم.
+- Decisions / assumptions: هیچ صفحهٔ خالی P2 ساخته نشد (قانون «empty future route» رعایت شد)؛ C2..C7 همچنان BLOCKED(C1).
+- Deferred or risk IDs: DEFER-0010 باز (منتظر restart).
+- Rollback / recovery: revert این commit؛ هیچ runtime state تغییر نکرد.

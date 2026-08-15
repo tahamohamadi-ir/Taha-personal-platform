@@ -18,8 +18,8 @@
 | B3 | Uptime check definition | DONE | S-model | approved 4ef9541 by L-model 2026-08-15 |
 | B4 | Restore drill cadence | DONE | S-model | approved ae8a854 by L-model 2026-08-15 |
 | B5 | Visual-interaction adoption brief | DONE | S-model | approved e21fbfe by L-model 2026-08-15 |
-| V1 | Screenshot visual QA (DEFER-0010) | READY | visual-reviewer | needs opencode restart to register agent; inputs: owner screenshots 003016..003052 |
-| C1 | Owner content inventory (P2) | BLOCKED(owner) | owner | bio/experience/education/skills/CV/Resume/contact per locale |
+| V1 | Screenshot visual QA (DEFER-0010) | READY-AFTER-RESTART | visual-reviewer | agent NOT registered in current session (verified); after opencode restart dispatch visual-reviewer with the 7 screenshots 003016..003052; checklist in .opencode/agent/visual-reviewer.md |
+| C1 | Owner content inventory (P2) | BLOCKED(owner) | owner | fill docs/plan/P2-C1-CONTENT-REQUEST.md (created 2026-08-15) — bio/experience/education/skills/CV/Resume/contact per locale |
 | C2 | Typed profile contract | BLOCKED(C1) | — | — |
 | C3 | About pages | BLOCKED(C2) | — | — |
 | C4 | Resume/CV pages + downloads | BLOCKED(C1) | — | — |
