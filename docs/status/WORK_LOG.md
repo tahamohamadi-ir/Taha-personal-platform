@@ -1003,6 +1003,17 @@ ode --check و YAML validation توسط agent.
 - Deferred or risk IDs: `DEFER-0013` برای visual mobile QA/CI result باز است.
 - Rollback / recovery: revert commit؛ deploy فعلی untouched تا check/CI و artifact جدید.
 
+## LOG-0092 — 2026-08-15 — P2 / About tabs live and mobile overflow CI green
+
+- Outcome: About فارسی و انگلیسی با ساختار tab یکسان و CSS-only، متن‌های طولانی justify، شش tab (Experience/Education/Skills/Research/Publications/Certificates) و labels فارسی/انگلیسی live شد. Header responsive fix باعث شد Playwright overflow در `/en/` و `/en/about/` در 320px از 30px به PASS برسد.
+- Why: درخواست مالک برای format/style/tab یکسان، justify متن و ادامهٔ توسعه با کیفیت موبایل.
+- Scope / files: `apps/web/src/components/About.astro`، `apps/web/src/components/Header.astro`، `apps/web/src/data/content.ts`، `apps/web/src/data/profile.fa.ts`، `docs/plan/P2-about-tabs-task-spec.md`، `docs/status/deferred-validation.md`.
+- Commands or actions actually performed: `npm run check` (0 errors)؛ `npm run build` (6 pages)؛ `node --check qa/mobile-overflow.spec.mjs`؛ CI run `31889867770` → success؛ artifact `release-01458eb` با update-release روی سرور deploy شد؛ production/staging smoke PASS.
+- Verification actually performed and result: هر دو locale دارای شش radio/CSS tab؛ no-JS/hydration حفظ شد؛ justify CSS موجود؛ CI هر دو viewport 320/390 و شش route را اجرا کرد؛ production `/en/about/` و `/fa/about/` 200.
+- Decisions / assumptions: tabs با native radio و CSS ساخته شدند تا بدون JS و بدون React کار کنند؛ `DEFER-0013` فقط برای visual screenshot/mobile typography باز است، نه overflow.
+- Deferred or risk IDs: `DEFER-0013` OPEN با CI evidence؛ C4 هنوز منتظر فایل‌های CV/Resume مالک.
+- Rollback / recovery: revert commit؛ artifact قبلی با `current` قابل بازگشت است.
+
 ## LOG-0091 — 2026-08-15 — CI / mobile overflow fix for English header at 320px
 
 - Outcome: Playwright CI correctly found `overflow=30px` on `/en/` and `/en/about/` at 320×568 while all fa/390 checks passed. Root cause was the longer English header brand plus About/language controls; responsive header rules now shrink spacing/labels, allow brand ellipsis and keep controls within the viewport.
