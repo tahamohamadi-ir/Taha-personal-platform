@@ -9,7 +9,14 @@ interface Props {
 
 const { content, profile } = Astro.props;
 const sections = content.sections;
-const skillHeadingLevel = sections?.skills ? 3 : 2;
+const tabs = [
+  { id: "experience", label: sections?.experience ?? "", visible: profile.experience.length > 0 },
+  { id: "education", label: sections?.education ?? "", visible: profile.education.length > 0 },
+  { id: "skills", label: sections?.skills ?? "", visible: profile.skills.length > 0 },
+  { id: "research", label: sections?.research ?? "", visible: profile.researchProjects.length > 0 },
+  { id: "publications", label: sections?.publications ?? "", visible: profile.publications.length > 0 },
+  { id: "certificates", label: sections?.certificates ?? "", visible: profile.certificates.length > 0 },
+].filter((tab) => tab.visible && tab.label);
 ---
 
 <section class="about">
@@ -21,172 +28,168 @@ const skillHeadingLevel = sections?.skills ? 3 : 2;
   </div>
 
   <p class="about-bio">{profile.shortBio}</p>
+  {profile.longBio && <p class="about-bio-long">{profile.longBio}</p>}
 
-  {
-    profile.longBio && <p class="about-bio-long">{profile.longBio}</p>
-  }
+  {tabs.length > 1 && (
+    <div class="about-tabs" role="radiogroup" aria-label={content.about.heading}>
+      {
+        tabs.map((tab, index) => (
+          <>
+            <input
+              class="about-tab-input"
+              type="radio"
+              name="about-sections"
+              id={`about-tab-${tab.id}`}
+              checked={index === 0}
+              aria-label={tab.label}
+            />
+            <label class="about-tab-label" for={`about-tab-${tab.id}`}>
+              {tab.label}
+            </label>
+          </>
+        ))
+      }
 
-  {
-    profile.experience.length > 0 && (
-      <section class="about-section">
-        {sections?.experience && <h2 class="section-title">{sections.experience}</h2>}
-        <div class="entries">
-          {
-            profile.experience.map((entry) => (
-              <article class="entry">
-                <h3 class="entry-title">
-                  {entry.role}
-                  {entry.website && (
-                    <a class="entry-link" href={entry.website} rel="noopener" target="_blank">
-                      {entry.organization}
-                    </a>
-                  )}
-                  {!entry.website && <span class="entry-org">{entry.organization}</span>}
-                </h3>
-                <p class="entry-meta">
-                  {entry.period}
-                  {entry.location && <span aria-hidden="true"> · </span>}
-                  {entry.location}
-                </p>
-                <ul class="entry-bullets">
-                  {entry.bullets.map((b) => (
-                    <li>{b}</li>
-                  ))}
-                </ul>
-              </article>
-            ))
-          }
-        </div>
-      </section>
-    )
-  }
+      <div class="about-tab-panels">
+        {profile.experience.length > 0 && (
+          <section class="about-tab-panel about-panel-experience" aria-labelledby="about-tab-experience">
+            <div class="entries">
+              {profile.experience.map((entry) => (
+                <article class="entry">
+                  <h2 class="entry-title">
+                    {entry.role}
+                    {entry.website && (
+                      <a class="entry-link" href={entry.website} rel="noopener" target="_blank">
+                        {" "}{entry.organization}
+                      </a>
+                    )}
+                    {!entry.website && <span class="entry-org">{entry.organization}</span>}
+                  </h2>
+                  <p class="entry-meta">
+                    {entry.period}
+                    {entry.location && <span aria-hidden="true"> · </span>}
+                    {entry.location}
+                  </p>
+                  <ul class="entry-bullets">
+                    {entry.bullets.map((bullet) => <li>{bullet}</li>)}
+                  </ul>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
 
-  {
-    profile.education.length > 0 && (
-      <section class="about-section">
-        {sections?.education && <h2 class="section-title">{sections.education}</h2>}
-        <div class="entries">
-          {
-            profile.education.map((entry) => (
-              <article class="entry">
-                <h3 class="entry-title">{entry.degree} — {entry.field}</h3>
-                <p class="entry-meta">
-                  {entry.institution}
-                  <span aria-hidden="true"> · </span>
-                  {entry.period}
-                  {entry.gpa && content.gpaLabel && (
-                  <span>
-                    {" "}· {content.gpaLabel} {entry.gpa}
-                  </span>
-                )}
-                </p>
-                {entry.thesis && <p class="entry-thesis">{entry.thesis}</p>}
-              </article>
-            ))
-          }
-        </div>
-      </section>
-    )
-  }
+        {profile.education.length > 0 && (
+          <section class="about-tab-panel about-panel-education" aria-labelledby="about-tab-education">
+            <div class="entries">
+              {profile.education.map((entry) => (
+                <article class="entry">
+                  <h2 class="entry-title">{entry.degree} — {entry.field}</h2>
+                  <p class="entry-meta">
+                    {entry.institution}
+                    <span aria-hidden="true"> · </span>
+                    {entry.period}
+                    {entry.gpa && content.gpaLabel && <span> · {content.gpaLabel} {entry.gpa}</span>}
+                  </p>
+                  {entry.thesis && <p class="entry-thesis">{entry.thesis}</p>}
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
 
-  {
-    profile.skills.length > 0 && (
-      <section class="about-section">
-        {sections?.skills && <h2 class="section-title">{sections.skills}</h2>}
-        <ul class="skills">
-          {
-            profile.skills.map((skill) => (
-              <li class="skill">
-                {skillHeadingLevel === 2 ? (
+        {profile.skills.length > 0 && (
+          <section class="about-tab-panel about-panel-skills" aria-labelledby="about-tab-skills">
+            <ul class="skills">
+              {profile.skills.map((skill) => (
+                <li class="skill">
                   <h2 class="skill-name">{skill.name}</h2>
-                ) : (
-                  <h3 class="skill-name">{skill.name}</h3>
-                )}
-                <p class="skill-meta">
-                  <span class="skill-category">{skill.category}</span>
-                  <span class="skill-separator" aria-hidden="true">·</span>
-                  <span class="skill-source">{skill.source}</span>
-                </p>
-              </li>
-            ))
-          }
-        </ul>
-      </section>
-    )
-  }
+                  <p class="skill-meta">
+                    <span class="skill-category">{skill.category}</span>
+                    <span class="skill-separator" aria-hidden="true">·</span>
+                    <span class="skill-source">{skill.source}</span>
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
-  {
-    profile.researchProjects.length > 0 && (
-      <section class="about-section">
-        {sections?.research && <h2 class="section-title">{sections.research}</h2>}
-        <div class="entries">
-          {
-            profile.researchProjects.map((project) => (
-              <article class="entry">
-                <h3 class="entry-title">
-                  {project.title}
-                  {project.url && project.linkLabel && (
-                    <a class="entry-link" href={project.url} rel="noopener" target="_blank">
-                      {" "}· {project.linkLabel}
-                    </a>
-                  )}
-                </h3>
-                <p class="entry-text">{project.summary}</p>
-              </article>
-            ))
-          }
-        </div>
-      </section>
-    )
-  }
+        {profile.researchProjects.length > 0 && (
+          <section class="about-tab-panel about-panel-research" aria-labelledby="about-tab-research">
+            <div class="entries">
+              {profile.researchProjects.map((project) => (
+                <article class="entry">
+                  <h2 class="entry-title">
+                    {project.title}
+                    {project.url && project.linkLabel && (
+                      <a class="entry-link" href={project.url} rel="noopener" target="_blank">
+                        {" "}· {project.linkLabel}
+                      </a>
+                    )}
+                  </h2>
+                  <p class="entry-text">{project.summary}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
 
-  {
-    profile.publications.length > 0 && (
-      <section class="about-section">
-        {sections?.publications && <h2 class="section-title">{sections.publications}</h2>}
-        <ul class="plain-list">
-          {
-            profile.publications.map((pub) => (
-              <li class="plain-item">
-                <p class="pub-title">{pub.title}</p>
-                <p class="pub-status">{pub.status}</p>
-              </li>
-            ))
-          }
-        </ul>
-      </section>
-    )
-  }
+        {profile.publications.length > 0 && (
+          <section class="about-tab-panel about-panel-publications" aria-labelledby="about-tab-publications">
+            <ul class="plain-list">
+              {profile.publications.map((publication) => (
+                <li class="plain-item">
+                  <h2 class="pub-title">{publication.title}</h2>
+                  <p class="pub-status">{publication.status}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
-  {
-    profile.certificates.length > 0 && (
-      <section class="about-section">
-        {sections?.certificates && <h2 class="section-title">{sections.certificates}</h2>}
-        <ul class="plain-list">
-          {
-            profile.certificates.map((cert) => (
-              <li class="plain-item">
-                <p class="cert-name">{cert.name}</p>
-                {cert.detail && <p class="cert-detail">{cert.detail}</p>}
-              </li>
-            ))
-          }
-        </ul>
-      </section>
-    )
-  }
-
-  {
-    profile.socials.length > 0 && (
-      <div class="socials">
-        {profile.socials.map((s) => (
-          <a class="social-link" href={s.url} rel="me noopener" target="_blank">
-            {s.platform}
-          </a>
-        ))}
+        {profile.certificates.length > 0 && (
+          <section class="about-tab-panel about-panel-certificates" aria-labelledby="about-tab-certificates">
+            <ul class="plain-list">
+              {profile.certificates.map((certificate) => (
+                <li class="plain-item">
+                  <h2 class="cert-name">{certificate.name}</h2>
+                  {certificate.detail && <p class="cert-detail">{certificate.detail}</p>}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </div>
-    )
-  }
+    </div>
+  )}
+
+  {tabs.length <= 1 && profile.skills.length > 0 && (
+    <section class="about-section">
+      <ul class="skills">
+        {profile.skills.map((skill) => (
+          <li class="skill">
+            <h2 class="skill-name">{skill.name}</h2>
+            <p class="skill-meta">
+              <span class="skill-category">{skill.category}</span>
+              <span class="skill-separator" aria-hidden="true">·</span>
+              <span class="skill-source">{skill.source}</span>
+            </p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  {profile.socials.length > 0 && (
+    <div class="socials">
+      {profile.socials.map((social) => (
+        <a class="social-link" href={social.url} rel="me noopener" target="_blank">
+          {social.platform}
+        </a>
+      ))}
+    </div>
+  )}
 
   <aside class="availability">
     <p class="availability-text">{profile.availability}</p>
@@ -207,11 +210,10 @@ const skillHeadingLevel = sections?.skills ? 3 : 2;
     width: 100%;
   }
 
-  .about-head {
-    margin-block-end: 2.5rem;
-  }
+  .about-head { margin-block-end: 2.5rem; }
 
-  .about-label {
+  .about-label,
+  .contact-state-label {
     display: inline-block;
     font-family: var(--font-mono);
     font-size: 0.75rem;
@@ -222,7 +224,8 @@ const skillHeadingLevel = sections?.skills ? 3 : 2;
     margin-block-end: 0.5rem;
   }
 
-  :global(html[dir="rtl"]) .about-label {
+  :global(html[dir="rtl"]) .about-label,
+  :global(html[dir="rtl"]) .contact-state-label {
     font-family: var(--font-persian);
     letter-spacing: 0.02em;
   }
@@ -235,9 +238,7 @@ const skillHeadingLevel = sections?.skills ? 3 : 2;
     text-wrap: balance;
   }
 
-  :global(html[dir="rtl"]) .about-title {
-    letter-spacing: 0;
-  }
+  :global(html[dir="rtl"]) .about-title { letter-spacing: 0; }
 
   .about-positioning {
     color: var(--color-ink);
@@ -259,7 +260,7 @@ const skillHeadingLevel = sections?.skills ? 3 : 2;
     position: relative;
     height: 1px;
     background-color: var(--color-border-subtle);
-    margin-block: 1.25rem 0 0;
+    margin-block: 1.25rem 0;
   }
 
   .rule span {
@@ -269,6 +270,17 @@ const skillHeadingLevel = sections?.skills ? 3 : 2;
     height: 3px;
     width: 64px;
     background-color: var(--color-gold-500);
+  }
+
+  .about-bio,
+  .about-bio-long,
+  .entry-text,
+  .entry-thesis,
+  .entry-bullets,
+  .pub-status,
+  .cert-detail {
+    text-align: justify;
+    text-justify: inter-word;
   }
 
   .about-bio {
@@ -285,20 +297,84 @@ const skillHeadingLevel = sections?.skills ? 3 : 2;
     margin-block-end: 3rem;
   }
 
-  .about-section {
-    margin-block-end: 3rem;
-  }
-
-  .section-title {
-    font-size: clamp(1.5rem, 1.3rem + 1vw, 2rem);
-    margin-block-end: 1.25rem;
-  }
-
-  .entries {
+  .about-tabs {
     display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
+    gap: 0.5rem;
+    margin-block-end: 3rem;
+    padding-block-end: 0.25rem;
   }
+
+  .about-tab-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .about-tab-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding-inline: 1rem;
+    color: var(--color-ink-secondary);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: color 140ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      background-color 140ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      border-color 140ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .about-tab-label:hover {
+    color: var(--color-brand);
+    border-color: var(--color-brand);
+    background-color: var(--color-brand-soft);
+  }
+
+  .about-tab-input:focus-visible + .about-tab-label {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  .about-tab-panels {
+    flex-basis: 100%;
+    order: 10;
+    margin-block-start: 1rem;
+  }
+
+  .about-tab-panel { display: none; }
+
+  #about-tab-experience:checked ~ .about-tab-label[for="about-tab-experience"],
+  #about-tab-education:checked ~ .about-tab-label[for="about-tab-education"],
+  #about-tab-skills:checked ~ .about-tab-label[for="about-tab-skills"],
+  #about-tab-research:checked ~ .about-tab-label[for="about-tab-research"],
+  #about-tab-publications:checked ~ .about-tab-label[for="about-tab-publications"],
+  #about-tab-certificates:checked ~ .about-tab-label[for="about-tab-certificates"] {
+    color: var(--color-inverse);
+    border-color: var(--color-brand);
+    background-color: var(--color-brand);
+  }
+
+  #about-tab-experience:checked ~ .about-tab-panels .about-panel-experience,
+  #about-tab-education:checked ~ .about-tab-panels .about-panel-education,
+  #about-tab-skills:checked ~ .about-tab-panels .about-panel-skills,
+  #about-tab-research:checked ~ .about-tab-panels .about-panel-research,
+  #about-tab-publications:checked ~ .about-tab-panels .about-panel-publications,
+  #about-tab-certificates:checked ~ .about-tab-panels .about-panel-certificates {
+    display: block;
+  }
+
+  .entries { display: flex; flex-direction: column; gap: 1.25rem; }
 
   .entry {
     background-color: var(--color-surface);
@@ -308,32 +384,15 @@ const skillHeadingLevel = sections?.skills ? 3 : 2;
     padding: 1.5rem;
   }
 
-  .entry-title {
-    font-size: 1.125rem;
-    margin-block-end: 0.25rem;
-  }
+  .entry-title { font-size: 1.125rem; margin-block-end: 0.25rem; }
 
   .entry-org,
-  .entry-link {
-    font-weight: 600;
-    color: var(--color-brand);
-  }
+  .entry-link { font-weight: 600; color: var(--color-brand); }
 
-  .entry-link {
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    text-decoration-color: var(--color-border-strong);
-  }
+  .entry-link { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--color-border-strong); }
+  .entry-link:hover { text-decoration-color: var(--color-brand); }
 
-  .entry-link:hover {
-    text-decoration-color: var(--color-brand);
-  }
-
-  .entry-meta {
-    margin: 0 0 0.75rem;
-    color: var(--color-ink-secondary);
-    font-size: 0.875rem;
-  }
+  .entry-meta { margin: 0 0 0.75rem; color: var(--color-ink-secondary); font-size: 0.875rem; }
 
   .entry-bullets {
     margin: 0;
@@ -344,11 +403,7 @@ const skillHeadingLevel = sections?.skills ? 3 : 2;
     gap: 0.375rem;
   }
 
-  .entry-thesis,
-  .entry-text {
-    margin: 0;
-    color: var(--color-ink-secondary);
-  }
+  .entry-thesis, .entry-text { margin: 0; color: var(--color-ink-secondary); }
 
   .skills {
     list-style: none;
@@ -367,10 +422,7 @@ const skillHeadingLevel = sections?.skills ? 3 : 2;
     padding: 1.25rem 1.5rem;
   }
 
-  .skill-name {
-    font-size: 1.0625rem;
-    margin-block-end: 0.375rem;
-  }
+  .skill-name { font-size: 1.0625rem; margin-block-end: 0.375rem; }
 
   .skill-meta {
     margin: 0;
@@ -381,110 +433,28 @@ const skillHeadingLevel = sections?.skills ? 3 : 2;
     flex-wrap: wrap;
   }
 
-  .skill-category {
-    color: var(--color-brand);
-    font-weight: 600;
-  }
+  .skill-category { color: var(--color-brand); font-weight: 600; }
+  .skill-separator { color: var(--color-ink-secondary); }
 
-  .skill-separator {
-    color: var(--color-ink-secondary);
-  }
+  .plain-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1rem; }
+  .plain-item { background-color: var(--color-surface); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-md); padding: 1.25rem 1.5rem; }
+  .pub-title, .cert-name { margin: 0 0 0.25rem; font-size: 1.125rem; font-weight: 600; }
+  .pub-status, .cert-detail { margin: 0; color: var(--color-ink-secondary); font-size: 0.875rem; }
 
-  .plain-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
+  .socials { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-block-end: 2rem; }
+  .social-link { display: inline-flex; align-items: center; min-height: 2.75rem; padding-inline: 1rem; color: var(--color-brand); text-decoration: none; font-weight: 600; border: 1px solid var(--color-border-strong); border-radius: var(--radius-md); }
+  .social-link:hover { background-color: var(--color-brand-soft); border-color: var(--color-brand); }
 
-  .plain-item {
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border-subtle);
-    border-radius: var(--radius-md);
-    padding: 1.25rem 1.5rem;
-  }
+  .availability { background-color: var(--color-surface-muted); border-radius: var(--radius-lg); padding: 1.5rem 2rem; margin-block-end: 2rem; }
+  .availability-text { margin: 0; color: var(--color-ink); font-weight: 600; max-width: 60ch; text-align: justify; text-justify: inter-word; }
 
-  .pub-title,
-  .cert-name {
-    margin: 0 0 0.25rem;
-    font-weight: 600;
-  }
+  .contact-state { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; border-block-start: 1px solid var(--color-border-subtle); padding-block-start: 1.5rem; }
+  .contact-state-label { font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-brand); }
+  :global(html[dir="rtl"]) .contact-state-label { font-family: var(--font-persian); letter-spacing: 0.02em; }
+  .contact-state-text { margin: 0; color: var(--color-ink-secondary); font-size: 0.875rem; }
 
-  .pub-status,
-  .cert-detail {
-    margin: 0;
-    color: var(--color-ink-secondary);
-    font-size: 0.875rem;
-  }
-
-  .socials {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    margin-block-end: 2rem;
-  }
-
-  .social-link {
-    display: inline-flex;
-    align-items: center;
-    min-height: 2.75rem;
-    padding-inline: 1rem;
-    color: var(--color-brand);
-    text-decoration: none;
-    font-weight: 600;
-    border: 1px solid var(--color-border-strong);
-    border-radius: var(--radius-md);
-    transition: background-color 140ms cubic-bezier(0.2, 0.8, 0.2, 1),
-      border-color 140ms cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-
-  .social-link:hover {
-    background-color: var(--color-brand-soft);
-    border-color: var(--color-brand);
-  }
-
-  .availability {
-    background-color: var(--color-surface-muted);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem 2rem;
-    margin-block-end: 2rem;
-  }
-
-  .availability-text {
-    margin: 0;
-    color: var(--color-ink);
-    font-weight: 600;
-    max-width: 60ch;
-  }
-
-  .contact-state {
-    display: flex;
-    align-items: baseline;
-    gap: 1rem;
-    flex-wrap: wrap;
-    border-block-start: 1px solid var(--color-border-subtle);
-    padding-block-start: 1.5rem;
-  }
-
-  .contact-state-label {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--color-brand);
-  }
-
-  :global(html[dir="rtl"]) .contact-state-label {
-    font-family: var(--font-persian);
-    letter-spacing: 0.02em;
-  }
-
-  .contact-state-text {
-    margin: 0;
-    color: var(--color-ink-secondary);
-    font-size: 0.875rem;
+  @media (max-width: 40rem) {
+    .about-tab-label { flex: 0 0 auto; }
+    .about-tab-panels { margin-block-start: 0.5rem; }
   }
 </style>

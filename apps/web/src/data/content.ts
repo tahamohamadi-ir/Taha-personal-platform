@@ -214,6 +214,14 @@ export const content: Record<LocaleCode, LocaleContent> = {
       label: "۰۲ · هویت",
       heading: "درباره",
     },
+    sections: {
+      experience: "سوابق کاری",
+      education: "تحصیلات",
+      skills: "مهارت‌ها",
+      publications: "انتشارات",
+      research: "پژوهش",
+      certificates: "گواهی‌ها",
+    },
     notfound: {
       code: "404",
       skip: "پرش به محتوا",
@@ -231,6 +239,7 @@ export const content: Record<LocaleCode, LocaleContent> = {
       switchLabel: "زبان",
       copyrightMark: "©",
     },
+    gpaLabel: "معدل",
     meta: {
       title: "طه محمدی — سیستم‌های هوشمند انسان‌محور",
       description:

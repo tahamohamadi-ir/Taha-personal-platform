@@ -991,3 +991,14 @@ ode --check و YAML validation توسط agent.
 - Decisions / assumptions: برچسب‌های فارسی بخش‌ها اختراع نشدند (منتظر مالک) — با سطح heading پویا مشکل skip حل شد؛ DEFER-0013 برای بخش overflow با CI پوشش گرفت (بخش visual همچنان باز).
 - Deferred or risk IDs: DEFER-0013 OPEN (با پوشش CI برای overflow).
 - Rollback / recovery: revert کامیت‌ها؛ deploy قبلی سالم.
+
+## LOG-0090 — 2026-08-15 — P2 / shared bilingual About tabs and justified text
+
+- Outcome: About فارسی و انگلیسی به یک component و ساختار یکسان CSS-only radio-tab تبدیل شدند؛ هر دو locale شش tab هم‌ساختار دارند و فقط label/data زبان تغییر می‌کند. متن‌های طولانی About، تجربه، پژوهش، publication و certificate با `text-align: justify` و `text-justify: inter-word` خواناتر شدند؛ نوار tab در mobile افقی scroll می‌شود و JS/hydration اضافه نشد.
+- Why: درخواست مالک برای یکسان‌بودن format/style/tab بین fa/en و کاهش scroll عمودی.
+- Scope / files: `apps/web/src/components/About.astro`، `apps/web/src/data/content.ts`، `apps/web/src/data/profile.fa.ts`، `docs/plan/P2-about-tabs-task-spec.md` و همین Work Log.
+- Commands or actions actually performed: `npm run check` (0 errors / 0 warnings / 0 hints)؛ `npm run build` (6 pages)؛ `node --check qa/mobile-overflow.spec.mjs`؛ YAML validation؛ static assertions برای ۶ tab و justified CSS.
+- Verification actually performed and result: build سبز؛ هر دو locale دارای data کامل و شش panel/tab؛ tabها با radio/CSS بدون JS کار می‌کنند؛ mobile overflow در CI بررسی می‌شود (Chromium local به‌دلیل 403 CDN نصب نشد).
+- Decisions / assumptions: labels فارسی بخش‌ها (`سوابق کاری`, `تحصیلات`, `مهارت‌ها`, `انتشارات`, `پژوهش`, `گواهی‌ها`) با درخواست صریح مالک اضافه شدند؛ empty future section render نمی‌شود.
+- Deferred or risk IDs: `DEFER-0013` برای visual mobile QA/CI result باز است.
+- Rollback / recovery: revert commit؛ deploy فعلی untouched تا check/CI و artifact جدید.
