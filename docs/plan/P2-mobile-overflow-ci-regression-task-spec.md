@@ -1,6 +1,6 @@
 # Task Spec — P2 mobile-overflow CI regression
 
-**Status:** Implemented and locally verified; hosted CI rerun pending.  
+**Status:** Implemented and locally verified; second hosted CI rerun pending.  
 **Date:** 2026-08-15  
 **Owner:** Project owner (agent-assisted)  
 **Release type:** `STANDARD` UI regression fix  
@@ -68,11 +68,15 @@ the fallback; no deployment is part of this task.
 - CI run `31902292412` failed only at `/en/@160x284` with `overflow=20px`;
   type check, build and local smoke had passed before that point.
 - DOM min-content inspection found `.site-header-inner` already required
-  `161.2px` under local Inter at a 160px viewport. Its non-shrinking navigation
-  group can therefore overflow under Linux fallback font metrics.
+  `161.2px` under local Inter at a 160px viewport, so header navigation was
+  made structurally safe. The first hosted rerun (`31903032574`) retained the
+  same landing-page overflow, proving header was not the sole source.
 - At `max-width: 12rem`, the brand name is omitted visually while its link is
   retained; the two navigation links move to their own equal-width grid row.
   No link is hidden, clipped or reduced below the existing `2.75rem` height.
+- The English landing CTA also receives a zero minimum width, safe word wrapping
+  and a full-width tiny-viewport layout with reduced inline padding. This removes
+  its fallback-font min-content pressure without changing its label or target.
 - Local verification: `npm run check` (0 errors/warnings/hints), `npm run
   build` (6 pages), and `PREVIEW_URL=http://127.0.0.1:4323
   PLAYWRIGHT_CHANNEL=chrome node qa/mobile-overflow.spec.mjs` (all checks

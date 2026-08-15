@@ -1098,3 +1098,14 @@ ode --check و YAML validation توسط agent.
 - Decisions / assumptions: assertion overflow یا matrix محدود نشد و `DEFER-0013` برای real 200% zoom unchanged است. header در viewport فوق‌باریک عمداً دو ردیف می‌شود تا linkها به‌جای clip/shrink غیرقابل‌استفاده قابل‌دسترسی بمانند.
 - Deferred or risk IDs: `DEFER-0013` OPEN؛ evidence واقعی zoom هنوز دستی/owner است. CI rerun برای اختلاف metric لینوکس pending است.
 - Rollback / recovery: revert commit این regression fix؛ artifact production دست‌نخورده است و هیچ deploy/SSH انجام نشده است.
+
+## LOG-0100 — 2026-08-15 — P2 / Landing CTA hardening after CI retry
+
+- Outcome: CI retry `31903032574` پس از hardening header باز هم فقط `/en/@160×284` را با `overflow=20px` fail کرد؛ بنابراین header به‌تنهایی root cause نبود. Landing CTA انگلیسی اکنون `min-width: 0`، `max-width: 100%` و `overflow-wrap: anywhere` دارد و در زیر `12rem` تمام‌عرض با padding کمتر می‌شود؛ hero/section نیز padding افقی امن دارند. QA هنگام overflow بعدی selector/box source را هم در log چاپ می‌کند.
+- Why: retry failure باید به evidence تبدیل شود، نه به تغییر ظاهری حدسی. CTA دارای label طولانی انگلیسی و padding ثابت در 128px content width بود؛ layout جدید label/target را بدون حذف یا clip در container نگه می‌دارد.
+- Scope / files: `apps/web/src/components/Landing.astro`، `apps/web/qa/mobile-overflow.spec.mjs`، `docs/plan/P2-mobile-overflow-ci-regression-task-spec.md` و همین Work Log.
+- Commands or actions actually performed: review کامل log `31903032574`؛ `npm run check` (0 error/warning/hint)؛ `npm run build` (6 pages)؛ `node --check qa/mobile-overflow.spec.mjs`؛ preview محلی؛ و اجرای کامل `mobile-overflow.spec.mjs` با Chrome واقعی که PASS شد.
+- Verification actually performed and result: matrix محلی همه routeها، widthها، `dir` و کنترل‌های header/gateway/404 را PASS کرد. Chromium bundled لینوکسی فقط در hosted CI وجود دارد؛ بنابراین rerun بعد از push evidence نهایی این slice است.
+- Decisions / assumptions: header safe-layout از commit پیشین حفظ شد، اما علت نهایی بدون شواهد selector-specific ادعا نمی‌شود. assertion/matrix ضعیف نشد؛ diagnostic فقط روی failure چاپ می‌شود.
+- Deferred or risk IDs: `DEFER-0013` unchanged/Open برای zoom واقعی. hosted CI rerun pending.
+- Rollback / recovery: revert commit CTA hardening و در صورت نیاز revert commit header regression؛ هیچ deploy/SSH انجام نشده است.

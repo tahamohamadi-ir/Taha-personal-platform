@@ -52,7 +52,25 @@ try {
       );
       if (checks.overflow > 1) {
         failed = true;
-        console.log(`FAIL ${label} overflow=${checks.overflow}px`);
+        const sources = await page.evaluate(() =>
+          [...document.querySelectorAll('*')]
+            .map((element) => {
+              const rect = element.getBoundingClientRect();
+              return {
+                tag: element.tagName.toLowerCase(),
+                className: typeof element.className === 'string' ? element.className : '',
+                id: element.id,
+                left: Math.round(rect.left),
+                right: Math.round(rect.right),
+                width: Math.round(rect.width),
+                scrollWidth: element.scrollWidth,
+                clientWidth: element.clientWidth,
+              };
+            })
+            .filter((item) => item.right > window.innerWidth + 1 || item.left < -1 || item.scrollWidth > item.clientWidth + 1)
+            .slice(0, 12),
+        );
+        console.log(`FAIL ${label} overflow=${checks.overflow}px sources=${JSON.stringify(sources)}`);
       } else {
         console.log(`PASS ${label} overflow`);
       }
