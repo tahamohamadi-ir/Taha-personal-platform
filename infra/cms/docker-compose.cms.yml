@@ -1,0 +1,57 @@
+# NOT-APPLIED — candidate only; deploy requires owner capacity decision (RISK-0007) and a separate Task Spec
+#
+# Candidate Compose topology for the CMS runtime in the 2GB VPS co-host scenario.
+# Capacity is UNRESOLVED: the limits below are conservative guesses pending the
+# RISK-0007 owner capacity decision and a measured budget — the running static
+# site stack must never be degraded.
+#
+# Not used yet. When authorized by a deploy Task Spec:
+#   - create infra/cms/.env on the server from a template (never commit secrets;
+#     this .env is not tracked) and set POSTGRES_HOST=db for the cms service
+#   - docker compose -f infra/cms/docker-compose.cms.yml up -d --build
+#   - no db/cms port is published to the host; Caddy joins the cms_internal
+#     network and reaches the cms service only.
+
+services:
+  db:
+    image: postgres:17-alpine
+    env_file: .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: "0.50"
+    networks:
+      - cms_internal
+
+  cms:
+    build:
+      context: ../..
+      dockerfile: infra/cms/Dockerfile.cms
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    user: "10001:10001"
+    mem_limit: 512m
+    cpus: "0.50"
+    restart: unless-stopped
+    volumes:
+      - cms_static:/app/staticfiles
+      - cms_media:/app/media
+    networks:
+      - cms_internal
+    # no ports: the cms service is reachable only through Caddy on the private network
+
+volumes:
+  postgres_data:
+  cms_static:
+  cms_media:
+
+networks:
+  cms_internal:

@@ -28,7 +28,9 @@ coverage/
 *.log
 media/
 staticfiles/
+static/
 postgres-data/
+*.sqlite3
 
 # OS file-system artifacts
 .DS_Store

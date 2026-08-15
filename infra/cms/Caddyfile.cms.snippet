@@ -1,0 +1,22 @@
+# NOT-APPLIED — candidate only; deploy requires owner capacity decision (RISK-0007) and a separate Task Spec
+# !! NOT-APPLIED !!
+#
+# Illustrative reverse-proxy snippet ONLY. The live Caddy configuration
+# (see infra/caddy/static-site.caddy and the deployed server Caddyfile) MUST NOT
+# be edited until the owner capacity decision (RISK-0007) and a separate deploy
+# Task Spec authorize the CMS runtime.
+#
+# Intended placement: inside the site block so /admin/ and /health/ are
+# reverse-proxied to the cms service on the private compose network
+# (cms_internal), while all other paths keep serving the static site from disk.
+# `handle` (no path stripping) preserves /admin/ and /health/ for Wagtail/Django.
+
+{$CMS_UPSTREAM:error "CMS_UPSTREAM env var is required (example: cms:8000)"}
+
+handle /admin/* {
+	reverse_proxy {$CMS_UPSTREAM}
+}
+
+handle /health/* {
+	reverse_proxy {$CMS_UPSTREAM}
+}

@@ -1,0 +1,42 @@
+name: CMS CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  DJANGO_SETTINGS_MODULE: config.settings.test
+
+jobs:
+  cms:
+    name: Check and test CMS
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/cms
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Set up uv
+        # v10 is the latest setup-uv major verified via gh api (2026-08-15).
+        uses: astral-sh/setup-uv@v10
+
+      - name: Install dependencies
+        run: uv sync --python 3.12
+
+      - name: Django system check
+        run: uv run python manage.py check
+
+      - name: Migration consistency check
+        run: uv run python manage.py makemigrations --check --dry-run
+
+      - name: Lint (ruff)
+        run: uv run ruff check .
+
+      - name: Tests (pytest)
+        run: uv run pytest -q
