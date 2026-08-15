@@ -47,3 +47,11 @@
 | 2026-08-15 | A4 | DONE (owner) | L-model | production P1 live via owner's Caddy snippet switch; smoke 7 PASS exit 0; d55d44e served; delta to d7db929 documented; LOG-0078 |
 | 2026-08-15 | parallel batch | APPROVE | L-model | polish (skip-links, meta, bdi), LICENSES.md (0 missing; gsap proprietary flagged), PROD-ACCEPTED-WITH-NOTES (404 empty-body finding), A5 close-out; LOG-0079 |
 | 2026-08-15 | R2 live | DONE | L-model | prod+staging on release-1ce6d9a; custom 404 live (404+body, verified 4127B); smoke prod 7/stage 8 PASS; scoped sudo active; LOG-0083 |
+| V1 | Screenshot visual QA | DONE | visual-reviewer | 7/7 ACCEPT-WITH-NOTES; report VISUAL-QA-P1.md; DEFER-0010 closed, DEFER-0013 (mobile) open |
+| C1 | Owner content inventory (P2) | DONE | owner | form P2-C1 filled (identity/bio/skills/availability/contact-omit); gaps: long bio, education, experience org/role/date, CV/Resume files |
+| C2 | Typed profile contract | DONE | S-model | profile.ts + en/fa + validateProfile; LOG-0085 |
+| C3 | About pages | DONE | S-model | /en/about/ + /fa/about/ live in build; LOG-0085 |
+| C5 | Contact path | DONE | owner | decision: omit in P2 (DEFER-0007 closed); honest state stays |
+| C4 | Resume/CV pages + downloads | BLOCKED(C1-gaps) | - | files+details (title/type/size/route) pending owner |
+| C6 | Navigation update | DONE | S-model | About link in header; LOG-0085 |
+| C7 | P2 verification + release | IN_PROGRESS | L-model | deploy to staging+prod pending after this batch |

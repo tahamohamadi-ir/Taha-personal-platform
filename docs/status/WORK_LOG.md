@@ -923,3 +923,31 @@ pm run check (0 error)؛ git diff --check؛ بازبینی مستقل diffها.
 - Decisions / assumptions: هیچ صفحهٔ خالی P2 ساخته نشد (قانون «empty future route» رعایت شد)؛ C2..C7 همچنان BLOCKED(C1).
 - Deferred or risk IDs: DEFER-0010 باز (منتظر restart).
 - Rollback / recovery: revert این commit؛ هیچ runtime state تغییر نکرد.
+
+## LOG-0085 — 2026-08-15 — P2 / V1 visual QA passed, C1 form received, About pages built
+
+- Outcome: (1) **V1 اجرا شد** — agent isual-reviewer (پس از restart ثبت شد) هر ۷ اسکرین‌شات را بررسی کرد: همه ACCEPT-WITH-NOTES، بدون SEV؛ گزارش در docs/plan/VISUAL-QA-P1.md؛ DEFER-0010 بسته و DEFER-0013 (mobile matrix) ثبت شد. (2) فرم P2-C1 تکمیل‌شده دریافت شد: identity تأیید، short bio ویرایشی تأیید، ۷ مهارت با source، availability دوزبانه تأیید، تماس = omit (بستن DEFER-0007)؛ خالی‌ها (long bio، education، تجربهٔ org/role/date، فایل‌های CV/Resume، URLها) طبق قانون «empty = not published» منتشر نمی‌شوند. (3) پیاده‌سازی P2 (C2+C3+C6): ماژول typed profile.ts + profile.{en,fa}.ts با alidateProfile()، صفحات /en/about/ و /fa/about/، کامپوننت About.astro، لینک About در nav، sitemap ۵-URL، و انتقال copy 404 به content.notfound.
+- Why: «هر دو» — V1 و P2؛ معماری content-driven برای admin panel آینده.
+- Scope / files: pps/web/src/data/{profile.ts,profile.en.ts,profile.fa.ts,content.ts}، pps/web/src/components/{About,Landing,Header,Footer}.astro، pps/web/src/pages/{en,fa}/about.astro، 404.astro، index.astro، sitemap.xml.ts، docs/plan/VISUAL-QA-P1.md، docs/status/deferred-validation.md و همین Work Log.
+- Commands or actions actually performed: dispatch V1 (visual-reviewer) و dispatch پیاده‌سازی P2؛ 
+pm run check (0 error؛ 21 files)؛ 
+pm run build (6 pages شامل aboutها)؛ git diff --check.
+- Verification actually performed and result: ۷ گزارش visual همگی ACCEPT-WITH-NOTES؛ build شامل /en/about/ و /fa/about/؛ همهٔ copy از data؛ alidateProfile روی build اجرا می‌شود.
+- Decisions / assumptions: مهارت‌ها روی هر دو locale با نام‌های فنی/لاتین یکسان (مصوب) نمایش داده می‌شوند؛ بخش‌های Experience/Education/CV منتشر نشدند چون دادهٔ واقعی ندارند (نیازمند تکمیل فرم توسط مالک).
+- Deferred or risk IDs: DEFER-0010 CLOSED؛ DEFER-0007 CLOSED؛ DEFER-0013 OPEN (mobile matrix).
+- Rollback / recovery: revert کامیت‌های این slice؛ deploy قبلی روی سرور سالم می‌ماند.
+
+## LOG-0086 — 2026-08-15 — P1/P2 / no-hardcode audit and data-driven refactor
+
+- Outcome: طبق دستور مالک («هیچ‌چیز هاردکد؛ همه‌چیز بعداً از admin panel مدیریت شود») agent audit همهٔ .astro/.ts غیر از data/ را اسکن کرد: ۷ مورد HIGH هاردکد (title gateway، نام‌های h1، «404»، برچسب‌های switch «EN»/«فارسی» در Header/Footer، نماد «©») + LOWهای برند (TM/طه). همه به content.ts منتقل شدند: gateway.title، 
+ame، mark، 
+otfound.code، برچسب switch از gateway.englishLabel/persianLabel locale مقابل، ooter.copyrightMark. پس از refactor، هیچ string کاربر-قابل‌مشاهده‌ای خارج از data/ باقی نماند (به‌جز جداکننده‌های تزئینی aria-hidden).
+- Why: منبع واحد محتوا = مسیر مستقیم به admin panel/CMS در P3 (adapter روی همین ماژول‌ها).
+- Scope / files: pps/web/src/data/content.ts، pps/web/src/components/{Header,Footer}.astro، pps/web/src/pages/{index,404}.astro و همین Work Log.
+- Commands or actions actually performed: agent audit (explore)؛ سپس refactor دستی؛ 
+pm run check (0 error)؛ 
+pm run build (6 pages)؛ git diff --check.
+- Verification actually performed and result: audit پس از اصلاحات — ۰ HIGH باقی‌مانده (فقط تزئینی/برند مستند)؛ build/check سبز.
+- Decisions / assumptions: برچسب switch از «EN» به «English» تغییر کرد (داده‌محور و مطابق design.md §59)؛ نماد «©» از ooter.copyrightMark خوانده می‌شود.
+- Deferred or risk IDs: بدون ID جدید.
+- Rollback / recovery: revert؛ deploy قبلی دست‌نخورده.
