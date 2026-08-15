@@ -17,7 +17,7 @@ set -euo pipefail
 RELEASE_DIR="${1:?usage: sudo stage-p1.sh <absolute-release-path>}"
 SITE_ROOT="${SITE_ROOT:-/opt/taha/site}"
 CADDY_FILE="/etc/caddy/Caddyfile"
-CADDY_BACKUP="$CADDY_FILE.pre-stage-p1"
+CADDY_BACKUP="$CADDY_FILE.pre-stage-p1.$(date +%Y%m%d%H%M%S)"
 
 if [[ ! -d "$RELEASE_DIR" ]]; then
   echo "error: release directory missing: $RELEASE_DIR" >&2
@@ -96,3 +96,4 @@ printf '%s staged %s %s\n' "$(date -u +%FT%TZ)" "$(basename "$RELEASE_DIR")" "$C
   >> "$SITE_ROOT/deploy.log"
 
 echo "staged $(basename "$RELEASE_DIR") on staging hostname and reloaded Caddy"
+echo "Caddy backup retained at $CADDY_BACKUP"

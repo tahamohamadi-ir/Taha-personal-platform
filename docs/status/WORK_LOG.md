@@ -588,3 +588,25 @@
 - Decisions / assumptions: staging deploy توسط مالک با یک فرمان sudo اجرا می‌شود: `sudo bash ~/taha-stage/stage-p1.sh ~/taha-stage/release-a2720d9`؛ production blocks دست نمی‌خورند. آدرس سرور در `~/.ssh/config` (alias `taha-nl`) است و در repo ثبت نمی‌شود.
 - Deferred or risk IDs: `RISK-0004` (inventory Docker هنوز sudo می‌خواهد)، `RISK-0007` (capacity بر اساس 1.1GB available برای staging static کافی ارزیابی می‌شود)؛ بدون ID جدید.
 - Rollback / recovery: staging script دارای backup/validate/auto-restore است؛ rollback مسیر در DEPLOY_RUNBOOK ثبت شد.
+
+## LOG-0060 — 2026-08-15 — R1/R2 / staging deploy live and verified (P0A-09)
+
+- Outcome: مالک `sudo bash ~/taha-stage/stage-p1.sh ~/taha-stage/release-a2720d9` را اجرا کرد؛ Caddy validate PASS و reload انجام شد و `staging.tahamohamadi.ir` اکنون artifact ایستای P1 را سرو می‌کند. Bug اولیهٔ permission (artifact scp با mode 0700 → 403 برای caddy user) با `chmod -R a+rX` رفع شد؛ اسکریپت برای آینده با `chown/chmod` نرمال‌سازی و 404 صحیح (بدون try_files) برای اجرای بعدی آماده شد.
+- Why: P0A-09 خروجی staging ایستا است؛ این اولین اجرای واقعی مکانیک deploy طبق ADR-0017 است.
+- Scope / files: `infra/deploy/stage-p1.sh`، `docs/governance/DEPLOY_RUNBOOK.md`، `docs/status/WORK_LOG.md`.
+- Commands or actions actually performed: از این agent: `curl` routeهای staging از مسیر Cloudflare و direct-origin؛ `ssh` فقط‌خواندنی + `chmod -R a+rX` (مالکیت deploy)؛ `bash -n`؛ `scp` اسکریپت اصلاح‌شده؛ commit/push. مالک دستور sudo را اجرا کرد (evidence خروجی در گفت‌وگو).
+- Verification actually performed and result: `GET /`, `/en/`, `/fa/`, `/health.json`, `/404.html`, `/favicon.svg` → 200؛ `/en/` محتوای کامل با `lang="en" dir="ltr"`؛ `/fa/` RTL؛ `health.json` = `{"status":"ok","service":"static","version":"0.1.0"}`؛ header `x-robots-tag: noindex, nofollow` فعال؛ production `tahamohamadi.ir` → 200 دست‌نخورده. یافته: Cloudflare edge در مسیر proxy، `/robots.txt` را intercept می‌کند (origin robots صحیح است) — موردی zone-level که مالک در پنل Cloudflare باید بررسی کند.
+- Decisions / assumptions: staging block فقط تعویض شد؛ production/www/IP blocks دست‌نخورده‌اند؛ legacy Compose stack بدون تغییر در جریان است.
+- Deferred or risk IDs: `DEFER-0011` (بررسی Cloudflare robots/zone)؛ `RISK-0004` progress (inventory Caddy کامل، docker metadata هنوز sudo می‌خواهد).
+- Rollback / recovery: restore the exact timestamped `Caddyfile.pre-stage-p1.<timestamp>` backup, validate + reload, و/یا برگرداندن `current` به release قبلی.
+
+## LOG-0061 — 2026-08-15 — P1 / ui-ux-pro-max gateway review and RTL correction
+
+- Outcome: screenshot اولیهٔ staging با `ui-ux-pro-max` و `docs/design.md` review شد. جهت بصری کلی (Navy، selective glass، Turquoise/Gold، technical field) مناسب تشخیص داده شد؛ ایراد واقعی bidi در نمایش نام فارسی، prompt تک‌زبانه، mobile target و reduced-motion اصلاح شد.
+- Why: screenshot نشان داد نام `Taha Mohammadi · طه محمدی` در یک خط bidi-safe نیست و فارسی به‌صورت شکسته/ناقص دیده می‌شود؛ این یک مشکل قابل مشاهدهٔ P1 بود، نه صرفاً polish.
+- Scope / files: `docs/plan/P1-gateway-ui-review-task-spec.md`، `apps/web/src/pages/index.astro`، `apps/web/src/styles/global.css`، `infra/deploy/stage-p1.sh`، `docs/governance/DEPLOY_RUNBOOK.md`، `docs/status/deferred-validation.md` و همین Work Log.
+- Commands or actions actually performed: `ui-ux-pro-max` design-system و UX/landing searches؛ `npm run check` (0 error / 0 warning / 0 hint)؛ `npm run build`؛ static output assertions برای ترتیب identity، prompt دوزبانه و `dir="rtl"`. هیچ dependency یا animation library اضافه نشد.
+- Verification actually performed and result: identity انگلیسی/فارسی در دو line مستقل با `dir` جدا render می‌شود؛ prompt هر دو زبان را نمایش می‌دهد؛ دکمه‌ها حداقل touch target دارند؛ `prefers-reduced-motion` smooth scroll/transition را کاهش می‌دهد؛ build و typecheck PASS.
+- Decisions / assumptions: پیشنهاد عمومی skill دربارهٔ palette/font/motion با baseline پروژه جایگزین نشد؛ `docs/design.md` منبع نهایی باقی است. فونت self-host و browser screenshot matrix همچنان باز هستند.
+- Deferred or risk IDs: `DEFER-0008` (font)، `DEFER-0010` (browser matrix)، `DEFER-0011` (Cloudflare robots) OPEN.
+- Rollback / recovery: تغییر frontend/infra مستند و قابل بازگشت با Git؛ staging برای اعمال اصلاح 404 باید با script timestamped دوباره اجرا شود.

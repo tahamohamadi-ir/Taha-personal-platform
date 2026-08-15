@@ -58,9 +58,11 @@ $SITE_ROOT/                      # project-owned, e.g. /opt/taha/site (finalize 
    assets, and confirm `noindex`/robots behavior for staging. Confirm the
    production hostname and legacy routes are unchanged (production blocks are
    untouched by the script).
-5. Rollback of this step: `cp -a /etc/caddy/Caddyfile.pre-stage-p1 /etc/caddy/Caddyfile`
-   then `caddy validate --config /etc/caddy/Caddyfile && systemctl reload caddy`,
-   and/or `ln -sfn $SITE_ROOT/releases/<previous> $SITE_ROOT/current`.
+5. Rollback of this step: restore the exact timestamped backup printed by the
+   script, for example `cp -a /etc/caddy/Caddyfile.pre-stage-p1.<timestamp>
+   /etc/caddy/Caddyfile`, then `caddy validate --config /etc/caddy/Caddyfile &&
+   systemctl reload caddy`, and/or `ln -sfn $SITE_ROOT/releases/<previous>
+   $SITE_ROOT/current`. Never overwrite a prior backup with a fixed filename.
 
 ## Production deploy (owner approval required)
 
