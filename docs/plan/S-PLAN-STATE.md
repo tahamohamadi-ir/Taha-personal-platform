@@ -17,7 +17,7 @@
 | B2 | SSH port decision | BLOCKED(owner) | owner | — |
 | B3 | Uptime check definition | DONE | S-model | approved 4ef9541 by L-model 2026-08-15 |
 | B4 | Restore drill cadence | DONE | S-model | approved ae8a854 by L-model 2026-08-15 |
-| B5 | Visual-interaction adoption brief | NEEDS_REVIEW | S-model | adoption brief at docs/plan/B5-VISUAL-INTERACTION-ADOPTION.md; 3 candidates proposed (not implemented); adoption only after A5 + owner approval |
+| B5 | Visual-interaction adoption brief | DONE | S-model | approved e21fbfe by L-model 2026-08-15 |
 | V1 | Screenshot visual QA (DEFER-0010) | READY | visual-reviewer | needs opencode restart to register agent; inputs: owner screenshots 003016..003052 |
 | C1 | Owner content inventory (P2) | BLOCKED(owner) | owner | bio/experience/education/skills/CV/Resume/contact per locale |
 | C2 | Typed profile contract | BLOCKED(C1) | — | — |
@@ -34,6 +34,7 @@
 | 2026-08-15 | A1 | APPROVE | L-model | diff=allowed only; spec-exact; independent smoke re-run 8 PASS exit 0; LOG-0064 |
 | 2026-08-15 | B3 | APPROVE | L-model | diff=allowed only; 1 Observability heading; no invented provider/email/URL; LOG-0070 complete |
 | 2026-08-15 | B4 | APPROVE | L-model | diff=allowed only; 1 Restore-drill heading; no invented dates/RPO-RTO; LOG-0071 complete |
+| 2026-08-15 | B5 | APPROVE | L-model | diff=allowed only; 6 exact headings; no motion/gsap/three imports in src (independent grep clean); LOG-0074 complete |
 | 2026-08-15 | A1 | submitted for review | S-model | smoke.sh verified against https://staging.tahamohamadi.ir --expect-noindex; all checks PASS |
 | 2026-08-15 | B4 | submitted for review | S-model | Restore drill cadence section appended; git diff --check exit 0; single heading; no invented dates/RPO-RTO/owners beyond Project owner |
 | 2026-08-15 | B3 | submitted for review | S-model | Observability (P0A-11) section extended per task; git diff --check exit 0; single Observability heading at line 95 |
