@@ -19,21 +19,25 @@ path = sys.argv[1]
 with open(path, encoding="utf-8") as f:
     text = f.read()
 
-if "handle_errors {" in text:
-    print("handle_errors already present; no change")
-    sys.exit(0)
-
 idx = text.find("(taha_application_routes) {")
 if idx == -1:
     print("error: taha_application_routes snippet not found", file=sys.stderr)
     sys.exit(1)
 
-fs = text.find("file_server", idx)
+# snippet region: from the snippet header up to its closing brace at column 0
+end = text.find("\n}", idx)
+region = text[idx : end if end != -1 else len(text)]
+
+if "handle_errors" in region:
+    print("handle_errors already present in snippet; no change")
+    sys.exit(0)
+
+fs = region.find("file_server")
 if fs == -1:
     print("error: file_server not found inside snippet", file=sys.stderr)
     sys.exit(1)
 
-line_end = text.find("\n", fs)
+line_end = text.find("\n", idx + fs)
 insert = "\n\thandle_errors {\n\t\trewrite * /404.html\n\t\tfile_server\n\t}"
 new_text = text[: line_end + 1] + insert + text[line_end + 1 :]
 
