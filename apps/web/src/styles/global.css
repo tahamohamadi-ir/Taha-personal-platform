@@ -1,3 +1,5 @@
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/vazirmatn";
 @import "tailwindcss";
 
 /*
@@ -43,10 +45,10 @@
   --radius-md: 12px;
   --radius-lg: 16px;
 
-  /* font families (self-hosted families are an owner decision; system stack for now) */
-  --font-sans:
-    "Vazirmatn", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial,
-    sans-serif;
+  /* self-hosted bilingual font pair; decision recorded in ADR-0019 */
+  --font-latin: "Inter", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-persian: "Vazirmatn", "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-sans: var(--font-latin);
   --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Code", Consolas,
     monospace;
 }
@@ -59,15 +61,18 @@
   body {
     background-color: var(--color-canvas);
     color: var(--color-ink);
-    font-family: var(--font-sans);
+    font-family: var(--font-latin);
+    font-synthesis: none;
     -webkit-font-smoothing: antialiased;
   }
 
   :lang(fa) {
+    font-family: var(--font-persian);
     line-height: 1.9;
   }
 
   :lang(en) {
+    font-family: var(--font-latin);
     line-height: 1.65;
   }
 

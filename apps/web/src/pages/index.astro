@@ -44,6 +44,11 @@ const canonical = new URL("/", site.url).href;
           <span class="gateway-name-en" lang="en" dir="ltr">Taha Mohammadi</span>
           <span class="gateway-name-fa" lang="fa" dir="rtl">طه محمدی</span>
         </h1>
+        <p class="gateway-kicker">
+          <span lang="en" dir="ltr">{en.hero.eyebrow}</span>
+          <span aria-hidden="true">·</span>
+          <span lang="fa" dir="rtl">{fa.hero.eyebrow}</span>
+        </p>
         <p class="gateway-prompt">
           <span lang="en" dir="ltr">{en.gateway.prompt}</span>
           <span class="gateway-prompt-divider" aria-hidden="true">/</span>
@@ -53,11 +58,11 @@ const canonical = new URL("/", site.url).href;
           class="gateway-actions"
           aria-label={`${en.gateway.prompt} / ${fa.gateway.prompt}`}
         >
-          <a class="gateway-action" href="/en/" hreflang="en" lang="en" dir="ltr">
+          <a class="gateway-action gateway-action--en" href="/en/" hreflang="en" lang="en" dir="ltr">
             {en.gateway.englishLabel}
           </a>
           <a
-            class="gateway-action gateway-action--alt"
+            class="gateway-action gateway-action--fa"
             href="/fa/"
             hreflang="fa"
             lang="fa"
@@ -109,11 +114,20 @@ const canonical = new URL("/", site.url).href;
     gap: 1.25rem;
     text-align: center;
     width: min(100%, 34rem);
-    background-color: rgba(11, 22, 48, 0.4);
+    position: relative;
+    background-color: rgba(11, 22, 48, 0.62);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: var(--radius-lg);
     padding: clamp(2rem, 7vw, 3.5rem) clamp(1.25rem, 6vw, 2.5rem);
     box-shadow: 0 16px 48px rgba(0, 0, 0, 0.24);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
+    backdrop-filter: blur(16px) saturate(120%);
+  }
+
+  @supports not (backdrop-filter: blur(1px)) {
+    .gateway-panel {
+      background-color: var(--color-navy-900);
+    }
   }
 
   .gateway-mark {
@@ -158,6 +172,27 @@ const canonical = new URL("/", site.url).href;
     color: rgba(255, 255, 255, 0.72);
   }
 
+  .gateway-kicker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    margin: 0;
+    color: var(--color-turquoise-500);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .gateway-kicker span {
+    unicode-bidi: isolate;
+  }
+
+  .gateway-kicker span[lang="fa"] {
+    letter-spacing: 0;
+  }
+
   .gateway-prompt span {
     unicode-bidi: isolate;
   }
@@ -182,8 +217,9 @@ const canonical = new URL("/", site.url).href;
     min-height: 3rem;
     padding: 0.75rem 1.5rem;
     border-radius: var(--radius-md);
-    background-color: var(--color-turquoise-500);
-    color: var(--color-navy-950);
+    background-color: rgba(255, 255, 255, 0.04);
+    color: #fff;
+    border: 1px solid transparent;
     text-decoration: none;
     font-weight: 700;
     cursor: pointer;
@@ -192,17 +228,25 @@ const canonical = new URL("/", site.url).href;
   }
 
   .gateway-action:hover {
-    background-color: var(--color-turquoise-600);
+    color: var(--color-navy-950);
   }
 
-  .gateway-action--alt {
-    background-color: transparent;
+  .gateway-action--en {
+    color: var(--color-turquoise-500);
+    border-color: var(--color-turquoise-500);
+  }
+
+  .gateway-action--en:hover {
+    background-color: var(--color-turquoise-500);
+  }
+
+  .gateway-action--fa {
     color: var(--color-gold-500);
-    border: 1px solid var(--color-gold-500);
+    border-color: var(--color-gold-500);
   }
 
-  .gateway-action--alt:hover {
-    background-color: rgba(200, 155, 60, 0.12);
+  .gateway-action--fa:hover {
+    background-color: var(--color-gold-500);
   }
 
   @media (max-width: 28rem) {
