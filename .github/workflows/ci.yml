@@ -51,6 +51,16 @@ jobs:
           bash "${GITHUB_WORKSPACE}/infra/deploy/smoke.sh" http://localhost:4321
           kill %1 || true
 
+      - name: Mobile overflow check (Playwright)
+        shell: bash
+        run: |
+          cd "${GITHUB_WORKSPACE}/apps/web"
+          npx -y playwright@1.55.0 install chromium --with-deps >/dev/null 2>&1 || npx -y playwright@1.55.0 install chromium
+          (npx astro preview --port 4321 >/tmp/preview2.log 2>&1 &)
+          sleep 8
+          node "${GITHUB_WORKSPACE}/infra/qa/mobile-overflow.spec.mjs"
+          kill %1 || true
+
       - name: Dependency audit
         run: npm audit --audit-level=high
 

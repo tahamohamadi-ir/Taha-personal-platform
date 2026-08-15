@@ -1,5 +1,13 @@
 # P1 Content Pack — Proposal (fa / en)
 
+## Status update (2026-08-15)
+
+Superseded as the working content source by the owner master career profile
+(`Taha_Mohammadi_Master_CV_Website_Profile.md`) and
+`P2-C1-CONTENT-REQUEST-completed.md`; the landing identity strings below
+remain canonical; contact = omitted in P2; font decision = ADR-0019. This
+proposal is kept for history and is not edited for new content.
+
 > **Status:** Proposal pending owner approval (G0-03).  
 > **Rule:** nothing here is production copy until the owner approves each locale. No metric, client, award, social URL, email, CV link or evidence is invented; unconfirmed items are explicitly marked `OWNER DECISION` and rendered as honest unavailable states, never as fake links or placeholders.
 

@@ -9,6 +9,7 @@ interface Props {
 
 const { content, profile } = Astro.props;
 const sections = content.sections;
+const skillHeadingLevel = sections?.skills ? 3 : 2;
 ---
 
 <section class="about">
@@ -73,7 +74,11 @@ const sections = content.sections;
                   {entry.institution}
                   <span aria-hidden="true"> · </span>
                   {entry.period}
-                  {entry.gpa && <span> · GPA {entry.gpa}</span>}
+                  {entry.gpa && content.gpaLabel && (
+                  <span>
+                    {" "}· {content.gpaLabel} {entry.gpa}
+                  </span>
+                )}
                 </p>
                 {entry.thesis && <p class="entry-thesis">{entry.thesis}</p>}
               </article>
@@ -92,7 +97,11 @@ const sections = content.sections;
           {
             profile.skills.map((skill) => (
               <li class="skill">
-                <h3 class="skill-name">{skill.name}</h3>
+                {skillHeadingLevel === 2 ? (
+                  <h2 class="skill-name">{skill.name}</h2>
+                ) : (
+                  <h3 class="skill-name">{skill.name}</h3>
+                )}
                 <p class="skill-meta">
                   <span class="skill-category">{skill.category}</span>
                   <span class="skill-separator" aria-hidden="true">·</span>
@@ -310,8 +319,14 @@ const sections = content.sections;
     color: var(--color-brand);
   }
 
-  .entry-link:hover {
+  .entry-link {
     text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--color-border-strong);
+  }
+
+  .entry-link:hover {
+    text-decoration-color: var(--color-brand);
   }
 
   .entry-meta {

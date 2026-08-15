@@ -62,6 +62,7 @@ export interface LocaleContent {
     switchLabel: string;
     copyrightMark: string;
   };
+  gpaLabel?: string;
   meta: {
     title: string;
     description: string;
@@ -150,6 +151,7 @@ export const content: Record<LocaleCode, LocaleContent> = {
       switchLabel: "Language",
       copyrightMark: "©",
     },
+    gpaLabel: "GPA",
     meta: {
       title: "Taha Mohammadi — Human-Centered Intelligent Systems",
       description:

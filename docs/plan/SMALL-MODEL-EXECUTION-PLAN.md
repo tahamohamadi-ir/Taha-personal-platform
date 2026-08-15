@@ -123,21 +123,32 @@ Escalate (`ESCALATE: <one-line reason>`) when ANY of these is true:
 
 ## 5. Current snapshot (verify at session start; re-check, don't trust)
 
-- Gate: `P0-G0: PASS for static-only P1`. Staging live at
-  `staging.tahamohamadi.ir` serving `release-d55d44e`; `/nonexistent` → 404.
+- Gate: `P0-G0: PASS for static-only P1`. Production `tahamohamadi.ir` and
+  staging `staging.tahamohamadi.ir` are both live on `release-d5a60a5`;
+  `/nonexistent` → 404. Legacy Compose containers are no longer routed from
+  the public hostnames.
+- About pages live: `/en/about/` full master-profile content, `/fa/about/`
+  minimal per the approved Persian-only rule (no Persian content that was not
+  owner-approved; empty = not published).
+- P2 status: `C1` (owner content), `C2` (typed profile contract), `C3`
+  (About pages), `C5` (contact = omitted per DEFER-0007 decision) and `C6`
+  (navigation) are DONE; `C4` (Resume/CV pages + downloads) is BLOCKED on
+  owner CV/Resume files; `C7` (P2 verification + release) is pending C4.
 - CI green on `main` (`.github/workflows/ci.yml`).
-- Production `tahamohamadi.ir` still serves the LEGACY stack (untouched).
-- Open IDs: `DEFER-0007` contact, `DEFER-0009` OG, `DEFER-0010` browser QA,
+- Open IDs: `DEFER-0013` (mobile-browser visual matrix); `DEFER-0009` OG,
   `DEFER-0011` Cloudflare robots, `DEFER-0012` external design resources,
-  `RISK-0004..0007`, `DEBT-0001`. `motion` 13.1.0, `gsap` 3.15.0 and `three`
-  0.185.1 are locked for future use but are not imported or active in P1;
-  Beautiful UI is an MIT source-reference (not an npm package), UI8 DNA is a
-  paid asset pending owner license. Toolchain adoption runs through S-Plan task
-  B5 (post-P1).
+  `RISK-0004..0007`, `DEBT-0001`. `DEFER-0007` (contact) and `DEFER-0010`
+  (browser QA) are CLOSED (V1 visual QA evidence). `motion` 13.1.0, `gsap`
+  3.15.0 and `three` 0.185.1 are locked for future use but are not imported
+  or active; Beautiful UI is an MIT source-reference (not an npm package),
+  UI8 DNA is a paid asset pending owner license. Toolchain adoption runs
+  through S-Plan task B5 (post-P1).
+- Scoped agent sudo is active for `infra/deploy/update-release.sh` and
+  `infra/deploy/caddy-apply.sh` only (VPS switch runs remain owner-gated for
+  approval and recording).
 - Cost posture: primary model is the cheaper tier set in
   `.opencode/opencode.json` (NOT glm-5.3); implementation via `s-executor`;
   visual QA via `visual-reviewer`; see "Hard cost guards" in §0.
-  (LOG-0067 / P1-T01).
 - Canonical commands live in `PROJECT_MANIFEST.md` §"Canonical commands".
 
 ---

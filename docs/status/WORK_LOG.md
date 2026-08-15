@@ -977,3 +977,17 @@ pm run build (6 pages)؛ smoke نسخهٔ قبلی (7 PASS) و تأیید /about
 - Decisions / assumptions: ایمیل/تلفن از resumeها منتشر نشد (تصمیم تماس پابرجا)؛ «Django Rebuild» به‌عنوان پروژهٔ سایت منتشر نشد (site ما Astro است — این فقط framing رزومه است).
 - Deferred or risk IDs: بدون ID جدید.
 - Rollback / recovery: revert کامیت؛ deploy قبلی سالم.
+
+## LOG-0089 — 2026-08-15 — P2 / a11y audit fixes, mobile-overflow CI, docs sync
+
+- Outcome: سه workstream موازی: (1) audit دسترس‌پذیری About → ۲ must-fix رفع شد: skip سطح heading در fa (وقتی برچسب بخش نیست، مهارت‌ها h2 می‌شوند به‌جای h3 — بدون اختراع فارسی) و هاردکد «GPA» → gpaLabel در content؛ plus: آندرلاین rest-state لینک‌های سازمان/پروژه (design.md §55)؛ (2) CI: مرحلهٔ «Mobile overflow check (Playwright)» با infra/qa/mobile-overflow.spec.mjs (۶ مسیر × ۳۲۰×۵۶۸ و ۳۹۰×۸۴۴، fail اگر scrollWidth>1px) → پوشش overflow موبایل DEFER-0013؛ (3) هم‌ترازی مستندات: snapshot S-Plan، pointer content pack به master CV، README.
+- Why: کیفیت/دقت بالا + بستن defer با ابزار CI؛ معماری بدون هاردکد حفظ شد.
+- Scope / files: pps/web/src/components/About.astro، pps/web/src/data/content.ts، .github/workflows/ci.yml، infra/qa/mobile-overflow.spec.mjs، docs/plan/{SMALL-MODEL-EXECUTION-PLAN,P0-G0-content-pack-proposal}.md، README.md و همین Work Log.
+- Commands or actions actually performed: سه task موازی (explore/general/general)؛ 
+pm run check (0 error)؛ 
+pm run build (6 pages)؛ assertions روی dist (fa مهارت‌ها h2، en GPA)؛ 
+ode --check و YAML validation توسط agent.
+- Verification actually performed and result: build سبز؛ heading hierarchy fa رفع شد؛ «GPA» data-driven؛ CI جدید پس از push تست می‌شود.
+- Decisions / assumptions: برچسب‌های فارسی بخش‌ها اختراع نشدند (منتظر مالک) — با سطح heading پویا مشکل skip حل شد؛ DEFER-0013 برای بخش overflow با CI پوشش گرفت (بخش visual همچنان باز).
+- Deferred or risk IDs: DEFER-0013 OPEN (با پوشش CI برای overflow).
+- Rollback / recovery: revert کامیت‌ها؛ deploy قبلی سالم.
