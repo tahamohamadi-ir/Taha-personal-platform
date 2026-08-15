@@ -10,8 +10,8 @@
 
 ## Progress snapshot (2026-08-15)
 
-- **R0+R1+R2 complete:** production P1 live on **release-d55d44e** (checksum `e49e46c7`) at https://tahamohamadi.ir since 2026-08-15 (production smoke 7 PASS, LOG-0078); update to **release-d7db929** (contrast fix) staged/pending. Staging live on the same release (smoke 8 PASS, LOG-0064/0065); CI green on `main`. A1-A5 and B3-B5 done.
-- **Remaining:** production artifact update to release-d7db929 (owner sudo); V1 visual QA (after opencode restart); P2 owner content; B1/B2 (owner).
+- **R0+R1+R2 complete:** production P1 live on **release-4fcd19f** (checksum `13849ab7`) at https://tahamohamadi.ir since 2026-08-15 (LOG-0095; prior release-d55d44e `e49e46c7` superseded); staging live on the same release (smoke 8 PASS, LOG-0064/0065); CI green on `main`. A1-A5, B3-B5, C1-C3, C5, C6 done. P1-09 structured data implemented (JSON-LD, LOG-0105).
+- **Remaining:** P2 verification/release C7 blocked by C4 (owner); V1 visual QA done (VISUAL-QA-P1.md); B1/B2 (owner); C4 Resume/CV files (owner); P1-09 sitemap/robots recheck and OG image (DEFER-0009, owner); production artifact update when a new release is authorized.
 
 ## Global Constraints
 
@@ -374,7 +374,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 - [x] title/description/canonical/OG برای `/`, `/fa/`, `/en/` از دادهٔ approved تولید شود.
 - [x] hreflang فقط برای localeهای واقعاً public و equivalent باشد؛ Gateway x-default فقط طبق تصمیم SEO.
-- [ ] Person/WebSite structured data فقط با دادهٔ واقعی و validate شده اضافه شود.
+- [x] Person/WebSite structured data فقط با دادهٔ واقعی و validate شده اضافه شود.
 - [ ] sitemap و robots environment-specific بررسی شوند.
 - [ ] OG image dimensions/alt/context و social preview دستی QA شوند.
 

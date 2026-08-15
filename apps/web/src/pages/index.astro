@@ -2,6 +2,10 @@
 import "../styles/global.css";
 import { site } from "../data/site";
 import { content } from "../data/content";
+import { websiteJsonLd, validateStructuredData } from "../data/structured";
+
+const structured = websiteJsonLd();
+validateStructuredData(structured);
 
 const en = content.en;
 const fa = content.fa;
@@ -28,6 +32,11 @@ const canonical = new URL("/", site.url).href;
     <link rel="alternate" hreflang="fa" href={new URL("/fa/", site.url).href} />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify(structured)}
+    />
   </head>
   <body class="gateway">
     <a class="skip-link" href="#main">{en.skip}</a>
