@@ -38,10 +38,11 @@ jobs:
       - name: Smoke test (local preview)
         shell: bash
         run: |
+          cd "${GITHUB_WORKSPACE}/apps/web"
           npx astro preview --port 4321 >/tmp/preview.log 2>&1 &
           sleep 8
-          bash ../infra/deploy/smoke.sh http://localhost:4321
-          kill %1
+          bash "${GITHUB_WORKSPACE}/infra/deploy/smoke.sh" http://localhost:4321
+          kill %1 || true
 
       - name: Dependency audit
         run: npm audit --audit-level=high
