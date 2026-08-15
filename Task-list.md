@@ -787,14 +787,14 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 ## 18. Owner decision queue به ترتیب زمانی
 
-1. پذیرش یا عدم پذیرش محدود `RISK-0003` برای first live static-only.
-2. approval content pack و asset/license/linkهای P1 در هر locale.
-3. exact font/logo minimum و Hero بدون heavy effect.
-4. approval static staging topology و blast radius stack موجود.
-5. approval artifact پس از staging و اجازهٔ صریح production deploy.
-6. maintenance window برای `RISK-0005` و تصمیم canonical SSH port برای `RISK-0006`.
-7. capacity/hosting تصمیم P3 staging runtime پیش از database import/CMS.
-8. media provider، runtime worker، admin MFA و contact persistence قبل از P3.
+1. پذیرش یا عدم پذیرش محدود `RISK-0003` برای first live static-only. **— DONE 2026-08-14: پذیرش محدود static-only (ACCEPTED).**
+2. approval content pack و asset/license/linkهای P1 در هر locale. **— PROPOSAL آماده (`docs/plan/P0-G0-content-pack-proposal.md`); تأیید نهایی strings توسط مالک PENDING.**
+3. exact font/logo minimum و Hero بدون heavy effect. **— DONE: text-mark + فونت self-host حداقلی (خانوادهٔ نهایی PENDING).**
+4. approval static staging topology و blast radius stack موجود. **— RUNBOOK آماده (`docs/governance/DEPLOY_RUNBOOK.md`); inventory P0A-01 روی VPS PENDING.**
+5. approval artifact پس از staging و اجازهٔ صریح production deploy. **— PENDING (پس از staging).**
+6. maintenance window برای `RISK-0005` و تصمیم canonical SSH port برای `RISK-0006`. **— PENDING (P0-B).**
+7. capacity/hosting تصمیم P3 staging runtime پیش از database import/CMS. **— PENDING (P3).**
+8. media provider، runtime worker، admin MFA و contact persistence قبل از P3. **— PENDING (P3).**
 
 ---
 

@@ -532,3 +532,14 @@
 - Decisions / assumptions: deploy mechanics از ADR-0017 پیاده‌سازی شد؛ مسیرهای مطلق (`SITE_ROOT`) و switch تولید تا inventory P0A-01 نهایی می‌مانند. Caddy candidate اعمال نشده و فقط candidate است.
 - Deferred or risk IDs: `DEFER-0007` (contact path)، `DEFER-0008` (font)، `DEFER-0009` (OG image)، `DEFER-0010` (browser verification) OPEN؛ `RISK-0004` تا `RISK-0007` برای فاز deploy بازند.
 - Rollback / recovery: تغییرات frontend/infra فقط؛ اسکریپت‌های deploy/rollback عملیات سرور انجام نمی‌دهند تا inventory و تأیید مالک.
+
+## LOG-0048 — 2026-08-14 — P1 / HTTP verification, gateway polish and deploy-prep documentation
+
+- Outcome: سایت با preview server واقعی از نظر HTTP اعتبارسنجی شد (همهٔ routeهای public 200، 404 صحیح، بدون link شکسته، CSS سالم)؛ Gateway با SVG field ایستای غیر-blocking و theme-color مطابق design.md §60.5 بهبود یافت؛ Task Spec inventory فقط‌خواندنی P0A-01 برای مالک، entry DEBT-0001 و وضعیت به‌روز queue تصمیم مالک ثبت شد.
+- Why: تأیید خروجی پیش از استقرار و آماده‌سازی گام‌های بعدی (deploy روی VPS) به‌صورت turnkey و بدون حدس.
+- Scope / files: `apps/web/src/pages/index.astro`، `apps/web/src/layouts/BaseLayout.astro`، `docs/plan/P0-A-stack-inventory-task-spec.md`، `docs/status/TECH_DEBT.md`، `Task-list.md` (بخش 18) و همین Work Log.
+- Commands or actions actually performed: `npm run preview -- --port 4321` به‌همراه `curl.exe` برای routeهای `/`, `/en/`, `/fa/`, `/404`, `/health.json`, `/robots.txt`, `/sitemap.xml`, `/nonexistent-path`؛ link-check استخراج href/src و بررسی 200؛ بررسی فایل‌های CSS. سپس `npm run check` (0 error) و `npm run build` PASS.
+- Verification actually performed and result: `GET /`, `/en/`, `/fa/`, `/health.json`, `/robots.txt`, `/sitemap.xml` → 200؛ `/en` و `/fa` بدون slash و مسیرهای ناموجود → 404 (کالک canonical با `trailingSlash: always`؛ redirect لایهٔ deploy در P0A-06 ثبت شده)؛ link-check 4 لینک یکتا PASS؛ CSS هر دو فایل 200 با محتوای کامل. SVG gateway دارای no-JS/no-motion fallback است.
+- Decisions / assumptions: شکل canonical URLها با slash است؛ redirect بدون-slash در Caddy (P0A-06) انجام می‌شود. inventory فقط‌خواندنی VPS توسط مالک اجرا می‌شود؛ هیچ server command توسط agent اجرا نشد.
+- Deferred or risk IDs: `DEBT-0001` OPEN؛ `DEFER-0007` تا `DEFER-0010` OPEN؛ `RISK-0004`/`RISK-0007` پس از inventory به‌روز می‌شوند.
+- Rollback / recovery: تغییرات فقط frontend/docs؛ build دوباره تمام قدیم را برمی‌گرداند.
