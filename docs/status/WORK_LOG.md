@@ -455,3 +455,14 @@
 - Decisions / assumptions: این evidence file-level recovery را می‌بندد، اما import دیتابیس در staging runtime جداگانه همچنان برای closure `RISK-0003` لازم است. directory قدیمی deploy-owned در `DEFER-0006` ثبت شد.
 - Deferred or risk IDs: `RISK-0003` High/Open؛ `DEFER-0006` Low/Open.
 - Rollback / recovery: restore به production ننوشت و target یکتای rehearsal حذف شد؛ rollback لازم نیست. برای مرحلهٔ بعدی فقط staging runtime جداگانه و Task Spec مجاز است.
+
+## LOG-0043 — 2026-08-14 — P0-G0 / Repository metadata publish
+
+- Outcome: Task Spec «P0-G0 repository metadata publish» ایجاد شد؛ `README.md` با نقطهٔ ورود/وضعیت/چیدمانِ مستند به‌عنوان منبع به‌روزرسانی شد و `.gitignore` guardهایی برای فایل‌های environment پشتیبان، artifactهای OS/editor و وضعیت agent-local به دست آورد؛ همین entry ثبت شد. `LOG-0043` استفاده شده است چون worktree اصلی دارای رکوردهای owner-held و uncommitted با شماره‌های `LOG-0041` و `LOG-0042` است.
+- Why: README و ignore file باید فقط بر پایهٔ مستندات رسمی repository دقیق می‌بودند و ثبت هر کار طبق Documentation Policy الزامی است.
+- Scope / files: `docs/plan/P0-G0-repository-metadata-task-spec.md`، `README.md`، `.gitignore` و `docs/status/WORK_LOG.md`؛ هیچ فایل دیگری تغییر نکرد.
+- Commands or actions actually performed: Task Spec ایجاد شد؛ `README.md` و `.gitignore` ویرایش و همین entry ثبت شد. هیچ تغییر runtime، deployment، dependency، infrastructure، secret یا server انجام نشد.
+- Verification actually performed and result: قرارداد مستندات (`PROJECT_MANIFEST.md`، `AGENTS.md` و governance policies) خوانده شد؛ لینک‌های نسبی مستندات README وجود دارند؛ `git diff --check` PASS شد.
+- Decisions / assumptions: شمارهٔ `LOG-0043` به‌کار رفته است چون worktree اصلی دارای رکوردهای owner-held و uncommitted با شماره‌های `LOG-0041` و `LOG-0042` است و این branch تمیز باید ledger append-only را بدون collision ادامه دهد.
+- Deferred or risk IDs: ندارد؛ هیچ deferral یا ریسک جدیدی ایجاد نشد.
+- Rollback / recovery: بازگردانی همان چهار فایل task (`docs/plan/P0-G0-repository-metadata-task-spec.md`، `README.md`، `.gitignore`، `docs/status/WORK_LOG.md`).
