@@ -800,3 +800,18 @@
 - Decisions / assumptions: adoption فقط پس از release استاتیک P1 (A5)، انتخاب دقیقاً یک library برای هر interaction، عبور از checklist §98 به‌عنوان gate اجباری، و تأیید نهایی interaction+route+library توسط مالک. هیچ library فعال نشد و هیچ کدی import نشد.
 - Deferred or risk IDs: `DEFER-0012` (Beautiful UI فقط در slice مصوب)؛ پیش‌نیازهای B5 شامل مالک‌نام‌کردن interaction نهایی.
 - Rollback / recovery: حذف فایل جدید brief و revert دو فایل state/WORK_LOG؛ هیچ runtime/deploy/dependency change وجود ندارد.
+
+## LOG-0075 — 2026-08-15 — S-Plan / A2 production Caddy switch script (write only)
+
+- Outcome: created `infra/deploy/prod-p1.sh` as a copy of `infra/deploy/stage-p1.sh` with ONLY the production-specific changes required by task A2: python heredoc marker `staging.tahamohamadi.ir {` → `tahamohamadi.ir {`; replacement block serves `root * /opt/taha/site/current` with the same `import taha_security_headers`, `handle_errors` 404 block (`rewrite * /404.html` + `file_server`) and `file_server`, with NO `X-Robots-Tag` header (production is indexed); backup suffix `.pre-stage-p1.` → `.pre-prod-p1.`; echo/usage text now names `prod-p1.sh` and `tahamohamadi.ir`. `www`, `85.192.29.196` and all other script logic are untouched (neither hostname appears in the script; they live in the server Caddyfile and are never matched/replaced by this script). The script was NOT run and NOT scp'd.
+- Why: S-Plan task A2 — write-only production Caddy switch script so the owner can later run the exact production counterpart of stage-p1.sh after L-model line-by-line review.
+- Scope / files: `infra/deploy/prod-p1.sh` (new), `docs/status/WORK_LOG.md`, `docs/plan/S-PLAN-STATE.md`. No other file changed.
+- Commands or actions actually performed: copied stage-p1.sh content and applied the four listed changes; ran `bash -n infra/deploy/prod-p1.sh`; ran `bash -c "diff infra/deploy/stage-p1.sh infra/deploy/prod-p1.sh"`; staged the three allowed files and ran `git diff --cached --check` and `git diff --check`.
+- Verification actually performed and result:
+  - `bash -n infra/deploy/prod-p1.sh` → exit 0, no output.
+  - `diff infra/deploy/stage-p1.sh infra/deploy/prod-p1.sh` (real output, exit 1 = differences exist):
+    `6c6` usage `./stage-p1.sh`→`./prod-p1.sh`; `17c17` usage string `stage-p1.sh`→`prod-p1.sh`; `20c20` backup suffix `pre-stage-p1`→`pre-prod-p1`; `57c57` heredoc marker `staging.tahamohamadi.ir {`→`tahamohamadi.ir {`; `60c60` heredoc stderr `staging block`→`production block`; `64c64` replacement block header `staging.tahamohamadi.ir {`→`tahamohamadi.ir {`; `69,72d68` X-Robots-Tag header block removed; `98c94` echo `on staging hostname`→`on tahamohamadi.ir`. No other differences.
+  - `git diff --cached --check` → exit 0 (PASS, covers the new file); `git diff --check` → exit 0 (PASS).
+- Decisions / assumptions: the heredoc marker `tahamohamadi.ir {` is taken verbatim from task A2 (the L-model's plan), and `www` / `85.192.29.196` are intentionally not referenced in the script — the script replaces only the production site block matched by that marker, exactly as stage-p1.sh does for staging. The header comment line "Stage the static P1 artifact on staging.tahamohamadi.ir" is left byte-identical to stage-p1.sh because the task's diff acceptance allows changes ONLY in the heredoc marker/block, backup suffix and echo/usage text.
+- Deferred or risk IDs: none new; task A2 remains HIGH risk pending L-model review and owner approval before being run.
+- Rollback / recovery: script is additive and was never executed; rollback = Git revert of this commit / delete `infra/deploy/prod-p1.sh`.
