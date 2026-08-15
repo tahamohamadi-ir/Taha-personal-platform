@@ -11,7 +11,7 @@ const { content } = Astro.props;
 const otherLang = content.lang === "fa" ? "en" : "fa";
 const other = allContent[otherLang];
 const mark = content.mark;
-const switchHref = `/${otherLang}/`;
+const switchHref = Astro.props.alternateHref ?? `/${otherLang}/`;
 const switchLabel =
   content.lang === "fa"
     ? other.gateway.englishLabel

@@ -61,6 +61,15 @@ jobs:
           node qa/mobile-overflow.spec.mjs
           kill %1 || true
 
+      - name: About tabs regression (Playwright)
+        shell: bash
+        run: |
+          cd "${GITHUB_WORKSPACE}/apps/web"
+          (npx astro preview --port 4321 >/tmp/preview3.log 2>&1 &)
+          sleep 8
+          node qa/about-tabs.spec.mjs
+          kill %1 || true
+
       - name: Dependency audit
         run: npm audit --audit-level=high
 

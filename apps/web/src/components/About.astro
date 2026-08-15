@@ -34,21 +34,26 @@ const tabs = [
     <div class="about-tabs" role="radiogroup" aria-label={content.about.heading}>
       {
         tabs.map((tab, index) => (
-          <>
-            <input
-              class="about-tab-input"
-              type="radio"
-              name="about-sections"
-              id={`about-tab-${tab.id}`}
-              checked={index === 0}
-              aria-label={tab.label}
-            />
+          <input
+            class="about-tab-input"
+            type="radio"
+            name="about-sections"
+            id={`about-tab-${tab.id}`}
+            checked={index === 0}
+            aria-label={tab.label}
+          />
+        ))
+      }
+
+      <div class="about-tab-controls">
+        {
+          tabs.map((tab) => (
             <label class="about-tab-label" for={`about-tab-${tab.id}`}>
               {tab.label}
             </label>
-          </>
-        ))
-      }
+          ))
+        }
+      </div>
 
       <div class="about-tab-panels">
         {profile.experience.length > 0 && (
@@ -298,13 +303,17 @@ const tabs = [
   }
 
   .about-tabs {
+    display: block;
+    margin-block-end: 3rem;
+  }
+
+  .about-tab-controls {
     display: flex;
     flex-wrap: nowrap;
     overflow-x: auto;
     overscroll-behavior-inline: contain;
     scrollbar-width: thin;
     gap: 0.5rem;
-    margin-block-end: 3rem;
     padding-block-end: 0.25rem;
   }
 
@@ -341,25 +350,28 @@ const tabs = [
     background-color: var(--color-brand-soft);
   }
 
-  .about-tab-input:focus-visible + .about-tab-label {
+  #about-tab-experience:focus-visible ~ .about-tab-controls label[for="about-tab-experience"],
+  #about-tab-education:focus-visible ~ .about-tab-controls label[for="about-tab-education"],
+  #about-tab-skills:focus-visible ~ .about-tab-controls label[for="about-tab-skills"],
+  #about-tab-research:focus-visible ~ .about-tab-controls label[for="about-tab-research"],
+  #about-tab-publications:focus-visible ~ .about-tab-controls label[for="about-tab-publications"],
+  #about-tab-certificates:focus-visible ~ .about-tab-controls label[for="about-tab-certificates"] {
     outline: 2px solid var(--color-focus);
     outline-offset: 2px;
   }
 
   .about-tab-panels {
-    flex-basis: 100%;
-    order: 10;
     margin-block-start: 1rem;
   }
 
   .about-tab-panel { display: none; }
 
-  #about-tab-experience:checked ~ .about-tab-label[for="about-tab-experience"],
-  #about-tab-education:checked ~ .about-tab-label[for="about-tab-education"],
-  #about-tab-skills:checked ~ .about-tab-label[for="about-tab-skills"],
-  #about-tab-research:checked ~ .about-tab-label[for="about-tab-research"],
-  #about-tab-publications:checked ~ .about-tab-label[for="about-tab-publications"],
-  #about-tab-certificates:checked ~ .about-tab-label[for="about-tab-certificates"] {
+  #about-tab-experience:checked ~ .about-tab-controls label[for="about-tab-experience"],
+  #about-tab-education:checked ~ .about-tab-controls label[for="about-tab-education"],
+  #about-tab-skills:checked ~ .about-tab-controls label[for="about-tab-skills"],
+  #about-tab-research:checked ~ .about-tab-controls label[for="about-tab-research"],
+  #about-tab-publications:checked ~ .about-tab-controls label[for="about-tab-publications"],
+  #about-tab-certificates:checked ~ .about-tab-controls label[for="about-tab-certificates"] {
     color: var(--color-inverse);
     border-color: var(--color-brand);
     background-color: var(--color-brand);
