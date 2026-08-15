@@ -815,3 +815,22 @@
 - Decisions / assumptions: the heredoc marker `tahamohamadi.ir {` is taken verbatim from task A2 (the L-model's plan), and `www` / `85.192.29.196` are intentionally not referenced in the script — the script replaces only the production site block matched by that marker, exactly as stage-p1.sh does for staging. The header comment line "Stage the static P1 artifact on staging.tahamohamadi.ir" is left byte-identical to stage-p1.sh because the task's diff acceptance allows changes ONLY in the heredoc marker/block, backup suffix and echo/usage text.
 - Deferred or risk IDs: none new; task A2 remains HIGH risk pending L-model review and owner approval before being run.
 - Rollback / recovery: script is additive and was never executed; rollback = Git revert of this commit / delete `infra/deploy/prod-p1.sh`.
+
+## LOG-0076 — 2026-08-15 — S-Plan / A3 release decision record for P1
+
+- Outcome: created `docs/plan/RELEASE-P1.md` filling the release-decision template from `docs/governance/RELEASE_POLICY.md` with real data: Type `STANDARD` (new public routes, static, no auth/data/secret), Release DoD `PASS`, Completion DoD `NOT MEASURED`, blocking-check evidence pointers to WORK_LOG IDs, open risk/deferred IDs listed verbatim (status unchanged), rollback path, owner-approval precondition and preconditions. No deploy, no sudo, no SSH write performed.
+- Why: S-Plan task A3 — record the P1 release decision so the owner/L-model can authorize the production switch (A4) against documented evidence.
+- Scope / files: `docs/plan/RELEASE-P1.md` (new), `docs/status/WORK_LOG.md`, `docs/plan/S-PLAN-STATE.md`. No other file changed.
+- Commands or actions actually performed:
+  - Read `AGENTS.md`, `docs/plan/SMALL-MODEL-EXECUTION-PLAN.md` §6 A3, `docs/plan/S-PLAN-STATE.md`, `docs/governance/RELEASE_POLICY.md`, `docs/status/RISK_REGISTER.md`, `docs/status/deferred-validation.md`, `docs/governance/DEPLOY_RUNBOOK.md`, `docs/status/WORK_LOG.md`.
+  - Read-only SSH (agent-ssh: yes, read-only): `ssh taha-nl "cat /opt/taha/site/deploy.log"` → `2026-08-15T07:00:36Z staged release-a2720d9 49cf1d21` / `2026-08-15T07:29:53Z staged release-d55d44e e49e46c7`; `ssh taha-nl "ls -la /opt/taha/site/; readlink /opt/taha/site/current; ls /opt/taha/site/releases/; cat /opt/taha/site/releases/release-d55d44e/health.json"` → `current -> /opt/taha/site/releases/release-d55d44e`, releases dir `release-a2720d9`, `release-d55d44e`, health.json `{"status":"ok","service":"static","version":"0.1.0"}`.
+  - `bash infra/deploy/smoke.sh https://staging.tahamohamadi.ir --expect-noindex` → 8 PASS, exit 0.
+  - `gh run list --branch main --limit 5` → latest runs `completed success` on `main`.
+- Verification actually performed and result:
+  - Served artifact (verbatim): `release-d55d44e` / checksum `e49e46c7` (deploy.log tail). Note: the task prompt referenced `release-fa3c813`, which does NOT match the served artifact; verified served release is `release-d55d44e` (also matches plan §5 snapshot and A3 task spec in SMALL-MODEL-EXECUTION-PLAN.md). Flagged as `pending verification` in RELEASE-P1.md.
+  - Staging smoke re-run → `PASS root /`, `PASS locale /en/`, `PASS locale /fa/`, `PASS robots.txt`, `PASS sitemap.xml`, `PASS nonexistent-qa`, `PASS health.json body`, `PASS noindex /`; exit 0.
+  - CI: `gh run list --branch main` shows recent pushes `completed success` (CI green on main).
+  - `git diff --check` → exit 0 (PASS).
+- Decisions / assumptions: Type STANDARD per RELEASE_POLICY (new public routes, static, no auth/data/secret). Completion DoD = `NOT MEASURED` because deferred/risk items remain open and enumerated. No risk/deferred status was changed. Production switch remains owner-only (A4) and is not authorized by this record.
+- Deferred or risk IDs: listed verbatim in RELEASE-P1.md — RISK-0001 CLOSED; RISK-0004 IN PROGRESS, RISK-0005/0006 OPEN, RISK-0007 BLOCKED; DEFER-0007, 0009, 0010, 0011, 0012 OPEN; DEFER-0008 CLOSED. No status changed.
+- Rollback / recovery: release decision record is additive documentation; rollback = Git revert of this commit. No server state was touched.
