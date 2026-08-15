@@ -39,14 +39,28 @@ $SITE_ROOT/                      # project-owned, e.g. /opt/taha/site (finalize 
 ## Staging deploy (isolated, no production change)
 
 1. P0A-01 inventory confirms the Caddy service unit, Caddyfile path and that the
-   staging hostname still serves the ADR-0015 503 placeholder.
+   staging hostname still serves the ADR-0015 503 placeholder. *(Partial
+   inventory done 2026-08-15: Caddy unit `/usr/bin/caddy run --config /etc/caddy/Caddyfile`
+   as user `caddy`; Caddyfile readable and staging placeholder block confirmed as
+   the last block; host resources: ~1.9 GiB RAM / ~17 GB free disk; Docker
+   metadata still pending sudo.)*
 2. Stage the artifact under `$SITE_ROOT/releases/`, verify `dist/health.json`
    and locale roots locally, then point `current` at the new release.
-3. Add/replace the `staging.tahamohamadi.ir` site block with static serving from
-   `current`, following backup → `caddy validate` → reload (ADR-0015 procedure).
+   *(Automated: `infra/deploy/stage-p1.sh` backs up the Caddyfile, installs the
+   release, switches `current` atomically, replaces only the staging site block
+   with static serving from `current`, validates the config and reloads only on
+   success; on validation failure the backup is restored and Caddy is not
+   reloaded.)*
+3. Owner executes the single privileged step (sudo required):
+   `sudo bash ~/taha-stage/stage-p1.sh ~/taha-stage/release-<version>-<hash>`
+   (artifact already uploaded by the deploy operator to the `deploy` user home).
 4. Smoke from outside: gateway `/`, `/fa/`, `/en/`, `/health.json`, `/404`,
    assets, and confirm `noindex`/robots behavior for staging. Confirm the
-   production hostname and legacy routes are unchanged.
+   production hostname and legacy routes are unchanged (production blocks are
+   untouched by the script).
+5. Rollback of this step: `cp -a /etc/caddy/Caddyfile.pre-stage-p1 /etc/caddy/Caddyfile`
+   then `caddy validate --config /etc/caddy/Caddyfile && systemctl reload caddy`,
+   and/or `ln -sfn $SITE_ROOT/releases/<previous> $SITE_ROOT/current`.
 
 ## Production deploy (owner approval required)
 

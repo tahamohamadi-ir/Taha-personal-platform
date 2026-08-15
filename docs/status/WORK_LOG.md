@@ -577,3 +577,14 @@
 - Decisions / assumptions: favicon صرفاً مشتق text-mark است و با تأیید لوگوی نهایی جایگزین می‌شود (الگوی مشابه DEFER-0008).
 - Deferred or risk IDs: بدون ID جدید.
 - Rollback / recovery: تغییرات frontend/CI؛ بازگشت با Git.
+
+## LOG-0059 — 2026-08-15 — R1 / push, CI pass, partial inventory and staging handoff
+
+- Outcome: history محلی با commits metadata ریموت ادغام شد (collision شمارهٔ `LOG-0043` با renumber به `LOG-0051` تا `LOG-0058` رفع شد) و به origin/main push شد؛ CI روی GitHub Actions با `npm ci`/`check`/`build`/artifact verification **PASS** شد؛ inventory فقط‌خواندنی جزئی VPS (Caddyfile، منابع، روند placeholder) ثبت شد؛ artifact نسخه‌دار `release-a2720d9` به VPS منتقل و اسکریپت sudo یک‌فرمانی `stage-p1.sh` آماده شد.
+- Why: گام‌های بعدی مسیر first live: فعال‌شدن CI و آماده‌سازی staging deploy به‌صورت turnkey با backup/validate/rollback.
+- Scope / files: `.gitignore`، `README.md`، `docs/status/WORK_LOG.md`، `Task-list.md`، `docs/status/RISK_REGISTER.md`، `docs/status/TECH_DEBT.md`، `docs/status/deferred-validation.md`، `infra/deploy/stage-p1.sh`، `docs/governance/DEPLOY_RUNBOOK.md`.
+- Commands or actions actually performed: `git merge origin/main` با رفع تعارض؛ `git push origin main` (70dc744..a2720d9)؛ از طریق SSH فقط‌خواندنی: `uname`، `free -m`، `df -h`، `ps` برای Caddy، `cat /etc/caddy/Caddyfile`، `curl -sI` برای production (200) و staging (503)؛ `scp` artifact و `bash -n` روی script در سرور. هیچ دستور sudo یا تغییر Caddy اجرا نشد.
+- Verification actually performed and result: `gh run list` → CI completed/success؛ artifact شامل health.json/robots/sitemap/locale roots روی سرور تأیید شد؛ `stage-p1.sh` syntax-valid روی سرور.
+- Decisions / assumptions: staging deploy توسط مالک با یک فرمان sudo اجرا می‌شود: `sudo bash ~/taha-stage/stage-p1.sh ~/taha-stage/release-a2720d9`؛ production blocks دست نمی‌خورند. آدرس سرور در `~/.ssh/config` (alias `taha-nl`) است و در repo ثبت نمی‌شود.
+- Deferred or risk IDs: `RISK-0004` (inventory Docker هنوز sudo می‌خواهد)، `RISK-0007` (capacity بر اساس 1.1GB available برای staging static کافی ارزیابی می‌شود)؛ بدون ID جدید.
+- Rollback / recovery: staging script دارای backup/validate/auto-restore است؛ rollback مسیر در DEPLOY_RUNBOOK ثبت شد.
