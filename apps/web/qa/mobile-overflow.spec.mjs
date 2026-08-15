@@ -23,10 +23,10 @@ const STANDARD_VIEWPORTS = [
 
 const URLS = [
   { path: '/', controls: '.gateway-actions a', dir: 'ltr', viewports: [...APPROXIMATION_VIEWPORTS, ...STANDARD_VIEWPORTS] },
-  { path: '/en/', controls: null, dir: 'ltr', viewports: [...APPROXIMATION_VIEWPORTS, ...STANDARD_VIEWPORTS] },
-  { path: '/fa/', controls: null, dir: 'rtl', viewports: [...APPROXIMATION_VIEWPORTS, ...STANDARD_VIEWPORTS] },
-  { path: '/en/about/', controls: null, dir: 'ltr', viewports: STANDARD_VIEWPORTS },
-  { path: '/fa/about/', controls: null, dir: 'rtl', viewports: STANDARD_VIEWPORTS },
+  { path: '/en/', controls: '.site-header a', dir: 'ltr', viewports: [...APPROXIMATION_VIEWPORTS, ...STANDARD_VIEWPORTS] },
+  { path: '/fa/', controls: '.site-header a', dir: 'rtl', viewports: [...APPROXIMATION_VIEWPORTS, ...STANDARD_VIEWPORTS] },
+  { path: '/en/about/', controls: '.site-header a', dir: 'ltr', viewports: STANDARD_VIEWPORTS },
+  { path: '/fa/about/', controls: '.site-header a', dir: 'rtl', viewports: STANDARD_VIEWPORTS },
   { path: '/404.html', controls: '.notfound-actions a', dir: 'ltr', viewports: [...APPROXIMATION_VIEWPORTS, ...STANDARD_VIEWPORTS] },
 ];
 

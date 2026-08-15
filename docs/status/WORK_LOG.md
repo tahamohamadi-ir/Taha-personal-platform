@@ -1087,3 +1087,14 @@ ode --check و YAML validation توسط agent.
 - Decisions / assumptions: فقط integration رسمی first-party استفاده شد و wrapper ثالث `openrtk` نصب نشد. نبودن Claude hook عمومی عمدی است؛ مرز این کار فقط OpenCode است. sessionهای از قبل باز باید restart شوند. در failure، ambiguity یا acceptance نیازمند خروجی دقیق، raw output باید بازیابی و بررسی شود.
 - Deferred or risk IDs: مورد release-blocking جدیدی ایجاد نشد. ریسک باقی‌مانده کم است: برآورد token محلی است و compaction ممکن است جزئیات لازم را پنهان کند؛ mitigation در S-Plan ثبت شد.
 - Rollback / recovery: ابتدا `rtk init -g --opencode --uninstall`، سپس تأیید نبود plugin و restart OpenCode؛ فقط پس از بررسی وابستگی سایر workflowها binary دقیق `C:\Users\Taha\.local\bin\rtk.exe` حذف شود. rollback مخزن با revert همین commit مستنداتی است؛ push/deploy انجام نشد.
+
+## LOG-0099 — 2026-08-15 — P2 / Linux CI mobile-header overflow regression
+
+- Outcome: CI run `31902292412` فقط در `/en/` و viewport تقریبی `160×284`، `20px` overflow گزارش کرد. علت، min-content مرزی header بود: `.site-header-inner` حتی با Inter محلی به `161.2px` می‌رسید و گروه nav نمی‌توانست در metric فونت fallback لینوکس shrink شود. زیر `12rem`، نام بصری brand حذف می‌شود اما خود لینک محفوظ است و دو لینک nav در یک grid row مساوی و قابل‌دسترسی قرار می‌گیرند.
+- Why: هیچ route یا متن تأییدشده نباید برای عبور CI حذف شود؛ راه‌حل باید linkهای locale/About، ارتفاع لمس و RTL/LTR را حفظ کند و به font metric وابسته نباشد.
+- Scope / files: `apps/web/src/components/Header.astro`، `apps/web/qa/mobile-overflow.spec.mjs`، `docs/plan/P2-mobile-overflow-ci-regression-task-spec.md` و همین Work Log.
+- Commands or actions actually performed: لاگ failed run با `gh run view 31902292412 --log-failed` خوانده شد؛ DOM/min-content محلی با Chrome واقعی بررسی شد؛ `npm run check`؛ `npm run build`؛ preview محلی `127.0.0.1:4323`؛ `PREVIEW_URL=http://127.0.0.1:4323 PLAYWRIGHT_CHANNEL=chrome node qa/mobile-overflow.spec.mjs`؛ و `git diff --check`.
+- Verification actually performed and result: Astro check برابر 0 error/warning/hint و build برابر 6 pages بود. کل matrix mobile overflow با Chrome واقعی PASS شد؛ کنترل‌های `.site-header a` اکنون برای `/en/`، `/fa/` و هر دو About locale هم در QA بررسی و در viewport قابل‌دسترسی‌اند. browser bundled Playwright revision محلی موجود نبود؛ Chrome نصب‌شده با override فقط برای local QA استفاده شد. hosted Linux CI پس از push این fix معیار نهایی است.
+- Decisions / assumptions: assertion overflow یا matrix محدود نشد و `DEFER-0013` برای real 200% zoom unchanged است. header در viewport فوق‌باریک عمداً دو ردیف می‌شود تا linkها به‌جای clip/shrink غیرقابل‌استفاده قابل‌دسترسی بمانند.
+- Deferred or risk IDs: `DEFER-0013` OPEN؛ evidence واقعی zoom هنوز دستی/owner است. CI rerun برای اختلاف metric لینوکس pending است.
+- Rollback / recovery: revert commit این regression fix؛ artifact production دست‌نخورده است و هیچ deploy/SSH انجام نشده است.

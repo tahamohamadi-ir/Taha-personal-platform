@@ -149,4 +149,44 @@ const switchLang = otherLang;
       font-size: 0.875rem;
     }
   }
+
+  /* At the 160px zoom-approximation viewport, fallback font metrics can make
+     the inline brand plus two required navigation links wider than the header.
+     Keep every action reachable by giving navigation its own two-column row. */
+  @media (max-width: 12rem) {
+    .site-header-inner {
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 0.5rem;
+    }
+
+    .brand {
+      flex: 0 0 auto;
+    }
+
+    .brand-name {
+      display: none;
+    }
+
+    .header-nav-group {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      flex: 1 0 100%;
+      gap: 0.25rem;
+      width: 100%;
+    }
+
+    .header-nav,
+    .header-actions {
+      display: flex;
+      min-width: 0;
+    }
+
+    .header-link {
+      justify-content: center;
+      width: 100%;
+      padding-inline: 0.25rem;
+      overflow-wrap: anywhere;
+    }
+  }
 </style>
