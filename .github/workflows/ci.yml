@@ -35,6 +35,13 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Write build fingerprint
+        run: |
+          version=$(node -p "require('./package.json').version")
+          sha="${GITHUB_SHA:0:7}"
+          date=$(date -u +%FT%TZ)
+          printf 'version=%s\nsha=%s\ndate=%s\n' "$version" "$sha" "$date" > dist/build-fingerprint.txt
+
       - name: Smoke test (local preview)
         shell: bash
         run: |
@@ -63,6 +70,7 @@ jobs:
       - name: Upload static artifact
         uses: actions/upload-artifact@v4
         with:
-          name: web-dist
+          name: web-dist-${{ github.sha }}
           path: apps/web/dist
           if-no-files-found: error
+          retention-days: 14
