@@ -1,6 +1,6 @@
 # Project Manifest
 
-**Status:** P0-G0 — `PASS for static-only P1` (2026-08-14). `RISK-0001` بسته و `RISK-0003` با پذیرش محدود static-only ثبت شده است؛ PASS کلی CMS اعلام نشده و scaffold فقط برای static P1 مجاز است.  
+**Status:** P0-G0 — `PASS for static-only P1` (2026-08-14) **+ P3 code-first (2026-08-15, owner-authorized)**. `RISK-0001` بسته و `RISK-0003` با پذیرش محدود static-only ثبت شده است؛ PASS کلی CMS اعلام نشده و CMS runtime هیچ‌جا deploy نشده است.  
 **Last verified:** 2026-08-15  
 **Source of truth for commands:** این فایل؛ دستور تأییدنشده را اجرا یا مستند نکنید.
 
@@ -24,8 +24,8 @@
 |---|---|---|
 | Public frontend | Astro + TypeScript + React Islands | Scaffolded; static-only P1 built and deployed (static P1 live on tahamohamadi.ir) — Language Gateway + `/fa/` + `/en/` landing |
 | Styling/UI | Tailwind CSS + project design system + shadcn/Radix | Tailwind v4 + project design tokens applied; shadcn/Radix not used in P1 |
-| Backend/CMS/API | Python 3.12 (latest supported patch) + Django 5.2 LTS + Wagtail 7.4 LTS + Django Ninja | Not scaffolded |
-| Database | PostgreSQL | Not provisioned |
+| Backend/CMS/API | Python 3.12.13 + Django 5.2.9 LTS + Wagtail 7.4.2 LTS + Django Ninja 1.6.2 | P3 code-first scaffold in `apps/cms/` (settings split, custom User, health, content/lifecycle/projection, media security, admin audit+rate-limit, rich-text allowlist, Ninja public read API, rebuild trigger, 62 pytest PASS, CI `ci-cms.yml`); NOT deployed anywhere |
+| Database | PostgreSQL | Not provisioned; `infra/cms/docker-compose.cms.yml` is a NOT-APPLIED candidate |
 | Public search | Pagefind at the approved phase | Not provisioned |
 | Deployment | Docker Compose + Caddy on VPS | Static P1 deployed on staging+production via Caddy snippet and atomic `/opt/taha/site/current` switch; project-specific Caddy/Compose not otherwise provisioned; Docker services for CMS still blocked |
 | Git/CI | GitHub + GitHub Actions hosted standard runners | Workflow created (`.github/workflows/ci.yml`); not yet run on a hosted runner |
@@ -92,6 +92,20 @@ npm audit          # dependency security scan — verified: 0 vulnerabilities
 ```
 
 CMS install/build/migrate/deploy and server-side deploy commands remain unapproved; they are added only after the corresponding app/infrastructure exists and is verified on a clean checkout.
+
+## Canonical commands — `apps/cms/` (P3 code-first, verified 2026-08-15)
+
+```powershell
+# working directory: apps/cms/ (Python 3.12.13 via uv; Hermes interpreter forbidden)
+uv sync --python 3.12          # reproducible install from pyproject.toml + uv.lock
+$env:DJANGO_SETTINGS_MODULE = "config.settings.test"
+uv run ruff check .            # verified: All checks passed
+uv run python manage.py check  # verified: no issues (only upstream treebeard E001 advisory warnings)
+uv run python manage.py makemigrations --check --dry-run   # verified: No changes detected
+uv run pytest -q               # verified: 62 passed
+```
+
+CMS runtime deploy/migrate/run commands (gunicorn, collectstatic, migrate on a real DB, media) remain unapproved until the owner capacity decision and a separate deploy Task Spec.
 
 ## Agent tooling (developer workstation, verified 2026-08-15)
 

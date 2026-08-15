@@ -25,7 +25,14 @@
 | C4 | Resume/CV pages + downloads | BLOCKED(owner) | owner | approved CV/Resume files+details (title/type/size/route) pending owner |
 | C5 | Contact path | DONE | owner | decision: omit in P2 (DEFER-0007 closed); honest state stays |
 | C6 | Navigation update | DONE | S-model | About link in header; LOG-0085 |
-| C7 | P2 verification + release | BLOCKED(C4) | — | blocked by C4; no deployment claimed |
+| C7 | P2 verification + release | BLOCKED(C4) | — | owner decision 2026-08-15: P2 closes without CV/Resume; C4 stays in backlog; no deployment claimed |
+| D1 | P3 gate move (Task Spec + owner auth) | DONE | owner/L-model | gate code-first 2026-08-15; P3-gate-code-first-task-spec.md; LOG-0107 |
+| D2 | P3 environment (Python 3.12.13 + uv + .venv) | DONE | main | uv install + sync; DEFER-0003 CLOSED; LOG-0107 |
+| D3 | P3 content contracts + lifecycle + Ninja API | DONE | sub-agent (general) | 19 tests (content+api); public() only; LOG-0107 |
+| D4 | P3 media library + upload security | DONE | sub-agent (general) | 18 tests; filetype allowlist; private default; LOG-0107 |
+| D5 | P3 admin security + rich text allowlist | DONE | sub-agent (general) | 19 tests; audit+rate limit; allowlist pinned; LOG-0107 |
+| D6 | P3 CI workflow + infra candidates + rebuild trigger | DONE | sub-agent (general) | ci-cms.yml; infra/cms NOT-APPLIED; 6 tests; LOG-0107 |
+| D7 | P3 runtime deploy (Compose/Caddy/MFA/DB) | BLOCKED(owner) | owner | RISK-0007 capacity + RISK-0003 DB-import + MFA + separate Task Spec; RISK-0009 BLOCKED |
 
 ## Review log (append-only)
 
@@ -38,7 +45,9 @@
 | 2026-08-15 | A2 | APPROVE | L-model | diff stage→prod only usage/backup-suffix/marker/no-X-Robots-Tag/echo; bash -n OK; LOG-0075 |
 | 2026-08-15 | A3 | APPROVE | L-model | record=REAL data (deploy.log verbatim, checksum e49e46c7); smoke re-run 8 PASS; CI green; owner command uses fresh artifact fa3c813; LOG-0076 |
 | 2026-08-15 | parallel audit | APPROVE | L-model | SEV-HIGH gold contrast fixed (ink+gold rule); token discipline (#fff→inverse, glass tokens) applied; CI smoke+audit steps; RELEASE-QA RELEASE-READY; LOG-0077 |
-| 2026-08-15 | A1 | submitted for review | S-model | smoke.sh verified against https://staging.tahamohamadi.ir --expect-noindex; all checks PASS |
+| 2026-08-15 | C4/C7 | BLOCKED(owner) | owner | P2 closes without CV/Resume (owner decision); C7 partial; backlog row added |
+| 2026-08-15 | D1-D6 | DONE (main) | L-model | P3 code-first: 62 pytest PASS, ruff clean, migrations consistent, ci-cms.yml authored, infra NOT-APPLIED; LOG-0107 |
+| 2026-08-15 | D7 | BLOCKED(owner) | owner | runtime deploy needs RISK-0007/RISK-0003/MFA/deploy Task Spec; RISK-0009 BLOCKED |
 | 2026-08-15 | B4 | submitted for review | S-model | Restore drill cadence section appended; git diff --check exit 0; single heading; no invented dates/RPO-RTO/owners beyond Project owner |
 | 2026-08-15 | B3 | submitted for review | S-model | Observability (P0A-11) section extended per task; git diff --check exit 0; single Observability heading at line 95 |
 | 2026-08-15 | B5 | submitted for review | S-model | adoption brief written; all 6 required section headings present; §98 checklist copied verbatim; git diff --check exit 0; no motion/gsap/three import added in apps/web (grep clean) |

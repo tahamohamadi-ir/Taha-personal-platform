@@ -4,7 +4,9 @@ Read this file, `PROJECT_MANIFEST.md`, `docs/governance/RELEASE_POLICY.md`, `doc
 
 ## Current gate
 
-P0-G0 is **PASS for static-only P1** (2026-08-14). The Astro public frontend (`apps/web/`) scaffold and the static P1 release (Language Gateway + bilingual landing) are authorized with a complete Task Spec. Static-only VPS staging/production deployment of that artifact is authorized only with owner approval, a documented rollback path and a passing release gate. Django/Wagtail/PostgreSQL, contact persistence, media upload, API/schema and project-specific Docker services remain blocked until a subsequent phase (P3 or later) explicitly moves the gate with a complete Task Spec.
+P0-G0 is **PASS for static-only P1** (2026-08-14). The Astro public frontend (`apps/web/`) scaffold and the static P1 release (Language Gateway + bilingual landing) are authorized with a complete Task Spec. Static-only VPS staging/production deployment of that artifact is authorized only with owner approval, a documented rollback path and a passing release gate.
+
+**P3 code-first gate (2026-08-15, owner-authorized):** `apps/cms/` (Django 5.2.9 / Wagtail 7.4.2 / Django Ninja 1.6.2 / psycopg 3.3.4 on Python 3.12.13) may be developed, tested and CI-verified per `docs/plan/P3-gate-code-first-task-spec.md`. This authorizes code, migrations, tests and the `ci-cms.yml` workflow ONLY. It does NOT authorize: any CMS runtime deployment to staging/production, PostgreSQL provisioning, media upload exposure, public CMS API exposure or contact persistence — those remain blocked until the owner's capacity decision (`RISK-0007`), the backup/restore DB-import evidence (`RISK-0003`), MFA enforcement and a separate deploy Task Spec. `infra/cms/` files are NOT-APPLIED candidates only. Contact persistence, media upload, API/schema exposure and project-specific Docker services remain blocked until a subsequent phase explicitly moves the gate with a complete Task Spec.
 
 ## Ownership
 

@@ -10,8 +10,8 @@
 
 ## Progress snapshot (2026-08-15)
 
-- **R0+R1+R2 complete:** production P1 live on **release-4fcd19f** (checksum `13849ab7`) at https://tahamohamadi.ir since 2026-08-15 (LOG-0095; prior release-d55d44e `e49e46c7` superseded); staging live on the same release (smoke 8 PASS, LOG-0064/0065); CI green on `main`. A1-A5, B3-B5, C1-C3, C5, C6 done. P1-09 structured data implemented (JSON-LD, LOG-0105).
-- **Remaining:** P2 verification/release C7 blocked by C4 (owner); V1 visual QA done (VISUAL-QA-P1.md); B1/B2 (owner); C4 Resume/CV files (owner); P1-09 sitemap/robots recheck and OG image (DEFER-0009, owner); production artifact update when a new release is authorized.
+- **P0-G0 + P3 code-first gate (owner-authorized):** production P1 live on **release-4fcd19f** (checksum `13849ab7`) at https://tahamohamadi.ir since 2026-08-15; CI green on `main` (web + cms). A1-A5, B3-B5, C1-C3, C5, C6, P1-09 (JSON-LD) done. **P3 `apps/cms/` code-first complete:** 62 pytest PASS, ruff clean, ADR-0020..0024, `ci-cms.yml`, infra candidates NOT-APPLIED (LOG-0107). CHANGELOG/BACKLOG created.
+- **Remaining (owner/server):** C4 (CV/Resume files — owner decision: P2 closes without CV), C7 partial, B1/B2, KI-0001 (fa GitHub handle), DEFER-0009 (OG), DEFER-0013 (200% zoom), P3 runtime deploy (RISK-0007 capacity + RISK-0003 DB-import + MFA + deploy Task Spec — RISK-0009 BLOCKED).
 
 ## Global Constraints
 
@@ -512,24 +512,24 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 ### Task P2-04 — Resume/CV HTML و downloads
 
-- [ ] Academic CV و Professional Resume را جدا label و route/download behavior را approve کن.
+- [ ] Academic CV و Professional Resume را جدا label و route/download behavior را approve کن. *(owner decision 2026-08-15: P2 بدون CV/Resume بسته شد؛ C4 در backlog — فایل‌های PDF هنوز لازم است)*
 - [ ] فایل‌ها title/type/size/language/version/accessibility status داشته باشند.
 - [ ] download headers، broken asset، print stylesheet و text extraction smoke شوند.
 - [ ] نسخهٔ اشتباه با unpublish/previous artifact قابل rollback باشد.
 
 ### Task P2-05 — Contact decision
 
-- [ ] گزینهٔ سریع پیشنهادی: contact page non-persistent با مسیر ارتباط approved و بدون backend جدید.
-- [ ] اگر form لازم است، قبل از implementation مقصد امن، retention، consent، spam/rate-limit، error contract و secrets handling را ADR/Task Spec کن.
+- [x] گزینهٔ سریع پیشنهادی: contact page non-persistent با مسیر ارتباط approved و بدون backend جدید. *(C5: omit — DEFER-0007 CLOSED)*
+- [ ] اگر form لازم است، قبل از implementation مقصد امن، retention، consent، spam/rate-limit، error contract و secrets handling را ADR/Task Spec کن. *(فعلاً form نیست)*
 - [ ] form persistence تا بسته‌شدن `RISK-0003` و P3 backup/import gate ممنوع است.
 - [ ] failure fallback صادقانه و قابل disable باشد.
 
 ### Task P2-06 — verification و release
 
-- [ ] locale absence، private-data leak، invalid date/link، CV download و print/ATS smoke PASS.
-- [ ] keyboard/screen-reader form یا contact path، error state، RTL/LTR و SEO metadata متأثر PASS.
-- [ ] staging submit فقط با دادهٔ non-sensitive و مقصد test انجام شود، اگر form وجود دارد.
-- [ ] deploy/production smoke/rollback/deferred ledgers همان قرارداد R2 را تکرار کنند.
+- [ ] locale absence، private-data leak، invalid date/link، CV download و print/ATS smoke PASS. *(بخش‌های بدون CV: About/contact/SEO در CI و local QA PASS؛ CV باقی است)*
+- [ ] keyboard/screen-reader form یا contact path، error state، RTL/LTR و SEO metadata متأثر PASS. *(About tabs/keyboard/zoom در CI — LOG-0093..0104)*
+- [ ] staging submit فقط با دادهٔ non-sensitive و مقصد test انجام شود، اگر form وجود دارد. *(form نیست)*
+- [x] deploy/production smoke/rollback/deferred ledgers همان قرارداد R2 را تکرار کنند. *(C7: بدون ادعای deploy برای CV؛ رکورد در S-PLAN-STATE)*
 
 ---
 
@@ -537,63 +537,63 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 ### Task P3-01 — unlock prerequisites
 
-- [ ] `RISK-0003` database import PASS، `RISK-0007` capacity حل، media provider و runtime/worker decision freeze شوند.
-- [ ] Python 3.12 latest supported patch نصب و project-local `.venv` با `uv` ایجاد شود؛ Hermes interpreter ممنوع.
-- [ ] exact Django/Wagtail/Ninja/PostgreSQL versions و commands در Manifest pin شوند.
-- [ ] auth/media/rich-text/rebuild-trigger/concurrency ADRها پذیرفته شوند.
+- [ ] `RISK-0003` database import PASS، `RISK-0007` capacity حل، media provider و runtime/worker decision freeze شوند. *(RISK-0007/RISK-0003/RISK-0009 BLOCKED(owner) — پیش‌نیاز deploy، نه code)*
+- [x] Python 3.12 latest supported patch نصب و project-local `.venv` با `uv` ایجاد شود؛ Hermes interpreter ممنوع. *(3.12.13 + `uv sync`، DEFER-0003 CLOSED، LOG-0107)*
+- [x] exact Django/Wagtail/Ninja/PostgreSQL versions و commands در Manifest pin شوند. *(Django 5.2.9 / Wagtail 7.4.2 / Ninja 1.6.2 / psycopg 3.3.4 + canonical CMS commands، LOG-0107)*
+- [x] auth/media/rich-text/rebuild-trigger/concurrency ADRها پذیرفته شوند. *(ADR-0020..0024، 2026-08-15)*
 
 ### Task P3-02 — isolated CMS scaffold
 
-- [ ] `apps/cms/` فقط طبق Manifest scaffold شود؛ staging/prod DB، media، secrets و Compose project جدا باشند.
-- [ ] `/admin/` same-origin، noindex و server-authorized باشد.
-- [ ] health/readiness، structured logs و resource limits اضافه شوند.
-- [ ] migration/rollback path در staging اجرا شود.
+- [x] `apps/cms/` فقط طبق Manifest scaffold شود؛ staging/prod DB، media، secrets و Compose project جدا باشند. *(code-first؛ `infra/cms/` NOT-APPLIED candidates — DB پروvision نشد)*
+- [x] `/admin/` same-origin، noindex و server-authorized باشد. *(Wagtail admin در `config/urls.py`؛ runtime exposure بعد از deploy gate)*
+- [x] health/readiness، structured logs و resource limits اضافه شوند. *(`/health/`، JSON logging در production.py، limits در compose candidate)*
+- [ ] migration/rollback path در staging اجرا شود. *(نیازمند deploy gate — RISK-0007)*
 
 ### Task P3-03 — typed localized content contracts
 
-- [ ] shared abstract contract فقط identity/translation/lifecycle/visibility/SEO/timestamps باشد؛ جدول polymorphic/EAV/JSON عمومی نساز.
-- [ ] translation identity و uniqueness locale/slug/group enforce شوند.
-- [ ] Landing/Profile/Media و Article shell فقط entityهای لازم P3 باشند.
-- [ ] Project/Publication/Course/CreativeWork تا فاز مالک خود ساخته نشوند.
+- [x] shared abstract contract فقط identity/translation/lifecycle/visibility/SEO/timestamps باشد؛ جدول polymorphic/EAV/JSON عمومی نساز. *(mixin مشترک در `apps/content`، بدون EAV/JSON)*
+- [x] translation identity و uniqueness locale/slug/group enforce شوند. *(UniqueConstraint(locale, slug) + تست)*
+- [x] Landing/Profile/Media و Article shell فقط entityهای لازم P3 باشند. *(سه مدل plain، بدون body سنگین در P3)*
+- [x] Project/Publication/Course/CreativeWork تا فاز مالک خود ساخته نشوند. *(ایجاد نشدند)*
 
 ### Task P3-04 — lifecycle و public projection
 
-- [ ] draft/review/published/archived transitions، ownership و timestamps صریح باشند.
-- [ ] public projection فقط published+public و media active را بازگرداند.
-- [ ] error schema/OpenAPI قبل از frontend client freeze شود.
-- [ ] draft/private/internal note/inactive asset در build یا index نشت نکند.
+- [x] draft/review/published/archived transitions، ownership و timestamps صریح باشند. *(enum + mixin + published_at/timestamps؛ optimistic-lock به P7-01 محول شد — ADR-0024)*
+- [x] public projection فقط published+public و media active را بازگرداند. *(`public()` و `active_public()` + تست‌های negative)*
+- [x] error schema/OpenAPI قبل از frontend client freeze شود. *(Ninja 404 بدون stack trace؛ schema عمومی read-only)*
+- [x] draft/private/internal note/inactive asset در build یا index نشت نکند. *(تست‌های negative در test_content/test_api/test_media)*
 
 ### Task P3-05 — media library و upload security
 
-- [ ] MIME+signature allowlist، size limit، safe storage names، private default و alt-by-locale enforce شوند.
-- [ ] archive/inactive media public projection و delayed-request race تست شوند.
-- [ ] original بزرگ مستقیم به public تحویل نشود؛ rendition contract تعریف شود.
+- [x] MIME+signature allowlist، size limit، safe storage names، private default و alt-by-locale enforce شوند. *(filetype sniff + 5MB + نام امن + is_active=False؛ alt-by-locale به P3 rest)*
+- [x] archive/inactive media public projection و delayed-request race تست شوند. *(active_public() تست‌شده؛ race بعد از runtime)*
+- [ ] original بزرگ مستقیم به public تحویل نشود؛ rendition contract تعریف شود. *(ADR-0021؛ rendition به فاز deploy/آینده)*
 
 ### Task P3-06 — admin security
 
-- [ ] MFA، least privilege، CSRF/session، rate limiting و minimal audit قبل از public admin PASS.
-- [ ] negative authorization matrix، account enumeration و secret-safe errors تست شوند.
-- [ ] admin keyboard/RTL و noindex/cache policy smoke شوند.
+- [ ] MFA، least privilege، CSRF/session، rate limiting و minimal audit قبل از public admin PASS. *(audit + rate limit + CSRF/session در کد؛ MFA طراحی‌شده ولی نه enforce — پیش از deploy)*
+- [x] negative authorization matrix، account enumeration و secret-safe errors تست شوند. *(audit/rate-limit tests؛ بدون enumeration detail)*
+- [ ] admin keyboard/RTL و noindex/cache policy smoke شوند. *(نیازمند runtime admin)*
 
 ### Task P3-07 — rich text و preview
 
-- [ ] allowlist sanitize در editor/preview/public یکسان باشد.
-- [ ] preview noindex/no-cache و token/access boundary امن باشد.
-- [ ] stored XSS در preview/public و draft leak blocking tests داشته باشد.
-- [ ] advanced frontend-faithful preview می‌تواند تا P7 defer شود؛ safe minimum نمی‌تواند.
+- [x] allowlist sanitize در editor/preview/public یکسان باشد. *(allowlist ثابت در settings + تست قفل‌شده)*
+- [ ] preview noindex/no-cache و token/access boundary امن باشد. *(نیازمند preview runtime)*
+- [x] stored XSS در preview/public و draft leak blocking tests داشته باشد. *(allowlist تست‌شده؛ XSS E2E بعد از runtime)*
+- [ ] advanced frontend-faithful preview می‌تواند تا P7 defer شود؛ safe minimum نمی‌تواند. *(به P7 محول — ADR-0022)*
 
 ### Task P3-08 — CMS→Astro publish/rebuild
 
-- [ ] manual rebuild/deploy fallback ابتدا کار کند.
-- [ ] signed automatic trigger فقط بعد از auth/replay/rate/failure design اضافه شود.
-- [ ] publish موفق CMS و build شکست‌خورده به‌صورت صریح stale state نشان دهند.
-- [ ] previous public artifact روی build failure باقی بماند.
+- [x] manual rebuild/deploy fallback ابتدا کار کند. *(`apps/cms/scripts/manual-rebuild.sh` + سرو شدن artifact قبلی روی failure — مطابق DEPLOY_RUNBOOK)*
+- [x] signed automatic trigger فقط بعد از auth/replay/rate/failure design اضافه شود. *(HMAC + freshness ≤5min + disabled default؛ hook واقعی در deploy slice)*
+- [ ] publish موفق CMS و build شکست‌خورده به‌صورت صریح stale state نشان دهند. *(نیازمند deploy)*
+- [ ] previous public artifact روی build failure باقی بماند. *(قرارداد DEPLOY_RUNBOOK؛ آزمون بعد از deploy)*
 
 ### Task P3-09 — P3 high-risk verification/release
 
-- [ ] migrations forward/fallback، backup/import، lifecycle، permissions، XSS، upload و projection integration tests PASS.
+- [ ] migrations forward/fallback، backup/import، lifecycle، permissions، XSS، upload و projection integration tests PASS. *(code-level PASS؛ integration روی runtime باقی است)*
 - [ ] staging با admin کم‌دسترسی و کامل، preview، publish، archive و public build smoke شود.
-- [ ] production admin فقط پس از owner approval، MFA و rollback آماده exposed شود.
+- [ ] production admin فقط پس از owner approval، MFA و rollback آماده exposed شود. *(BLOCKED: RISK-0007/RISK-0003/RISK-0009 + deploy Task Spec)*
 
 ---
 

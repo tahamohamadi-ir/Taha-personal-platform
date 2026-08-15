@@ -15,5 +15,10 @@ ADRها immutable هستند: تغییر تصمیم با ADR جدید انجام
 | 0017 | Versioned static artifact deploy + atomic switch/rollback | Proposed |
 | 0018 | P1 design/hydration/font minimum | Proposed |
 | 0019 | P1 bilingual font selection | Accepted |
+| 0020 | P3 admin auth and authorization boundary (custom User, audit, rate limit, MFA designed) | Accepted 2026-08-15 (P3 code-first) |
+| 0021 | P3 media library and upload security (filetype allowlist, private default, safe names) | Accepted 2026-08-15 (P3 code-first) |
+| 0022 | P3 rich text sanitization and preview (Wagtail feature allowlist, noindex preview) | Accepted 2026-08-15 (P3 code-first) |
+| 0023 | P3 CMS→Astro rebuild trigger (HMAC-signed, freshness, disabled default) | Accepted 2026-08-15 (P3 code-first) |
+| 0024 | P3 content lifecycle and edit-concurrency (draft/review/published/archived, public() only) | Accepted 2026-08-15 (P3 code-first) |
 
 The technology baseline still governs the remaining architecture decisions. Create a new ADR only when a decision is non-obvious, expensive to reverse, security/operations relevant, or changes a frozen contract.
