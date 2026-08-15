@@ -1,5 +1,6 @@
 ---
 import type { LocaleContent } from "../data/content";
+import { profile } from "../data/profile";
 
 interface Props {
   content: LocaleContent;
@@ -97,7 +98,7 @@ const { content } = Astro.props;
     <h2 class="section-heading">{content.about.heading}</h2>
     <div class="rule" aria-hidden="true"><span></span></div>
   </div>
-  <p class="about-body">{content.about.body}</p>
+  <p class="about-body">{profile[content.lang].shortBio}</p>
 </section>
 
 <style>

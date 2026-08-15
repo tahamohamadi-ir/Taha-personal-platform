@@ -1,0 +1,211 @@
+---
+import type { LocaleContent } from "../data/content";
+import type { Profile } from "../data/profile";
+
+interface Props {
+  content: LocaleContent;
+  profile: Profile;
+}
+
+const { content, profile } = Astro.props;
+---
+
+<section class="about">
+  <div class="about-head">
+    <span class="about-label">{content.about.label}</span>
+    <h1 class="about-title">{content.name}</h1>
+    <p class="about-positioning">{content.positioning}</p>
+    <div class="rule" aria-hidden="true"><span></span></div>
+  </div>
+
+  <p class="about-bio">{profile.shortBio}</p>
+
+  <ul class="skills">
+    {
+      profile.skills.map((skill) => (
+        <li class="skill">
+          <h2 class="skill-name">{skill.name}</h2>
+          <p class="skill-meta">
+            <span class="skill-category">{skill.category}</span>
+            <span class="skill-separator" aria-hidden="true">·</span>
+            <span class="skill-source">{skill.source}</span>
+          </p>
+        </li>
+      ))
+    }
+  </ul>
+
+  <aside class="availability">
+    <p class="availability-text">{profile.availability}</p>
+  </aside>
+
+  <div class="contact-state">
+    <span class="contact-state-label">{content.contact.heading}</span>
+    <p class="contact-state-text">{content.contact.unavailable}</p>
+  </div>
+</section>
+
+<style>
+  .about {
+    padding-block: clamp(3rem, 8vw, 6rem);
+    padding-inline: clamp(1rem, 5vw, 2.5rem);
+    max-width: 1280px;
+    margin-inline: auto;
+    width: 100%;
+  }
+
+  .about-head {
+    margin-block-end: 2.5rem;
+  }
+
+  .about-label {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-brand);
+    margin-block-end: 0.5rem;
+  }
+
+  :global(html[dir="rtl"]) .about-label {
+    font-family: var(--font-persian);
+    letter-spacing: 0.02em;
+  }
+
+  .about-title {
+    font-size: clamp(2.6rem, 1.9rem + 3.6vw, 4.5rem);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    margin-block-end: 1rem;
+    text-wrap: balance;
+  }
+
+  :global(html[dir="rtl"]) .about-title {
+    letter-spacing: 0;
+  }
+
+  .about-positioning {
+    color: var(--color-ink);
+    font-weight: 600;
+    font-size: clamp(1.125rem, 1rem + 0.8vw, 1.5rem);
+    margin-block-end: 1rem;
+  }
+
+  .about-positioning::after {
+    content: "";
+    display: block;
+    width: 3.5rem;
+    height: 3px;
+    margin-block-start: 0.875rem;
+    background-color: var(--color-gold-500);
+  }
+
+  .rule {
+    position: relative;
+    height: 1px;
+    background-color: var(--color-border-subtle);
+    margin-block: 1.25rem 0 0;
+  }
+
+  .rule span {
+    position: absolute;
+    inset-inline-start: 0;
+    top: -1px;
+    height: 3px;
+    width: 64px;
+    background-color: var(--color-gold-500);
+  }
+
+  .about-bio {
+    max-width: 60ch;
+    color: var(--color-ink);
+    font-size: clamp(1.125rem, 1rem + 0.6vw, 1.375rem);
+    margin-block-end: 3rem;
+  }
+
+  .skills {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 1rem;
+    margin-block-end: 3rem;
+  }
+
+  .skill {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-inline-start: 3px solid var(--color-brand);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+  }
+
+  .skill-name {
+    font-size: 1.25rem;
+    margin-block-end: 0.375rem;
+  }
+
+  .skill-meta {
+    margin: 0;
+    color: var(--color-ink-secondary);
+    font-size: 0.875rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .skill-category {
+    color: var(--color-brand);
+    font-weight: 600;
+  }
+
+  .skill-separator {
+    color: var(--color-ink-secondary);
+  }
+
+  .availability {
+    background-color: var(--color-surface-muted);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 2rem;
+    margin-block-end: 2rem;
+  }
+
+  .availability-text {
+    margin: 0;
+    color: var(--color-ink);
+    font-weight: 600;
+    max-width: 60ch;
+  }
+
+  .contact-state {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    flex-wrap: wrap;
+    border-block-start: 1px solid var(--color-border-subtle);
+    padding-block-start: 1.5rem;
+  }
+
+  .contact-state-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-brand);
+  }
+
+  :global(html[dir="rtl"]) .contact-state-label {
+    font-family: var(--font-persian);
+    letter-spacing: 0.02em;
+  }
+
+  .contact-state-text {
+    margin: 0;
+    color: var(--color-ink-secondary);
+    font-size: 0.875rem;
+  }
+</style>

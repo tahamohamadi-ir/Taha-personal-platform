@@ -4,7 +4,7 @@ import { site } from "../data/site";
 export const prerender = true;
 
 export const GET: APIRoute = () => {
-  const urls = ["/", "/en/", "/fa/"];
+  const urls = ["/", "/en/", "/fa/", "/en/about/", "/fa/about/"];
   const entries = urls
     .map(
       (path) =>

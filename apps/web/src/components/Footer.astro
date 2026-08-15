@@ -1,5 +1,6 @@
 ---
 import type { LocaleContent } from "../data/content";
+import { content as allContent } from "../data/content";
 
 interface Props {
   content: LocaleContent;
@@ -7,10 +8,15 @@ interface Props {
 }
 
 const { content } = Astro.props;
-const mark = content.lang === "fa" ? "طه" : "TM";
-const switchHref = content.lang === "fa" ? "/en/" : "/fa/";
-const switchLabel = content.lang === "fa" ? "EN" : "فارسی";
-const switchLang = content.lang === "fa" ? "en" : "fa";
+const otherLang = content.lang === "fa" ? "en" : "fa";
+const other = allContent[otherLang];
+const mark = content.mark;
+const switchHref = `/${otherLang}/`;
+const switchLabel =
+  content.lang === "fa"
+    ? other.gateway.englishLabel
+    : other.gateway.persianLabel;
+const switchLang = otherLang;
 ---
 
 <footer class="site-footer">
@@ -34,7 +40,10 @@ const switchLang = content.lang === "fa" ? "en" : "fa";
       {content.contact.unavailable}
     </span>
   </div>
-  <p class="footer-identity">© <bdi>{new Date().getFullYear()}</bdi> {content.name}</p>
+  <p class="footer-identity">
+    {content.footer.copyrightMark} <bdi>{new Date().getFullYear()}</bdi>{" "}
+    {content.name}
+  </p>
 </footer>
 
 <style>

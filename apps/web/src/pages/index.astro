@@ -5,7 +5,7 @@ import { content } from "../data/content";
 
 const en = content.en;
 const fa = content.fa;
-const title = "Taha Mohammadi · طه محمدی";
+const title = en.gateway.title;
 const description = `${title} — ${en.gateway.prompt} / ${fa.gateway.prompt}`;
 const canonical = new URL("/", site.url).href;
 ---
@@ -82,10 +82,10 @@ const canonical = new URL("/", site.url).href;
     </svg>
     <main class="gateway-stage" id="main">
       <div class="gateway-panel">
-        <span class="gateway-mark" aria-hidden="true">TM</span>
+        <span class="gateway-mark" aria-hidden="true">{en.mark}</span>
         <h1 class="gateway-name">
-          <span class="gateway-name-en" lang="en" dir="ltr">Taha Mohammadi</span>
-          <span class="gateway-name-fa" lang="fa" dir="rtl">طه محمدی</span>
+          <span class="gateway-name-en" lang="en" dir="ltr">{en.name}</span>
+          <span class="gateway-name-fa" lang="fa" dir="rtl">{fa.name}</span>
         </h1>
         <p class="gateway-kicker">
           <span lang="en" dir="ltr">{en.hero.eyebrow}</span>

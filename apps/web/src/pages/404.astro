@@ -1,5 +1,12 @@
 ﻿---
 import "../styles/global.css";
+import { content } from "../data/content";
+
+const en = content.en;
+const fa = content.fa;
+const title = `${en.notfound.heading} · ${en.name}`;
+const gatewayLabel = `${en.notfound.gatewayLabel} · ${fa.notfound.gatewayLabel}`;
+const actionsLabel = `${en.notfound.gatewayLabel} / ${fa.notfound.gatewayLabel}`;
 ---
 
 <!doctype html>
@@ -9,11 +16,11 @@ import "../styles/global.css";
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#071225" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>Page not found · Taha Mohammadi</title>
+    <title>{title}</title>
     <meta name="robots" content="noindex" />
   </head>
   <body class="notfound">
-    <a class="skip-link" href="#main">Skip to content</a>
+    <a class="skip-link" href="#main">{en.notfound.skip}</a>
     <svg
       class="notfound-field"
       aria-hidden="true"
@@ -33,15 +40,15 @@ import "../styles/global.css";
       <circle cx="1040" cy="660" r="5" fill="rgba(22,184,166,0.4)" />
     </svg>
     <main class="notfound-panel" id="main">
-      <p class="notfound-code">404</p>
+      <p class="notfound-code">{en.notfound.code}</p>
       <h1 class="notfound-title">
-        <span lang="en" dir="ltr">Page not found</span>
-        <span lang="fa" dir="rtl">صفحه پیدا نشد</span>
+        <span lang="en" dir="ltr">{en.notfound.heading}</span>
+        <span lang="fa" dir="rtl">{fa.notfound.heading}</span>
       </h1>
-      <nav class="notfound-actions" aria-label="Site home">
-        <a href="/">Gateway · خانه</a>
-        <a href="/en/" hreflang="en" lang="en" dir="ltr">English</a>
-        <a href="/fa/" hreflang="fa" lang="fa" dir="rtl">فارسی</a>
+      <nav class="notfound-actions" aria-label={actionsLabel}>
+        <a href="/">{gatewayLabel}</a>
+        <a href="/en/" hreflang="en" lang="en" dir="ltr">{en.notfound.enLabel}</a>
+        <a href="/fa/" hreflang="fa" lang="fa" dir="rtl">{fa.notfound.faLabel}</a>
       </nav>
     </main>
   </body>

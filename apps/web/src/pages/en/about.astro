@@ -1,0 +1,14 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import About from "../../components/About.astro";
+import { content } from "../../data/content";
+import { profile, validateProfile } from "../../data/profile";
+
+validateProfile();
+
+const en = content.en;
+---
+
+<BaseLayout content={en} alternateHref="/fa/about/">
+  <About content={en} profile={profile.en} />
+</BaseLayout>

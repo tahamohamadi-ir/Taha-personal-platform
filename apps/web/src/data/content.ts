@@ -11,10 +11,12 @@ export interface LocaleContent {
   lang: LocaleCode;
   dir: "rtl" | "ltr";
   name: string;
+  mark: string;
   shortIdentity: string;
   positioning: string;
   proposition: string;
   gateway: {
+    title: string;
     prompt: string;
     englishLabel: string;
     persianLabel: string;
@@ -34,7 +36,14 @@ export interface LocaleContent {
   about: {
     label: string;
     heading: string;
-    body: string;
+  };
+  notfound: {
+    code: string;
+    skip: string;
+    heading: string;
+    gatewayLabel: string;
+    enLabel: string;
+    faLabel: string;
   };
   contact: {
     heading: string;
@@ -43,6 +52,7 @@ export interface LocaleContent {
   footer: {
     tagline: string;
     switchLabel: string;
+    copyrightMark: string;
   };
   meta: {
     title: string;
@@ -56,12 +66,14 @@ export const content: Record<LocaleCode, LocaleContent> = {
     lang: "en",
     dir: "ltr",
     name: "Taha Mohammadi",
+    mark: "TM",
     shortIdentity:
       "Interdisciplinary researcher and engineer working on human-centered intelligent systems.",
     positioning: "Design · Interaction · Engineering · Data · AI",
     proposition:
       "I build and study human-centered intelligent systems — from interaction and engineering to data and AI.",
     gateway: {
+      title: "Taha Mohammadi · طه محمدی",
       prompt: "Choose your language",
       englishLabel: "English",
       persianLabel: "فارسی",
@@ -104,7 +116,14 @@ export const content: Record<LocaleCode, LocaleContent> = {
     about: {
       label: "02 · Identity",
       heading: "About",
-      body: "I work across design, interaction, engineering, data and AI to build human-centered intelligent systems, and I document the reasoning and evidence behind them.",
+    },
+    notfound: {
+      code: "404",
+      skip: "Skip to content",
+      heading: "Page not found",
+      gatewayLabel: "Gateway",
+      enLabel: "English",
+      faLabel: "فارسی",
     },
     contact: {
       heading: "Contact",
@@ -113,6 +132,7 @@ export const content: Record<LocaleCode, LocaleContent> = {
     footer: {
       tagline: "Human-centered intelligent systems.",
       switchLabel: "Language",
+      copyrightMark: "©",
     },
     meta: {
       title: "Taha Mohammadi — Human-Centered Intelligent Systems",
@@ -125,12 +145,14 @@ export const content: Record<LocaleCode, LocaleContent> = {
     lang: "fa",
     dir: "rtl",
     name: "طه محمدی",
+    mark: "طه",
     shortIdentity:
       "پژوهشگر و مهندس میان‌رشته‌ای در حوزهٔ سیستم‌های هوشمند انسان‌محور.",
     positioning: "طراحی · تعامل · مهندسی · داده · هوش مصنوعی",
     proposition:
       "سیستم‌های هوشمند انسان‌محور را می‌سازم و مطالعه می‌کنم — از تعامل و مهندسی تا داده و هوش مصنوعی.",
     gateway: {
+      title: "طه محمدی · Taha Mohammadi",
       prompt: "زبان خود را انتخاب کنید",
       englishLabel: "English",
       persianLabel: "فارسی",
@@ -173,7 +195,14 @@ export const content: Record<LocaleCode, LocaleContent> = {
     about: {
       label: "۰۲ · هویت",
       heading: "درباره",
-      body: "در مرز طراحی، تعامل، مهندسی، داده و هوش مصنوعی کار می‌کنم تا سیستم‌های هوشمند انسان‌محور بسازم و استدلال و شواهد پشت آن‌ها را ثبت کنم.",
+    },
+    notfound: {
+      code: "404",
+      skip: "پرش به محتوا",
+      heading: "صفحه پیدا نشد",
+      gatewayLabel: "خانه",
+      enLabel: "English",
+      faLabel: "فارسی",
     },
     contact: {
       heading: "تماس",
@@ -182,6 +211,7 @@ export const content: Record<LocaleCode, LocaleContent> = {
     footer: {
       tagline: "سیستم‌های هوشمند انسان‌محور.",
       switchLabel: "زبان",
+      copyrightMark: "©",
     },
     meta: {
       title: "طه محمدی — سیستم‌های هوشمند انسان‌محور",
