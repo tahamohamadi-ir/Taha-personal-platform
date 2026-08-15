@@ -1997,7 +1997,7 @@ kubernetes
 - automatic certificate management؛
 - HTTP→HTTPS؛
 - static file serving؛
-- reverse proxy `/api` و `/cms`؛
+  - reverse proxy `/api` و `/admin/`؛
 - compression/header policy؛
 - access logs.
 

@@ -1,6 +1,6 @@
 # Task Spec — G0-01 documentation snapshot and drift fix
 
-**Status:** In progress.  
+**Status:** Complete — evidence-aligned and re-verified.  
 **Date:** 2026-08-14  
 **Owner:** Project owner (agent-assisted)  
 **Release type:** `FAST-TRACK` documentation-only  
@@ -72,3 +72,14 @@ content, endpoints, metrics or services.
 
 - All changes are documentation-only and reversible via Git; no runtime state is
   affected.
+
+## Completion evidence
+
+- Commit `6adb0b8` completed the specified baseline/ADR/policy/risk-ledger
+  alignment and recorded it in `LOG-0051`.
+- A later closure audit found one remaining URL-route example in the same
+  Technology Baseline: Caddy reverse proxying `/cms`. It now uses the accepted
+  `/admin/` boundary from ADR-0014; the only remaining `/cms/` occurrence is
+  the canonical source directory `apps/cms/`.
+- The current Task Spec status is corrected from `In progress` to complete.
+  No ADR decision, application, infrastructure, secret or runtime state changed.

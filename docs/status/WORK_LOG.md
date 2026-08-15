@@ -1131,3 +1131,14 @@ ode --check و YAML validation توسط agent.
 - Decisions / assumptions: production deploy در scope Task Spec نیست و انجام نشد؛ passing CI release artifact را فراهم می‌کند اما به‌تنهایی deploy authorization نیست.
 - Deferred or risk IDs: `DEFER-0013` همچنان OPEN فقط برای real 200% zoom/manual visual evidence؛ failure CI این slice بسته شد.
 - Rollback / recovery: revert commitهای `d69b0e9`، `6466d72` و `af3d16e` در صورت نیاز؛ artifact production دست‌نخورده است.
+
+## LOG-0103 — 2026-08-15 — G0-01 / documentation-drift closure audit
+
+- Outcome: closure audit of `G0-01` confirmed that commit `6adb0b8` and `LOG-0051` had completed the intended documentation reconciliation, but found one residual URL-route example: the Technology Baseline still listed Caddy reverse-proxy `/cms`. It now states `/admin/`, matching ADR-0014/ADR-0008. The Task Spec status is now complete.
+- Why: the task's own verification required no remaining `/cms/` URL-route example; leaving one stale route could misdirect a future CMS deploy even though `apps/cms/` remains the correct source directory.
+- Scope / files: `docs/taha-personal-platform-technology-architecture-baseline-fa.md`, `docs/plan/P0-G0-documentation-drift-task-spec.md` and this Work Log.
+- Commands or actions actually performed: Git-history audit of `6adb0b8`; scoped route searches; current ADR-0014/ADR-0008 comparison; `rg "/cms/" docs/taha-personal-platform-technology-architecture-baseline-fa.md`; and `git diff --check`.
+- Verification actually performed and result: `/admin/` is the only remaining admin URL-route form in the Technology Baseline; `apps/cms/` is the sole `/cms/` occurrence and is a filesystem source path. No runtime/config/ADR decision changed.
+- Decisions / assumptions: this is documentation-only and does not authorize CMS bootstrap, deployment or a route implementation.
+- Deferred or risk IDs: no status changed; existing P0/P3 risks and deferrals remain as recorded.
+- Rollback / recovery: revert this documentation-only commit; no runtime state is affected.
