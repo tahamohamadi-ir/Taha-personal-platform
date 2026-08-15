@@ -27,6 +27,8 @@ coverage/
 # Local runtime data and logs
 *.log
 media/
+!apps/cms/apps/media/
+!apps/cms/apps/media/**
 staticfiles/
 static/
 postgres-data/
