@@ -1164,3 +1164,14 @@ ode --check و YAML validation توسط agent.
 - Decisions / assumptions: JSON-LD mirrors each locale's own typed socials. The fa locale carries the pre-existing `tahamohammadi-ir` (double-m) GitHub handle while en and the canonical remote use `tahamohamadi-ir`; per baseline §92 JSON-LD must not diverge from content, so the discrepancy is recorded as `KI-0001` (owner decision, not silently fixed by the agent). `validateStructuredData` intentionally checks structural fields only, matching the typed-data provenance.
 - Deferred or risk IDs: `DEFER-0009` (OG image) and `DEFER-0013` (real 200% zoom) unchanged/OPEN; `KI-0001` new OPEN (owner); no new deferral.
 - Rollback / recovery: revert this commit; previous artifact remains served; no server/config change.
+
+## LOG-0106 - 2026-08-15 - P0A-07 / CI action majors to node24 runtime
+
+- Outcome: CI run `31907246943` was green but the runner annotated a Node-20 deprecation for `actions/checkout@v4`, `actions/setup-node@v4` and `actions/upload-artifact@v4` (actions now forced onto Node 24). The workflow now pins `actions/checkout@v7.0.1`, `actions/setup-node@v7.0.0` and `actions/upload-artifact@v7.0.1`, all verified via `gh api` to declare `runs.using: node24`.
+- Why: remove the deprecation annotation and keep the hosted-runner baseline clean per ADR-0009; v4 majors target deprecated Node 20.
+- Scope / files: `.github/workflows/ci.yml`, `docs/plan/CI-actions-node24-task-spec.md` (new), this Work Log.
+- Commands or actions actually performed: `gh api repos/actions/checkout/releases/latest` (v7.0.1), `setup-node` (v7.0.0), `upload-artifact` (v7.0.1); inspected each `action.yml` for `runs.using`; `git diff --check` and `--cached --check`; commit and push.
+- Verification actually performed and result: pending hosted CI run on the pushed commit; acceptance = green run with no deprecation annotation and unchanged 13-step workflow.
+- Decisions / assumptions: latest majors preserve checkout/cache/upload semantics for this workflow; no other workflow change made.
+- Deferred or risk IDs: none new.
+- Rollback / recovery: revert the single-file commit to restore v4 pins; no runtime impact.
