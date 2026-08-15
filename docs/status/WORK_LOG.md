@@ -621,3 +621,14 @@
 - Decisions / assumptions: ADR-0019 با وضعیت Accepted ثبت شد؛ `DEFER-0008` بسته شد. پیشنهادهای عمومی skill دربارهٔ Exo/Roboto Mono، neon، motion-heavy یا palette جدید به‌دلیل ناسازگاری با Persian readability و project governance رد شدند.
 - Deferred or risk IDs: `DEFER-0007` contact، `DEFER-0009` OG، `DEFER-0010` browser matrix و `DEFER-0011` Cloudflare robots همچنان OPEN؛ لوگوی نهایی هنوز owner input است.
 - Rollback / recovery: بازگشت با Git به system stack قبلی؛ staging برای دیدن این نسخه نیازمند upload artifact جدید و اجرای دوبارهٔ script sudo است.
+
+## LOG-0063 — 2026-08-15 — P1 / visual system elevation with identity constellation
+
+- Outcome: بر اساس `ui-ux-pro-max` و با حفظ `docs/design.md`، سیستم بصری P1 ارتقا یافت: constellation هویتی معنادار (Design·Interaction·Engineering·Data·AI حول مرکز انسان‌محور Gold) در gateway/hero/404، layout دوسطحی editorial برای hero با نسخهٔ ساده‌شدهٔ موبایل، accentهای context برای سه مسیر (purple/turquoise/emerald)، labelهای بخش دوزبانه (۰۱/۰۲)، header چسبان solid-first با glass اختیاری و touch target 44px، footer با brand mark و 404 هماهنگ با Navy.
+- Why: مالک «بهترین UI/UX ممکن» را خواست؛ design.md §64–§67 اثر بصری باید دربارهٔ Taha معنا بدهد، نه صرفاً تزئینی باشد؛ خطوط تصادفی قبلی معنا نداشتند.
+- Scope / files: `apps/web/src/components/Landing.astro`، `Header.astro`، `Footer.astro`، `apps/web/src/pages/index.astro`، `404.astro`، `apps/web/src/data/content.ts`، `docs/plan/P1-visual-elevation-task-spec.md` و همین Work Log.
+- Commands or actions actually performed: `npm run check` (0 error / 0 warning / 0 hint)؛ `npm run build`؛ preview HTTP smoke (`/`, `/en/`, `/fa/`, `/health.json` → 200؛ `/nonexistent` → 404؛ CSS → 200)؛ static assertions برای constellation/labels/accents/404.
+- Verification actually performed and result: همهٔ routeها و CSS سالم؛ بدون dependency، JS-client یا رنگ جدید؛ focus rings per-surface تنظیم شد؛ `prefers-reduced-motion` حفظ شد.
+- Decisions / assumptions: پیشنهادهای ناسازگار skill (neon/cyberpunk/motion-heavy/Exo) رد شدند؛ فقط الگوهای سازگار (editorial، touch targets، sticky nav، focus/contrast) اعمال شدند.
+- Deferred or risk IDs: `DEFER-0010` (browser matrix) همچنان OPEN؛ سایر IDها بدون تغییر.
+- Rollback / recovery: بازگشت با Git؛ staging با اجرای دوبارهٔ stage script توسط مالک به‌روز می‌شود.
