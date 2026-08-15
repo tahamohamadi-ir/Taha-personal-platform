@@ -63,4 +63,4 @@ Omitted from P1 — no evidence item (project/publication/case study with real s
 
 1. Approve or correct every `fa` and `en` string above.
 2. Provide or confirm: social/profile URLs (GitHub/LinkedIn/…), a contact path, and any CV/Resume artifact (P2).
-3. Confirm the self-hosted font choice against the bilingual specimen (proposal: Vazirmatn for Persian + a variable Latin family, both OFL, minimal weights).
+3. Font proposal is implemented and recorded: `Vazirmatn Variable` for Persian + `Inter Variable` for Latin, both OFL-1.1 and self-hosted; future replacement requires a new specimen review.

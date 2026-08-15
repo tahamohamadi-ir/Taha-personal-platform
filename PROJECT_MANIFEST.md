@@ -110,12 +110,12 @@ CMS install/build/migrate/deploy and server-side deploy commands remain unapprov
 | Search (Pagefind) | Not used in R2 | NOT USED IN R2 |
 | Analytics | Not used in R2 (no provider/consent/retention approved) | NOT USED IN R2 |
 | Dark mode | Not in R2; full dark mode deferred with ID | NOT USED IN R2 |
-| Fonts | Self-hosted, minimal weights, bilingual (`fa`/`en`/mixed) specimen; exact family is an owner decision | OPEN (owner) |
+| Fonts | Self-hosted `Vazirmatn Variable` for `fa`/Arabic script + `Inter Variable` for `en`/Latin script; both OFL-1.1 and locked in `apps/web/` | VERIFIED |
 | Logo | Approved asset or a text mark only; no invented geometry | OPEN (owner) |
 | Media | Static curated assets only (portrait/OG optional) | OPEN (owner) |
 | Health/SEO skeleton | Static `/health`, locale-aware 404, robots + sitemap skeleton | VERIFIED for decision |
 
-Owner decisions still required before scaffold (G0-06): the limited `RISK-0003` static-only acceptance, the `fa`/`en` content pack, and the logo/font minimum.
+Remaining owner/release decisions: final logo asset, approved contact path, OG image, Cloudflare robots behavior and production deploy authorization. The P1 font decision is recorded in ADR-0019.
 
 ## Explicitly not used initially
 

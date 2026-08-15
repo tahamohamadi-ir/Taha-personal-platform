@@ -12,7 +12,7 @@
 
 - **R0 complete:** G0-01 (drift fix), G0-02 (owner decision), G0-03 (content pack *proposal* drafted — string approval pending), G0-04 (tech freeze), G0-05 (ADRs 0016–0018 *Proposed*), G0-06 (`P0-G0: PASS for static-only P1`). Evidence: LOG-0051 تا LOG-0053.
 - **Local R1/R2 complete:** `apps/web/` scaffold (Astro 7.2.2 + TypeScript + Tailwind v4), Language Gateway `/`, `/fa/` RTL + `/en/` LTR landing, 404, `health.json`, `robots.txt`, `sitemap.xml`, design tokens, and `.github/workflows/ci.yml`. `npm run check` (0 errors) و `npm run build` PASS. Evidence: LOG-0054.
-- **Remaining (owner/VPS/deploy-gated):** P0A-01/02 (stack inventory + capacity), P0A-08..12 (artifact/deploy/rollback/observability), P1-10 browser smoke, P1-11 staging acceptance, P1-13..15 production deploy. Deferrals: `DEFER-0007` (contact path), `DEFER-0008` (font), `DEFER-0009` (OG image), `DEFER-0010` (browser verification).
+- **Remaining (owner/VPS/deploy-gated):** P0A-01/02 (stack inventory + capacity), P0A-08..12 (artifact/deploy/rollback/observability), P1-10 browser smoke, P1-11 staging acceptance, P1-13..15 production deploy. Deferrals: `DEFER-0007` (contact path), `DEFER-0009` (OG image), `DEFER-0010` (browser verification), `DEFER-0011` (Cloudflare robots behavior).
 
 ## Global Constraints
 
@@ -43,7 +43,7 @@
 | Capacity | `RISK-0007` High/Blocked برای co-hosted staging runtime | با static-only staging دور زده می‌شود؛ برای P3 حل الزامی است |
 | Patch/SSH surface | `RISK-0005` و `RISK-0006` Medium/Open | با owner/target/mitigation قابل defer؛ نباید ناپدید شوند |
 | CI/deploy | workflow، artifact pipeline و rollback artifact این پروژه وجود ندارد | P0-A blocker اولین live |
-| Content/assets | copy، ترجمه‌ها، لینک‌ها، CV/Resume، logo/font نهایی تأیید نشده‌اند | owner input blocker P1؛ placeholder production ممنوع |
+| Content/assets | copy/translation proposal، contact/OG، CV/Resume و logo نهایی هنوز owner input می‌خواهند؛ font pair verified | contact/OG/logo approval blocker؛ placeholder production ممنوع |
 
 ### نتیجهٔ ارزیابی
 
@@ -789,7 +789,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 1. پذیرش یا عدم پذیرش محدود `RISK-0003` برای first live static-only. **— DONE 2026-08-14: پذیرش محدود static-only (ACCEPTED).**
 2. approval content pack و asset/license/linkهای P1 در هر locale. **— PROPOSAL آماده (`docs/plan/P0-G0-content-pack-proposal.md`); تأیید نهایی strings توسط مالک PENDING.**
-3. exact font/logo minimum و Hero بدون heavy effect. **— DONE: text-mark + فونت self-host حداقلی (خانوادهٔ نهایی PENDING).**
+3. exact font/logo minimum و Hero بدون heavy effect. **— DONE: text-mark + `Vazirmatn Variable`/`Inter Variable`; logo نهایی PENDING.**
 4. approval static staging topology و blast radius stack موجود. **— RUNBOOK آماده (`docs/governance/DEPLOY_RUNBOOK.md`); inventory P0A-01 روی VPS PENDING.**
 5. approval artifact پس از staging و اجازهٔ صریح production deploy. **— PENDING (پس از staging).**
 6. maintenance window برای `RISK-0005` و تصمیم canonical SSH port برای `RISK-0006`. **— PENDING (P0-B).**

@@ -610,3 +610,14 @@
 - Decisions / assumptions: پیشنهاد عمومی skill دربارهٔ palette/font/motion با baseline پروژه جایگزین نشد؛ `docs/design.md` منبع نهایی باقی است. فونت self-host و browser screenshot matrix همچنان باز هستند.
 - Deferred or risk IDs: `DEFER-0008` (font)، `DEFER-0010` (browser matrix)، `DEFER-0011` (Cloudflare robots) OPEN.
 - Rollback / recovery: تغییر frontend/infra مستند و قابل بازگشت با Git؛ staging برای اعمال اصلاح 404 باید با script timestamped دوباره اجرا شود.
+
+## LOG-0062 — 2026-08-15 — P1 / bilingual typography and premium gateway refinement
+
+- Outcome: با استفاده از `ui-ux-pro-max` و حفظ اولویت `docs/design.md`، فونت‌های self-hosted `Vazirmatn Variable` و `Inter Variable` اضافه شد؛ gateway از نظر parity دو زبان، glass fallback، technical identity line و hierarchy بصری refined شد.
+- Why: برای professional/premium بودن فقط palette کافی نیست؛ font rendering، وزن برابر CTAها و نسبت هویت/فضای خالی در screenshot اولیه نیاز به تصمیم و اجرای مشخص داشت.
+- Scope / files: `apps/web/package.json`، `apps/web/package-lock.json`، `apps/web/src/styles/global.css`، `apps/web/src/pages/index.astro`، `docs/plan/P1-typography-font-task-spec.md`، ADR-0019، Manifest، content pack، Deferred Validation، Task-list و همین Work Log.
+- Commands or actions actually performed: `npm install --no-audit --no-fund` (دو font package)، `npm run check` (0 error / 0 warning / 0 hint)، `npm run build`، `npm audit --audit-level=high` (0 vulnerabilities)، `git diff --check` و بررسی static CSS/HTML برای `Vazirmatn`/`Inter` و prompt/identity دوزبانه.
+- Verification actually performed and result: local font CSS و `@font-face` در artifact حاضر؛ identity و prompt دوزبانه؛ build/typecheck/audit PASS. دو language action وزن یکسان دارند و fallback opaque برای browserهای بدون backdrop-filter تعریف شده است.
+- Decisions / assumptions: ADR-0019 با وضعیت Accepted ثبت شد؛ `DEFER-0008` بسته شد. پیشنهادهای عمومی skill دربارهٔ Exo/Roboto Mono، neon، motion-heavy یا palette جدید به‌دلیل ناسازگاری با Persian readability و project governance رد شدند.
+- Deferred or risk IDs: `DEFER-0007` contact، `DEFER-0009` OG، `DEFER-0010` browser matrix و `DEFER-0011` Cloudflare robots همچنان OPEN؛ لوگوی نهایی هنوز owner input است.
+- Rollback / recovery: بازگشت با Git به system stack قبلی؛ staging برای دیدن این نسخه نیازمند upload artifact جدید و اجرای دوبارهٔ script sudo است.

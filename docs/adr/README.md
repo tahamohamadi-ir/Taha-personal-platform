@@ -14,5 +14,6 @@ ADRها immutable هستند: تغییر تصمیم با ADR جدید انجام
 | 0016 | Static-first Astro + React islands boundary | Proposed |
 | 0017 | Versioned static artifact deploy + atomic switch/rollback | Proposed |
 | 0018 | P1 design/hydration/font minimum | Proposed |
+| 0019 | P1 bilingual font selection | Accepted |
 
 The technology baseline still governs the remaining architecture decisions. Create a new ADR only when a decision is non-obvious, expensive to reverse, security/operations relevant, or changes a frozen contract.
