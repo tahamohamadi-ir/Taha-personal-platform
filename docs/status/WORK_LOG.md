@@ -1171,7 +1171,7 @@ ode --check و YAML validation توسط agent.
 - Why: remove the deprecation annotation and keep the hosted-runner baseline clean per ADR-0009; v4 majors target deprecated Node 20.
 - Scope / files: `.github/workflows/ci.yml`, `docs/plan/CI-actions-node24-task-spec.md` (new), this Work Log.
 - Commands or actions actually performed: `gh api repos/actions/checkout/releases/latest` (v7.0.1), `setup-node` (v7.0.0), `upload-artifact` (v7.0.1); inspected each `action.yml` for `runs.using`; `git diff --check` and `--cached --check`; commit and push.
-- Verification actually performed and result: pending hosted CI run on the pushed commit; acceptance = green run with no deprecation annotation and unchanged 13-step workflow.
+- Verification actually performed and result: hosted CI run `31907380838` on the pushed commit reported `success` in 2m5s with all 13 steps PASS (type check, build, smoke, Mobile overflow Playwright, About tabs Playwright, dependency audit, artifact completeness/no-secret, upload); no deprecation annotation is present on the run (annotations endpoint returns empty).
 - Decisions / assumptions: latest majors preserve checkout/cache/upload semantics for this workflow; no other workflow change made.
 - Deferred or risk IDs: none new.
 - Rollback / recovery: revert the single-file commit to restore v4 pins; no runtime impact.
