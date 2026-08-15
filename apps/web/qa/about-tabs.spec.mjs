@@ -57,7 +57,8 @@ try {
           console.log(`FAIL tabs ${target.path}@${viewport.width} count=${initialCount}`);
         } else {
           await radios.nth(0).focus();
-          await page.keyboard.press("ArrowRight");
+          const direction = await page.locator("html").getAttribute("dir");
+          await page.keyboard.press(direction === "rtl" ? "ArrowLeft" : "ArrowRight");
           if (!(await radios.nth(1).isChecked())) {
             await page.keyboard.press("ArrowDown");
           }

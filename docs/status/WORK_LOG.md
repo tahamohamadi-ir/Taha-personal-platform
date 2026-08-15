@@ -1024,6 +1024,16 @@ ode --check و YAML validation توسط agent.
 - Deferred or risk IDs: `DEFER-0013` remains open until the next CI run passes all viewport/page cases.
 - Rollback / recovery: revert the responsive header commit; previous behavior remains available.
 
+## LOG-0094 — 2026-08-15 — CI / RTL-aware About tabs keyboard regression
+
+- Outcome: About-tabs Playwright regression caught that the test assumed `ArrowRight` advances the radio group in RTL; product layout/activation passed, but fa keyboard checks failed. The test now chooses `ArrowLeft` for `dir="rtl"` and `ArrowRight` for LTR, preserving the real native keyboard behavior.
+- Why: keyboard direction must follow locale; a test that ignores RTL would create a false failure or encourage incorrect product behavior.
+- Scope / files: `apps/web/qa/about-tabs.spec.mjs` and this Work Log.
+- Commands or actions actually performed: reviewed CI run `31890608892`; changed only the direction-aware key selection; syntax/diff verification follows.
+- Verification actually performed and result: previous run showed all geometry/activation/locale checks PASS and only fa keyboard checks FAIL; the correction is test-only and does not weaken assertions.
+- Deferred or risk IDs: `DEFER-0013` remains open until CI rerun passes.
+- Rollback / recovery: revert the test-only commit; no production state affected.
+
 ## LOG-0093 — 2026-08-15 — P2 / About tab layout and locale-switch regression fix
 
 - Outcome: audit found the About tab controls and panels were siblings inside one `nowrap` flex container, so desktop panels rendered beside/stretched by the tab strip. Controls are now in a separate horizontally scrollable wrapper and panels render below it. Header/Footer now honor `alternateHref`, so `/en/about/` switches to `/fa/about/` and vice versa instead of the locale root. A Playwright regression script now checks geometry, one-visible-panel behavior, keyboard tab movement, click activation and equivalent locale links at 320/390/1280.
