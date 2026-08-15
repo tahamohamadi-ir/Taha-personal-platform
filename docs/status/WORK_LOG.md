@@ -543,3 +543,14 @@
 - Decisions / assumptions: شکل canonical URLها با slash است؛ redirect بدون-slash در Caddy (P0A-06) انجام می‌شود. inventory فقط‌خواندنی VPS توسط مالک اجرا می‌شود؛ هیچ server command توسط agent اجرا نشد.
 - Deferred or risk IDs: `DEBT-0001` OPEN؛ `DEFER-0007` تا `DEFER-0010` OPEN؛ `RISK-0004`/`RISK-0007` پس از inventory به‌روز می‌شوند.
 - Rollback / recovery: تغییرات فقط frontend/docs؛ build دوباره تمام قدیم را برمی‌گرداند.
+
+## LOG-0049 — 2026-08-14 — P1 / canonical commands, dependency scan and status sync
+
+- Outcome: فرمان‌های تأییدشدهٔ `apps/web/` در `PROJECT_MANIFEST.md` به‌عنوان canonical ثبت شدند، `npm audit` اجرا شد (0 vulnerability)، وضعیت scaffold در Manifest و README هم‌تراز واقعیت شد.
+- Why: طبق P0A-03، فرمان‌های app فقط پس از اجرای واقعی و ثبت در Manifest canonical می‌شوند؛ README/Manifest نباید وضعیت کهنه را نمایش دهند.
+- Scope / files: `PROJECT_MANIFEST.md`، `README.md` و همین Work Log.
+- Commands or actions actually performed: در `apps/web/`: `npm audit --audit-level=high` → `found 0 vulnerabilities`. فرمان‌های install/check/build/preview قبلاً با evidence LOG-0046/0048 اجرا شده‌اند.
+- Verification actually performed and result: audit بدون vulnerability؛ ساختار canonical commands در Manifest با فرمان‌های واقعاً اجراشده یکسان است.
+- Decisions / assumptions: فرمان‌های CMS/deploy همچنان canonical نیستند و تا slice مربوطه ثبت نمی‌شوند.
+- Deferred or risk IDs: بدون ID جدید.
+- Rollback / recovery: تغییرات مستندی؛ بازگشت با Git.

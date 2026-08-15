@@ -22,13 +22,13 @@
 
 | Layer | Approved baseline | Current state |
 |---|---|---|
-| Public frontend | Astro + TypeScript + React Islands | Not scaffolded |
-| Styling/UI | Tailwind CSS + project design system + shadcn/Radix | Not scaffolded |
+| Public frontend | Astro + TypeScript + React Islands | Scaffolded; static-only P1 built (Language Gateway + `/fa/` + `/en/` landing) |
+| Styling/UI | Tailwind CSS + project design system + shadcn/Radix | Tailwind v4 + project design tokens applied; shadcn/Radix not used in P1 |
 | Backend/CMS/API | Python 3.12 (latest supported patch) + Django 5.2 LTS + Wagtail 7.4 LTS + Django Ninja | Not scaffolded |
 | Database | PostgreSQL | Not provisioned |
 | Public search | Pagefind at the approved phase | Not provisioned |
 | Deployment | Docker Compose + Caddy on VPS | Existing live stack: Caddy plus a healthy frontend/backend/PostgreSQL Compose project; project-specific configuration is not provisioned and must remain isolated from it |
-| Git/CI | GitHub + GitHub Actions hosted standard runners | Workflow not created; P0-A only |
+| Git/CI | GitHub + GitHub Actions hosted standard runners | Workflow created (`.github/workflows/ci.yml`); not yet run on a hosted runner |
 | Backup | Encrypted restic repository through rclone on Google Drive | restic 0.18.1 and Ubuntu rclone 1.60.1 build installed; OAuth, repository, PostgreSQL/media/config snapshots, `restic check`, retention, enabled daily timer and isolated file-level restore verified; staging database import remains |
 
 Python 3.12 is selected for ecosystem maturity and remains security-supported through October 2028. Wagtail 7.4 LTS and Django 5.2 LTS officially support this combination. Exact patch versions are selected together in the first dependency lockfile, not guessed in this Manifest.
@@ -79,6 +79,19 @@ docker compose version
 ```
 
 No application install, test, lint, build, run, migration, deployment or backup command is approved yet. Those commands are added only after the corresponding app/infrastructure exists and is verified on a clean checkout.
+
+## Canonical commands — `apps/web/` (P1 static frontend, verified 2026-08-14)
+
+```powershell
+# working directory: apps/web/
+npm install        # reproducible install with package-lock.json
+npm run check      # astro check (typecheck) — verified: 0 errors / 0 warnings
+npm run build      # astro build — verified: static output in dist/
+npm run preview    # serve built artifact locally — verified with curl (routes 200)
+npm audit          # dependency security scan — verified: 0 vulnerabilities
+```
+
+CMS install/build/migrate/deploy and server-side deploy commands remain unapproved; they are added only after the corresponding app/infrastructure exists and is verified on a clean checkout.
 
 ## P1 first-live technical decisions (G0-04 freeze)
 
