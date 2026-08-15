@@ -1,4 +1,4 @@
-# Fast Safe Go-Live Implementation Plan
+﻿# Fast Safe Go-Live Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` (recommended) or `superpowers:executing-plans` to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -10,8 +10,8 @@
 
 ## Progress snapshot (2026-08-14)
 
-- **R0 complete:** G0-01 (drift fix), G0-02 (owner decision), G0-03 (content pack *proposal* drafted — string approval pending), G0-04 (tech freeze), G0-05 (ADRs 0016–0018 *Proposed*), G0-06 (`P0-G0: PASS for static-only P1`). Evidence: LOG-0043 تا LOG-0045.
-- **Local R1/R2 complete:** `apps/web/` scaffold (Astro 7.2.2 + TypeScript + Tailwind v4), Language Gateway `/`, `/fa/` RTL + `/en/` LTR landing, 404, `health.json`, `robots.txt`, `sitemap.xml`, design tokens, and `.github/workflows/ci.yml`. `npm run check` (0 errors) و `npm run build` PASS. Evidence: LOG-0046.
+- **R0 complete:** G0-01 (drift fix), G0-02 (owner decision), G0-03 (content pack *proposal* drafted — string approval pending), G0-04 (tech freeze), G0-05 (ADRs 0016–0018 *Proposed*), G0-06 (`P0-G0: PASS for static-only P1`). Evidence: LOG-0051 تا LOG-0053.
+- **Local R1/R2 complete:** `apps/web/` scaffold (Astro 7.2.2 + TypeScript + Tailwind v4), Language Gateway `/`, `/fa/` RTL + `/en/` LTR landing, 404, `health.json`, `robots.txt`, `sitemap.xml`, design tokens, and `.github/workflows/ci.yml`. `npm run check` (0 errors) و `npm run build` PASS. Evidence: LOG-0054.
 - **Remaining (owner/VPS/deploy-gated):** P0A-01/02 (stack inventory + capacity), P0A-08..12 (artifact/deploy/rollback/observability), P1-10 browser smoke, P1-11 staging acceptance, P1-13..15 production deploy. Deferrals: `DEFER-0007` (contact path), `DEFER-0008` (font), `DEFER-0009` (OG image), `DEFER-0010` (browser verification).
 
 ## Global Constraints
