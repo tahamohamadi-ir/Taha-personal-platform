@@ -80,6 +80,30 @@ docker compose version
 
 No application install, test, lint, build, run, migration, deployment or backup command is approved yet. Those commands are added only after the corresponding app/infrastructure exists and is verified on a clean checkout.
 
+## P1 first-live technical decisions (G0-04 freeze)
+
+> Exact patch versions are fixed in the first dependency lockfile at scaffold time, not here. This table freezes the *decisions* needed for the R2 static-only release; anything not required for R2 is explicitly `NOT USED IN R2`.
+
+| Decision | Value | Status |
+|---|---|---|
+| Package manager | npm (npm/npx 11.18.0) | VERIFIED |
+| Node runtime | Node.js 24.16.0 (active LTS line, present in environment) | VERIFIED |
+| Frontend framework | Astro static-first; latest stable `7.2.2` observed via `npm view astro version`; exact patch pinned in first lockfile | VERIFIED for decision |
+| TypeScript | Project source is typed; version pinned in first lockfile (Astro-supported) | VERIFIED for decision |
+| Styling | Tailwind CSS v4 + project design tokens from `docs/design.md` | VERIFIED for decision |
+| React islands | Not installed in R2 (no single approved, tested, valuable interaction) | NOT USED IN R2 |
+| shadcn/Radix | Not added until a concrete P1 interaction justifies it | NOT USED IN R2 |
+| Motion/GSAP/D3/Three | Not used in R2 | NOT USED IN R2 |
+| Search (Pagefind) | Not used in R2 | NOT USED IN R2 |
+| Analytics | Not used in R2 (no provider/consent/retention approved) | NOT USED IN R2 |
+| Dark mode | Not in R2; full dark mode deferred with ID | NOT USED IN R2 |
+| Fonts | Self-hosted, minimal weights, bilingual (`fa`/`en`/mixed) specimen; exact family is an owner decision | OPEN (owner) |
+| Logo | Approved asset or a text mark only; no invented geometry | OPEN (owner) |
+| Media | Static curated assets only (portrait/OG optional) | OPEN (owner) |
+| Health/SEO skeleton | Static `/health`, locale-aware 404, robots + sitemap skeleton | VERIFIED for decision |
+
+Owner decisions still required before scaffold (G0-06): the limited `RISK-0003` static-only acceptance, the `fa`/`en` content pack, and the logo/font minimum.
+
 ## Explicitly not used initially
 
 ```text

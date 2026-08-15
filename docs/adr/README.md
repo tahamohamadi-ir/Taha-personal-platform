@@ -10,6 +10,9 @@ ADRها immutable هستند: تغییر تصمیم با ADR جدید انجام
 | 0010 | Encrypted Google Drive backup | Accepted target; provisioned and file-level restore-tested on 2026-08-14; staging DB import remains |
 | 0011 | Bilingual URL behavior | Accepted |
 | 0014 | `/admin/` boundary | Accepted for route; hardening deferred |
-| 0015 | Isolated staging placeholder | Accepted P0-A route; not yet applied |
+| 0015 | Isolated staging placeholder | Accepted P0-A route; applied and externally verified |
+| 0016 | Static-first Astro + React islands boundary | Proposed |
+| 0017 | Versioned static artifact deploy + atomic switch/rollback | Proposed |
+| 0018 | P1 design/hydration/font minimum | Proposed |
 
 The technology baseline still governs the remaining architecture decisions. Create a new ADR only when a decision is non-obvious, expensive to reverse, security/operations relevant, or changes a frozen contract.

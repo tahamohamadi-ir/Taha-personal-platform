@@ -488,3 +488,14 @@
 - Decisions / assumptions: `apps/cms/` به‌عنوان مسیر source canonical است و تغییر نمی‌کند؛ فقط نمونهٔ URL route به `/admin/` هم‌سو شد. هیچ تصمیم ADR بازنویسی نشد.
 - Deferred or risk IDs: `RISK-0001` همچنان BLOCKED (باقی‌مانده: تصمیم gate، scaffold/CI/deploy)؛ `RISK-0003` و `RISK-0004` تا `RISK-0007` تغییر نکردند.
 - Rollback / recovery: همهٔ تغییرها صرفاً مستندی و با Git قابل بازگشت‌اند؛ هیچ runtime data یا server state لمس نشده است.
+
+## LOG-0044 — 2026-08-14 — G0-04/G0-05 / first-live technical freeze and minimum ADRs
+
+- Outcome: تصمیم‌های فنی حداقلی R2 در `PROJECT_MANIFEST.md` freeze شد و سه ADR پیشنهادی (0016 static-first Astro + React islands، 0017 artifact نسخه‌دار + atomic switch/rollback، 0018 P1 design/hydration/font minimum) به‌همراه ثبت در index و اصلاح status کهنهٔ ADR-0015 ایجاد شد.
+- Why: G0-04/G0-05 بخشی از closure گیت R0 هستند و باید تصمیم‌های غیربدیهی first live را از حافظه/چت جدا کنند؛ بدون scaffold یا install.
+- Scope / files: `PROJECT_MANIFEST.md`، سه ADR جدید، `docs/adr/README.md`، `docs/plan/P0-G0-technical-freeze-adrs-task-spec.md` و همین Work Log.
+- Commands or actions actually performed: `node --version` (v24.16.0)، `npm --version` (11.18.0)، `npx --version` (11.18.0)، `uv --version` (0.12.3) و `npm view astro version` (7.2.2)، `npm view tailwindcss version` (4.3.3)، `npm view typescript version` (7.0.2) اجرا شد. هیچ install، scaffold، dependency، `.venv` یا runtime اجرا نشد.
+- Verification actually performed and result: نسخه‌های محیط و آخرین نسخهٔ Astro/Tailwind/TypeScript از npm ثبت شدند؛ `git diff --check` بدون خطا و link-check محلی فایل‌های لمس‌شده PASS بود.
+- Decisions / assumptions: package manager `npm`، Node 24.16.0، Astro static-first؛ React/Tailwind/shadcn/Motion/GSAP/D3/Three/Pagefind/analytics/dark mode همه برای R2 `NOT USED IN R2`؛ font/logo/media `OPEN` وابسته به مالک. ADRها به‌صورت `Proposed` ثبت شدند تا در G0-06 پذیرفته شوند.
+- Deferred or risk IDs: `RISK-0001` BLOCKED (تصمیم gate و scaffold باقی است)؛ تغییری در ریسک‌های دیگر نبود.
+- Rollback / recovery: فقط مستندات؛ بازگشت با Git.
