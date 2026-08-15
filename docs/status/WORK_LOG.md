@@ -901,3 +901,14 @@ pm run check (0 error)؛ git diff --check؛ بازبینی مستقل diffها.
 - Decisions / assumptions: نسخهٔ نهایی اسکریپت نیازمند reinstall در /opt/taha/bin توسط مالک و سپس اجرای sudo -n است.
 - Deferred or risk IDs: بدون ID جدید.
 - Rollback / recovery: در صورت خطای validate، اسکریپت بکاپ را restore می‌کند و reload نمی‌شود.
+
+## LOG-0083 — 2026-08-15 — R2 / production 404 fixed and full live verification
+
+- Outcome: با caddy-apply.sh اصلاح‌شده (canonical snippet rewrite)، handle_errors داخل 	aha_application_routes وارد و Caddy validate + reload شد (بکاپ Caddyfile.auto-20260815130818). Production و staging اکنون صفحهٔ 404 سفارشی را با status 404 و بدنهٔ کامل (۴۱۲۷ بایت) سرو می‌کنند. مسیر دسترسی scoped agent (sudoers) فعال است: مالک فقط reinstall انجام داد و خود اسکریپت توسط grant اجرا شد.
+- Why: بستن کامل R2 — 404 سفارشی بخشی از قرارداد static P1 بود و قبلاً در production خالی بود.
+- Scope / files: docs/status/WORK_LOG.md، docs/plan/PROD-ACCEPTANCE.md، docs/plan/S-PLAN-STATE.md.
+- Commands or actions actually performed: curl production/staging 404 (status+len+body)؛ ash infra/deploy/smoke.sh برای هر دو host (7/8 PASS)؛ تأیید بکاپ Caddy.
+- Verification actually performed and result: prod404 status=404 len=4127 با notfound-code و متن دوزبانه؛ stage404 یکسان؛ smoke هر دو سبز؛ production روی release-1ce6d9a.
+- Decisions / assumptions: NOTE قبلی PROD-ACCEPTANCE (404 خالی) رفع شد؛ DEFER-0011 (robots edge) همچنان باز است.
+- Deferred or risk IDs: DEFER-0011 OPEN.
+- Rollback / recovery: بکاپ‌های timestamped Caddy و switch اتمیک current؛ هر دو مکانیک آزمایش‌شده.

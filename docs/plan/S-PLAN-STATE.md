@@ -46,3 +46,4 @@
 | 2026-08-15 | A3 | submitted for review | S-model | RELEASE-P1.md written per template; artifact verified live (deploy.log: release-d55d44e e49e46c7; prompt's release-fa3c813 does not match served artifact — flagged pending verification); smoke re-run 8 PASS exit 0; CI green on main; git diff --check exit 0; LOG-0076 |
 | 2026-08-15 | A4 | DONE (owner) | L-model | production P1 live via owner's Caddy snippet switch; smoke 7 PASS exit 0; d55d44e served; delta to d7db929 documented; LOG-0078 |
 | 2026-08-15 | parallel batch | APPROVE | L-model | polish (skip-links, meta, bdi), LICENSES.md (0 missing; gsap proprietary flagged), PROD-ACCEPTED-WITH-NOTES (404 empty-body finding), A5 close-out; LOG-0079 |
+| 2026-08-15 | R2 live | DONE | L-model | prod+staging on release-1ce6d9a; custom 404 live (404+body, verified 4127B); smoke prod 7/stage 8 PASS; scoped sudo active; LOG-0083 |

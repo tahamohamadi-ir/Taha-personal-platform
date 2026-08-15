@@ -48,14 +48,14 @@
   ```
 - Both return 200. No functional issue; the difference is CDN-layer content injection. Note only.
 
-## 4. Verdict: **PROD-ACCEPTED-WITH-NOTES**
+## 4. Verdict: **PROD-ACCEPTED** (updated 2026-08-15)
 
-The static P1 artifact (Language Gateway, `/en/`, `/fa/`, health, sitemap, security headers, redirects, fonts, CDN edge) is live and working. One deploy-side defect must be fixed before/at the next release.
+The static P1 artifact (Language Gateway, `/en/`, `/fa/`, health, sitemap, security headers, redirects, fonts, CDN edge) is live and working.
 
-Notes:
+Notes (updated):
 
-1. **Prod 404 has an empty body** — the custom 404 page is not served in production (`handle_errors` missing in the prod Caddyfile; staging serves it correctly with `handle_errors`). Fix in the production Caddy config and re-verify. (Check 4b FAIL)
+1. ~~Prod 404 has an empty body~~ — **RESOLVED 2026-08-15**: `caddy-apply.sh` inserted `handle_errors` into `taha_application_routes`; production and staging now serve the custom 404 (status 404, body 4127 B, bilingual). Verified (LOG-0083).
 2. **`http://tahamohamadi.ir/` returns 308, not 301** — Cloudflare's automatic HTTP→HTTPS upgrade. Location (`https://tahamohamadi.ir/`) is correct; a literal 301 is only needed if an external contract requires it.
-3. **robots.txt differs proxy vs origin** — Cloudflare injects its managed content-signal/AI-crawler block over the origin's plain `User-agent: * / Allow: /` + Sitemap. Expected CDN behavior; document it so future diffs are not mistaken for drift.
+3. **robots.txt differs proxy vs origin** — Cloudflare injects its managed content-signal/AI-crawler block over the origin's plain `User-agent: * / Allow: /` + Sitemap. Expected CDN behavior; tracked as `DEFER-0011`.
 4. **woff2 fonts are not inline in the HTML** — they are `@font-face` URLs inside `/_astro/global.CtKXivQx.css`; all sampled fetches return 200. Deviates from the check's assumption, not a defect.
 5. `cf-cache-status: DYNAMIC` on HTML — no edge caching for pages; acceptable for static P1, candidate for `Cache-Control` tuning later.
