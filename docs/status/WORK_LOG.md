@@ -1043,3 +1043,14 @@ ode --check و YAML validation توسط agent.
 - Verification actually performed and result: local checks PASS; CI will run the new About-tabs regression after push. No JS/hydration was added; tabs remain native radio + CSS.
 - Deferred or risk IDs: `DEFER-0013` remains open until the new CI About-tabs suite passes; mobile browser visual review remains separate.
 - Rollback / recovery: revert the layout/test commit; previous release remains on the server until the new artifact is deployed.
+
+## LOG-0095 — 2026-08-15 — R2/P2 / final tab layout deploy and smoke
+
+- Outcome: corrected About tab controls/panels, equivalent locale switches and direction-aware keyboard test are now deployed from clean HEAD `4fcd19f` as `release-4fcd19f` (checksum `13849ab7`); previous artifact naming mismatch was eliminated.
+- Why: the prior deployment had been built from a working tree before the regression commits; this release is reproducible from the exact commit and includes the final tabs fix.
+- Scope / files: `apps/web/` artifact only; no server config change.
+- Commands or actions actually performed: clean `npm run check`/`npm run build` (23 files, 6 pages); artifact upload; `sudo -n /opt/taha/bin/update-release.sh /home/deploy/taha-stage/release-4fcd19f`; read `deploy.log`; production smoke script.
+- Verification actually performed and result: deploy.log recorded `updated release-4fcd19f 13849ab7`; production smoke 7 PASS; `/en/about/` and `/fa/about/` include separated tab controls/panels and equivalent locale links.
+- Decisions / assumptions: CSS-only radio tabs remain the shared no-JS implementation; visual UI QA remains covered by prior V1 plus CI geometry/keyboard/overflow tests.
+- Deferred or risk IDs: `DEFER-0013` remains open only for residual full visual mobile review; overflow and tab behavior are CI-covered.
+- Rollback / recovery: switch `/opt/taha/site/current` to the previous release with the scoped update script; no Caddy reload required.
