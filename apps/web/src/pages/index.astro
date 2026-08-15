@@ -6,6 +6,7 @@ import { content } from "../data/content";
 const en = content.en;
 const fa = content.fa;
 const title = "Taha Mohammadi · طه محمدی";
+const description = `${title} — ${en.gateway.prompt} / ${fa.gateway.prompt}`;
 const canonical = new URL("/", site.url).href;
 ---
 
@@ -17,8 +18,11 @@ const canonical = new URL("/", site.url).href;
     <meta name="theme-color" content="#071225" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title}</title>
+    <meta name="description" content={description} />
     <meta name="robots" content="index,follow" />
     <link rel="canonical" href={canonical} />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:url" content={canonical} />
     <link rel="alternate" hreflang="x-default" href={canonical} />
     <link rel="alternate" hreflang="en" href={new URL("/en/", site.url).href} />
     <link rel="alternate" hreflang="fa" href={new URL("/fa/", site.url).href} />
@@ -26,6 +30,7 @@ const canonical = new URL("/", site.url).href;
     <meta property="og:title" content={title} />
   </head>
   <body class="gateway">
+    <a class="skip-link" href="#main">{en.skip}</a>
     <svg
       class="gateway-field"
       aria-hidden="true"
@@ -75,7 +80,7 @@ const canonical = new URL("/", site.url).href;
         <path d="M1400 860 h-24 M1400 860 v-24" />
       </g>
     </svg>
-    <main class="gateway-stage">
+    <main class="gateway-stage" id="main">
       <div class="gateway-panel">
         <span class="gateway-mark" aria-hidden="true">TM</span>
         <h1 class="gateway-name">
