@@ -57,12 +57,13 @@ const actionsLabel = `${en.notfound.gatewayLabel} / ${fa.notfound.gatewayLabel}`
 <style>
   .notfound {
     margin: 0;
+    min-height: 100vh;
     min-height: 100svh;
+    overflow-x: clip;
     background-color: var(--color-navy-950);
     color: var(--color-inverse);
     display: grid;
     place-items: center;
-    overflow: hidden;
   }
 
   .notfound-field {
@@ -80,7 +81,8 @@ const actionsLabel = `${en.notfound.gatewayLabel} / ${fa.notfound.gatewayLabel}`
     align-items: center;
     gap: 1rem;
     text-align: center;
-    padding: 3rem 2rem;
+    margin-block: auto;
+    padding: clamp(2rem, 6vw, 3rem) clamp(1rem, 5vw, 2rem);
     max-width: 34rem;
   }
 
@@ -149,5 +151,23 @@ const actionsLabel = `${en.notfound.gatewayLabel} / ${fa.notfound.gatewayLabel}`
   .notfound-actions a:first-child:hover {
     background-color: var(--color-turquoise-500);
     color: var(--color-navy-950);
+  }
+
+  @media (max-width: 14rem) {
+    .notfound-panel {
+      padding-block: 1.5rem;
+    }
+
+    .notfound-code {
+      font-size: clamp(2.5rem, 2rem + 8vw, 4rem);
+    }
+
+    .notfound-title {
+      font-size: 1.125rem;
+    }
+
+    .notfound-actions a {
+      padding: 0.5rem 0.875rem;
+    }
   }
 </style>

@@ -114,6 +114,15 @@ const { content } = Astro.props;
     grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
     gap: clamp(2rem, 6vw, 4rem);
     align-items: center;
+    min-width: 0;
+  }
+
+  .hero-copy,
+  .hero-visual,
+  .section-head,
+  .perspectives-grid,
+  .perspective {
+    min-width: 0;
   }
 
   .hero-eyebrow {
@@ -135,6 +144,7 @@ const { content } = Astro.props;
     letter-spacing: -0.02em;
     margin-block-end: 1rem;
     text-wrap: balance;
+    overflow-wrap: anywhere;
   }
 
   :global(html[dir="rtl"]) .hero-name {
@@ -146,6 +156,7 @@ const { content } = Astro.props;
     font-weight: 600;
     font-size: clamp(1.125rem, 1rem + 0.8vw, 1.5rem);
     margin-block-end: 1rem;
+    overflow-wrap: anywhere;
   }
 
   .hero-positioning::after {
@@ -162,6 +173,7 @@ const { content } = Astro.props;
     font-size: clamp(1.125rem, 1rem + 0.6vw, 1.375rem);
     max-width: 42ch;
     margin-block-end: 2rem;
+    overflow-wrap: anywhere;
   }
 
   .hero-actions {
@@ -282,7 +294,7 @@ const { content } = Astro.props;
 
   .perspectives-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr));
     gap: 1rem;
     margin-block-end: 1.5rem;
   }
@@ -310,6 +322,7 @@ const { content } = Astro.props;
   .perspective-title {
     font-size: 1.25rem;
     margin-block-end: 0.25rem;
+    overflow-wrap: anywhere;
   }
 
   .perspective-audience {
@@ -317,6 +330,7 @@ const { content } = Astro.props;
     font-size: 0.8125rem;
     font-weight: 600;
     margin-block-end: 0.75rem;
+    overflow-wrap: anywhere;
   }
 
   .perspective--research .perspective-audience {
@@ -329,17 +343,20 @@ const { content } = Astro.props;
 
   .perspective-description {
     color: var(--color-ink-secondary);
+    overflow-wrap: anywhere;
   }
 
   .perspectives-note {
     color: var(--color-ink-secondary);
     font-size: 0.875rem;
+    overflow-wrap: anywhere;
   }
 
   .about-body {
     max-width: 60ch;
     color: var(--color-ink);
     font-size: 1.125rem;
+    overflow-wrap: anywhere;
   }
 
   @media (max-width: 60rem) {
