@@ -109,3 +109,27 @@ those containers (RISK-0004, closed 2026-08-16).
   the restic backups under `/opt/taha/backups` are never touched.
 - This section is informational; it does not change the production deploy or
   rollback mechanics above.
+
+## CMS runtime (Caddy + versioned image + Compose)
+
+Canonical topology:
+
+```text
+Caddy (TLS)
+  ├── static Astro artifact  → /opt/taha/site/current   (versioned dirs + current symlink)
+  └── /admin* + /health*     → 127.0.0.1:18000          (Compose: cms + postgres)
+```
+
+- Image source of truth: `ghcr.io/<owner>/taha-cms:<git-sha>` (CI:
+  `.github/workflows/ci-cms-image.yml`). Pin `CMS_IMAGE` to a sha for deploy and
+  rollback; do not treat `:latest` as the release identity.
+- Operator script: `infra/deploy/update-cms.sh` (pull → up → migrate → loopback
+  health). Caddy snippet: `infra/cms/Caddyfile.cms.snippet` (owner sudo apply).
+- Smoke after proxy is live: `infra/deploy/smoke-cms.sh https://tahamohamadi.ir`.
+- Superuser (owner interactive only):
+  `docker compose -f infra/cms/docker-compose.cms.yml exec cms python manage.py createsuperuser`
+  (`python` inside the image is the venv — Django is on `PATH`).
+- Static site deploy/rollback remains `update-release.sh` / `current` symlink;
+  CMS rollback is a previous `CMS_IMAGE` tag. Volumes are preserved on
+  `compose down` without `-v`.
+- Details: `infra/cms/README.md`, `docs/plan/P3-cms-versioned-cicd-task-spec.md`.
