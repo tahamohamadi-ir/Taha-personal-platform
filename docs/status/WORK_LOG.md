@@ -1,4 +1,4 @@
-﻿# Work Log
+# Work Log
 
 > مرجع chronological و append-only برای فعالیت‌های انجام‌شده. برای سیاست و قالب کامل، `docs/governance/DOCUMENTATION_POLICY.md` را بخوانید.
 
@@ -1309,6 +1309,14 @@ ode --check و YAML validation توسط agent.
 - Scope / files: `.gitignore` only, this Work Log.
 - Decisions / assumptions: Assets/ committed in LOG-0117 remain in git history (amend not safe on pushed commit); future files in Assets/ will be ignored.
 
+## LOG-0132 - 2026-08-16 - P3 / Staff draft preview boundary (P3-07)
+
+- Outcome: Staff-only read-only preview at `/admin/preview/<kind>/<pk>/` for Landing/Profile/Article (no Wagtail Page models). Body sanitized with Wagtail Whitelister; `X-Robots-Tag: noindex, nofollow, noarchive` and `Cache-Control: no-store`. Public share-token preview recorded as DEFER-0016. Task-list P3-07 safe minimum DONE.
+- Why: Close ADR-0022 / Task-list gap where allowlist existed without preview runtime.
+- Scope / files: `apps/cms/apps/content/{views_preview,wagtail_hooks,templates}`, `apps/security/middleware.py`, `tests/test_preview.py`, Task Spec, ADR-0022, ledgers.
+- Verification: `uv run ruff check` clean on touched paths; `uv run pytest` 105+ passed; security review Approve.
+- Deferred or risk IDs: DEFER-0016 OPEN (public token); RISK-0003 OPEN; `/api/`/`/media/` unpublished.
+- Rollback / recovery: revert feature commits; no migration.
 ## LOG-0131 - 2026-08-16 - P3 / TOTP recovery codes + MFA disable (DEFER-0015 CLOSED)
 
 - Outcome: Hashed one-time recovery codes (64-bit, reveal-once session), login accepts unused recovery codes after password, regenerate/disable under `/admin/account/two-factor/` with second-factor confirm. Audit actions `mfa.recovery_issued`, `mfa.recovery_used`, `mfa.disabled` (no plaintext). DEFER-0015 CLOSED in repo; production needs CMS image rebuild.

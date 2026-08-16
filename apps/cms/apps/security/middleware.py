@@ -11,6 +11,10 @@ SKIP_PREFIXES = ("/health/", "/static/", "/media/")
 LOGIN_RATE_LIMIT = 5
 LOGIN_RATE_WINDOW_SECONDS = 300
 NOINDEX_PREFIXES = ("/admin/", "/api/", "/rebuild-trigger/")
+PREVIEW_PREFIX = "/admin/preview/"
+PREVIEW_ROBOTS = "noindex, nofollow, noarchive"
+DEFAULT_ROBOTS = "noindex, nofollow"
+PREVIEW_CACHE_CONTROL = "no-store"
 
 
 class AuditMiddleware:
@@ -101,13 +105,21 @@ class LoginRateLimitMiddleware:
 
 
 class NoIndexMiddleware:
-    """Keep machine-facing paths out of search indexes via X-Robots-Tag."""
+    """Keep machine-facing paths out of search indexes via X-Robots-Tag.
+
+    Staff preview under ``/admin/preview/`` also gets ``noarchive`` and
+    ``Cache-Control: no-store`` (P3-07 / ADR-0022).
+    """
 
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
         response = self.get_response(request)
-        if request.path.startswith(NOINDEX_PREFIXES):
-            response.headers["X-Robots-Tag"] = "noindex, nofollow"
+        path = request.path
+        if path.startswith(PREVIEW_PREFIX):
+            response.headers["X-Robots-Tag"] = PREVIEW_ROBOTS
+            response.headers["Cache-Control"] = PREVIEW_CACHE_CONTROL
+        elif path.startswith(NOINDEX_PREFIXES):
+            response.headers["X-Robots-Tag"] = DEFAULT_ROBOTS
         return response
