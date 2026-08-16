@@ -102,10 +102,25 @@ $env:DJANGO_SETTINGS_MODULE = "config.settings.test"
 uv run ruff check .            # verified: All checks passed
 uv run python manage.py check  # verified: no issues (only upstream treebeard E001 advisory warnings)
 uv run python manage.py makemigrations --check --dry-run   # verified: No changes detected
-uv run pytest -q               # verified: 75 passed
+uv run pytest -q               # verified locally; count grows with suite
 ```
 
-CMS runtime deploy/migrate/run commands (gunicorn, collectstatic, migrate on a real DB, media) remain unapproved; the owner capacity decision was made (2026-08-15: keep 4 GiB — `RISK-0007` CLOSED), MFA enforcement code is done (django-otp 1.5.4, 75 pytest PASS, LOG-0116) and a deploy Task Spec exists (`docs/plan/P3-cms-deploy-task-spec.md`). Runtime approval now awaits RISK-0003 DB-import evidence on staging PostgreSQL + owner approval for admin exposure + old-stack decommission execution.
+### Canonical commands — CMS runtime image (P3, operator)
+
+```bash
+# pin immutable tag from GHCR (CI: ci-cms-image.yml)
+export CMS_IMAGE=ghcr.io/tahamohamadi-ir/taha-cms:<git-sha>
+./infra/deploy/update-cms.sh
+./infra/deploy/smoke-cms.sh https://tahamohamadi.ir
+
+# inside container — venv is on PATH
+docker compose -f infra/cms/docker-compose.cms.yml exec cms python manage.py migrate --noinput
+docker compose -f infra/cms/docker-compose.cms.yml exec cms python manage.py createsuperuser
+```
+
+Architecture: Caddy edge + versioned static artifact + Compose only for CMS/Postgres.
+See `infra/cms/README.md` and `docs/plan/P3-cms-versioned-cicd-task-spec.md`. Runtime
+smoke on the VPS remains owner-executed until RISK-0009 closes.
 
 ## Agent tooling (developer workstation, verified 2026-08-15)
 

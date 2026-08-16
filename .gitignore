@@ -54,6 +54,7 @@ Assets/
 !.opencode/agent/
 .serena/
 .claude/
+.cursor/
 
 # Local worktrees
 .worktrees/

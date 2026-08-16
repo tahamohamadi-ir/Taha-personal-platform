@@ -889,7 +889,8 @@ pm run check (0 error)؛ git diff --check؛ بازبینی مستقل diffها.
 - Verification actually performed and result: اسکریپت syntax-valid؛ منطق idempotent (اگر handle_errors موجود باشد بدون تغییر خارج می‌شود)؛ sudoers فقط دو مسیر دقیق.
 - Decisions / assumptions: اعطای NOPASSWD عمداً فقط به دو فرمان ثابت؛ هر تغییر Caddy آینده نیازمند ویرایش اسکریپت root-owned یا grant جدید است.
 - Deferred or risk IDs: بدون ID جدید.
-- Rollback / recovery: m /etc/sudoers.d/taha-deploy && visudo -c grant را فوراً لغو می‌کند.
+- Rollback / recovery: 
+m /etc/sudoers.d/taha-deploy && visudo -c grant را فوراً لغو می‌کند.
 
 ## LOG-0082 — 2026-08-15 — Infra / caddy-apply idempotency and brace bug fixed
 
@@ -1307,6 +1308,17 @@ ode --check و YAML validation توسط agent.
 - Why: LOG-0117 accidentally committed Assets/ via `git add -A`; the large Gemini images (6-7MB each) bloated the repo. This fix prevents recurrence.
 - Scope / files: `.gitignore` only, this Work Log.
 - Decisions / assumptions: Assets/ committed in LOG-0117 remain in git history (amend not safe on pushed commit); future files in Assets/ will be ignored.
+
+## LOG-0120 - 2026-08-16 - P3 / CMS versioned CI/CD + health/proxy hardening
+
+- Outcome: Diagnosed owner VPS log (`/health/` HTML 400; `createsuperuser` → `No module named django`; public `/admin/login/` still 301). Fixed production settings for Caddy proxy + loopback health; put image venv on `PATH`; replaced ad-hoc `:latest` tar flow with GHCR sha tags + `update-cms.sh` / `smoke-cms.sh`; documented Caddy + static artifact + Compose CMS contract.
+- Why: First runtime bring-up failed for predictable proxy/PATH reasons; owner asked for principled CI/CD + dockerization + versioning.
+- Scope / files: `apps/cms/config/settings/production.py`, `apps/cms/tests/test_production_proxy.py`, `infra/cms/*`, `infra/deploy/update-cms.sh`, `infra/deploy/smoke-cms.sh`, `.github/workflows/ci-cms-image.yml`, `.dockerignore`, `docs/plan/P3-cms-versioned-cicd-task-spec.md`, DEPLOY_RUNBOOK, PROJECT_MANIFEST, RISK_REGISTER, this entry.
+- Commands or actions actually performed: local pytest/ruff (see verification); no VPS SSH in this slice.
+- Verification actually performed and result: `uv run pytest` → **78 passed** (includes 3 new production proxy tests); `ruff check` on touched CMS files → All checks passed. VPS re-smoke not run in this slice.
+- Decisions / assumptions: static Astro site stays non-containerized; CMS image identity is git-sha on GHCR; auto-SSH deploy from GitHub to VPS is out of scope (operator pull).
+- Deferred or risk IDs: RISK-0009 remains BLOCKED until VPS re-smoke PASS with the fixed image + Caddy snippet.
+- Rollback / recovery: revert branch; on server keep previous `CMS_IMAGE` tag.
 
 ## LOG-0119 - 2026-08-16 - P3 / CMS runtime deploy preparation
 

@@ -1,16 +1,32 @@
-# Caddy reverse-proxy snippet for the CMS runtime.
-# Add this block inside the site block in /etc/caddy/Caddyfile.
-# /admin/ and /health/ are reverse-proxied to the cms service;
-# all other paths keep serving the static site from disk.
-# The cms container must publish its port to 127.0.0.1:18000 on the host.
+# Caddy reverse-proxy snippet for the CMS runtime (same origin as the static site).
+#
+# Architecture:
+#   Internet → Caddy (TLS)
+#     handle /admin/*  → reverse_proxy 127.0.0.1:18000
+#     handle /health/* → reverse_proxy 127.0.0.1:18000
+#     handle /*        → file_server /opt/taha/site/current  (static artifact)
+#
+# Insert these `handle` blocks INSIDE the tahamohamadi.ir site block, BEFORE the
+# static-site file_server / taha_application_routes handler. Order matters:
+# more-specific CMS handles must win over the catch-all static handler.
+#
+# After edit: sudo caddy validate --config /etc/caddy/Caddyfile && sudo systemctl reload caddy
+# Keep a timestamped Caddyfile backup before applying.
 
-handle /admin/* {
+handle /admin* {
 	reverse_proxy 127.0.0.1:18000 {
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Forwarded-Host {host}
 		header_down X-Robots-Tag "noindex, nofollow"
 		header_down Cache-Control "no-store, no-cache, must-revalidate"
 	}
 }
 
-handle /health/* {
-	reverse_proxy 127.0.0.1:18000
+handle /health* {
+	reverse_proxy 127.0.0.1:18000 {
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Forwarded-Host {host}
+		header_down X-Robots-Tag "noindex, nofollow"
+		header_down Cache-Control "no-store"
+	}
 }

@@ -1,14 +1,23 @@
-# CMS runtime compose topology for co-hosting on the 4 GiB VPS.
-# Capacity RESOLVED (RISK-0007 CLOSED 2026-08-15: owner keeps the 4 GiB plan).
-# Limits stay conservative until a measured budget exists — the running static
-# site stack must never be degraded.
+# CMS runtime — Docker Compose for stateful CMS + PostgreSQL only.
 #
-# Deploy steps:
-#   - create infra/cms/.env on the server (never commit secrets;
-#     this .env is not tracked) and set POSTGRES_HOST=db for the cms service
-#   - docker compose -f infra/cms/docker-compose.cms.yml up -d --build
-#   - no db/cms port is published to the host; Caddy joins the cms_internal
-#     network and reaches the cms service only.
+# Architecture (canonical):
+#   Caddy (edge TLS + routing)
+#     ├── static Astro artifact  → /opt/taha/site/current  (NOT containerized)
+#     └── CMS                    → 127.0.0.1:18000 (this compose stack)
+#
+# Versioned image (preferred production path):
+#   export CMS_IMAGE=ghcr.io/tahamohamadi-ir/taha-cms:<git-sha>
+#   docker compose -f infra/cms/docker-compose.cms.yml pull
+#   docker compose -f infra/cms/docker-compose.cms.yml up -d
+#
+# Local/rebuild path (optional):
+#   export CMS_IMAGE=taha-cms:local
+#   docker compose -f infra/cms/docker-compose.cms.yml build
+#   docker compose -f infra/cms/docker-compose.cms.yml up -d
+#
+# Secrets: create infra/cms/.env from .env.example (never commit real .env).
+
+name: taha-cms
 
 services:
   db:
@@ -28,11 +37,15 @@ services:
       - cms_internal
 
   cms:
-    image: taha-cms:latest
+    image: ${CMS_IMAGE:-ghcr.io/tahamohamadi-ir/taha-cms:main}
     build:
       context: ../..
       dockerfile: infra/cms/Dockerfile.cms
+    pull_policy: ${CMS_PULL_POLICY:-missing}
     env_file: .env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      POSTGRES_HOST: db
     depends_on:
       db:
         condition: service_healthy
@@ -47,7 +60,18 @@ services:
       - cms_media:/app/media
     networks:
       - cms_internal
-    # no ports: the cms service is reachable only through Caddy on the private network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/', timeout=3)",
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 40s
+      retries: 5
 
 volumes:
   postgres_data:

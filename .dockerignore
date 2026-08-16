@@ -1,4 +1,7 @@
 .venv/
+apps/cms/.venv/
+apps/web/node_modules/
+apps/web/dist/
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -6,5 +9,10 @@ __pycache__/
 dev.sqlite3
 .git/
 .worktrees/
+.cursor/
 *.log
 .env
+**/.env
+Assets/
+*.tar
+taha-cms.tar

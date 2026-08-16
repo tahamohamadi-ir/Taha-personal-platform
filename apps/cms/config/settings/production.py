@@ -1,8 +1,7 @@
 """Production settings — require env vars; never fall back to defaults.
 
-Secrets are read from the environment only. The exact deployment topology is
-selected in the future deploy Task Spec (RISK-0007 capacity decision); this
-file is code-first and not yet used by any server.
+Secrets are read from the environment only. The CMS runs behind Caddy on the
+same host (HTTPS terminator); gunicorn speaks HTTP on the loopback publish.
 """
 
 import os
@@ -14,9 +13,19 @@ from .base import BASE_DIR  # noqa: F401
 
 DEBUG = False
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
-if not ALLOWED_HOSTS or ALLOWED_HOSTS == [""]:
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get("ALLOWED_HOSTS", "").split(",")
+    if host.strip()
+]
+if not ALLOWED_HOSTS:
     raise ImproperlyConfigured("ALLOWED_HOSTS is required in production")
+
+# Container HEALTHCHECK and host-local smoke use Host: 127.0.0.1 — keep probes
+# working without widening the public hostname set beyond loopback.
+for _loopback in ("127.0.0.1", "localhost"):
+    if _loopback not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(_loopback)
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 if not SECRET_KEY:
@@ -35,7 +44,13 @@ DATABASES = {
 if not DATABASES["default"]["USER"] or not DATABASES["default"]["PASSWORD"]:
     raise ImproperlyConfigured("POSTGRES_USER and POSTGRES_PASSWORD are required in production")
 
+# Caddy terminates TLS and proxies HTTP to gunicorn. Trust forwarded proto/host
+# so secure cookies and CSRF origins stay correct for https://tahamohamadi.ir.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
 SECURE_SSL_REDIRECT = True
+# In-container / host-loopback health probes are plain HTTP without the proxy.
+SECURE_REDIRECT_EXEMPT = [r"^health/"]
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_HSTS_SECONDS = 31536000
@@ -49,7 +64,9 @@ CSRF_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_TRUSTED_ORIGINS = [
-    f"https://{host}" for host in ALLOWED_HOSTS if host
+    f"https://{host}"
+    for host in ALLOWED_HOSTS
+    if host and host not in ("127.0.0.1", "localhost")
 ]
 
 LOGGING = {

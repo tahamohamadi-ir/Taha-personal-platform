@@ -4,7 +4,8 @@
 
 | ID | Phase | Item | Blocked by / prerequisite | Owner | Evidence |
 |---|---|---|---|---|---|
-| P3 deploy | P3 | CMS runtime deploy (Compose/Caddy/MFA/DB import) | RISK-0007 CLOSED; MFA DONE (D11); deploy Task Spec DONE (D12); incident runbook DONE (D13); remaining: RISK-0003 DB-import evidence + owner approval + old-stack decommission execution | Project owner | AGENTS.md gate, RISK-0009 BLOCKED, P3-cms-deploy-task-spec.md |
+| P3 versioned CI/CD | P3 | GHCR sha-tagged CMS image + proxy/health fixes + update-cms.sh | merge branch; VPS pull + Caddy snippet + smoke-cms.sh | Project owner | P3-cms-versioned-cicd-task-spec.md, LOG-0120 |
+| P3 deploy | P3 | CMS runtime deploy (Compose/Caddy/MFA/DB import) | RISK-0009 BLOCKED until fixed image smoke; then MFA login + owner checks | Project owner | AGENTS.md gate, RISK-0009 BLOCKED, update-cms.sh |
 | Old-stack decommission | ops | Shutdown of pre-existing compose stack (`taha-prod-frontend`/`backend`/`postgres` at `/opt/taha/repository`) — AUTHORIZED 2026-08-16; execution is owner-sudo | owner-sudo execution + runbook | Project owner | infra/deploy/decommission-old-stack.md |
 | B2 | P0-B | Canonical SSH port decision | owner | Project owner | S-PLAN-STATE B2 |
 | RISK-0005 | P0-A | Patch posture — 57 pending updates (owner pasted `apt list --upgradable`) | owner maintenance-window decision | Project owner | RISK-0005 OPEN; B1 inventory DONE 2026-08-16 |
