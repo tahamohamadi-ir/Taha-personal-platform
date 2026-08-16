@@ -101,3 +101,20 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: false
+
+      # GHCR packages default to private; VPS pulls must not require a PAT for a public site.
+      - name: Make GHCR package public
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          OWNER="${{ github.repository_owner }}"
+          PKG="taha-cms"
+          # User-owned packages use /user/... ; org-owned use /orgs/...
+          if gh api "user/packages/container/${PKG}" >/dev/null 2>&1; then
+            ENDPOINT="user/packages/container/${PKG}/visibility"
+          else
+            ENDPOINT="orgs/${OWNER}/packages/container/${PKG}/visibility"
+          fi
+          gh api --method PUT "$ENDPOINT" -f visibility=public
+          echo "Package ${OWNER}/${PKG} visibility set to public"

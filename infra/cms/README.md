@@ -48,22 +48,34 @@ Production **must** set `CMS_IMAGE` to a sha tag for deploy/rollback clarity.
 
 ## Deploy (operator)
 
+Copy-paste safe (no angle-bracket placeholders):
+
 ```bash
 cd /home/deploy/cms-repo
 git pull --ff-only origin main
 
-# one-time: cp infra/cms/.env.example infra/cms/.env && chmod 600 infra/cms/.env
-# fill secrets; ensure POSTGRES_HOST=db and DJANGO_SETTINGS_MODULE=config.settings.production
+# Align required keys once (script also appends missing DJANGO_SETTINGS_MODULE / POSTGRES_HOST)
+# Edit secrets in infra/cms/.env if needed:
+#   ALLOWED_HOSTS=tahamohamadi.ir,www.tahamohamadi.ir
 
-export CMS_IMAGE=ghcr.io/tahamohamadi-ir/taha-cms:<git-sha>
-./infra/deploy/update-cms.sh
+# Preferred: public GHCR image (no docker login)
+export CMS_IMAGE=ghcr.io/tahamohamadi-ir/taha-cms:main
+bash infra/deploy/update-cms.sh
 
-# one-time / when snippet changes: merge Caddyfile.cms.snippet into site block, validate, reload
-./infra/deploy/smoke-cms.sh https://tahamohamadi.ir
+# If GHCR is still private, either:
+#   echo GITHUB_PAT | docker login ghcr.io -u tahamohamadi-ir --password-stdin
+#   (PAT needs read:packages — account password will NOT work)
+# Or build on the VPS:
+#   export CMS_IMAGE=taha-cms:local CMS_BUILD=1
+#   bash infra/deploy/update-cms.sh
 
-# owner interactive:
+# One-time / when snippet changes: merge Caddyfile.cms.snippet into site block, validate, reload
+bash infra/deploy/smoke-cms.sh https://tahamohamadi.ir
+
 docker compose -f infra/cms/docker-compose.cms.yml exec cms python manage.py createsuperuser
 ```
+
+Always invoke with `bash infra/deploy/...` (scripts are executable in git, but `bash` avoids Permission denied if the bit was lost on checkout).
 
 `python` inside the container is the image venv (Django available). Do not use a
 host `python` or an unactivated interpreter.

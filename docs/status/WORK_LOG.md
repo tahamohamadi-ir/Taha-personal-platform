@@ -1309,6 +1309,17 @@ ode --check و YAML validation توسط agent.
 - Scope / files: `.gitignore` only, this Work Log.
 - Decisions / assumptions: Assets/ committed in LOG-0117 remain in git history (amend not safe on pushed commit); future files in Assets/ will be ignored.
 
+## LOG-0121 - 2026-08-16 - P3 / CMS deploy ops fixes (GHCR public + script invoke)
+
+- Outcome: Operator bring-up failed on VPS for three mechanical reasons: (1) `docker login ghcr.io` with GitHub password → denied (need PAT `read:packages` or public package); (2) `./infra/deploy/*.sh` Permission denied (mode not executable / invoke via bash); (3) placeholder `<sha>` caused bash syntax error. Fixed by making GHCR package public in CI after push, documenting `bash infra/deploy/...`, adding `CMS_BUILD=1` local build fallback, and auto-appending missing `DJANGO_SETTINGS_MODULE` / `POSTGRES_HOST` in `.env`.
+- Why: Unblock CMS runtime after main already contained the versioned pipeline (PR #1 / LOG-0120).
+- Scope / files: `infra/deploy/update-cms.sh`, `.github/workflows/ci-cms-image.yml`, `infra/cms/README.md`, this Work Log.
+- Commands or actions actually performed: local edits; git commit/push/merge of this fix branch (see verification).
+- Verification actually performed and result: prior suite green on main; this slice is ops/docs/CI visibility — no CMS code path change requiring full pytest re-run beyond prior 78 PASS baseline.
+- Decisions / assumptions: public GHCR package is acceptable for this public repository image (no secrets in image layers).
+- Deferred or risk IDs: RISK-0009 still BLOCKED until VPS `bash infra/deploy/update-cms.sh` + Caddy + `smoke-cms.sh` PASS.
+- Rollback / recovery: set package visibility private in GitHub Packages UI; previous CMS_IMAGE tag remains pullable if still tagged.
+
 ## LOG-0120 - 2026-08-16 - P3 / CMS versioned CI/CD + health/proxy hardening
 
 - Outcome: Diagnosed owner VPS log (`/health/` HTML 400; `createsuperuser` → `No module named django`; public `/admin/login/` still 301). Fixed production settings for Caddy proxy + loopback health; put image venv on `PATH`; replaced ad-hoc `:latest` tar flow with GHCR sha tags + `update-cms.sh` / `smoke-cms.sh`; documented Caddy + static artifact + Compose CMS contract.
