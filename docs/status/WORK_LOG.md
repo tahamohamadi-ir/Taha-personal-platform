@@ -1309,6 +1309,15 @@ ode --check و YAML validation توسط agent.
 - Scope / files: `.gitignore` only, this Work Log.
 - Decisions / assumptions: Assets/ committed in LOG-0117 remain in git history (amend not safe on pushed commit); future files in Assets/ will be ignored.
 
+## LOG-0134 - 2026-08-16 - P4 / security harden after review (PR #15)
+
+- Outcome: Public projection hardened: article slug redirects only resolve to `public()` targets; article detail API re-sanitizes rich text with Wagtail Whitelister; JSON-LD embedded via escaped script content to block `</script>` breakout. Merged as PR #15 onto `main` after CMS + web CI green.
+- Why: Close medium findings from independent security review of P4 Blog/Writing (#14).
+- Scope / files: `apps/cms/apps/api/api.py`, `apps/cms/tests/test_api.py`, `apps/web/src/data/structured.ts`, `apps/web/src/layouts/BaseLayout.astro`, `apps/web/src/pages/{en,fa}/blog/[slug].astro`, `AGENTS.md`, ledgers.
+- Verification actually performed and result: PR #15 checks — Check and test CMS PASS; Check and build web PASS; merge commit `7929489`.
+- Deferred or risk IDs: DEFER-0017 OPEN; DEFER-0018 OPEN; RISK-0003 OPEN (owner); P4 Task Spec remains `PARTIAL` until prod migrate/`CMS_API_BASE` publish.
+- Rollback / recovery: revert merge of PR #15.
+
 ## LOG-0133 - 2026-08-16 - P4 / Blog Writing code-first (models, API, Astro, SEO)
 
 - Outcome: P4 Blog/Writing implemented code-first without opening public Caddy `/api/` or `/media/`. Article/Series/TopicTag + ArticleSlugRedirect models and migration; Wagtail snippet admin; Ninja list/detail/pagination/tag/series/redirect endpoints (published-only); Astro `/{locale}/blog/` routes with optional `CMS_API_BASE` (empty-honest when unset); BlogPosting + BreadcrumbList JSON-LD; sitemap blog entries; RSS deferred as DEFER-0018; public API edge deferred as DEFER-0017.

@@ -81,4 +81,4 @@
 | C3 | About pages | DONE | S-model | en full / fa minimal; deployed after this batch; LOG-0087 |
 | D15 | Docker Compose local verification | DONE | sub-agent | infra/cms/* candidates verified locally: health checks correct (pg_isready + urllib), resource limits 512MiB cms/db, env passthrough via .env, non-root 10001:10001, no published ports, named volumes; LOG-0117 |
 | D16 | P4 Blog/Writing task spec | DONE | sub-agent | docs/plan/P4-blog-writing-task-spec.md; Article/Series/TopicTag models, Wagtail snippet admin, Ninja API, Astro list/detail/series routes, RSS/Atom, SEO; LOG-0117 |
-| D17 | P4 Blog/Writing implementation | DONE | agent | Models/snippets/API/Astro/SEO; DEFER-0017/0018; LOG-0133; branch `feat/p4-blog-writing` |
+| D17 | P4 Blog/Writing implementation | DONE | agent | Models/snippets/API/Astro/SEO; DEFER-0017/0018; LOG-0133/0134; merged PR #14 + #15 on `main` |
