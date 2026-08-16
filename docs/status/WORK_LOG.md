@@ -1309,7 +1309,13 @@ ode --check و YAML validation توسط agent.
 - Scope / files: `.gitignore` only, this Work Log.
 - Decisions / assumptions: Assets/ committed in LOG-0117 remain in git history (amend not safe on pushed commit); future files in Assets/ will be ignored.
 
-## LOG-0122 - 2026-08-16 - P3 / CMS image CI visibility step fail-open
+## LOG-0123 - 2026-08-16 - P3 / CMS update-cms port conflict + local pull_policy
+
+- Outcome: VPS build of `taha-cms:local` succeeded but `compose up` failed with `Bind for 127.0.0.1:18000 failed: port is already allocated` (leftover `cms-cms-1` from the previous project name) and also attempted a registry pull of the local tag. `update-cms.sh` now forces `CMS_PULL_POLICY=never` when `CMS_BUILD=1`, uses `up --pull never`, and stops containers already bound to `:18000` before recreate.
+- Why: Unblock second bring-up after successful local image build.
+- Scope / files: `infra/deploy/update-cms.sh`, this Work Log.
+- Deferred or risk IDs: RISK-0009 until smoke PASS; also fix `chown -R deploy:deploy /home/deploy/cms-repo` so deploy user can `git pull` without root.
+- Rollback / recovery: revert script; manual `docker stop` of the binder on 18000.
 
 - Outcome: CI image push on PR #2 succeeded (`ghcr.io/tahamohamadi-ir/taha-cms:main` / `:a402a60`) but the follow-up `PUT …/visibility` returned HTTP 404 with `GITHUB_TOKEN`, failing the workflow. Softened the step to `continue-on-error` + warning so publish success is not masked. VPS can proceed with `CMS_BUILD=1` or after owner sets the package Public in GitHub UI.
 - Why: Unblock operators; Actions token cannot always change package visibility.
