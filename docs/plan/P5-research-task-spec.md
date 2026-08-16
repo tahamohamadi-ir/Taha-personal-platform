@@ -7,7 +7,7 @@
 - Release type: `STANDARD`
 - Risk level: Medium (new models + projection/redact rules; confidentiality mistake requires immediate unpublish path)
 - Owner and handoff recipient: Project owner (gate) → agent implements → CI → owner review; prod migrate blocked on RISK-0003.
-- Status: `IN_PROGRESS`
+- Status: `PARTIAL` (code-first complete; prod migrate + content smoke owner / RISK-0003)
 
 ## Prerequisites
 

@@ -1309,6 +1309,17 @@ ode --check و YAML validation توسط agent.
 - Scope / files: `.gitignore` only, this Work Log.
 - Decisions / assumptions: Assets/ committed in LOG-0117 remain in git history (amend not safe on pushed commit); future files in Assets/ will be ignored.
 
+## LOG-0136 - 2026-08-16 - P5 / Research code-first (models, admin, API, Astro, SEO)
+
+- Outcome: P5 Research implemented code-first without opening public Caddy `/api/` or `/media/`. Models + migration `0003_p5_research_models` (ResearchTopic, ResearchStatement, Project, Publication, evidence/collaborator/funding); Wagtail snippets; Ninja research endpoints with redact/draft exclusion; Astro `/{locale}/research/*` with optional `CMS_API_BASE` (honest empty); breadcrumbs + ScholarlyArticle only with real DOI/URL; sitemap research URLs. Security review Approve (no medium+). DEFER-0017 kept (blog+research edge); DEFER-0019/0020 recorded. About static `researchProjects` untouched.
+- Why: Execute approved P5 plan after P4; keep edge surface closed until publish-API Task Spec.
+- Scope / files: `apps/cms/apps/content/{models,admin,migrations/0003_*}`, `apps/cms/apps/api/api.py`, `apps/cms/tests/test_{research,api_research}.py`, `apps/web/src/{lib/cms/research.ts,pages/*/research,data,Header,sitemap}`, Task Spec + ledgers + INCIDENT_RUNBOOK confidentiality path, Task-list §10.
+- Commands or actions actually performed: `makemigrations`; `ruff check`; `pytest` **140 passed**; `npm run check` 0 errors; `npm run build` includes `/en|fa/research/` (+ statement).
+- Verification actually performed and result: CMS ruff clean; 140 pytest PASS; Astro check 0; static build Complete with research overview/statement routes (empty CMS). Independent security review Approve.
+- Decisions / assumptions: no infra/Caddy changes; Statement PDF deferred (DEFER-0019); curated graph deferred (DEFER-0020); prod migrate blocked on RISK-0003.
+- Deferred or risk IDs: DEFER-0017 OPEN; DEFER-0019 OPEN; DEFER-0020 OPEN; RISK-0003 OPEN (owner).
+- Rollback / recovery: revert P5 commits; reverse migration 0003 only in non-prod.
+
 ## LOG-0135 - 2026-08-16 - P5 / Task Spec + ledger hygiene (S0)
 
 - Outcome: Formal `docs/plan/P5-research-task-spec.md` written (Status `IN_PROGRESS`); frozen field/route contracts; Caddy `/api/` explicitly out of scope under DEFER-0017 (scope expanded to research); DEFER-0019 (Statement PDF) and DEFER-0020 (curated collections/graph) recorded; BACKLOG/AGENTS/CHANGELOG/S-PLAN updated. No CMS/web implementation in this commit.

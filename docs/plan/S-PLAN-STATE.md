@@ -40,7 +40,7 @@
 | D12 | CMS deploy Task Spec | DONE | S-model | `docs/plan/P3-cms-deploy-task-spec.md` (~260 lines); 7 prerequisites, 8 deploy steps, 22 ACs, rollback; LOG-0116 |
 | D13 | Incident runbook + SLO | DONE | S-model | `docs/governance/INCIDENT_RUNBOOK.md` (126 lines); SLOs (99.5%, <1% 5xx, p95 <2s); SEV-1/2/3 runbooks; DEPLOY_RUNBOOK xref; LOG-0116 |
 | D14 | CI hardening (diff-check + secret scan) | DONE | S-model | `ci-cms.yml` +2 steps: git diff --check + secret pattern scan; LOG-0116 |
-| P5 | Research Topic/Statement/Project/Publication | IN_PROGRESS | agent | Task Spec S0 done (LOG-0135); models→API→Astro→SEO next; no Caddy `/api/` |
+| P5 | Research Topic/Statement/Project/Publication | DONE (code-first) | agent | LOG-0136; security Approve; prod migrate owner/RISK-0003; DEFER-0017/0019/0020 |
 
 ## Review log (append-only)
 
