@@ -130,6 +130,9 @@ Caddy (TLS)
 - Superuser (owner interactive only):
   `docker compose -f infra/cms/docker-compose.cms.yml exec cms python manage.py createsuperuser`
   (`python` inside the image is the venv — Django is on `PATH`).
+- TOTP (after image with LOG-0128): open `/admin/account/` → **Two-factor authentication**
+  or `/admin/account/two-factor/`; scan QR; confirm code. Subsequent logins need the
+  authenticator code. Rotate any password that bypassed validators.
 - Static site deploy/rollback remains `update-release.sh` / `current` symlink;
   CMS rollback is a previous `CMS_IMAGE` tag. Volumes are preserved on
   `compose down` without `-v`.

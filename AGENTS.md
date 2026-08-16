@@ -8,7 +8,7 @@ P0-G0 is **PASS for static-only P1** (2026-08-14). The Astro public frontend (`a
 
 **Staging is decommissioned** per ADR-0025 (2026-08-15): `staging.tahamohamadi.ir` has no Caddy block or DNS record, and deploy now requires CI green (web + cms workflows) + production smoke only — no staging smoke step exists. Development and deployment happen directly on `tahamohamadi.ir`.
 
-**P3 CMS runtime (2026-08-16, owner-authorized, PARTIAL):** Compose `taha-cms` (cms + postgres) is running on the production VPS (`127.0.0.1:18000`). Public `/admin/login/` is Wagtail; `/static/*` is proxied to CMS (smoke CSS 200); `/health/` is CMS JSON (`db=ok`); `/health.json` remains the static artifact. Residual (`RISK-0009` OPEN): rotate the admin password (validators were bypassed); complete first-login TOTP. Public `/api/`, `/media/`, contact persistence and media upload remain blocked until a later Task Spec. `RISK-0003` (restic DB-import/restore evidence) still covers the new CMS postgres volume. MFA enforcement code exists (`apps/security/mfa.py`, django-otp 1.5.4). Canonical Caddy handles: `infra/cms/Caddyfile.cms.snippet`.
+**P3 CMS runtime (2026-08-16, owner-authorized, PARTIAL):** Compose `taha-cms` live; `/admin/login/` Wagtail; `/static/*` proxied; `/health/` CMS JSON; `/health.json` static. TOTP enrollment UI is in repo (`/admin/account/two-factor/`, Account panel) — production needs image rebuild then owner enroll. Residual (`RISK-0009` OPEN): rotate bypassed admin password; complete TOTP on production. Public `/api/`, `/media/`, contact persistence and media upload remain blocked. `RISK-0003` still covers CMS postgres backup/restore evidence. Canonical Caddy handles: `infra/cms/Caddyfile.cms.snippet`.
 
 ## Ownership
 
