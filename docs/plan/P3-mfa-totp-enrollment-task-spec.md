@@ -1,8 +1,8 @@
 # Task Spec — P3 Wagtail TOTP enrollment UI
 
-**Status:** DONE (code + tests 2026-08-16; production enroll owner-pending)  
+**Status:** DONE (code + tests + production enroll 2026-08-16)  
 **ID:** P3-mfa-totp-enrollment  
-**Related:** RISK-0009, ADR-0020, DEFER-0015, LOG-0128
+**Related:** RISK-0009 CLOSED, ADR-0020, DEFER-0015, LOG-0128, LOG-0129
 
 ## Goal
 
@@ -33,7 +33,7 @@ uv run pytest -q
 
 ## Production follow-up (owner)
 
-1. `git pull` + `CMS_BUILD=1 bash infra/deploy/update-cms.sh` (or GHCR image).
-2. Change admin password (12+ chars).
-3. Open `/admin/account/two-factor/`, enroll, confirm.
-4. Sign out/in with OTP; then RISK-0009 can close.
+1. ~~`git pull` + `CMS_BUILD=1 bash infra/deploy/update-cms.sh`~~ DONE
+2. ~~Change admin password (12+ chars)~~ DONE (owner attestation)
+3. ~~Open `/admin/account/two-factor/`, enroll, confirm~~ DONE (owner attestation)
+4. ~~Sign out/in with OTP~~ DONE — RISK-0009 CLOSED (LOG-0129)
