@@ -1309,6 +1309,15 @@ ode --check و YAML validation توسط agent.
 - Scope / files: `.gitignore` only, this Work Log.
 - Decisions / assumptions: Assets/ committed in LOG-0117 remain in git history (amend not safe on pushed commit); future files in Assets/ will be ignored.
 
+## LOG-0127 - 2026-08-16 - P3 / Caddy `/static/*` applied; CMS smoke full PASS
+
+- Outcome: Owner patched production Caddyfile with `handle /static/*` → `127.0.0.1:18000` before `import taha_application_routes`. Validate + reload succeeded. Origin `--resolve` to 127.0.0.1 returned 200 for `/static/wagtailadmin/css/core.css`. `bash infra/deploy/smoke-cms.sh https://tahamohamadi.ir` PASS (admin Wagtail, static CSS, `/health/`, `/health.json`, `/`).
+- Why: Close the Wagtail admin asset gap recorded in LOG-0126.
+- Scope / files: VPS `/etc/caddy/Caddyfile` (timestamped backup kept); repo `infra/cms/Caddyfile.cms.snippet` aligned to live `/admin|/*` `/static|/*` `/health|/*` matchers; this Work Log; RISK-0009 residual narrowed to password + TOTP.
+- Verification: owner paste — patched OK; origin 200; smoke PASS.
+- Deferred or risk IDs: RISK-0009 OPEN (rotate bypassed admin password; confirm TOTP). `/api/` and `/media/` still unpublished. RISK-0003 still needs CMS-postgres restore evidence.
+- Rollback / recovery: restore timestamped Caddyfile backup, `caddy validate`, `systemctl reload caddy`.
+
 ## LOG-0126 - 2026-08-16 - P3 / CMS runtime live; static assets still unproxied
 
 - Outcome: Owner rebuild reported `runtime-deps-ok`, migrate no-op, loopback `/admin/login/` 200, `smoke-cms.sh` PASS. Independent live check: `/admin/login/` is Wagtail Sign in, `/health/` is `{"status":"ok","db":"ok"}`, `/health.json` is the static artifact. `/static/wagtailadmin/css/core.css` returns the Astro 404 page (Caddy `/static*` handle missing). Superuser created after bypassing password validators (common + numeric).

@@ -2,12 +2,15 @@
 
 > هر slice واقعی (کد، زیرساخت، مستندات) که در `docs/status/WORK_LOG.md` ثبت می‌شود می‌تواند یک ردیف خلاصه اینجا داشته باشد. Append-only؛ جدیدترین در بالا.
 
+## 2026-08-16 — Caddy `/static/*` live; CMS smoke full PASS
+
+- Production Caddyfile gained `handle /static/*` → CMS; origin CSS 200; `smoke-cms.sh` full PASS (admin + CSS + health split).
+- `RISK-0009` residual: rotate bypassed admin password; confirm TOTP. Snippet matchers aligned to live `/admin|/*` `/static|/*` `/health|/*`.
+
 ## 2026-08-16 — CMS runtime live (PARTIAL); `/static*` still unproxied
 
-- Compose `taha-cms` healthy; migrate no-op; superuser created; `smoke-cms.sh` PASS on `/admin/login/`, `/health/`, `/health.json`.
-- Independent live check: Wagtail Sign in at `/admin/login/`; CMS `/health/` `db=ok`; static `/health.json` intact.
-- Residual (`RISK-0009` OPEN): Caddy does not proxy `/static*` — `core.css` 404s as the Astro 404 page. Admin password validators were bypassed (rotate). TOTP first-login unconfirmed. `RISK-0003` reopened for the live CMS postgres volume.
-- `smoke-cms.sh` now fails unless `/admin/login/` is Wagtail HTML and `/static/wagtailadmin/css/core.css` is 200.
+- Compose `taha-cms` healthy; migrate no-op; superuser created; initial smoke before `/static/*` Caddy handle.
+- Residual closed in LOG-0127 for static assets; password/TOTP remain under RISK-0009.
 
 ## 2026-08-16 — C4 (CV/Resume) + header logo + B1 inventory + old-stack decommission
 

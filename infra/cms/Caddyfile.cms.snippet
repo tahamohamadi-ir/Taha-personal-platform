@@ -2,20 +2,24 @@
 #
 # Architecture:
 #   Internet → Caddy (TLS)
-#     handle /admin*   → reverse_proxy 127.0.0.1:18000
-#     handle /static*  → reverse_proxy 127.0.0.1:18000   (Wagtail admin assets)
-#     handle /health/  → reverse_proxy 127.0.0.1:18000   (NOT /health* — that would steal /health.json)
-#     handle /*        → file_server /opt/taha/site/current
+#     handle /admin/*   → reverse_proxy 127.0.0.1:18000
+#     handle /static/*  → reverse_proxy 127.0.0.1:18000   (Wagtail admin assets)
+#     handle /health/*  → reverse_proxy 127.0.0.1:18000   (NOT /health* — that would steal /health.json)
+#     import taha_application_routes / file_server
 #
-# Insert these `handle` blocks INSIDE the tahamohamadi.ir site block, BEFORE the
-# static-site file_server / taha_application_routes handler. Order matters.
+# Insert these `handle` blocks INSIDE the tahamohamadi.ir site block, BEFORE
+# `import taha_application_routes` (or any catch-all file_server). Order matters.
 #
+# Match the live VPS style: `/admin/*` `/static/*` `/health/*` (not bare `/admin*`).
 # Do NOT proxy /api/ or /media/ yet (public API and media remain gated).
 #
 # After edit: sudo caddy validate --config /etc/caddy/Caddyfile && sudo systemctl reload caddy
 # Keep a timestamped Caddyfile backup before applying.
+#
+# Evidence 2026-08-16: without handle /static/*, public CSS 404s on the Astro
+# file_server while loopback CMS returns 200 with X-Forwarded-Proto: https.
 
-handle /admin* {
+handle /admin/* {
 	reverse_proxy 127.0.0.1:18000 {
 		header_up X-Forwarded-Proto {scheme}
 		header_up X-Forwarded-Host {host}
@@ -24,7 +28,7 @@ handle /admin* {
 	}
 }
 
-handle /static* {
+handle /static/* {
 	reverse_proxy 127.0.0.1:18000 {
 		header_up X-Forwarded-Proto {scheme}
 		header_up X-Forwarded-Host {host}
@@ -33,7 +37,7 @@ handle /static* {
 	}
 }
 
-handle /health/ {
+handle /health/* {
 	reverse_proxy 127.0.0.1:18000 {
 		header_up X-Forwarded-Proto {scheme}
 		header_up X-Forwarded-Host {host}
