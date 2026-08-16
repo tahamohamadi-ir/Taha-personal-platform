@@ -1289,3 +1289,14 @@ ode --check و YAML validation توسط agent.
 - Decisions / assumptions: MFA guard uses `request.user.otp_device` (set by OTPMiddleware) — more robust than raw session key; no custom URL/view needed (django_otp provides OTP device management at `/admin/otp_totp/totpdevice/`); deploy Task Spec documents that RISK-0003 DB-import evidence is the remaining server-side blocker; incident runbook is documentation-only (no alerting infrastructure).
 - Deferred or risk IDs: RISK-0009 still BLOCKED (MFA code done; remaining: RISK-0003 DB-import evidence + owner approval + old-stack decommission); P0B-03 partially done (SLO + incident runbook done; visual regression baseline still open; dependency/container scan — secret scan added to CI).
 - Rollback / recovery: remove MFA middleware from MIDDLEWARE in base.py; revert deploy Task Spec and incident runbook files; CI steps are additive only.
+
+## LOG-0117 - 2026-08-16 - P3 verification + P4 prep + docs reconciliation
+
+- Outcome: Docker Compose candidates verified locally (health checks, resource limits, env var passthrough all correct); P4 Blog/Writing task spec written (199 lines); stale docs claims fixed.
+- Why: the Docker Compose candidates in `infra/cms/` were NOT-APPLIED but never validated against the actual CMS code. P4 preparation avoids a cold start after P3 runtime deploy. Stale test counts and release IDs in README/Manifest would mislead developers.
+- Scope / files: `apps/cms/` (Dockerfile.cms, docker-compose.cms.yml, Caddyfile.cms.snippet — read-only verification), `docs/plan/P4-blog-writing-task-spec.md` (new), `docs/status/WORK_LOG.md`, `PROJECT_MANIFEST.md` (stale release ID + test count fixed), `README.md` (stale test count fixed).
+- Commands or actions actually performed: Docker Compose candidates audited (health checks, resource limits, env passthrough, non-root user, port bindings, named volumes — all correct per sub-agent); P4 task spec written by sub-agent; docs reconciliation found 3 stale claims (PROJECT_MANIFEST.md:55 release ID, PROJECT_MANIFEST.md:105 test count, README.md:49 test count) — all fixed.
+- Verification actually performed and result: Docker Compose verification passed (no issues found); P4 task spec covers full P4 scope (Article, Series, admin, API, Astro routes, SEO, tests); docs reconciliation clean after fixes.
+- Decisions / assumptions: Docker Compose remains NOT-APPLIED (deploy is gated on RISK-0003 + owner approval); P4 task spec is preparatory (not authorized for implementation until P3 runtime is deployed).
+- Deferred or risk IDs: no new risks; P4 task spec added to BACKLOG.
+- Rollback / recovery: revert P4 task spec and docs fixes; no runtime impact.

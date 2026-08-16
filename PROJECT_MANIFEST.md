@@ -52,7 +52,7 @@ docs/templates/         task specifications
 |---|---|---|---|
 | `dev` | Local Windows control plane; WSL only for Linux/Docker tests | Available | fake/sanitized only |
 | `staging` | DECOMMISSIONED (ADR-0025, 2026-08-15) | `staging.tahamohamadi.ir` Caddy block and DNS removed; dev/deploy directly on production | — |
-| `prod` | `tahamohamadi.ir` | Static P1 deployed (2026-08-15, release-4fcd19f, checksum `13849ab7`) | published, approved and backed-up data only |
+| `prod` | `tahamohamadi.ir` | Static P1 deployed (2026-08-16, release-aae2cb9, checksum `349db221`) | published, approved and backed-up data only |
 
 Production host is an active Ubuntu 26.04 LTS VPS with 2 vCPU, ~3910 MB RAM (~4 GiB, owner decision 2026-08-15: keep the 4 GiB plan — `RISK-0007` CLOSED) and 30 GB disk (~17 GB free). It co-hosts the static site and the existing live Compose stack (inventory-confirmed 2026-08-16: `taha-prod-frontend-1` on 127.0.0.1:13000, `taha-prod-backend-1` on 127.0.0.1:18080, `taha-prod-postgres-1`); a future CMS runtime uses the same host per the RISK-0007 resolution. The VPS is **not** approved for Gitea, a CI runner, Redis, Celery, OpenSearch, Neo4j, Kubernetes or other additional always-on services.
 
@@ -102,7 +102,7 @@ $env:DJANGO_SETTINGS_MODULE = "config.settings.test"
 uv run ruff check .            # verified: All checks passed
 uv run python manage.py check  # verified: no issues (only upstream treebeard E001 advisory warnings)
 uv run python manage.py makemigrations --check --dry-run   # verified: No changes detected
-uv run pytest -q               # verified: 70 passed
+uv run pytest -q               # verified: 75 passed
 ```
 
 CMS runtime deploy/migrate/run commands (gunicorn, collectstatic, migrate on a real DB, media) remain unapproved; the owner capacity decision was made (2026-08-15: keep 4 GiB — `RISK-0007` CLOSED), MFA enforcement code is done (django-otp 1.5.4, 75 pytest PASS, LOG-0116) and a deploy Task Spec exists (`docs/plan/P3-cms-deploy-task-spec.md`). Runtime approval now awaits RISK-0003 DB-import evidence on staging PostgreSQL + owner approval for admin exposure + old-stack decommission execution.

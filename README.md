@@ -46,7 +46,7 @@ uv sync --python 3.12                    # reproducible install from pyproject.t
 uv run ruff check .                      # lint
 uv run python manage.py check           # Django system check
 uv run python manage.py makemigrations --check --dry-run   # migration consistency
-uv run pytest -q                        # test suite (70 passed)
+uv run pytest -q                        # test suite (75 passed)
 ```
 
 ## CI/CD and deployment

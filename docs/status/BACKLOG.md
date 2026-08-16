@@ -22,3 +22,5 @@
 | P9 | P9 | Teaching + Creative | P8 | Project owner | Task-list §14 |
 | P10 | P10 | Topics + Pagefind search + collections | P4-P9 content | Project owner | Task-list §15 |
 | P11 | P11 | AI/semantic/knowledge graph | P10 | Project owner | Task-list §16 |
+| D15 | P3 verification | Docker Compose candidates verified locally (health checks, resources, env passthrough correct) | S-model | infra/cms/*, LOG-0117 |
+| D16 | P4 prep | P4 Blog/Writing task spec written (199 lines) | S-model | docs/plan/P4-blog-writing-task-spec.md, LOG-0117 |

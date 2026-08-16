@@ -79,3 +79,5 @@
 | C1 | Owner content inventory (P2) | DONE | owner | full master CV + SOP delivered; en full, fa per approved-Persian-only rule |
 | C2 | Typed profile contract | DONE | S-model | full contract (experience/education/publications/research/certs/socials); LOG-0087 |
 | C3 | About pages | DONE | S-model | en full / fa minimal; deployed after this batch; LOG-0087 |
+| D15 | Docker Compose local verification | DONE | sub-agent | infra/cms/* candidates verified locally: health checks correct (pg_isready + urllib), resource limits 512MiB cms/db, env passthrough via .env, non-root 10001:10001, no published ports, named volumes; LOG-0117 |
+| D16 | P4 Blog/Writing task spec | DONE | sub-agent | docs/plan/P4-blog-writing-task-spec.md (199 lines); Article/Series/TopicTag models, Wagtail snippet admin, Ninja API, Astro list/detail/series routes, RSS/Atom, SEO; LOG-0117 |
