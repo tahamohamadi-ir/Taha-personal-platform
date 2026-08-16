@@ -29,6 +29,8 @@ coverage/
 media/
 !apps/cms/apps/media/
 !apps/cms/apps/media/**
+apps/cms/apps/media/**/__pycache__/
+apps/cms/apps/media/**/*.py[cod]
 staticfiles/
 static/
 postgres-data/

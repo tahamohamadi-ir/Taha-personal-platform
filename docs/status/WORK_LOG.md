@@ -1197,3 +1197,14 @@ ode --check و YAML validation توسط agent.
 - Decisions / assumptions: `.gitignore` negation `!apps/cms/apps/media/**` keeps runtime `media/` ignored while the app package stays tracked.
 - Deferred or risk IDs: none new; P3 runtime deploy remains BLOCKED (`RISK-0007`/`RISK-0009`).
 - Rollback / recovery: revert the two fix commits; CI would regress to the same failures, no runtime impact.
+
+## LOG-0109 — 2026-08-15 — P3 / keep pycache ignored under media app
+
+- Outcome: `.gitignore` now re-ignores bytecode under the tracked media package. The negation rules added in LOG-0108 (`!apps/cms/apps/media/`, `!apps/cms/apps/media/**`) re-included everything under that subtree, so CMS test runs produced untracked `apps/cms/apps/media/__pycache__/` and `apps/cms/apps/media/migrations/__pycache__/` in `git status`. Two re-ignore rules were added immediately after the negations: `apps/cms/apps/media/**/__pycache__/` and `apps/cms/apps/media/**/*.py[cod]`; `git status` is clean again except the intended `.gitignore` edit.
+- Why: the media app package must stay tracked (it failed `manage.py check` when excluded, see LOG-0108) but its `__pycache__` bytecode must keep the global Python ignore behavior (`.gitignore` lines 13-14).
+- Scope / files: `.gitignore`, `docs/status/WORK_LOG.md`.
+- Commands or actions actually performed: added the two re-ignore lines after the negation pair; `git check-ignore -v apps/cms/apps/media/__pycache__/admin.cpython-312.pyc` → `.gitignore:32:apps/cms/apps/media/**/__pycache__/` (matched by the NEW rule, line 32 > 31); `git check-ignore -v apps/cms/apps/media/models.py` → no output (NOT ignored; the app package stays tracked); `git status --short --branch` → `## main` + ` M .gitignore` only; `git diff --check` → exit 0.
+- Verification actually performed and result: see outputs above; no untracked `__pycache__` entries remain, no other unexpected changes.
+- Decisions / assumptions: the re-ignore rules use the same line length/indentation style as the rest of the file (no indentation); they are placed immediately after the two negation lines so later rules win over the negation.
+- Deferred or risk IDs: none new.
+- Rollback / recovery: revert this commit to restore the previous behavior; CI and runtime are unaffected (ignore-only change).
