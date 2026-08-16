@@ -71,10 +71,12 @@ else
   fi
 fi
 
-# If a previous bring-up left a container on 127.0.0.1:18000 (old project name
-# cms-* vs taha-cms-*), remove only the conflicting cms service containers.
+# Leftover first-bring-up project name was `cms` (cms-cms-1 / cms-db-1).
+# Those must not keep an extra Postgres or a stale 18000 bind.
+echo "Removing leftover cms-* containers from the previous compose project name..."
+docker rm -f cms-cms-1 cms-db-1 2>/dev/null || true
 if ss -lnt 2>/dev/null | grep -q ':18000 ' || netstat -lnt 2>/dev/null | grep -q ':18000 '; then
-  echo "Port 127.0.0.1:18000 is in use — stopping older CMS containers on that bind..."
+  echo "Port 127.0.0.1:18000 is in use — stopping binders..."
   docker ps --format '{{.ID}} {{.Names}} {{.Ports}}' | awk '/18000->/ {print $1}' | while read -r cid; do
     [[ -n "$cid" ]] || continue
     docker stop "$cid" >/dev/null || true
@@ -82,13 +84,14 @@ if ss -lnt 2>/dev/null | grep -q ':18000 ' || netstat -lnt 2>/dev/null | grep -q
   done
 fi
 
-docker compose -f "$COMPOSE_FILE" up -d --remove-orphans --pull never
+# Force recreate so a container that failed port-bind is not reused without DNS.
+docker compose -f "$COMPOSE_FILE" up -d --force-recreate --remove-orphans --pull never
 
-echo "Waiting for cms health..."
+echo "Waiting for cms to resolve db and report db=ok..."
 ready=0
-for _ in $(seq 1 40); do
+for _ in $(seq 1 45); do
   if docker compose -f "$COMPOSE_FILE" exec -T cms python -c \
-    "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/', timeout=3)" \
+    "import json,socket,urllib.request; socket.getaddrinfo('db', 5432); d=json.load(urllib.request.urlopen('http://127.0.0.1:8000/health/', timeout=3)); raise SystemExit(0 if d.get('db')=='ok' else 1)" \
     >/dev/null 2>&1; then
     ready=1
     break
@@ -96,8 +99,11 @@ for _ in $(seq 1 40); do
   sleep 2
 done
 if [[ "$ready" != "1" ]]; then
-  echo "cms health did not become ready; recent logs:" >&2
+  echo "cms never resolved db / health db=ok. Networks and logs:" >&2
+  docker inspect taha-cms-cms-1 --format 'cms networks={{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}' >&2 || true
+  docker inspect taha-cms-db-1 --format 'db networks={{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}' >&2 || true
   docker compose -f "$COMPOSE_FILE" logs cms --tail=80 >&2 || true
+  docker compose -f "$COMPOSE_FILE" logs db --tail=40 >&2 || true
   exit 1
 fi
 
