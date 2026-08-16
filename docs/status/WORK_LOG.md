@@ -1300,3 +1300,10 @@ ode --check و YAML validation توسط agent.
 - Decisions / assumptions: Docker Compose remains NOT-APPLIED (deploy is gated on RISK-0003 + owner approval); P4 task spec is preparatory (not authorized for implementation until P3 runtime is deployed).
 - Deferred or risk IDs: no new risks; P4 task spec added to BACKLOG.
 - Rollback / recovery: revert P4 task spec and docs fixes; no runtime impact.
+
+## LOG-0118 - 2026-08-16 - gitignore: exclude Assets/ source drafts
+
+- Outcome: `Assets/` added to `.gitignore` to prevent future accidental commits of source drafts (logo PNGs, CV/Resume markdowns, Gemini images). The processed production files (`apps/web/public/logo.png`, `apps/web/public/downloads/*.md`) remain tracked; the source originals in Assets/ do not belong in git.
+- Why: LOG-0117 accidentally committed Assets/ via `git add -A`; the large Gemini images (6-7MB each) bloated the repo. This fix prevents recurrence.
+- Scope / files: `.gitignore` only, this Work Log.
+- Decisions / assumptions: Assets/ committed in LOG-0117 remain in git history (amend not safe on pushed commit); future files in Assets/ will be ignored.

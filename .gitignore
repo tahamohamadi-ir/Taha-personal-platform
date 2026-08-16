@@ -41,6 +41,9 @@ postgres-data/
 Thumbs.db
 desktop.ini
 
+# Owner source assets (drafts; processed files in apps/web/public/)
+Assets/
+
 # Editors and IDEs
 .idea/
 .vscode/
