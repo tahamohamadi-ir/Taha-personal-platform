@@ -274,3 +274,313 @@ class ArticleSlugRedirect(models.Model):
 
     def __str__(self) -> str:
         return f"{self.locale}:{self.old_slug} → {self.new_slug}"
+
+
+class ProjectType(models.TextChoices):
+    """Canonical Project.type values (master plan / P5 Spec)."""
+
+    RESEARCH = "research", "Research"
+    ENGINEERING = "engineering", "Engineering"
+    AI = "ai", "AI"
+    DATA = "data", "Data"
+    DESIGN = "design", "Design"
+    EXPERIMENT = "experiment", "Experiment"
+
+
+class Availability(models.TextChoices):
+    """Code/data/demo availability (product §20 + Task-list restricted for data)."""
+
+    PUBLIC = "public", "Public"
+    AVAILABLE_ON_REQUEST = "available_on_request", "Available on request"
+    PRIVATE = "private", "Private"
+    NOT_AVAILABLE = "not_available", "Not available"
+    NOT_APPLICABLE = "not_applicable", "Not applicable"
+    RESTRICTED = "restricted", "Restricted"
+
+
+class EvidenceVisibility(models.TextChoices):
+    """Visibility gate for structured project evidence rows."""
+
+    PUBLIC = "public", "Public"
+    RESTRICTED = "restricted", "Restricted"
+    INTERNAL = "internal", "Internal"
+
+
+class ResearchTopic(LocalizedContentMixin, LifecycleMixin):
+    """Research domain / agenda area (distinct from blog TopicTag)."""
+
+    summary = models.TextField(blank=True)
+    motivation = models.TextField(blank=True)
+    problems = models.TextField(blank=True)
+    research_questions = models.TextField(blank=True)
+    methods = models.TextField(blank=True)
+    future_directions = models.TextField(blank=True)
+
+    class Meta:
+        db_table = "content_research_topic"
+        ordering = ["locale", "slug"]
+        indexes = [
+            models.Index(
+                fields=["locale", "slug", "status"],
+                name="research_topic_loc_slug_st_idx",
+            ),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["locale", "slug"],
+                name="content_research_topic_unique_locale_slug",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.title} ({self.locale})"
+
+
+class ResearchStatement(LocalizedContentMixin, LifecycleMixin):
+    """Independent research agenda statement (rich text; PDF deferred)."""
+
+    body = RichTextField(features=ARTICLE_RICHTEXT_FEATURES, blank=True)
+
+    class Meta:
+        db_table = "content_research_statement"
+        ordering = ["locale", "slug"]
+        indexes = [
+            models.Index(
+                fields=["locale", "slug", "status"],
+                name="research_stmt_loc_slug_st_idx",
+            ),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["locale", "slug"],
+                name="content_research_statement_unique_locale_slug",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.title} ({self.locale})"
+
+    def clean(self) -> None:
+        """P5: at most one published statement per locale."""
+        from django.core.exceptions import ValidationError
+
+        super().clean()
+        if self.status != LifecycleStatus.PUBLISHED:
+            return
+        qs = ResearchStatement.objects.filter(
+            locale=self.locale,
+            status=LifecycleStatus.PUBLISHED,
+        )
+        if self.pk:
+            qs = qs.exclude(pk=self.pk)
+        if qs.exists():
+            raise ValidationError(
+                {"status": "Only one published ResearchStatement is allowed per locale."}
+            )
+
+
+class Publication(LocalizedContentMixin, LifecycleMixin):
+    """Minimal publication core (P5); presentation/export expands in P8."""
+
+    authors = models.TextField(blank=True)
+    venue = models.CharField(max_length=300, blank=True)
+    date = models.DateField(null=True, blank=True)
+    doi = models.CharField(max_length=200, blank=True)
+    url = models.URLField(blank=True)
+    pdf_url = models.URLField(blank=True)
+    license = models.CharField(
+        max_length=32,
+        choices=License.choices,
+        default=License.CC_BY_NC_4,
+    )
+    citation_count = models.PositiveIntegerField(null=True, blank=True)
+    citation_source = models.CharField(max_length=300, blank=True)
+    citation_last_verified = models.DateField(null=True, blank=True)
+    citation_visibility = models.CharField(
+        max_length=20,
+        choices=EvidenceVisibility.choices,
+        default=EvidenceVisibility.INTERNAL,
+    )
+
+    class Meta:
+        db_table = "content_publication"
+        ordering = ["locale", "slug"]
+        indexes = [
+            models.Index(
+                fields=["locale", "slug", "status"],
+                name="publication_loc_slug_st_idx",
+            ),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["locale", "slug"],
+                name="content_publication_unique_locale_slug",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.title} ({self.locale})"
+
+    def public_citation_count(self) -> int | None:
+        """Return citation_count only when source + verified + public visibility."""
+        if self.citation_visibility != EvidenceVisibility.PUBLIC:
+            return None
+        if not (self.citation_source or "").strip():
+            return None
+        if self.citation_last_verified is None:
+            return None
+        return self.citation_count
+
+
+class Project(LocalizedContentMixin, LifecycleMixin):
+    """Canonical project entity (research/engineering/ai/…); no ResearchProject twin."""
+
+    project_type = models.CharField(
+        max_length=32,
+        choices=ProjectType.choices,
+        default=ProjectType.RESEARCH,
+    )
+    objective = models.TextField(blank=True)
+    methods_summary = models.TextField(blank=True)
+    role = models.TextField(blank=True)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    license = models.CharField(
+        max_length=32,
+        choices=License.choices,
+        default=License.CC_BY_NC_4,
+    )
+    code_availability = models.CharField(
+        max_length=32,
+        choices=Availability.choices,
+        default=Availability.NOT_APPLICABLE,
+    )
+    data_availability = models.CharField(
+        max_length=32,
+        choices=Availability.choices,
+        default=Availability.NOT_APPLICABLE,
+    )
+    demo_availability = models.CharField(
+        max_length=32,
+        choices=Availability.choices,
+        default=Availability.NOT_APPLICABLE,
+    )
+    code_url = models.URLField(blank=True)
+    data_url = models.URLField(blank=True)
+    demo_url = models.URLField(blank=True)
+    topics = models.ManyToManyField(
+        ResearchTopic,
+        blank=True,
+        related_name="projects",
+    )
+    publications = models.ManyToManyField(
+        Publication,
+        blank=True,
+        related_name="projects",
+    )
+
+    class Meta:
+        db_table = "content_project"
+        ordering = ["locale", "slug"]
+        indexes = [
+            models.Index(
+                fields=["locale", "slug", "status"],
+                name="project_loc_slug_st_idx",
+            ),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["locale", "slug"],
+                name="content_project_unique_locale_slug",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.title} ({self.locale})"
+
+    def public_code_url(self) -> str:
+        if self.code_availability == Availability.PUBLIC:
+            return self.code_url or ""
+        return ""
+
+    def public_data_url(self) -> str:
+        if self.data_availability == Availability.PUBLIC:
+            return self.data_url or ""
+        return ""
+
+    def public_demo_url(self) -> str:
+        if self.demo_availability == Availability.PUBLIC:
+            return self.demo_url or ""
+        return ""
+
+
+class ProjectEvidence(models.Model):
+    """Structured outcome/evidence row for a Project (visibility-gated)."""
+
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="evidence_items",
+    )
+    label = models.CharField(max_length=200)
+    value = models.TextField(blank=True)
+    source = models.TextField(blank=True)
+    last_verified = models.DateField(null=True, blank=True)
+    visibility = models.CharField(
+        max_length=20,
+        choices=EvidenceVisibility.choices,
+        default=EvidenceVisibility.INTERNAL,
+    )
+
+    class Meta:
+        db_table = "content_project_evidence"
+        ordering = ["id"]
+
+    def __str__(self) -> str:
+        return f"{self.label} ({self.project_id})"
+
+    def is_publicly_projectable(self) -> bool:
+        return (
+            self.visibility == EvidenceVisibility.PUBLIC
+            and bool((self.source or "").strip())
+        )
+
+
+class ProjectCollaborator(models.Model):
+    """Collaborator credit; public only when publication_approved."""
+
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="collaborators",
+    )
+    name = models.CharField(max_length=200)
+    role = models.CharField(max_length=200, blank=True)
+    publication_approved = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = "content_project_collaborator"
+        ordering = ["id"]
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class ProjectFunding(models.Model):
+    """Funding disclosure; public only when publication_approved."""
+
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="funding_items",
+    )
+    funder = models.CharField(max_length=300)
+    grant_id = models.CharField(max_length=200, blank=True)
+    publication_approved = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = "content_project_funding"
+        ordering = ["id"]
+
+    def __str__(self) -> str:
+        return self.funder

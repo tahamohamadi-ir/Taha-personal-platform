@@ -112,6 +112,16 @@ No automated alerting infrastructure exists. The owner performs manual checks. A
 3. Expected behavior: anonymous access to `/admin/` redirects to login page
 4. If login fails, check Django logs for auth errors
 
+### Research confidentiality mistake (P5-04)
+
+If restricted or confidential research content (evidence, collaborator, funding, citation, private URLs, or Statement body) is published by mistake:
+
+1. Immediately set the entity `status` to non-published in Wagtail (unpublish).
+2. Revoke any mistakenly public asset URLs (owner; `/media/` remains unpublished in P5 — DEFER-0017).
+3. Append an incident note here or in WORK_LOG with time, what leaked, and remediation (treat as SEV-2 if public content was crawlable).
+4. Rebuild the static site if `CMS_API_BASE` had already baked the leak into a release artifact.
+5. Do not leave the event only in chat — update RISK/deferred ledgers if needed.
+
 ## 7. Escalation
 
 All incidents escalate to the project owner. No automated remediation exists. The `deploy` user's NOPASSWD sudo is limited to `/opt/taha/bin/update-release.sh` and `/opt/taha/bin/caddy-apply.sh`; any other sudo action requires the owner's password.

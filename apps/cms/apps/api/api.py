@@ -7,7 +7,7 @@ Public edge exposure of ``/api/`` remains deferred (DEFER-0017); this module is
 for in-process and optional build-time ``CMS_API_BASE`` consumers only.
 """
 
-from datetime import datetime
+from datetime import date, datetime
 
 from ninja import Field, NinjaAPI, Schema
 from ninja.errors import HttpError
@@ -19,11 +19,15 @@ from apps.content.models import (
     ArticleSlugRedirect,
     Landing,
     Profile,
+    Project,
+    Publication,
+    ResearchStatement,
+    ResearchTopic,
     Series,
     TopicTag,
 )
 
-api = NinjaAPI(title="Taha CMS Public API", version="0.2.0")
+api = NinjaAPI(title="Taha CMS Public API", version="0.3.0")
 _BODY_WHITELISTER = Whitelister()
 
 
@@ -237,3 +241,318 @@ def list_article_redirects(request, locale: str) -> list[ArticleSlugRedirect]:
         for row in ArticleSlugRedirect.objects.filter(locale=locale).order_by("old_slug")
         if row.new_slug in public_slugs
     ]
+
+
+class RelatedSlugOut(Schema):
+    """Minimal related entity pointer for list/tree navigation."""
+
+    slug: str
+    title: str
+
+
+class EvidenceOut(Schema):
+    """Public evidence row (source required; restricted/internal omitted upstream)."""
+
+    label: str
+    value: str
+    source: str
+    last_verified: date | None
+
+
+class CollaboratorOut(Schema):
+    """Approved collaborator credit only."""
+
+    name: str
+    role: str
+
+
+class FundingOut(Schema):
+    """Approved funding disclosure only."""
+
+    funder: str
+    grant_id: str
+
+
+class ResearchTopicListOut(Schema):
+    """Public research topic list card."""
+
+    locale: str
+    slug: str
+    title: str
+    summary: str
+    published_at: datetime | None
+    updated_at: datetime | None
+
+
+class ResearchTopicDetailOut(ResearchTopicListOut):
+    """Public research topic detail with related public projects/publications."""
+
+    motivation: str
+    problems: str
+    research_questions: str
+    methods: str
+    future_directions: str
+    projects: list[RelatedSlugOut] = Field(default_factory=list)
+    publications: list[RelatedSlugOut] = Field(default_factory=list)
+
+    @staticmethod
+    def resolve_projects(obj: ResearchTopic) -> list[RelatedSlugOut]:
+        return [
+            RelatedSlugOut(slug=p.slug, title=p.title)
+            for p in obj.projects.public().filter(locale=obj.locale).order_by("slug")
+        ]
+
+    @staticmethod
+    def resolve_publications(obj: ResearchTopic) -> list[RelatedSlugOut]:
+        pubs = (
+            Publication.objects.public()
+            .filter(projects__in=obj.projects.public(), locale=obj.locale)
+            .distinct()
+            .order_by("slug")
+        )
+        return [RelatedSlugOut(slug=p.slug, title=p.title) for p in pubs]
+
+
+class ResearchStatementOut(Schema):
+    """Public research statement (sanitized rich text)."""
+
+    locale: str
+    slug: str
+    title: str
+    body: str
+    published_at: datetime | None
+    updated_at: datetime | None
+
+    @staticmethod
+    def resolve_body(obj: ResearchStatement) -> str:
+        return sanitize_public_richtext(str(obj.body or ""))
+
+
+class ProjectListOut(Schema):
+    """Public project list card with explicit availability/license."""
+
+    locale: str
+    slug: str
+    title: str
+    project_type: str
+    objective: str
+    license: str
+    code_availability: str
+    data_availability: str
+    demo_availability: str
+    published_at: datetime | None
+    updated_at: datetime | None
+
+
+class ProjectDetailOut(ProjectListOut):
+    """Public project detail with redacted evidence/collaborators/funding/URLs."""
+
+    methods_summary: str
+    role: str
+    start_date: date | None
+    end_date: date | None
+    code_url: str
+    data_url: str
+    demo_url: str
+    topics: list[RelatedSlugOut] = Field(default_factory=list)
+    publications: list[RelatedSlugOut] = Field(default_factory=list)
+    evidence: list[EvidenceOut] = Field(default_factory=list)
+    collaborators: list[CollaboratorOut] = Field(default_factory=list)
+    funding: list[FundingOut] = Field(default_factory=list)
+
+    @staticmethod
+    def resolve_code_url(obj: Project) -> str:
+        return obj.public_code_url()
+
+    @staticmethod
+    def resolve_data_url(obj: Project) -> str:
+        return obj.public_data_url()
+
+    @staticmethod
+    def resolve_demo_url(obj: Project) -> str:
+        return obj.public_demo_url()
+
+    @staticmethod
+    def resolve_topics(obj: Project) -> list[RelatedSlugOut]:
+        return [
+            RelatedSlugOut(slug=t.slug, title=t.title)
+            for t in obj.topics.public().filter(locale=obj.locale).order_by("slug")
+        ]
+
+    @staticmethod
+    def resolve_publications(obj: Project) -> list[RelatedSlugOut]:
+        return [
+            RelatedSlugOut(slug=p.slug, title=p.title)
+            for p in obj.publications.public().filter(locale=obj.locale).order_by("slug")
+        ]
+
+    @staticmethod
+    def resolve_evidence(obj: Project) -> list[EvidenceOut]:
+        return [
+            EvidenceOut(
+                label=row.label,
+                value=row.value,
+                source=row.source,
+                last_verified=row.last_verified,
+            )
+            for row in obj.evidence_items.all()
+            if row.is_publicly_projectable()
+        ]
+
+    @staticmethod
+    def resolve_collaborators(obj: Project) -> list[CollaboratorOut]:
+        return [
+            CollaboratorOut(name=row.name, role=row.role)
+            for row in obj.collaborators.filter(publication_approved=True)
+        ]
+
+    @staticmethod
+    def resolve_funding(obj: Project) -> list[FundingOut]:
+        return [
+            FundingOut(funder=row.funder, grant_id=row.grant_id)
+            for row in obj.funding_items.filter(publication_approved=True)
+        ]
+
+
+class PublicationListOut(Schema):
+    """Public publication list card (minimal P5 core)."""
+
+    locale: str
+    slug: str
+    title: str
+    authors: str
+    venue: str
+    date: date | None
+    doi: str
+    license: str
+    published_at: datetime | None
+    updated_at: datetime | None
+
+
+class PublicationDetailOut(PublicationListOut):
+    """Public publication detail with citation gate."""
+
+    url: str
+    pdf_url: str
+    citation_count: int | None
+
+    @staticmethod
+    def resolve_citation_count(obj: Publication) -> int | None:
+        return obj.public_citation_count()
+
+
+@api.get(
+    "/research/topics/{locale}",
+    response=list[ResearchTopicListOut],
+    summary="List published research topics for a locale (paginated)",
+)
+@paginate(PageNumberPagination, page_size=10)
+def list_research_topics(request, locale: str):
+    return (
+        ResearchTopic.objects.public()
+        .filter(locale=locale)
+        .order_by("slug")
+    )
+
+
+@api.get(
+    "/research/topics/{locale}/{slug}",
+    response=ResearchTopicDetailOut,
+    summary="Get one published research topic by slug",
+)
+def get_research_topic(request, locale: str, slug: str) -> ResearchTopic:
+    topic = (
+        ResearchTopic.objects.public()
+        .filter(locale=locale, slug=slug)
+        .prefetch_related("projects")
+        .first()
+    )
+    if topic is None:
+        raise HttpError(404, "research topic not found")
+    return topic
+
+
+@api.get(
+    "/research/statements/{locale}",
+    response=list[ResearchStatementOut],
+    summary="List published research statements for a locale",
+)
+def list_research_statements(request, locale: str) -> list[ResearchStatement]:
+    return list(
+        ResearchStatement.objects.public().filter(locale=locale).order_by("slug")
+    )
+
+
+@api.get(
+    "/research/statements/{locale}/{slug}",
+    response=ResearchStatementOut,
+    summary="Get one published research statement by slug",
+)
+def get_research_statement(request, locale: str, slug: str) -> ResearchStatement:
+    statement = (
+        ResearchStatement.objects.public().filter(locale=locale, slug=slug).first()
+    )
+    if statement is None:
+        raise HttpError(404, "research statement not found")
+    return statement
+
+
+@api.get(
+    "/research/projects/{locale}",
+    response=list[ProjectListOut],
+    summary="List published projects for a locale (paginated)",
+)
+@paginate(PageNumberPagination, page_size=10)
+def list_research_projects(request, locale: str):
+    return Project.objects.public().filter(locale=locale).order_by("-published_at", "slug")
+
+
+@api.get(
+    "/research/projects/{locale}/{slug}",
+    response=ProjectDetailOut,
+    summary="Get one published project by slug",
+)
+def get_research_project(request, locale: str, slug: str) -> Project:
+    project = (
+        Project.objects.public()
+        .filter(locale=locale, slug=slug)
+        .prefetch_related(
+            "topics",
+            "publications",
+            "evidence_items",
+            "collaborators",
+            "funding_items",
+        )
+        .first()
+    )
+    if project is None:
+        raise HttpError(404, "project not found")
+    return project
+
+
+@api.get(
+    "/research/publications/{locale}",
+    response=list[PublicationListOut],
+    summary="List published publications for a locale (paginated)",
+)
+@paginate(PageNumberPagination, page_size=10)
+def list_research_publications(request, locale: str):
+    return (
+        Publication.objects.public()
+        .filter(locale=locale)
+        .order_by("-date", "slug")
+    )
+
+
+@api.get(
+    "/research/publications/{locale}/{slug}",
+    response=PublicationDetailOut,
+    summary="Get one published publication by slug",
+)
+def get_research_publication(request, locale: str, slug: str) -> Publication:
+    publication = (
+        Publication.objects.public().filter(locale=locale, slug=slug).first()
+    )
+    if publication is None:
+        raise HttpError(404, "publication not found")
+    return publication

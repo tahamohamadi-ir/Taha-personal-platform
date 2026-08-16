@@ -1,0 +1,144 @@
+---
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../../../components/blog/Breadcrumbs.astro";
+import { content } from "../../../../data/content";
+import {
+  breadcrumbJsonLd,
+  jsonLdScriptContent,
+  scholarlyArticleJsonLd,
+  validateStructuredData,
+} from "../../../../data/structured";
+import {
+  getResearchPublication,
+  getResearchPublications,
+} from "../../../../lib/cms/research";
+
+export async function getStaticPaths() {
+  const locale = "en" as const;
+  const publications = await getResearchPublications(locale);
+  return publications.map((pub) => ({ params: { slug: pub.slug } }));
+}
+
+const locale = "en" as const;
+const pageContent = content[locale];
+const research = pageContent.research;
+const slug = Astro.params.slug as string;
+const publication = await getResearchPublication(locale, slug);
+if (!publication) {
+  return Astro.redirect(`/${locale}/research/`, 302);
+}
+
+const description =
+  [publication.authors, publication.venue].filter(Boolean).join(" — ") ||
+  research.intro;
+
+const structured = [
+  breadcrumbJsonLd([
+    { name: pageContent.name, path: `/${locale}/` },
+    { name: research.heading, path: `/${locale}/research/` },
+    {
+      name: publication.title,
+      path: `/${locale}/research/publications/${publication.slug}/`,
+    },
+  ]),
+];
+const scholarly = scholarlyArticleJsonLd({
+  locale,
+  title: publication.title,
+  slug: publication.slug,
+  authors: publication.authors,
+  venue: publication.venue,
+  date: publication.date,
+  doi: publication.doi,
+  url: publication.url,
+});
+if (scholarly) structured.push(scholarly);
+validateStructuredData(...structured);
+const alternateExists =
+  (await getResearchPublication("fa", publication.slug)) !== null;
+---
+
+<BaseLayout
+  content={{
+    ...pageContent,
+    meta: {
+      title: `${publication.title} — ${pageContent.name}`,
+      description,
+    },
+  }}
+  alternateHref={
+    alternateExists ? `/fa/research/publications/${publication.slug}/` : null
+  }
+>
+  {
+    structured.map((block) => (
+      <script
+        type="application/ld+json"
+        is:inline
+        set:html={jsonLdScriptContent(block)}
+      />
+    ))
+  }
+  <section class="research-page">
+    <Breadcrumbs
+      items={[
+        { label: pageContent.name, href: `/${locale}/` },
+        { label: research.heading, href: `/${locale}/research/` },
+        { label: publication.title },
+      ]}
+    />
+    {!alternateExists && <p class="missing">{research.missingTranslation}</p>}
+    <h1>{publication.title}</h1>
+    <p class="meta">{publication.authors}</p>
+    {
+      publication.venue && (
+        <p class="meta">
+          {publication.venue}
+          {publication.date ? ` · ${publication.date}` : ""}
+        </p>
+      )
+    }
+    {publication.doi && <p class="meta">DOI: {publication.doi}</p>}
+    <p class="meta">{research.licenseLabel}: {publication.license}</p>
+    {
+      publication.citation_count != null && (
+        <p class="meta">Citations: {publication.citation_count}</p>
+      )
+    }
+    {
+      publication.url && (
+        <p>
+          <a href={publication.url} rel="noopener noreferrer">
+            {publication.url}
+          </a>
+        </p>
+      )
+    }
+    {
+      publication.pdf_url && (
+        <p>
+          <a href={publication.pdf_url} rel="noopener noreferrer">
+            PDF
+          </a>
+        </p>
+      )
+    }
+  </section>
+</BaseLayout>
+
+<style>
+  .research-page {
+    max-width: 44rem;
+    margin-inline: auto;
+    padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem;
+  }
+  .research-page h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 4vw, 2.4rem);
+    margin: 0 0 0.5rem;
+  }
+  .meta,
+  .missing {
+    color: var(--color-ink-muted);
+  }
+</style>

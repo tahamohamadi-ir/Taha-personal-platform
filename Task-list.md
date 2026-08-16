@@ -630,24 +630,25 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 ### Task P5-01 — ResearchTopic + canonical Project + minimal Publication
 
-- [ ] typed entities و relationships را بدون duplicate `ResearchProject` بساز.
-- [ ] Project شامل type/objective/method/status/dates/role/evidence/license و code/data/demo availability باشد.
-- [ ] Publication minimal core حداکثر اینجا ایجاد شود؛ P8 presentation را کامل می‌کند.
+- [x] typed entities و relationships را بدون duplicate `ResearchProject` بساز. *(migration `0003_p5_research_models`; LOG-0136)*
+- [x] Project شامل type/objective/method/status/dates/role/evidence/license و code/data/demo availability باشد. *(model + API + tests)*
+- [x] Publication minimal core حداکثر اینجا ایجاد شود؛ P8 presentation را کامل می‌کند.
 
 ### Task P5-02 — evidence/confidentiality policy
 
-- [ ] metricها source/last_verified/visibility و restricted state/fallback داشته باشند.
-- [ ] citation/funding/collaborator فقط با approval واقعی منتشر شوند.
+- [x] metricها source/last_verified/visibility و restricted state/fallback داشته باشند. *(ProjectEvidence + API redact tests)*
+- [x] citation/funding/collaborator فقط با approval واقعی منتشر شوند. *(publication_approved / citation gate)*
 
 ### Task P5-03 — public/admin journeys
 
-- [ ] Research overview، Topic، Statement و روابط Topic→Project→Publication→Contact پیاده شوند.
-- [ ] relationship visual همیشه list/tree accessible fallback داشته باشد.
+- [x] Research overview، Topic، Statement و روابط Topic→Project→Publication→Contact پیاده شوند. *(Astro routes + About contact note; no new form)*
+- [x] relationship visual همیشه list/tree accessible fallback داشته باشد. *(list navigation; DEFER-0020 for graph viz)*
 
 ### Task P5-04 — verification/release
 
-- [ ] public/restricted نمونه‌ها، no-leak projection، missing evidence، license/availability، locale routes و link validity PASS.
-- [ ] confidentiality mistake = immediate unpublish/asset revoke/incident log.
+- [x] public/restricted نمونه‌ها، no-leak projection، missing evidence، license/availability، locale routes و link validity PASS. *(140 pytest; web check/build; security review Approve)*
+- [x] confidentiality mistake = immediate unpublish/asset revoke/incident log. *(documented in Spec + INCIDENT_RUNBOOK; VPS execution owner)*
+- [ ] prod migrate + optional `CMS_API_BASE` content smoke — owner after RISK-0003. *(PARTIAL)*
 
 ---
 
