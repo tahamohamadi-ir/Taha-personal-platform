@@ -1,34 +1,34 @@
-"""MFA enforcement middleware for Wagtail admin (minimal gate).
+"""MFA enforcement middleware for Wagtail admin (TOTP enrollment + session).
 
-This middleware enforces TOTP-based MFA for authenticated staff users accessing
-the Wagtail admin. It checks ``django_otp.user_has_device`` for authenticated
-users on ``/admin/`` paths and blocks access when a user has a verified OTP
-device but no verified OTP in the current session.
+Policy for authenticated staff on ``/admin/`` paths:
 
-Policy:
-- Staff user WITHOUT any OTP device: access allowed (first-time; they should
-  set up a device via /admin/otp_totp/totpdevice/).
-- Staff user WITH a verified OTP device but no OTP session verification: access
-  denied (redirect to login to trigger OTP challenge).
-- Staff user WITH verified OTP in session: access allowed.
-- Non-admin paths are never affected.
-
-The OTP setup URL is ``/admin/otp_totp/totpdevice/`` provided by
-``django_otp`` when ``django_otp.plugins.otp_totp`` is in ``INSTALLED_APPS``.
-Production MFA policy (enrollment mandate, grace period, recovery codes) is
-finalized in the deploy Task Spec.
+- No confirmed TOTP device: allow login/logout, ``/admin/account/`` (password),
+  and TOTP enrollment; redirect all other admin paths to setup.
+- Confirmed device but session not OTP-verified: allow only login/logout;
+  enrollment/QR paths are NOT exempt (prevents secret leakage via stale sessions).
+- Confirmed device and ``request.user.otp_device`` set: allow.
+- Non-``/admin/`` paths are never affected.
 """
 
 from django.http import HttpResponseRedirect
+from django.urls import reverse
 
 ADMIN_PREFIX = "/admin/"
-MFA_SETUP_PATH = "/admin/otp_totp/totpdevice/"
 LOGIN_PATH = "/admin/login/"
-EXEMPT_PATHS = (LOGIN_PATH, "/admin/logout/", MFA_SETUP_PATH)
+LOGOUT_PATH = "/admin/logout/"
+ACCOUNT_PREFIX = "/admin/account/"
+MFA_SETUP_PATH = "/admin/account/two-factor/"
+
+
+def _mfa_setup_url() -> str:
+    try:
+        return reverse("security_totp_setup")
+    except Exception:
+        return MFA_SETUP_PATH
 
 
 class MFAEnforcementMiddleware:
-    """Block admin access for users with OTP devices but no verified session."""
+    """Require TOTP enrollment and verified OTP session for Wagtail admin."""
 
     def __init__(self, get_response):
         self.get_response = get_response
@@ -37,22 +37,24 @@ class MFAEnforcementMiddleware:
         if not request.path.startswith(ADMIN_PREFIX):
             return self.get_response(request)
 
-        if not request.user.is_authenticated:
+        if not request.user.is_authenticated or not request.user.is_staff:
             return self.get_response(request)
 
-        if not request.user.is_staff:
-            return self.get_response(request)
-
-        if request.path in EXEMPT_PATHS or request.path.startswith(MFA_SETUP_PATH):
+        path = request.path
+        if path in (LOGIN_PATH, LOGOUT_PATH):
             return self.get_response(request)
 
         from django_otp import user_has_device
 
-        if not user_has_device(request.user, confirmed=True):
+        has_device = user_has_device(request.user, confirmed=True)
+        otp_ok = getattr(request.user, "otp_device", None) is not None
+
+        if not has_device:
+            if path.startswith(MFA_SETUP_PATH) or path.startswith(ACCOUNT_PREFIX):
+                return self.get_response(request)
+            return HttpResponseRedirect(_mfa_setup_url())
+
+        if otp_ok:
             return self.get_response(request)
 
-        # OTPMiddleware (upstream) sets request.user.otp_device when verified
-        if getattr(request.user, "otp_device", None) is not None:
-            return self.get_response(request)
-
-        return HttpResponseRedirect(LOGIN_PATH + "?next=" + request.path)
+        return HttpResponseRedirect(LOGIN_PATH + "?next=" + path)

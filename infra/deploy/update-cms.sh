@@ -108,7 +108,7 @@ if [[ "$ready" != "1" ]]; then
 fi
 
 docker compose -f "$COMPOSE_FILE" exec -T cms python manage.py migrate --noinput
-docker compose -f "$COMPOSE_FILE" exec -T cms python -c "import argon2, whitenoise; print('runtime-deps-ok')"
+docker compose -f "$COMPOSE_FILE" exec -T cms python -c "import argon2, whitenoise, qrcode; print('runtime-deps-ok')"
 docker compose -f "$COMPOSE_FILE" ps
 
 echo "Loopback health:"
