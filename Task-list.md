@@ -8,10 +8,10 @@
 
 **Tech Stack:** Astro + TypeScript؛ Tailwind و Design Tokens حداقلی؛ React Islands فقط در صورت نیاز؛ `motion`، `gsap` و `three` فقط به‌عنوان dependency قفل‌شده برای slice آینده و بدون استفاده در P1؛ GitHub Actions hosted؛ Docker Compose + Caddy؛ از P3 به بعد Python 3.12 + Django 5.2 LTS + Wagtail 7.4 LTS + Django Ninja + PostgreSQL.
 
-## Progress snapshot (2026-08-15)
+## Progress snapshot (2026-08-16)
 
-- **P0-G0 + P3 code-first gate (owner-authorized):** production P1 live on **release-4fcd19f** (checksum `13849ab7`) at https://tahamohamadi.ir since 2026-08-15; CI green on `main` (web + cms). A1-A5, B3-B5, C1-C3, C5, C6, P1-09 (JSON-LD) done. **P3 `apps/cms/` code-first complete:** 62 pytest PASS, ruff clean, ADR-0020..0024, `ci-cms.yml`, infra candidates NOT-APPLIED (LOG-0107). CHANGELOG/BACKLOG created.
-- **Remaining (owner/server):** C4 (CV/Resume files — owner decision: P2 closes without CV), C7 partial, B1/B2, KI-0001 (fa GitHub handle), DEFER-0009 (OG), DEFER-0013 (200% zoom), P3 runtime deploy (RISK-0007 capacity + RISK-0003 DB-import + MFA + deploy Task Spec — RISK-0009 BLOCKED).
+- **P0-G0 + P3 code-first gate (owner-authorized):** production P1 live on **release-4fcd19f** (checksum `13849ab7`) at https://tahamohamadi.ir since 2026-08-15; CI green on `main` (web + cms). A1-A5, B3-B5, C1-C3, C5, C6, P1-09 (JSON-LD), D8 done. **Server upgraded** (Ubuntu 26.04 LTS, 2 vCPU / ~4 GiB RAM / 30 GB disk; owner decision: keep 4 GiB — `RISK-0007` CLOSED) and the live stack inventory-confirmed via `docker ps` 2026-08-16 (`RISK-0004` CLOSED). **Staging decommissioned** (ADR-0025, 2026-08-15): gate is now CI (web + cms) + production smoke only. **P3 `apps/cms/` code-first complete:** 70 pytest PASS, ruff clean, ADR-0020..0024, `ci-cms.yml`, NoIndexMiddleware + real JSON logging + enumeration/XSS tests, infra candidates NOT-APPLIED (LOG-0107, LOG-0110). CHANGELOG/BACKLOG updated. **KI-0001 CLOSED** (`profile.fa.ts` single-m fix; `rg tahamohammadi apps/web/src` clean — LOG-0110).
+- **Remaining (owner/server):** C4 (CV/Resume files — owner decision: P2 closes without CV), C7 partial, B1/B2, DEFER-0009 (OG), DEFER-0013 (200% zoom), DEFER-0014 (alt-by-locale), P3 runtime deploy (MFA enforcement + RISK-0003 DB-import + deploy Task Spec — capacity solved, `RISK-0009` BLOCKED). Upcoming production release from HEAD (JSON-LD + KI-0001 fix) pending owner deploy.
 
 ## Global Constraints
 
@@ -23,7 +23,7 @@
 - فرمان‌های install/test/build/deploy فقط پس از اجرای واقعی و ثبت در `PROJECT_MANIFEST.md` canonical هستند؛ این برنامه عمداً command خیالی ارائه نمی‌کند.
 - `/` Language Gateway، `/fa/` فارسی/RTL و `/en/` انگلیسی/LTR هستند. ترجمهٔ گمشده صریح است و fallback خاموش ممنوع است.
 - main content بدون JavaScript خوانا می‌ماند. `motion`، `gsap` و `three` در lockfile آماده‌اند، اما heavy motion، canvas، WebGL، D3 و هر import/runtime آنها برای اولین live لازم نیستند و نباید global یا render-blocking شوند.
-- production و staging هرگز database، media، secret یا backend مشترک ندارند. P1 static می‌تواند بدون staging runtime پایگاه‌داده منتشر شود.
+- production و هر environment ایزولهٔ آینده هرگز database، media، secret یا backend مشترک ندارند (staging از 2026-08-15 decommission شده است — ADR-0025). P1 static بدون runtime پایگاه‌داده منتشر می‌شود.
 - هیچ merge، push یا deploy بدون اجازهٔ صریح مالک انجام نمی‌شود؛ فقط فایل‌های task-owned stage/commit می‌شوند.
 
 ---
@@ -537,7 +537,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 ### Task P3-01 — unlock prerequisites
 
-- [ ] `RISK-0003` database import PASS، `RISK-0007` capacity حل، media provider و runtime/worker decision freeze شوند. *(RISK-0007/RISK-0003/RISK-0009 BLOCKED(owner) — پیش‌نیاز deploy، نه code)*
+- [ ] `RISK-0003` database import PASS، MFA enforcement و runtime/worker decision freeze شوند. *(ظرفیت حل شد — `RISK-0007` CLOSED 2026-08-15 (keep 4 GiB، ADR-0025)؛ `RISK-0009` BLOCKED — پیش‌نیاز deploy، نه code)*
 - [x] Python 3.12 latest supported patch نصب و project-local `.venv` با `uv` ایجاد شود؛ Hermes interpreter ممنوع. *(3.12.13 + `uv sync`، DEFER-0003 CLOSED، LOG-0107)*
 - [x] exact Django/Wagtail/Ninja/PostgreSQL versions و commands در Manifest pin شوند. *(Django 5.2.9 / Wagtail 7.4.2 / Ninja 1.6.2 / psycopg 3.3.4 + canonical CMS commands، LOG-0107)*
 - [x] auth/media/rich-text/rebuild-trigger/concurrency ADRها پذیرفته شوند. *(ADR-0020..0024، 2026-08-15)*
@@ -545,9 +545,9 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 ### Task P3-02 — isolated CMS scaffold
 
 - [x] `apps/cms/` فقط طبق Manifest scaffold شود؛ staging/prod DB، media، secrets و Compose project جدا باشند. *(code-first؛ `infra/cms/` NOT-APPLIED candidates — DB پروvision نشد)*
-- [x] `/admin/` same-origin، noindex و server-authorized باشد. *(Wagtail admin در `config/urls.py`؛ runtime exposure بعد از deploy gate)*
-- [x] health/readiness، structured logs و resource limits اضافه شوند. *(`/health/`، JSON logging در production.py، limits در compose candidate)*
-- [ ] migration/rollback path در staging اجرا شود. *(نیازمند deploy gate — RISK-0007)*
+- [x] `/admin/` same-origin، noindex و server-authorized باشد. *(Wagtail admin در `config/urls.py`؛ NoIndexMiddleware برای `/admin/`، `/api/`، `/rebuild-trigger/` پیاده شد — LOG-0110؛ runtime exposure بعد از deploy gate)*
+- [x] health/readiness، structured logs و resource limits اضافه شوند. *(`/health/`، JSON logging واقعی در production.py با python-json-logger — LOG-0110، limits در compose candidate)*
+- [ ] migration/rollback path در staging اجرا شود. *(نیازمند deploy gate — ظرفیت حل شد (`RISK-0007` CLOSED)؛ MFA + `RISK-0003` + Task Spec)*
 
 ### Task P3-03 — typed localized content contracts
 
@@ -572,14 +572,14 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 ### Task P3-06 — admin security
 
 - [ ] MFA، least privilege، CSRF/session، rate limiting و minimal audit قبل از public admin PASS. *(audit + rate limit + CSRF/session در کد؛ MFA طراحی‌شده ولی نه enforce — پیش از deploy)*
-- [x] negative authorization matrix، account enumeration و secret-safe errors تست شوند. *(audit/rate-limit tests؛ بدون enumeration detail)*
+- [x] negative authorization matrix، account enumeration و secret-safe errors تست شوند. *(audit/rate-limit tests + account-enumeration test اضافه شد — LOG-0110؛ secret-safe errors تست شده)*
 - [ ] admin keyboard/RTL و noindex/cache policy smoke شوند. *(نیازمند runtime admin)*
 
 ### Task P3-07 — rich text و preview
 
 - [x] allowlist sanitize در editor/preview/public یکسان باشد. *(allowlist ثابت در settings + تست قفل‌شده)*
 - [ ] preview noindex/no-cache و token/access boundary امن باشد. *(نیازمند preview runtime)*
-- [x] stored XSS در preview/public و draft leak blocking tests داشته باشد. *(allowlist تست‌شده؛ XSS E2E بعد از runtime)*
+- [x] stored XSS در preview/public و draft leak blocking tests داشته باشد. *(allowlist تست‌شده + stored-XSS sanitizer test اضافه شد — LOG-0110؛ XSS E2E بعد از runtime)*
 - [ ] advanced frontend-faithful preview می‌تواند تا P7 defer شود؛ safe minimum نمی‌تواند. *(به P7 محول — ADR-0022)*
 
 ### Task P3-08 — CMS→Astro publish/rebuild
@@ -593,7 +593,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 - [ ] migrations forward/fallback، backup/import، lifecycle، permissions، XSS، upload و projection integration tests PASS. *(code-level PASS؛ integration روی runtime باقی است)*
 - [ ] staging با admin کم‌دسترسی و کامل، preview، publish، archive و public build smoke شود.
-- [ ] production admin فقط پس از owner approval، MFA و rollback آماده exposed شود. *(BLOCKED: RISK-0007/RISK-0003/RISK-0009 + deploy Task Spec)*
+- [ ] production admin فقط پس از owner approval، MFA و rollback آماده exposed شود. *(BLOCKED: MFA + `RISK-0003` + deploy Task Spec؛ ظرفیت حل شد — `RISK-0009` BLOCKED)*
 
 ---
 
@@ -803,7 +803,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 4. approval static staging topology و blast radius stack موجود. **— RUNBOOK آماده (`docs/governance/DEPLOY_RUNBOOK.md`); inventory P0A-01 روی VPS PENDING.**
 5. approval artifact پس از staging و اجازهٔ صریح production deploy. **— PENDING (پس از staging).**
 6. maintenance window برای `RISK-0005` و تصمیم canonical SSH port برای `RISK-0006`. **— PENDING (P0-B).**
-7. capacity/hosting تصمیم P3 staging runtime پیش از database import/CMS. **— PENDING (P3).**
+7. capacity/hosting تصمیم P3 staging runtime پیش از database import/CMS. **— DONE 2026-08-15: keep 4 GiB (`RISK-0007` CLOSED؛ ADR-0025)؛ runtime deploy هنوز PENDING (MFA + `RISK-0003` + Task Spec).**
 8. media provider، runtime worker، admin MFA و contact persistence قبل از P3. **— PENDING (P3).**
 9. اگر visual interaction یا asset خارجی انتخاب شد: value/route، library واحد، fallbackها و source/license artifact را تأیید کن. **— PENDING; `P0B-04` / `DEFER-0012`.**
 

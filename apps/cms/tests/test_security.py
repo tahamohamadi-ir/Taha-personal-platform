@@ -180,6 +180,28 @@ class TestWagtailAdminAccess:
         assert response.status_code == 200
 
 
+class TestNoIndexMiddleware:
+    def test_admin_login_page_is_noindexed(self, db):
+        response = Client().get("/admin/login/")
+        assert response.status_code == 200
+        assert response.headers["X-Robots-Tag"] == "noindex, nofollow"
+
+    def test_api_is_noindexed(self, db):
+        response = Client().get("/api/landings/fa")
+        assert response.status_code == 200
+        assert response.headers["X-Robots-Tag"] == "noindex, nofollow"
+
+    def test_rebuild_trigger_is_noindexed(self, db):
+        response = Client().get("/rebuild-trigger/")
+        assert response.status_code == 405
+        assert response.headers["X-Robots-Tag"] == "noindex, nofollow"
+
+    def test_public_health_path_is_not_noindexed(self, db):
+        response = Client().get("/health/")
+        assert response.status_code == 200
+        assert "X-Robots-Tag" not in response.headers
+
+
 class TestRichTextAllowlist:
     def test_features_equal_exact_settings_allowlist(self, settings):
         expected = [
@@ -201,3 +223,20 @@ class TestRichTextAllowlist:
     def test_risky_features_excluded(self, settings):
         assert "embed" not in settings.WAGTAIL_RICHTEXT_FEATURES
         assert "image" not in settings.WAGTAIL_RICHTEXT_FEATURES
+
+    def test_script_and_img_not_allowed(self, settings):
+        assert "script" not in settings.WAGTAIL_RICHTEXT_FEATURES
+        assert "img" not in settings.WAGTAIL_RICHTEXT_FEATURES
+
+    def test_xss_payload_stripped_by_wagtail_whitelister(self):
+        from wagtail.whitelist import Whitelister
+
+        cleaned = Whitelister().clean(
+            "<p>hi <script>alert(1)</script>"
+            '<img src="https://example.com/x.png" onerror="alert(1)">'
+            '<a href="javascript:alert(1)">link</a></p>'
+        )
+        assert "<script" not in cleaned
+        assert "onerror" not in cleaned
+        assert 'href="javascript:' not in cleaned
+        assert cleaned.startswith("<p>")

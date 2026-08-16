@@ -1,8 +1,9 @@
 # Deployment Runbook — Static P1 (Language Gateway + bilingual landing)
 
-> Status: Candidate. The mechanics below implement ADR-0017; the concrete paths
-> and the production switch are finalized only after the P0A-01 read-only stack
-> inventory and explicit owner approval. No deploy is performed by this file.
+> Status: Active for production. Staging is decommissioned (ADR-0025, 2026-08-15); the
+> mechanics below implement ADR-0017. Production deploys require owner approval, a
+> documented rollback path and a passing release gate (CI web + cms workflows +
+> production smoke; see `RELEASE_POLICY.md`). No deploy is performed by this file.
 
 ## Principles
 
@@ -36,33 +37,9 @@ $SITE_ROOT/                      # project-owned, e.g. /opt/taha/site (finalize 
 - A checksum (`sha256sum`) of the artifact is recorded in `deploy.log` at deploy
   time for traceability.
 
-## Staging deploy (isolated, no production change)
+## Staging decommissioned (ADR-0025)
 
-1. P0A-01 inventory confirms the Caddy service unit, Caddyfile path and that the
-   staging hostname still serves the ADR-0015 503 placeholder. *(Partial
-   inventory done 2026-08-15: Caddy unit `/usr/bin/caddy run --config /etc/caddy/Caddyfile`
-   as user `caddy`; Caddyfile readable and staging placeholder block confirmed as
-   the last block; host resources: ~1.9 GiB RAM / ~17 GB free disk; Docker
-   metadata still pending sudo.)*
-2. Stage the artifact under `$SITE_ROOT/releases/`, verify `dist/health.json`
-   and locale roots locally, then point `current` at the new release.
-   *(Automated: `infra/deploy/stage-p1.sh` backs up the Caddyfile, installs the
-   release, switches `current` atomically, replaces only the staging site block
-   with static serving from `current`, validates the config and reloads only on
-   success; on validation failure the backup is restored and Caddy is not
-   reloaded.)*
-3. Owner executes the single privileged step (sudo required):
-   `sudo bash ~/taha-stage/stage-p1.sh ~/taha-stage/release-<version>-<hash>`
-   (artifact already uploaded by the deploy operator to the `deploy` user home).
-4. Smoke from outside: gateway `/`, `/fa/`, `/en/`, `/health.json`, `/404`,
-   assets, and confirm `noindex`/robots behavior for staging. Confirm the
-   production hostname and legacy routes are unchanged (production blocks are
-   untouched by the script).
-5. Rollback of this step: restore the exact timestamped backup printed by the
-   script, for example `cp -a /etc/caddy/Caddyfile.pre-stage-p1.<timestamp>
-   /etc/caddy/Caddyfile`, then `caddy validate --config /etc/caddy/Caddyfile &&
-   systemctl reload caddy`, and/or `ln -sfn $SITE_ROOT/releases/<previous>
-   $SITE_ROOT/current`. Never overwrite a prior backup with a fixed filename.
+`staging.tahamohamadi.ir` is fully decommissioned per [ADR-0025](../adr/0025-staging-decommission.md) (2026-08-15, owner): the staging Caddy site block was removed on the VPS (owner-executed, sudo, with the deploy user account) and the staging DNS record was removed if present. Development and deployment now happen directly on `tahamohamadi.ir`; the release gate is CI (web + cms workflows) + production smoke only — no staging smoke step is required. Rollback of the removal, if ever needed: restore the timestamped Caddyfile backup, `caddy validate --config /etc/caddy/Caddyfile && systemctl reload caddy`, and re-create the DNS record.
 
 ## Production deploy (owner approval required)
 
@@ -87,8 +64,8 @@ ln -sfn releases/release-<previous-version>-<checksum8> "$SITE_ROOT/current"
 ## Headers and SEO (P0A-06)
 
 - HTTPS redirect and compression are handled by Caddy.
-- Staging must stay out of public search (`noindex`); production uses the index
-  policy from the artifact's `robots.txt`/`sitemap.xml`.
+- Staging is decommissioned (ADR-0025, 2026-08-15); production uses the index
+  policy from the artifact's `robots.txt`/`sitemap.xml` (reviewed at deploy).
 - Security headers (CSP etc.) are validated against the real assets/fonts before
   being enabled; no permissive/placeholder header is shipped.
 
@@ -99,8 +76,8 @@ ln -sfn releases/release-<previous-version>-<checksum8> "$SITE_ROOT/current"
 - A basic external uptime check targets `/health.json`; 5xx visibility, disk
   threshold and deploy-version lookup have an owner.
 - External uptime check: an external uptime provider chosen by the owner
-  performs an HTTP GET on `https://<host>/health.json` every 5 minutes, for both
-  staging and production (free tier acceptable; agents create no accounts).
+  performs an HTTP GET on `https://tahamohamadi.ir/health.json` every 5 minutes
+  (free tier acceptable; agents create no accounts).
 - Alert target: the owner's email (see password manager).
 - Deploy-version lookup: `curl https://<host>/health.json` returns the served
   artifact version.

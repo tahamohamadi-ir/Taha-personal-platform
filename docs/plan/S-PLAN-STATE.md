@@ -11,7 +11,7 @@
 | A1 | Reusable smoke script | DONE | S-model | approved e2d7796 by L-model 2026-08-15 (independent re-run PASS) |
 | A2 | Production Caddy script (write only) | DONE | S-model | approved fdc430b by L-model 2026-08-15; owner runs A4 |
 | A3 | Release decision record P1 | DONE | S-model | approved eb95caf by L-model 2026-08-15 |
-| A4 | Production switch | DONE | owner | executed 2026-08-15 via Caddy snippet edit (taha_application_routes → static current); prod-p1.sh superseded for this Caddyfile; live on release-d55d44e; update to release-d7db929 pending |
+| A4 | Production switch | DONE | owner | executed 2026-08-15 via Caddy snippet edit (taha_application_routes → static current); prod-p1.sh superseded for this Caddyfile; live on release-4fcd19f (checksum 13849ab7); update to current HEAD pending |
 | A5 | Close R2 / P1-15 | DONE | L-model | R2 closed: production live, Task-list §5 ticked with evidence, snapshot+RELEASE-P1 updated (LOG-0079) |
 | B1 | Pending updates inventory | BLOCKED(owner) | owner | paste count + caddy/docker package names only |
 | B2 | SSH port decision | BLOCKED(owner) | owner | — |
@@ -32,7 +32,8 @@
 | D4 | P3 media library + upload security | DONE | sub-agent (general) | 18 tests; filetype allowlist; private default; LOG-0107 |
 | D5 | P3 admin security + rich text allowlist | DONE | sub-agent (general) | 19 tests; audit+rate limit; allowlist pinned; LOG-0107 |
 | D6 | P3 CI workflow + infra candidates + rebuild trigger | DONE | sub-agent (general) | ci-cms.yml; infra/cms NOT-APPLIED; 6 tests; LOG-0107 |
-| D7 | P3 runtime deploy (Compose/Caddy/MFA/DB) | BLOCKED(owner) | owner | RISK-0007 capacity + RISK-0003 DB-import + MFA + separate Task Spec; RISK-0009 BLOCKED |
+| D7 | P3 runtime deploy (Compose/Caddy/MFA/DB) | BLOCKED(owner) | owner | MFA + RISK-0003 DB-import + separate Task Spec; RISK-0009 BLOCKED (capacity solved — RISK-0007 CLOSED) |
+| D8 | Staging decommission | DONE | owner/L-model | ADR-0025 accepted 2026-08-15; staging Caddy block removed on VPS (owner, sudo) + DNS removed if present; gate now CI (web + cms) + production smoke; server upgraded (Ubuntu 26.04 LTS, 2 vCPU / ~4 GiB / 30 GB); live stack inventory-confirmed via docker ps 2026-08-16; LOG-0110 |
 
 ## Review log (append-only)
 
@@ -48,6 +49,7 @@
 | 2026-08-15 | C4/C7 | BLOCKED(owner) | owner | P2 closes without CV/Resume (owner decision); C7 partial; backlog row added |
 | 2026-08-15 | D1-D6 | DONE (main) | L-model | P3 code-first: 62 pytest PASS, ruff clean, migrations consistent, ci-cms.yml authored, infra NOT-APPLIED; LOG-0107 |
 | 2026-08-15 | D7 | BLOCKED(owner) | owner | runtime deploy needs RISK-0007/RISK-0003/MFA/deploy Task Spec; RISK-0009 BLOCKED |
+| 2026-08-15/16 | D8 | DONE (owner) | L-model | staging decommissioned (ADR-0025); gate = CI (web + cms) + production smoke; RISK-0007 CLOSED (keep 4 GiB); live stack docker ps evidence 2026-08-16 07:19 UTC; RISK-0004 CLOSED; LOG-0110 |
 | 2026-08-15 | B4 | submitted for review | S-model | Restore drill cadence section appended; git diff --check exit 0; single heading; no invented dates/RPO-RTO/owners beyond Project owner |
 | 2026-08-15 | B3 | submitted for review | S-model | Observability (P0A-11) section extended per task; git diff --check exit 0; single Observability heading at line 95 |
 | 2026-08-15 | B5 | submitted for review | S-model | adoption brief written; all 6 required section headings present; §98 checklist copied verbatim; git diff --check exit 0; no motion/gsap/three import added in apps/web (grep clean) |

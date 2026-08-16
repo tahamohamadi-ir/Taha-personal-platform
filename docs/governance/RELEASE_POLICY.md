@@ -11,8 +11,8 @@
 | نوع | کاربرد | مثال | حداقل بررسی blocking |
 |---|---|---|---|
 | `FAST-TRACK` | تغییر low-risk و محدود | اصلاح copy یا CTA Landing | build، render/responsive smoke، بررسی لینک/metadata تغییرکرده |
-| `STANDARD` | قابلیت عمومی با داده/route جدید | Blog list یا Resume download | تست contract مرتبط، build، staging smoke، production smoke، ثبت deferred |
-| `HIGH-RISK` | auth، permission، publish lifecycle، upload، migration یا دادهٔ private | Minimal Admin یا contact persistence | unit/integration، negative authorization tests، migration/rollback یا fallback، critical-path E2E، staging و production smoke |
+| `STANDARD` | قابلیت عمومی با داده/route جدید | Blog list یا Resume download | تست contract مرتبط، build، CI (web + cms workflows)، production smoke، ثبت deferred |
+| `HIGH-RISK` | auth، permission، publish lifecycle، upload، migration یا دادهٔ private | Minimal Admin یا contact persistence | unit/integration، negative authorization tests، migration/rollback یا fallback، critical-path E2E، CI (web + cms workflows) و production smoke |
 
 نوع انتشار در `TASK_SPEC_TEMPLATE.md` ثبت می‌شود. در ابهام، نوع بالاتر را انتخاب یا از مالک تصمیم بگیرید؛ فرض نکنید.
 
@@ -43,7 +43,7 @@
 
 - scope با `TASK_SPEC_TEMPLATE.md` مشخص است و فایل خارج از scope تغییر نکرده است.
 - فرمان‌های واقعی Manifest برای build و آزمون‌های متناسب با risk با خروجی ثبت‌شده اجرا شده‌اند.
-- staging smoke برای مسیر تغییرکرده، و production smoke پس از deploy انجام شده است.
+- CI هر دو workflow (web + cms) و production smoke پس از deploy انجام شده است. *(staging از 2026-08-15 decommission شده است — ADR-0025؛ دیگر staging smoke لازم نیست)*
 - هیچ secret/PII یا دادهٔ fake production-like وارد release نشده است.
 - migration در صورت وجود، migration-compatible و rollback/fallback آن ثبت شده است.
 - backup mechanism و restore procedure مستند هستند. full restore rehearsal برای release اولیهٔ بدون دادهٔ persistent ارزشمند قابل defer است؛ پیش از persistent CMS data، ذخیرهٔ Contact submission، یا migration پرریسک باید روی staging اجرا شود.
@@ -93,7 +93,7 @@ Debt budget یک عدد سراسری ساختگی نیست: هیچ Critical با
 - Release DoD: PASS | BLOCKED | NOT READY
 - Completion DoD: PASS | NOT READY | NOT MEASURED
 - Blocking checks and evidence:
-- Staging/prod smoke path:
+- CI/prod smoke path:
 - Open risk/deferred IDs:
 - Rollback/fallback:
 - Owner approval (required for High exception):

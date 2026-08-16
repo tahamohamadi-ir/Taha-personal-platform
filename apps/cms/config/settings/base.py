@@ -47,6 +47,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "apps.security.middleware.AuditMiddleware",
     "apps.security.middleware.LoginRateLimitMiddleware",
+    "apps.security.middleware.NoIndexMiddleware",
     "wagtail.contrib.redirects.middleware.RedirectMiddleware",
 ]
 

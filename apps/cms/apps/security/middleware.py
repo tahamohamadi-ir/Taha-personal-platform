@@ -10,6 +10,7 @@ ADMIN_PREFIX = "/admin/"
 SKIP_PREFIXES = ("/health/", "/static/", "/media/")
 LOGIN_RATE_LIMIT = 5
 LOGIN_RATE_WINDOW_SECONDS = 300
+NOINDEX_PREFIXES = ("/admin/", "/api/", "/rebuild-trigger/")
 
 
 class AuditMiddleware:
@@ -97,3 +98,16 @@ class LoginRateLimitMiddleware:
     def _cache_key(request):
         ip = request.META.get("REMOTE_ADDR", "unknown")
         return f"security:login-limit:{ip}"
+
+
+class NoIndexMiddleware:
+    """Keep machine-facing paths out of search indexes via X-Robots-Tag."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        if request.path.startswith(NOINDEX_PREFIXES):
+            response.headers["X-Robots-Tag"] = "noindex, nofollow"
+        return response

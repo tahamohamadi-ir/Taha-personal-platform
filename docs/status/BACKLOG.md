@@ -8,10 +8,10 @@
 | C7 | P2 | P2 verification + release (About/C6 ساخته و CI-verif شده) | C4 (اگر CV منتشر شود) | Project owner | LOG-0104 |
 | B1 | P0-B | Pending updates inventory (caddy/docker package names) | مالک باید خروجی `apt list --upgradable` و نام پکیج‌ها را paste کند | Project owner | S-PLAN-STATE B1 |
 | B2 | P0-B | Canonical SSH port decision | مالک | Project owner | S-PLAN-STATE B2 |
-| KI-0001 | P2 | اصلاح handle گیت‌هاب fa (`tahamohammadi-ir` → `tahamohamadi-ir`) در `profile.fa.ts:192,165` | مالک | Project owner | known-issues.md |
+| KI-0001 | P2 | اصلاح handle گیت‌هاب fa (`tahamohammadi-ir` → `tahamohamadi-ir`) — **CLOSED 2026-08-15**: در `profile.fa.ts` اصلاح شد؛ `rg tahamohammadi apps/web/src` → no matches | مالک | Project owner | known-issues.md (CLOSED)؛ LOG-0110 |
 | DEFER-0009 | P1 | OG image + social preview | asset تأییدشدهٔ مالک | Project owner | deferred-validation.md |
 | DEFER-0013 | P1/P2 | Real 200% zoom visual evidence + full mobile visual matrix | محیط واقعی مرورگر/مالک | Project owner | deferred-validation.md |
-| P3 deploy | P3 | CMS runtime deploy (Compose/Caddy/MFA/DB import) | تصمیم ظرفیت (`RISK-0007`) + `RISK-0003` DB-import evidence + Task Spec جدا | Project owner | AGENTS.md gate |
+| P3 deploy | P3 | CMS runtime deploy (Compose/Caddy/MFA/DB import) | ظرفیت حل شد (`RISK-0007` CLOSED 2026-08-15 — plan 4 GiB؛ ADR-0025)؛ هنوز: MFA enforcement + `RISK-0003` DB-import evidence + Task Spec جدا | Project owner | AGENTS.md gate؛ RISK-0009 BLOCKED |
 | P3-05 rest | P3 | Media rendition contract + archive/inactive race tests | بعد از deploy runtime | Project owner | ADR-0021 |
 | P3-09 | P3 | P3 high-risk verification (migrations forward/fallback، backup/import، permissions، XSS، upload، projection) | deploy runtime | Project owner | Task-list §8 |
 | P4 | P4 | Blog/Writing (Article/Series، list/detail، feed) | P3 runtime | Project owner | Task-list §9 |

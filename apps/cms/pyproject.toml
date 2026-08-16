@@ -11,6 +11,7 @@ dependencies = [
     "uvicorn==0.52.3",
     "gunicorn==26.0.0",
     "filetype==1.2.0",
+    "python-json-logger>=3.3.0",
 ]
 
 [dependency-groups]

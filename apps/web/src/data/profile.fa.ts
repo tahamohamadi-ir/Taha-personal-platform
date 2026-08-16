@@ -162,7 +162,7 @@ export const profileFa: Profile = {
   researchProjects: [
     {
       title: "PARS-SQL / VTD-Edge",
-      url: "https://github.com/tahamohammadi-ir/ADHD-VTD",
+      url: "https://github.com/tahamohamadi-ir/ADHD-VTD",
       linkLabel: "GitHub",
       summary:
         "سامانه‌ای محلی و حریم‌خصوصی‌محور برای Text-to-SQL فارسی در تحلیل سلامت روان و سبک زندگی. از فارسی محاوره‌ای، خطاهای تایپی، Finglish، ترکیب فارسی و انگلیسی، عبارت‌های تاریخ Jalali، مدیریت ابهام، مسیردهی پرس‌وجوهای ناایمن، اعتبارسنجی، خودداری از پاسخ و خروجی توضیح‌پذیر پشتیبانی می‌کند. زمان‌اجرای پژوهشی و زمان‌اجرای edge هستهٔ مشترکی برای نرمال‌سازی، پیونددهی، اعتبارسنجی، اجرا و قالب‌بندی دارند. برنامهٔ ارزیابی، قابلیت اعتماد، ایمنی، استحکام، تأخیر، حافظه، مستندسازی مجموعه‌داده، توافق انسانی و تکرارپذیری را در اولویت قرار می‌دهد.",
@@ -189,7 +189,7 @@ export const profileFa: Profile = {
   ],
   socials: [
     { platform: "LinkedIn", url: "https://linkedin.com/in/taha-mohammadi-95770986" },
-    { platform: "GitHub", url: "https://github.com/tahamohammadi-ir" },
+    { platform: "GitHub", url: "https://github.com/tahamohamadi-ir" },
     { platform: "ORCID", url: "https://orcid.org/0009-0006-7736-7638" },
   ],
   availability:

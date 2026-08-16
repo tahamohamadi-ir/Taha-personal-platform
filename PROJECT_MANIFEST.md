@@ -1,7 +1,7 @@
 # Project Manifest
 
-**Status:** P0-G0 — `PASS for static-only P1` (2026-08-14) **+ P3 code-first (2026-08-15, owner-authorized)**. `RISK-0001` بسته و `RISK-0003` با پذیرش محدود static-only ثبت شده است؛ PASS کلی CMS اعلام نشده و CMS runtime هیچ‌جا deploy نشده است.  
-**Last verified:** 2026-08-15  
+**Status:** P0-G0 — `PASS for static-only P1` (2026-08-14) **+ P3 code-first (2026-08-15, owner-authorized)**. `RISK-0001` بسته و `RISK-0003` با پذیرش محدود static-only ثبت شده است؛ PASS کلی CMS اعلام نشده و CMS runtime هیچ‌جا deploy نشده است. Staging از 2026-08-15 decommission شده است (ADR-0025).  
+**Last verified:** 2026-08-16  
 **Source of truth for commands:** این فایل؛ دستور تأییدنشده را اجرا یا مستند نکنید.
 
 ## Product and repository
@@ -13,7 +13,7 @@
 | Repository visibility | Public |
 | Default branch | `main` |
 | Public production domain | `tahamohamadi.ir` |
-| Planned staging domain | `staging.tahamohamadi.ir` — DNS/deploy not yet configured |
+| Staging domain | DECOMMISSIONED (ADR-0025, 2026-08-15) — `staging.tahamohamadi.ir` Caddy block and DNS removed; dev/deploy directly on production |
 | Root locale | `/` Language Gateway |
 | Locale roots | `/fa/` (RTL) and `/en/` (LTR) |
 | Admin route | `/admin/` — app not yet deployed |
@@ -24,11 +24,11 @@
 |---|---|---|
 | Public frontend | Astro + TypeScript + React Islands | Scaffolded; static-only P1 built and deployed (static P1 live on tahamohamadi.ir) — Language Gateway + `/fa/` + `/en/` landing |
 | Styling/UI | Tailwind CSS + project design system + shadcn/Radix | Tailwind v4 + project design tokens applied; shadcn/Radix not used in P1 |
-| Backend/CMS/API | Python 3.12.13 + Django 5.2.9 LTS + Wagtail 7.4.2 LTS + Django Ninja 1.6.2 | P3 code-first scaffold in `apps/cms/` (settings split, custom User, health, content/lifecycle/projection, media security, admin audit+rate-limit, rich-text allowlist, Ninja public read API, rebuild trigger, 62 pytest PASS, CI `ci-cms.yml`); NOT deployed anywhere |
+| Backend/CMS/API | Python 3.12.13 + Django 5.2.9 LTS + Wagtail 7.4.2 LTS + Django Ninja 1.6.2 | P3 code-first scaffold in `apps/cms/` (settings split, custom User, health, content/lifecycle/projection, media security, admin audit+rate-limit, rich-text allowlist, NoIndexMiddleware for `/admin/`/`/api/`/`/rebuild-trigger/`, real JSON logging in production.py, Ninja public read API, rebuild trigger, 70 pytest PASS, CI `ci-cms.yml`); NOT deployed anywhere |
 | Database | PostgreSQL | Not provisioned; `infra/cms/docker-compose.cms.yml` is a NOT-APPLIED candidate |
 | Public search | Pagefind at the approved phase | Not provisioned |
-| Deployment | Docker Compose + Caddy on VPS | Static P1 deployed on staging+production via Caddy snippet and atomic `/opt/taha/site/current` switch; project-specific Caddy/Compose not otherwise provisioned; Docker services for CMS still blocked |
-| Git/CI | GitHub + GitHub Actions hosted standard runners | Workflow created (`.github/workflows/ci.yml`); not yet run on a hosted runner |
+| Deployment | Docker Compose + Caddy on VPS | Static P1 deployed on production via Caddy snippet and atomic `/opt/taha/site/current` switch; staging decommissioned (ADR-0025); project-specific Caddy/Compose not otherwise provisioned; Docker services for CMS still blocked |
+| Git/CI | GitHub + GitHub Actions hosted standard runners | Workflows `ci.yml` (web) and `ci-cms.yml` (CMS) green on hosted runners on `main` |
 | Backup | Encrypted restic repository through rclone on Google Drive | restic 0.18.1 and Ubuntu rclone 1.60.1 build installed; OAuth, repository, PostgreSQL/media/config snapshots, `restic check`, retention, enabled daily timer and isolated file-level restore verified; staging database import remains |
 
 Python 3.12 is selected for ecosystem maturity and remains security-supported through October 2028. Wagtail 7.4 LTS and Django 5.2 LTS officially support this combination. Exact patch versions are selected together in the first dependency lockfile, not guessed in this Manifest.
@@ -51,10 +51,10 @@ docs/templates/         task specifications
 | Environment | Purpose | State | Data rule |
 |---|---|---|---|
 | `dev` | Local Windows control plane; WSL only for Linux/Docker tests | Available | fake/sanitized only |
-| `staging` | `staging.tahamohamadi.ir` | Static P1 deployed, noindex | non-sensitive representative data |
-| `prod` | `tahamohamadi.ir` | Static P1 deployed (2026-08-15) | published, approved and backed-up data only |
+| `staging` | DECOMMISSIONED (ADR-0025, 2026-08-15) | `staging.tahamohamadi.ir` Caddy block and DNS removed; dev/deploy directly on production | — |
+| `prod` | `tahamohamadi.ir` | Static P1 deployed (2026-08-15, release-4fcd19f, checksum `13849ab7`) | published, approved and backed-up data only |
 
-Production host is an active Ubuntu VPS with 1 vCPU, 2 GB RAM and 30 GB NVMe. It is sufficient for the static-first baseline and a modest Django/PostgreSQL runtime, but it is **not** approved for Gitea, a CI runner, Redis, Celery, OpenSearch, Neo4j, Kubernetes or other additional always-on services.
+Production host is an active Ubuntu 26.04 LTS VPS with 2 vCPU, ~3910 MB RAM (~4 GiB, owner decision 2026-08-15: keep the 4 GiB plan — `RISK-0007` CLOSED) and 30 GB disk (~17 GB free). It co-hosts the static site and the existing live Compose stack (inventory-confirmed 2026-08-16: `taha-prod-frontend-1` on 127.0.0.1:13000, `taha-prod-backend-1` on 127.0.0.1:18080, `taha-prod-postgres-1`); a future CMS runtime uses the same host per the RISK-0007 resolution. The VPS is **not** approved for Gitea, a CI runner, Redis, Celery, OpenSearch, Neo4j, Kubernetes or other additional always-on services.
 
 ## Security and operations constraints
 
@@ -91,7 +91,7 @@ npm run preview    # serve built artifact locally — verified with curl (routes
 npm audit          # dependency security scan — verified: 0 vulnerabilities
 ```
 
-CMS install/build/migrate/deploy and server-side deploy commands remain unapproved; they are added only after the corresponding app/infrastructure exists and is verified on a clean checkout.
+CMS runtime build/migrate/deploy and server-side deploy commands remain unapproved; the code-verification commands in the `apps/cms/` block below are approved (2026-08-15/16) and were verified on a clean checkout.
 
 ## Canonical commands — `apps/cms/` (P3 code-first, verified 2026-08-15)
 
@@ -102,10 +102,10 @@ $env:DJANGO_SETTINGS_MODULE = "config.settings.test"
 uv run ruff check .            # verified: All checks passed
 uv run python manage.py check  # verified: no issues (only upstream treebeard E001 advisory warnings)
 uv run python manage.py makemigrations --check --dry-run   # verified: No changes detected
-uv run pytest -q               # verified: 62 passed
+uv run pytest -q               # verified: 70 passed
 ```
 
-CMS runtime deploy/migrate/run commands (gunicorn, collectstatic, migrate on a real DB, media) remain unapproved until the owner capacity decision and a separate deploy Task Spec.
+CMS runtime deploy/migrate/run commands (gunicorn, collectstatic, migrate on a real DB, media) remain unapproved; the owner capacity decision was made (2026-08-15: keep 4 GiB — `RISK-0007` CLOSED), so runtime approval now awaits MFA enforcement, the RISK-0003 DB-import evidence and a separate deploy Task Spec.
 
 ## Agent tooling (developer workstation, verified 2026-08-15)
 
@@ -145,7 +145,7 @@ be restarted to load the plugin. Operational rules and rollback are in
 | Media | Static curated assets only (portrait/OG optional) | OPEN (owner) |
 | Health/SEO skeleton | Static `/health`, locale-aware 404, robots + sitemap skeleton | VERIFIED for decision |
 
-Remaining owner/release decisions: final logo asset, approved contact path, OG image, Cloudflare robots behavior and production deploy authorization. The P1 font decision is recorded in ADR-0019.
+Remaining owner/release decisions: final logo asset, approved contact path, OG image and production deploy authorization for the upcoming release from HEAD. The P1 font decision is recorded in ADR-0019. Staging and its Cloudflare robots edge behavior are resolved by ADR-0025 (DEFER-0011 CLOSED).
 
 ## Explicitly not used initially
 
@@ -160,7 +160,6 @@ Node.js public production runtime
 ## Open decisions and gate blockers
 
 - Rotate root credential and define non-root SSH-key access (`RISK-0002`) via `docs/governance/SERVER_ACCESS_RUNBOOK.md`.
-- Configure DNS/HTTPS and prove control of production and staging domains; the approved staging record is defined in the same runbook.
 - Set up and test encrypted Google Drive backup, retention and restore (`RISK-0003`) after secure access and audit, per `docs/governance/BACKUP_POLICY.md`.
 - Select production WSGI/ASGI server, worker count, media layout, monitoring and exact deploy mechanics in P0-A ADRs.
-- Install the latest supported Python 3.12 patch and add the first locked dependency manifests only when P0-A/P3 explicitly authorizes scaffolding.
+- `RISK-0007` (staging capacity) is CLOSED (owner decision 2026-08-15: keep the 4 GiB plan; staging decommissioned per ADR-0025). CMS runtime deploy still requires MFA enforcement, RISK-0003 DB-import evidence and a separate deploy Task Spec (`RISK-0009` BLOCKED).

@@ -57,7 +57,9 @@ LOGGING = {
     "disable_existing_loggers": False,
     "formatters": {
         "json": {
+            "()": "pythonjsonlogger.json.JsonFormatter",
             "format": "%(asctime)s %(levelname)s %(name)s %(message)s",
+            "rename_fields": {"asctime": "timestamp"},
         },
     },
     "handlers": {
