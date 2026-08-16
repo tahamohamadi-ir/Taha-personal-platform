@@ -7,6 +7,7 @@ import { content } from "../../../data/content";
 import {
   blogPostingJsonLd,
   breadcrumbJsonLd,
+  jsonLdScriptContent,
   validateStructuredData,
 } from "../../../data/structured";
 import {
@@ -91,7 +92,11 @@ const alternateExists = (await getPublishedArticle("en", article.slug)) !== null
 >
   {
     structured.map((block) => (
-      <script type="application/ld+json" is:inline set:html={JSON.stringify(block)} />
+      <script
+        type="application/ld+json"
+        is:inline
+        set:html={jsonLdScriptContent(block)}
+      />
     ))
   }
   <section class="blog-page">

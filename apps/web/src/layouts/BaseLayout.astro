@@ -4,7 +4,7 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import type { LocaleContent } from "../data/content";
 import { site } from "../data/site";
-import { websiteJsonLd, personJsonLd, validateStructuredData } from "../data/structured";
+import { websiteJsonLd, personJsonLd, validateStructuredData, jsonLdScriptContent } from "../data/structured";
 
 interface Props {
   content: LocaleContent;
@@ -46,7 +46,7 @@ validateStructuredData(...structured);
         <script
           type="application/ld+json"
           is:inline
-          set:html={JSON.stringify(block)}
+          set:html={jsonLdScriptContent(block)}
         />
       ))
     }
