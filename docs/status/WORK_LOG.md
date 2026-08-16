@@ -1309,6 +1309,15 @@ ode --check و YAML validation توسط agent.
 - Scope / files: `.gitignore` only, this Work Log.
 - Decisions / assumptions: Assets/ committed in LOG-0117 remain in git history (amend not safe on pushed commit); future files in Assets/ will be ignored.
 
+## LOG-0129 - 2026-08-16 - P3 / RISK-0009 CLOSED (password + production TOTP)
+
+- Outcome: Owner rebuilt CMS image from `main` (`95a740f`), `update-cms.sh` + `smoke-cms.sh` PASS, then attested password rotation and TOTP enrollment on production. RISK-0009 CLOSED.
+- Why: Persist owner completion of the last CMS runtime hygiene residuals.
+- Scope / files: RISK_REGISTER, AGENTS.md, BACKLOG, CHANGELOG, this Work Log, P3-mfa task spec status.
+- Verification: owner VPS log (rebuild + smoke); owner chat attestation «انجام شد» for password + TOTP (no secrets recorded).
+- Deferred or risk IDs: DEFER-0015 (recovery codes) remains OPEN; RISK-0003 still needs CMS-postgres restore evidence; `/api/`/`/media/` unpublished.
+- Rollback / recovery: previous CMS image tag; Caddyfile timestamped backup.
+
 ## LOG-0128 - 2026-08-16 - P3 / Wagtail TOTP enrollment + OTP login
 
 - Outcome: Account had no OTP section because MFA was enforcement-only. Added Wagtail `OTPLoginForm`, `/admin/account/two-factor/` enrollment (QR via `qrcode` + manual secret), Account profile panel + menu item, and middleware that redirects staff without a confirmed device to setup (account/password still reachable). Login requires OTP only after enrollment. Security fix: setup/QR not exempt for enrolled users without OTP session; QR serves unconfirmed devices only; session `cycle_key` on confirm.

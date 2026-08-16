@@ -2,6 +2,11 @@
 
 > هر slice واقعی (کد، زیرساخت، مستندات) که در `docs/status/WORK_LOG.md` ثبت می‌شود می‌تواند یک ردیف خلاصه اینجا داشته باشد. Append-only؛ جدیدترین در بالا.
 
+## 2026-08-16 — RISK-0009 CLOSED (production TOTP + password)
+
+- Owner rebuilt CMS to `95a740f`, smoke PASS, rotated admin password, enrolled TOTP on production.
+- Next ops focus: RISK-0003 CMS-postgres backup/restore evidence; DEFER-0015 recovery codes optional.
+
 ## 2026-08-16 — Wagtail TOTP enrollment + OTP login (code)
 
 - Account panel + `/admin/account/two-factor/` (QR + confirm); login requires OTP after enrollment; middleware redirects unenrolled staff to setup.

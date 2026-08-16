@@ -1,6 +1,6 @@
 # Project Manifest
 
-**Status:** P0-G0 — `PASS for static-only P1` (2026-08-14) **+ P3 CMS runtime PARTIAL (2026-08-16)**. Wagtail `/admin/login/` and CMS `/health/` are live on `tahamohamadi.ir`; `/static*` Caddy proxy, password hygiene and MFA first-login remain (`RISK-0009` OPEN). `RISK-0003` still lacks CMS-postgres restore evidence. Staging از 2026-08-15 decommission شده است (ADR-0025).  
+**Status:** P0-G0 — `PASS for static-only P1` (2026-08-14) **+ P3 CMS runtime live (2026-08-16)**. Wagtail `/admin/`, `/static/*`, CMS `/health/`, and TOTP are live (`RISK-0009` CLOSED). `RISK-0003` still lacks CMS-postgres restore evidence. Staging از 2026-08-15 decommission شده است (ADR-0025).  
 **Last verified:** 2026-08-16  
 **Source of truth for commands:** این فایل؛ دستور تأییدنشده را اجرا یا مستند نکنید.
 
@@ -16,7 +16,7 @@
 | Staging domain | DECOMMISSIONED (ADR-0025, 2026-08-15) — `staging.tahamohamadi.ir` Caddy block and DNS removed; dev/deploy directly on production |
 | Root locale | `/` Language Gateway |
 | Locale roots | `/fa/` (RTL) and `/en/` (LTR) |
-| Admin route | `/admin/` — Wagtail live; `/static/*` proxied (smoke CSS 200); RISK-0009 residual = password + TOTP |
+| Admin route | `/admin/` — Wagtail live; `/static/*` proxied; TOTP enrolled (`RISK-0009` CLOSED) |
 
 ## Approved architecture
 
@@ -119,8 +119,8 @@ docker compose -f infra/cms/docker-compose.cms.yml exec cms python manage.py cre
 ```
 
 Architecture: Caddy edge + versioned static artifact + Compose only for CMS/Postgres.
-See `infra/cms/README.md`. `RISK-0009` stays OPEN until `/static*` is proxied, the
-admin password is rotated, and TOTP first-login is confirmed.
+See `infra/cms/README.md`. `RISK-0009` is CLOSED (static proxy + password rotate +
+production TOTP). `RISK-0003` and `DEFER-0015` remain for backup evidence and recovery codes.
 
 ## Agent tooling (developer workstation, verified 2026-08-15)
 
@@ -177,4 +177,4 @@ Node.js public production runtime
 - Rotate root credential and define non-root SSH-key access (`RISK-0002`) via `docs/governance/SERVER_ACCESS_RUNBOOK.md`.
 - Set up and test encrypted Google Drive backup, retention and restore (`RISK-0003`) after secure access and audit, per `docs/governance/BACKUP_POLICY.md`.
 - Select production WSGI/ASGI server, worker count, media layout, monitoring and exact deploy mechanics in P0-A ADRs.
-- `RISK-0007` (staging capacity) is CLOSED. `RISK-0009` is OPEN (live admin without `/static*` proxy, weak-password bypass, MFA first-login unconfirmed). `RISK-0003` still needs CMS-postgres restore/import evidence before contact persistence. `/api/` and `/media/` stay unpublished.
+- `RISK-0007` (staging capacity) is CLOSED. `RISK-0009` is CLOSED (admin/static/health + password + TOTP on production). `RISK-0003` still needs CMS-postgres restore/import evidence before contact persistence. `/api/` and `/media/` stay unpublished. `DEFER-0015` covers TOTP recovery codes.
