@@ -116,8 +116,9 @@ Canonical topology:
 
 ```text
 Caddy (TLS)
-  ├── static Astro artifact  → /opt/taha/site/current   (versioned dirs + current symlink)
-  └── /admin* + /health*     → 127.0.0.1:18000          (Compose: cms + postgres)
+  ├── static Astro artifact  → /opt/taha/site/current
+  ├── /admin* + /static*     → 127.0.0.1:18000
+  └── /health/               → 127.0.0.1:18000   (NOT /health* — that steals /health.json)
 ```
 
 - Image source of truth: `ghcr.io/<owner>/taha-cms:<git-sha>` (CI:
