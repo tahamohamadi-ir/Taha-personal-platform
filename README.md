@@ -1,14 +1,14 @@
 # Taha Personal Platform
 
-Bilingual Persian/English personal research, professional and knowledge platform for Taha Mohammadi, live at https://tahamohamadi.ir. The public root is a Language Gateway (`/`) with direct locale roots `/fa/` (RTL) and `/en/` (LTR); all public content is static-first and readable without JavaScript, served as a versioned artifact by Caddy from `/opt/taha/site/current`. This repository is a monorepo: `apps/web/` is the Astro static public frontend, `apps/cms/` is the Django/Wagtail/Ninja CMS (P3 code-first, not deployed), `infra/` holds deploy scripts and NOT-APPLIED CMS runtime candidates, and `docs/` holds policies, ADRs, task specs and status ledgers. Source of truth for product, environments and commands: [PROJECT_MANIFEST.md](PROJECT_MANIFEST.md).
+Bilingual Persian/English personal research, professional and knowledge platform for Taha Mohammadi, live at https://tahamohamadi.ir. The public root is a Language Gateway (`/`) with direct locale roots `/fa/` (RTL) and `/en/` (LTR); all public content is static-first and readable without JavaScript, served as a versioned artifact by Caddy from `/opt/taha/site/current`. This repository is a monorepo: `apps/web/` is the Astro static public frontend, `apps/cms/` is the Django/Wagtail/Ninja CMS (runtime live, `/static*` Caddy proxy still outstanding), `infra/` holds deploy scripts and the CMS Compose stack, and `docs/` holds policies, ADRs, task specs and status ledgers. Source of truth for product, environments and commands: [PROJECT_MANIFEST.md](PROJECT_MANIFEST.md).
 
 ## Repository layout
 
 ```text
 apps/web/       Astro 7 + TypeScript static public frontend (Language Gateway, /fa/ + /en/ landing, about, cv, 404, health, robots, sitemap)
-apps/cms/       Django 5.2.9 / Wagtail 7.4.2 / Django Ninja 1.6.2 / psycopg 3.3.4 on Python 3.12.13 — P3 code-first, 70 pytest PASS, not deployed
-infra/deploy/   versioned artifact switch (update-release.sh), smoke.sh, rollback and Caddy-apply scripts
-infra/cms/      NOT-APPLIED candidates for the future CMS runtime (Dockerfile, Compose, Caddy snippet, README)
+apps/cms/       Django 5.2.9 / Wagtail 7.4.2 / Django Ninja 1.6.2 / psycopg 3.3.4 on Python 3.12.13 — runtime on 127.0.0.1:18000
+infra/deploy/   versioned artifact switch (update-release.sh), smoke.sh, update-cms.sh, smoke-cms.sh
+infra/cms/      CMS Compose + Dockerfile + Caddy snippet (apply `/static*` before file_server)
 infra/caddy/    static-site Caddy config candidate
 infra/backup/   restic/rclone backup timer and .env.example
 docs/adr/       accepted/proposed architecture decisions (ADR-0002..0025 + index)
@@ -75,9 +75,8 @@ uv run pytest -q                        # test suite (75 passed)
 
 ## Status snapshot
 
-- Live (2026-08-16): canonical remote `https://github.com/tahamohamadi-ir/Taha-personal-platform.git` (public), default branch `main`. Production serves **release-6031441** (checksum `031943b1`) at https://tahamohamadi.ir: Language Gateway `/`, `/fa/` (RTL) and `/en/` (LTR) landing pages, About and CV pages per locale, locale-aware 404, `/health.json`, robots and sitemap — static-first, readable without JavaScript, CI green on `main`. Server: Ubuntu 26.04 LTS, 2 vCPU / ~4 GiB RAM / 30 GB disk; it co-hosts the pre-existing Compose stack (taha-prod-frontend/backend/postgres, inventory-confirmed 2026-08-16), which the owner is decommissioning. Evidence: [WORK_LOG.md](docs/status/WORK_LOG.md) (LOG-0111), [CHANGELOG.md](docs/status/CHANGELOG.md).
-- Code-first, not deployed: `apps/cms/` P3 code-first is complete per [docs/plan/P3-gate-code-first-task-spec.md](docs/plan/P3-gate-code-first-task-spec.md) — content lifecycle models, media upload security, admin audit + login rate limit, rich-text allowlist, Ninja public read API, rebuild trigger, 70 pytest PASS — but is deployed nowhere; `infra/cms/` files are NOT-APPLIED candidates.
-- Blocked: CMS runtime deploy (MFA enforcement DONE + deploy Task Spec DONE; remaining: `RISK-0003` DB-import evidence + owner approval + old-stack decommission; `RISK-0009` BLOCKED), PostgreSQL provisioning, media/API exposure and contact persistence. Evidence: [AGENTS.md](AGENTS.md) gate, [BACKLOG.md](docs/status/BACKLOG.md), [RISK_REGISTER.md](docs/status/RISK_REGISTER.md), [P3-cms-deploy-task-spec.md](docs/plan/P3-cms-deploy-task-spec.md).
+- Live (2026-08-16): static site at https://tahamohamadi.ir plus CMS Compose `taha-cms`. `/admin/login/` is Wagtail; `/health/` is CMS JSON `db=ok`; `/health.json` is still the static artifact. `/static/wagtailadmin/css/core.css` currently 404s on the Astro 404 page until Caddy proxies `/static*`. Evidence: [WORK_LOG.md](docs/status/WORK_LOG.md) LOG-0126.
+- Open: `RISK-0009` (add `/static*` handle, rotate bypassed admin password, confirm TOTP); `RISK-0003` (restic restore evidence for the new CMS postgres volume). `/api/` and `/media/` stay unpublished.
 
 ## Security and governance notes
 

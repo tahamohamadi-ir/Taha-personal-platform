@@ -23,6 +23,11 @@ check() {
 }
 
 check "/admin/login/" "200"
+if ! grep -qi "Wagtail" /tmp/cms-smoke-body; then
+  echo "FAIL /admin/login/ is not the Wagtail sign-in page" >&2
+  fail=1
+fi
+check "/static/wagtailadmin/css/core.css" "200"
 check "/health/" "200"
 if ! grep -q '"db"' /tmp/cms-smoke-body; then
   echo "FAIL /health/ body is not CMS JSON" >&2

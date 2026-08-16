@@ -2,6 +2,13 @@
 
 > هر slice واقعی (کد، زیرساخت، مستندات) که در `docs/status/WORK_LOG.md` ثبت می‌شود می‌تواند یک ردیف خلاصه اینجا داشته باشد. Append-only؛ جدیدترین در بالا.
 
+## 2026-08-16 — CMS runtime live (PARTIAL); `/static*` still unproxied
+
+- Compose `taha-cms` healthy; migrate no-op; superuser created; `smoke-cms.sh` PASS on `/admin/login/`, `/health/`, `/health.json`.
+- Independent live check: Wagtail Sign in at `/admin/login/`; CMS `/health/` `db=ok`; static `/health.json` intact.
+- Residual (`RISK-0009` OPEN): Caddy does not proxy `/static*` — `core.css` 404s as the Astro 404 page. Admin password validators were bypassed (rotate). TOTP first-login unconfirmed. `RISK-0003` reopened for the live CMS postgres volume.
+- `smoke-cms.sh` now fails unless `/admin/login/` is Wagtail HTML and `/static/wagtailadmin/css/core.css` is 200.
+
 ## 2026-08-16 — C4 (CV/Resume) + header logo + B1 inventory + old-stack decommission
 
 - **C4 DONE (md):** the owner placed `Assets/Taha_Mohammadi_Master_CV_Website_Profile.md` and `Assets/Taha_Mohammadi_Industry_Resume_Software_AI.md`; they are published as Markdown downloads (title/note/size) via `apps/web/src/components/Downloads.astro` on new locale pages `/en/cv/` and `/fa/cv/`. Per contract, agents do not generate PDFs; PDF replacement remains an owner option (owner decision 2026-08-16). Header nav gained a CV link; sitemap now includes `/en/cv/` and `/fa/cv/`. Local QA (Playwright against built dist via python http.server on port 8899): overflow=0, dir ltr/rtl correct, 2 links per page, logo loads; `npm run check` 0 errors; `npm run build` 8 pages.

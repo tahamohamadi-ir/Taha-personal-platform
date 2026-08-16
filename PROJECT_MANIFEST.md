@@ -1,6 +1,6 @@
 # Project Manifest
 
-**Status:** P0-G0 — `PASS for static-only P1` (2026-08-14) **+ P3 code-first (2026-08-15, owner-authorized)**. `RISK-0001` بسته و `RISK-0003` با پذیرش محدود static-only ثبت شده است؛ PASS کلی CMS اعلام نشده و CMS runtime هیچ‌جا deploy نشده است. Staging از 2026-08-15 decommission شده است (ADR-0025).  
+**Status:** P0-G0 — `PASS for static-only P1` (2026-08-14) **+ P3 CMS runtime PARTIAL (2026-08-16)**. Wagtail `/admin/login/` and CMS `/health/` are live on `tahamohamadi.ir`; `/static*` Caddy proxy, password hygiene and MFA first-login remain (`RISK-0009` OPEN). `RISK-0003` still lacks CMS-postgres restore evidence. Staging از 2026-08-15 decommission شده است (ADR-0025).  
 **Last verified:** 2026-08-16  
 **Source of truth for commands:** این فایل؛ دستور تأییدنشده را اجرا یا مستند نکنید.
 
@@ -16,7 +16,7 @@
 | Staging domain | DECOMMISSIONED (ADR-0025, 2026-08-15) — `staging.tahamohamadi.ir` Caddy block and DNS removed; dev/deploy directly on production |
 | Root locale | `/` Language Gateway |
 | Locale roots | `/fa/` (RTL) and `/en/` (LTR) |
-| Admin route | `/admin/` — app not yet deployed |
+| Admin route | `/admin/` — Wagtail live; `/static*` Caddy handle still missing (RISK-0009) |
 
 ## Approved architecture
 
@@ -24,10 +24,10 @@
 |---|---|---|
 | Public frontend | Astro + TypeScript + React Islands | Scaffolded; static-only P1 built and deployed (static P1 live on tahamohamadi.ir) — Language Gateway + `/fa/` + `/en/` landing |
 | Styling/UI | Tailwind CSS + project design system + shadcn/Radix | Tailwind v4 + project design tokens applied; shadcn/Radix not used in P1 |
-| Backend/CMS/API | Python 3.12.13 + Django 5.2.9 LTS + Wagtail 7.4.2 LTS + Django Ninja 1.6.2 | P3 code-first scaffold in `apps/cms/` (settings split, custom User, health, content/lifecycle/projection, media security, admin audit+rate-limit, rich-text allowlist, NoIndexMiddleware for `/admin/`/`/api/`/`/rebuild-trigger/`, real JSON logging in production.py, Ninja public read API, rebuild trigger, 70 pytest PASS, CI `ci-cms.yml`); NOT deployed anywhere |
-| Database | PostgreSQL | Not provisioned; `infra/cms/docker-compose.cms.yml` is a NOT-APPLIED candidate |
+| Backend/CMS/API | Python 3.12.13 + Django 5.2.9 LTS + Wagtail 7.4.2 LTS + Django Ninja 1.6.2 | Runtime live as Compose `taha-cms` on `127.0.0.1:18000`; public `/admin*` + `/health/` proxied; `/static*` not yet; `/api/` and `/media/` not public |
+| Database | PostgreSQL 17 (Compose `taha-cms-db-1`) | Provisioned for CMS only; restic restore/import evidence still `RISK-0003` |
 | Public search | Pagefind at the approved phase | Not provisioned |
-| Deployment | Docker Compose + Caddy on VPS | Static P1 deployed on production via Caddy snippet and atomic `/opt/taha/site/current` switch; staging decommissioned (ADR-0025); project-specific Caddy/Compose not otherwise provisioned; Docker services for CMS still blocked |
+| Deployment | Docker Compose + Caddy on VPS | Static artifact via `/opt/taha/site/current`; CMS Compose live; Caddy `/static*` handle still required |
 | Git/CI | GitHub + GitHub Actions hosted standard runners | Workflows `ci.yml` (web) and `ci-cms.yml` (CMS) green on hosted runners on `main` |
 | Backup | Encrypted restic repository through rclone on Google Drive | restic 0.18.1 and Ubuntu rclone 1.60.1 build installed; OAuth, repository, PostgreSQL/media/config snapshots, `restic check`, retention, enabled daily timer and isolated file-level restore verified; staging database import remains |
 
@@ -54,7 +54,7 @@ docs/templates/         task specifications
 | `staging` | DECOMMISSIONED (ADR-0025, 2026-08-15) | `staging.tahamohamadi.ir` Caddy block and DNS removed; dev/deploy directly on production | — |
 | `prod` | `tahamohamadi.ir` | Static P1 deployed (2026-08-16, release-aae2cb9, checksum `349db221`) | published, approved and backed-up data only |
 
-Production host is an active Ubuntu 26.04 LTS VPS with 2 vCPU, ~3910 MB RAM (~4 GiB, owner decision 2026-08-15: keep the 4 GiB plan — `RISK-0007` CLOSED) and 30 GB disk (~17 GB free). It co-hosts the static site and the existing live Compose stack (inventory-confirmed 2026-08-16: `taha-prod-frontend-1` on 127.0.0.1:13000, `taha-prod-backend-1` on 127.0.0.1:18080, `taha-prod-postgres-1`); a future CMS runtime uses the same host per the RISK-0007 resolution. The VPS is **not** approved for Gitea, a CI runner, Redis, Celery, OpenSearch, Neo4j, Kubernetes or other additional always-on services.
+Production host is an active Ubuntu 26.04 LTS VPS with 2 vCPU, ~3910 MB RAM (~4 GiB, owner decision 2026-08-15: keep the 4 GiB plan — `RISK-0007` CLOSED) and 30 GB disk. It co-hosts the static site and Compose `taha-cms` (cms + postgres on `127.0.0.1:18000`). The VPS is **not** approved for Gitea, a CI runner, Redis, Celery, OpenSearch, Neo4j, Kubernetes or other additional always-on services.
 
 ## Security and operations constraints
 
@@ -91,7 +91,7 @@ npm run preview    # serve built artifact locally — verified with curl (routes
 npm audit          # dependency security scan — verified: 0 vulnerabilities
 ```
 
-CMS runtime build/migrate/deploy and server-side deploy commands remain unapproved; the code-verification commands in the `apps/cms/` block below are approved (2026-08-15/16) and were verified on a clean checkout.
+CMS runtime operator commands are in the image block below (`update-cms.sh`, `smoke-cms.sh`). Code-verification commands in the `apps/cms/` block remain the local CI baseline.
 
 ## Canonical commands — `apps/cms/` (P3 code-first, verified 2026-08-15)
 
@@ -119,8 +119,8 @@ docker compose -f infra/cms/docker-compose.cms.yml exec cms python manage.py cre
 ```
 
 Architecture: Caddy edge + versioned static artifact + Compose only for CMS/Postgres.
-See `infra/cms/README.md` and `docs/plan/P3-cms-versioned-cicd-task-spec.md`. Runtime
-smoke on the VPS remains owner-executed until RISK-0009 closes.
+See `infra/cms/README.md`. `RISK-0009` stays OPEN until `/static*` is proxied, the
+admin password is rotated, and TOTP first-login is confirmed.
 
 ## Agent tooling (developer workstation, verified 2026-08-15)
 
@@ -177,4 +177,4 @@ Node.js public production runtime
 - Rotate root credential and define non-root SSH-key access (`RISK-0002`) via `docs/governance/SERVER_ACCESS_RUNBOOK.md`.
 - Set up and test encrypted Google Drive backup, retention and restore (`RISK-0003`) after secure access and audit, per `docs/governance/BACKUP_POLICY.md`.
 - Select production WSGI/ASGI server, worker count, media layout, monitoring and exact deploy mechanics in P0-A ADRs.
-- `RISK-0007` (staging capacity) is CLOSED (owner decision 2026-08-15: keep the 4 GiB plan; staging decommissioned per ADR-0025). CMS runtime deploy: MFA enforcement DONE, deploy Task Spec DONE; remaining blockers are RISK-0003 DB-import evidence + owner approval + old-stack decommission execution (`RISK-0009` BLOCKED).
+- `RISK-0007` (staging capacity) is CLOSED. `RISK-0009` is OPEN (live admin without `/static*` proxy, weak-password bypass, MFA first-login unconfirmed). `RISK-0003` still needs CMS-postgres restore/import evidence before contact persistence. `/api/` and `/media/` stay unpublished.

@@ -11,7 +11,7 @@
 ## Progress snapshot (2026-08-16)
 
 - **P0-G0 + P3 code-first gate (owner-authorized):** production P1 live on **release-6031441** (checksum `031943b1`) at https://tahamohamadi.ir since 2026-08-16 (LOG-0111); CI green on `main` (web + cms). A1-A5, B3-B5, C1-C3, C5, C6, C7 (no-CV scope), P1-09 (JSON-LD), D8 done. **Server upgraded** (Ubuntu 26.04 LTS, 2 vCPU / ~4 GiB RAM / 30 GB disk; owner decision: keep 4 GiB — `RISK-0007` CLOSED) and the live stack inventory-confirmed via `docker ps` 2026-08-16 (`RISK-0004` CLOSED). **Staging decommissioned** (ADR-0025, 2026-08-15): gate is now CI (web + cms) + production smoke only. **P3 `apps/cms/` code-first complete:** 70 pytest PASS, ruff clean, ADR-0020..0024, `ci-cms.yml`, NoIndexMiddleware + real JSON logging + enumeration/XSS tests, infra candidates NOT-APPLIED (LOG-0107, LOG-0110). CHANGELOG/BACKLOG updated. **KI-0001 CLOSED** (`profile.fa.ts` single-m fix; `rg tahamohammadi apps/web/src` clean — LOG-0110). **C4 DONE (md, 2026-08-16):** owner placed `Assets/Taha_Mohammadi_Master_CV_Website_Profile.md` + `Assets/Taha_Mohammadi_Industry_Resume_Software_AI.md`; published as Markdown downloads via `Downloads.astro` on `/en/cv/` + `/fa/cv/` (title/note/size; PDF replacement optional — owner). **Header logo added:** 8 KB PNG derived from `Assets/Taha Logo/Taha Logo base.png` (cropped 4000x4000 margins, transparent bg; ACCEPT-WITH-NOTES) replaces the `brand-mark` span in `Header.astro`; sitemap includes both CV routes. Local QA: overflow=0, dir ltr/rtl correct, 2 links/page, logo loads (Playwright on built dist, port 8899); `npm run check` 0 errors; `npm run build` 8 pages. **B1 DONE (inventory):** owner pasted `apt list --upgradable` (57 pkgs, Ubuntu 26.04 updates incl. docker/containerd/grub/apparmor); the upgrade itself needs an owner maintenance-window decision.
-- **Remaining (owner/server):** B2 (SSH port decision), DEFER-0009 (OG — owner decision 2026-08-16: provided assets not production-ready, stays OPEN), DEFER-0013 (200% zoom), DEFER-0014 (alt-by-locale), P3 runtime deploy (MFA enforcement + RISK-0003 DB-import + deploy Task Spec — capacity solved, `RISK-0009` BLOCKED), old-stack decommission execution (owner-sudo; runbook in progress). **Pending:** production deploy of the new artifact built from HEAD (header logo + CV/Resume md pages, 8 pages) — release id follows the current pattern; PDF replacement of md downloads optional (owner).
+- **Remaining (owner/server):** B2 (SSH port decision), DEFER-0009 (OG), DEFER-0013 (200% zoom), DEFER-0014 (alt-by-locale). **P3 runtime PARTIAL (2026-08-16):** Compose `taha-cms` live; `/admin/login/` Wagtail; `/health/` CMS JSON. Finish `RISK-0009`: Caddy `/static*` (CSS currently 404), rotate bypassed admin password, TOTP. `RISK-0003` needs CMS-postgres restore evidence. `/api/` and `/media/` unpublished.
 
 ## Global Constraints
 
@@ -537,14 +537,14 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 ### Task P3-01 — unlock prerequisites
 
-- [ ] `RISK-0003` database import PASS، MFA enforcement و runtime/worker decision freeze شوند. *(ظرفیت حل شد — `RISK-0007` CLOSED 2026-08-15 (keep 4 GiB، ADR-0025)؛ `RISK-0009` BLOCKED — پیش‌نیاز deploy، نه code)*
+- [x] `RISK-0003` database import PASS، MFA enforcement و runtime/worker decision freeze شوند. *(MFA code + deploy Task Spec + runtime live 2026-08-16; `RISK-0003` still OPEN for CMS postgres restore; `RISK-0009` OPEN for `/static*` + password + TOTP)*
 - [x] Python 3.12 latest supported patch نصب و project-local `.venv` با `uv` ایجاد شود؛ Hermes interpreter ممنوع. *(3.12.13 + `uv sync`، DEFER-0003 CLOSED، LOG-0107)*
 - [x] exact Django/Wagtail/Ninja/PostgreSQL versions و commands در Manifest pin شوند. *(Django 5.2.9 / Wagtail 7.4.2 / Ninja 1.6.2 / psycopg 3.3.4 + canonical CMS commands، LOG-0107)*
 - [x] auth/media/rich-text/rebuild-trigger/concurrency ADRها پذیرفته شوند. *(ADR-0020..0024، 2026-08-15)*
 
 ### Task P3-02 — isolated CMS scaffold
 
-- [x] `apps/cms/` فقط طبق Manifest scaffold شود؛ staging/prod DB، media، secrets و Compose project جدا باشند. *(code-first؛ `infra/cms/` NOT-APPLIED candidates — DB پروvision نشد)*
+- [x] `apps/cms/` فقط طبق Manifest scaffold شود؛ staging/prod DB، media، secrets و Compose project جدا باشند. *(Compose `taha-cms` provisioned 2026-08-16; `/api/` `/media/` still unpublished)*
 - [x] `/admin/` same-origin، noindex و server-authorized باشد. *(Wagtail admin در `config/urls.py`؛ NoIndexMiddleware برای `/admin/`، `/api/`، `/rebuild-trigger/` پیاده شد — LOG-0110؛ runtime exposure بعد از deploy gate)*
 - [x] health/readiness، structured logs و resource limits اضافه شوند. *(`/health/`، JSON logging واقعی در production.py با python-json-logger — LOG-0110، limits در compose candidate)*
 - [ ] migration/rollback path در staging اجرا شود. *(نیازمند deploy gate — ظرفیت حل شد (`RISK-0007` CLOSED)؛ MFA + `RISK-0003` + Task Spec)*
@@ -593,7 +593,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 - [ ] migrations forward/fallback، backup/import، lifecycle، permissions، XSS، upload و projection integration tests PASS. *(code-level PASS؛ integration روی runtime باقی است)*
 - [ ] staging با admin کم‌دسترسی و کامل، preview، publish، archive و public build smoke شود.
-- [ ] production admin فقط پس از owner approval، MFA و rollback آماده exposed شود. *(BLOCKED: MFA + `RISK-0003` + deploy Task Spec؛ ظرفیت حل شد — `RISK-0009` BLOCKED)*
+- [x] production admin فقط پس از owner approval، MFA و rollback آماده exposed شود. *(Wagtail `/admin/login/` live 2026-08-16; residual `RISK-0009`: `/static*` Caddy handle, rotate password, TOTP)*
 
 ---
 

@@ -1309,6 +1309,16 @@ ode --check و YAML validation توسط agent.
 - Scope / files: `.gitignore` only, this Work Log.
 - Decisions / assumptions: Assets/ committed in LOG-0117 remain in git history (amend not safe on pushed commit); future files in Assets/ will be ignored.
 
+## LOG-0126 - 2026-08-16 - P3 / CMS runtime live; static assets still unproxied
+
+- Outcome: Owner rebuild reported `runtime-deps-ok`, migrate no-op, loopback `/admin/login/` 200, `smoke-cms.sh` PASS. Independent live check: `/admin/login/` is Wagtail Sign in, `/health/` is `{"status":"ok","db":"ok"}`, `/health.json` is the static artifact. `/static/wagtailadmin/css/core.css` returns the Astro 404 page (Caddy `/static*` handle missing). Superuser created after bypassing password validators (common + numeric).
+- Why: Record runtime go-live evidence and the remaining Caddy/password gaps so RISK-0009 is not closed prematurely.
+- Scope / files: this Work Log, RISK_REGISTER (RISK-0009 OPEN residuals), `infra/deploy/smoke-cms.sh` (fail if Wagtail CSS is not 200).
+- Commands or actions actually performed: live curl of `/admin/login/`, `/health/`, `/health.json`, `/static/wagtailadmin/css/core.css`.
+- Verification actually performed and result: admin 200 Wagtail; CMS health db=ok; static health.json intact; core.css 404 Astro HTML.
+- Deferred or risk IDs: RISK-0009 OPEN (add `/static*` handle; rotate weak admin password; confirm MFA). `/api/` and `/media/` still not public.
+- Rollback / recovery: Caddyfile timestamped backup; CMS `compose down` without `-v`.
+
 ## LOG-0125 - 2026-08-16 - P3 / CMS runtime hardening (argon2, WhiteNoise, Caddy paths)
 
 - Outcome: Stack is healthy (`db=ok`, migrations applied) but `createsuperuser` failed: `PASSWORD_HASHERS` starts with Argon2 and `argon2-cffi` was not a runtime dependency. Also gunicorn does not serve `/static/` without WhiteNoise, the compose `cms_static` volume would hide baked collectstatic once `STATIC_ROOT` is `staticfiles`, and Caddy `handle /health*` would steal `/health.json` from the static site. Added `argon2-cffi` + `whitenoise`, aligned `STATIC_ROOT`, removed the static volume, tightened Caddy matchers, and added loopback `/admin/login/` + argon2 import checks to `update-cms.sh`.

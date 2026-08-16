@@ -72,8 +72,10 @@ bash infra/deploy/update-cms.sh
 #   bash infra/deploy/update-cms.sh
 
 # One-time / when snippet changes: merge Caddyfile.cms.snippet into site block
-# (before file_server). Do not use handle /health* — it would steal /health.json.
+# (before file_server). Required handles: /admin* /static* /health/
+# Do not use handle /health* — it would steal /health.json.
 # Then: sudo caddy validate && sudo systemctl reload caddy
+# Evidence 2026-08-16: without /static*, Wagtail CSS 404s on the Astro 404 page.
 bash infra/deploy/smoke-cms.sh https://tahamohamadi.ir
 
 # Password must be at least 12 characters (do not bypass validation).
