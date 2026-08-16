@@ -107,3 +107,8 @@ export function validateStructuredData(...blocks: JsonLdBlock[]): void {
     }
   }
 }
+
+/** Serialize JSON-LD for inline ``<script>`` without ``</script>`` breakout. */
+export function jsonLdScriptContent(block: JsonLdBlock): string {
+  return JSON.stringify(block).replace(/</g, "\\u003c");
+}

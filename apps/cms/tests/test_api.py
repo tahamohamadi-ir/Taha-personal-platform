@@ -267,6 +267,28 @@ def test_list_article_redirects(api_client, published_content):
     ]
 
 
+def test_list_article_redirects_hides_targets_not_public(api_client, published_content):
+    ArticleSlugRedirect.objects.create(
+        locale=Locale.EN, old_slug="points-to-draft", new_slug="draft-post"
+    )
+    data = assert_json(api_client.get("/api/article-redirects/en"), 200)
+    assert all(item["new_slug"] != "draft-post" for item in data)
+
+
+def test_detail_article_body_is_sanitized(api_client, db):
+    Article.objects.create(
+        locale=Locale.EN,
+        slug="xss-post",
+        title="XSS",
+        body='<p>ok</p><script>alert(1)</script>',
+        status=LifecycleStatus.PUBLISHED,
+        published_at=timezone.now() - timedelta(days=1),
+    )
+    data = assert_json(api_client.get("/api/articles/en/xss-post"), 200)
+    assert "<script>" not in data["body"]
+    assert "ok" in data["body"]
+
+
 def test_snippet_modules_importable():
     from apps.content import admin as content_admin
 

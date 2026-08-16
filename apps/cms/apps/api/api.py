@@ -12,6 +12,7 @@ from datetime import datetime
 from ninja import Field, NinjaAPI, Schema
 from ninja.errors import HttpError
 from ninja.pagination import PageNumberPagination, paginate
+from wagtail.whitelist import Whitelister
 
 from apps.content.models import (
     Article,
@@ -23,6 +24,12 @@ from apps.content.models import (
 )
 
 api = NinjaAPI(title="Taha CMS Public API", version="0.2.0")
+_BODY_WHITELISTER = Whitelister()
+
+
+def sanitize_public_richtext(raw: str) -> str:
+    """Re-sanitize rich text for public projection (same Whitelister as staff preview)."""
+    return _BODY_WHITELISTER.clean(raw or "")
 
 
 class LandingOut(Schema):
@@ -99,7 +106,7 @@ class ArticleDetailOut(ArticleListOut):
 
     @staticmethod
     def resolve_body(obj: Article) -> str:
-        return str(obj.body or "")
+        return sanitize_public_richtext(str(obj.body or ""))
 
 
 class ArticleSlugRedirectOut(Schema):
@@ -221,6 +228,12 @@ def list_tags(request, locale: str) -> list[TopicTag]:
     summary="List article slug redirects for a locale",
 )
 def list_article_redirects(request, locale: str) -> list[ArticleSlugRedirect]:
-    return list(
-        ArticleSlugRedirect.objects.filter(locale=locale).order_by("old_slug")
+    """Only expose redirects whose target slug is currently public."""
+    public_slugs = set(
+        Article.objects.public().filter(locale=locale).values_list("slug", flat=True)
     )
+    return [
+        row
+        for row in ArticleSlugRedirect.objects.filter(locale=locale).order_by("old_slug")
+        if row.new_slug in public_slugs
+    ]
