@@ -164,3 +164,35 @@ class TestMediaAdminForm:
             files={"file": uploaded("photo.png", PNG_1X1)},
         )
         assert form.is_valid(), form.errors
+
+
+class TestRenditionContract:
+    def test_specs_exclude_original(self):
+        from apps.media.renditions import RENDITION_NAMES, RENDITION_SPECS
+
+        assert "original" not in RENDITION_NAMES
+        assert {s.name for s in RENDITION_SPECS} == {"thumb", "card", "full"}
+
+    def test_image_requires_rendition(self):
+        from apps.media.renditions import select_public_rendition_name
+
+        with pytest.raises(ValueError, match="rendition"):
+            select_public_rendition_name("image/png", {"original"})
+
+    def test_picks_largest_available(self):
+        from apps.media.renditions import select_public_rendition_name
+
+        assert (
+            select_public_rendition_name("image/jpeg", {"thumb", "card"}) == "card"
+        )
+
+    def test_pdf_has_no_image_rendition(self):
+        from apps.media.renditions import select_public_rendition_name
+
+        assert select_public_rendition_name("application/pdf", set()) is None
+
+    def test_original_forbidden_helper(self):
+        from apps.media.renditions import original_forbidden_for_public
+
+        assert original_forbidden_for_public("image/png") is True
+        assert original_forbidden_for_public("application/pdf") is False
