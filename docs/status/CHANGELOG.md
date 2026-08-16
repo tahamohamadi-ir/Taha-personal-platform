@@ -2,6 +2,10 @@
 
 > هر slice واقعی (کد، زیرساخت، مستندات) که در `docs/status/WORK_LOG.md` ثبت می‌شود می‌تواند یک ردیف خلاصه اینجا داشته باشد. Append-only؛ جدیدترین در بالا.
 
+## 2026-08-16 — P5 Research Task Spec (S0)
+
+- `P5-research-task-spec.md` IN_PROGRESS; DEFER-0017 scope includes research; DEFER-0019/0020 added. Implementation follows in subsequent commits.
+
 ## 2026-08-16 — P4 security harden (public projection)
 
 - Redirect targets limited to public articles; API body re-sanitized; JSON-LD script breakout escaped (PR #15).

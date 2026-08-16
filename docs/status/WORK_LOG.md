@@ -1309,6 +1309,16 @@ ode --check و YAML validation توسط agent.
 - Scope / files: `.gitignore` only, this Work Log.
 - Decisions / assumptions: Assets/ committed in LOG-0117 remain in git history (amend not safe on pushed commit); future files in Assets/ will be ignored.
 
+## LOG-0135 - 2026-08-16 - P5 / Task Spec + ledger hygiene (S0)
+
+- Outcome: Formal `docs/plan/P5-research-task-spec.md` written (Status `IN_PROGRESS`); frozen field/route contracts; Caddy `/api/` explicitly out of scope under DEFER-0017 (scope expanded to research); DEFER-0019 (Statement PDF) and DEFER-0020 (curated collections/graph) recorded; BACKLOG/AGENTS/CHANGELOG/S-PLAN updated. No CMS/web implementation in this commit.
+- Why: AGENTS requires Task Spec before P5 implementation; code-first like P4 without inventing fields or opening edge APIs.
+- Scope / files: `docs/plan/P5-research-task-spec.md`, `docs/status/{deferred-validation,BACKLOG,CHANGELOG,WORK_LOG}.md`, `docs/plan/S-PLAN-STATE.md`, `AGENTS.md`.
+- Verification actually performed and result: docs-only; no pytest/build in this slice.
+- Decisions / assumptions: About static `researchProjects` left untouched; Contact stays honest About link; staging smoke replaced by local projection tests + optional owner prod smoke after migrate (ADR-0025).
+- Deferred or risk IDs: DEFER-0017 OPEN (expanded); DEFER-0019 OPEN; DEFER-0020 OPEN; RISK-0003 OPEN (owner).
+- Rollback / recovery: revert this docs commit.
+
 ## LOG-0134 - 2026-08-16 - P4 / security harden after review (PR #15)
 
 - Outcome: Public projection hardened: article slug redirects only resolve to `public()` targets; article detail API re-sanitizes rich text with Wagtail Whitelister; JSON-LD embedded via escaped script content to block `</script>` breakout. Merged as PR #15 onto `main` after CMS + web CI green.
