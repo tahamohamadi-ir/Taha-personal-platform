@@ -2,6 +2,11 @@
 
 > هر slice واقعی (کد، زیرساخت، مستندات) که در `docs/status/WORK_LOG.md` ثبت می‌شود می‌تواند یک ردیف خلاصه اینجا داشته باشد. Append-only؛ جدیدترین در بالا.
 
+## 2026-08-16 — TOTP recovery codes + MFA disable (DEFER-0015 CLOSED)
+
+- Hashed one-time recovery codes after enroll; login accepts recovery codes; regenerate/disable under Account two-factor.
+- 97 pytest PASS. Owner rebuild CMS image to use on production.
+
 ## 2026-08-16 — CMS-aware backup script + media rendition contract
 
 - Backup job targets `taha-cms-db-1` (+ optional legacy); `--dry-run` added. RISK-0003 still OPEN pending owner VPS evidence (`P3-cms-backup-restore-task-spec.md`).

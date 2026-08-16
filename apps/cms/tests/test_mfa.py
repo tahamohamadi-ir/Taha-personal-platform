@@ -6,6 +6,13 @@ from django.urls import reverse
 from django_otp.oath import totp
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
+from apps.security.models import AuditLog, RecoveryCode
+from apps.security.recovery import (
+    issue_recovery_codes,
+    normalize_recovery_code,
+    unused_recovery_code_count,
+)
+
 
 @pytest.fixture
 def admin_with_device(admin_user):
@@ -90,9 +97,18 @@ class TestTOTPEnrollment:
             {"otp_token": token},
         )
         assert response.status_code == 302
+        assert reverse("security_recovery_codes_reveal") in response.url
         device.refresh_from_db()
         assert device.confirmed is True
         assert admin_client.session.get("otp_device_id") == device.persistent_id
+        assert unused_recovery_code_count(admin_user) == 10
+
+        reveal = admin_client.get(reverse("security_recovery_codes_reveal"))
+        assert reveal.status_code == 200
+        assert b"Save your recovery codes" in reveal.content
+        # Second visit must not re-show plaintext.
+        again = admin_client.get(reverse("security_recovery_codes_reveal"))
+        assert again.status_code == 302
 
     def test_qrcode_svg(self, db, admin_client, admin_user):
         admin_client.get(reverse("security_totp_setup"))
@@ -160,3 +176,85 @@ class TestOTPLoginForm:
         )
         assert response.status_code == 302
         assert client.session.get("otp_device_id") == device.persistent_id
+
+
+class TestRecoveryCodes:
+    def test_login_with_recovery_code(self, db, admin_with_device):
+        admin_with_device.set_password("CorrectHorseBattery!")
+        admin_with_device.save()
+        plains = issue_recovery_codes(admin_with_device)
+        code = plains[0]
+        client = Client()
+        response = client.post(
+            "/admin/login/",
+            {
+                "username": admin_with_device.get_username(),
+                "password": "CorrectHorseBattery!",
+                "otp_token": code,
+                "next": "/admin/",
+            },
+        )
+        assert response.status_code == 302
+        device = admin_with_device.totpdevice_set.get()
+        assert client.session.get("otp_device_id") == device.persistent_id
+        assert unused_recovery_code_count(admin_with_device) == 9
+        assert AuditLog.objects.filter(action="mfa.recovery_used").exists()
+
+        # Reuse must fail
+        client2 = Client()
+        response = client2.post(
+            "/admin/login/",
+            {
+                "username": admin_with_device.get_username(),
+                "password": "CorrectHorseBattery!",
+                "otp_token": code,
+                "next": "/admin/",
+            },
+        )
+        assert response.status_code == 200
+        assert response.context["form"].errors
+
+    def test_login_accepts_normalized_recovery_code(self, db, admin_with_device):
+        admin_with_device.set_password("CorrectHorseBattery!")
+        admin_with_device.save()
+        plains = issue_recovery_codes(admin_with_device)
+        raw = normalize_recovery_code(plains[0]).lower()
+        client = Client()
+        response = client.post(
+            "/admin/login/",
+            {
+                "username": admin_with_device.get_username(),
+                "password": "CorrectHorseBattery!",
+                "otp_token": raw,
+                "next": "/admin/",
+            },
+        )
+        assert response.status_code == 302
+
+    def test_regenerate_invalidates_old_codes(self, db, admin_with_otp_client, admin_with_device):
+        old = issue_recovery_codes(admin_with_device)
+        device = admin_with_device.totpdevice_set.get()
+        response = admin_with_otp_client.post(
+            reverse("security_totp_regenerate"),
+            {"otp_token": _current_token(device)},
+        )
+        assert response.status_code == 302
+        assert reverse("security_recovery_codes_reveal") in response.url
+        assert unused_recovery_code_count(admin_with_device) == 10
+        # Old plaintext must not verify
+        from apps.security.recovery import consume_recovery_code
+
+        assert consume_recovery_code(admin_with_device, old[0]) is False
+
+    def test_disable_clears_totp_and_codes(self, db, admin_with_otp_client, admin_with_device):
+        issue_recovery_codes(admin_with_device)
+        device = admin_with_device.totpdevice_set.get()
+        response = admin_with_otp_client.post(
+            reverse("security_totp_disable"),
+            {"otp_token": _current_token(device)},
+        )
+        assert response.status_code == 302
+        assert reverse("security_totp_setup") in response.url
+        assert TOTPDevice.objects.filter(user=admin_with_device).count() == 0
+        assert RecoveryCode.objects.filter(user=admin_with_device).count() == 0
+        assert AuditLog.objects.filter(action="mfa.disabled").exists()

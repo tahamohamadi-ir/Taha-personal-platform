@@ -7,7 +7,13 @@ from django_otp import user_has_device
 from wagtail import hooks
 from wagtail.admin.views.account import BaseSettingsPanel, profile_tab
 
-from apps.security.views_totp import totp_qrcode, totp_setup
+from apps.security.views_totp import (
+    recovery_codes_reveal,
+    totp_disable,
+    totp_qrcode,
+    totp_regenerate,
+    totp_setup,
+)
 
 
 class _EmptyStatusForm(forms.Form):
@@ -38,6 +44,21 @@ def register_totp_urls():
     return [
         path("account/two-factor/", totp_setup, name="security_totp_setup"),
         path("account/two-factor/qrcode/", totp_qrcode, name="security_totp_qrcode"),
+        path(
+            "account/two-factor/recovery-codes/",
+            recovery_codes_reveal,
+            name="security_recovery_codes_reveal",
+        ),
+        path(
+            "account/two-factor/regenerate/",
+            totp_regenerate,
+            name="security_totp_regenerate",
+        ),
+        path(
+            "account/two-factor/disable/",
+            totp_disable,
+            name="security_totp_disable",
+        ),
     ]
 
 
