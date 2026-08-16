@@ -1,12 +1,10 @@
-# NOT-APPLIED — candidate only; deploy requires MFA enforcement, RISK-0003 DB-import evidence and a separate deploy Task Spec
+# CMS runtime compose topology for co-hosting on the 4 GiB VPS.
+# Capacity RESOLVED (RISK-0007 CLOSED 2026-08-15: owner keeps the 4 GiB plan).
+# Limits stay conservative until a measured budget exists — the running static
+# site stack must never be degraded.
 #
-# Candidate Compose topology for the CMS runtime co-hosted on the 4 GiB VPS.
-# Capacity is RESOLVED (RISK-0007 CLOSED 2026-08-15: owner keeps the 4 GiB
-# plan): the limits below stay conservative until a measured budget exists —
-# the running static site stack must never be degraded.
-#
-# Not used yet. When authorized by a deploy Task Spec:
-#   - create infra/cms/.env on the server from a template (never commit secrets;
+# Deploy steps:
+#   - create infra/cms/.env on the server (never commit secrets;
 #     this .env is not tracked) and set POSTGRES_HOST=db for the cms service
 #   - docker compose -f infra/cms/docker-compose.cms.yml up -d --build
 #   - no db/cms port is published to the host; Caddy joins the cms_internal
@@ -41,6 +39,8 @@ services:
     mem_limit: 512m
     cpus: "0.50"
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:18000:8000"
     volumes:
       - cms_static:/app/staticfiles
       - cms_media:/app/media

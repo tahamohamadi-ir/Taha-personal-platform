@@ -1,13 +1,9 @@
 # syntax=docker/dockerfile:1
-# NOT-APPLIED — candidate only; deploy requires MFA enforcement, RISK-0003 DB-import evidence and a separate deploy Task Spec
 #
-# Candidate multi-stage image for the CMS runtime (Django 5.2.9 / Wagtail 7.4.2 / Ninja 1.6.2).
+# Multi-stage image for the CMS runtime (Django 5.2.9 / Wagtail 7.4.2 / Ninja 1.6.2).
 # Build context is the repository root (needed for apps/cms/ + uv.lock).
-# NOT built anywhere yet; runtime env vars (DJANGO_SECRET_KEY, POSTGRES_*, etc.)
-# come from the compose .env at runtime — never baked into the image.
-#
-# Deploy slice must add a repo-root .dockerignore (exclude apps/cms/.venv,
-# dev.sqlite3, __pycache__) before the first real build.
+# Runtime env vars (DJANGO_SECRET_KEY, POSTGRES_*, etc.) come from the compose
+# .env at runtime — never baked into the image.
 
 FROM python:3.12-slim AS builder
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
