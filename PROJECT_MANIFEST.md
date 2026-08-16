@@ -120,7 +120,8 @@ docker compose -f infra/cms/docker-compose.cms.yml exec cms python manage.py cre
 
 Architecture: Caddy edge + versioned static artifact + Compose only for CMS/Postgres.
 See `infra/cms/README.md`. `RISK-0009` is CLOSED (static proxy + password rotate +
-production TOTP). `RISK-0003` and `DEFER-0015` remain for backup evidence and recovery codes.
+production TOTP). `DEFER-0015` is CLOSED (recovery codes in repo; owner rebuild for prod).
+`RISK-0003` remains for backup evidence. Public `/api/`/`/media/` stay unpublished (`DEFER-0017`).
 
 ## Agent tooling (developer workstation, verified 2026-08-15)
 
@@ -177,4 +178,4 @@ Node.js public production runtime
 - Rotate root credential and define non-root SSH-key access (`RISK-0002`) via `docs/governance/SERVER_ACCESS_RUNBOOK.md`.
 - Set up and test encrypted Google Drive backup, retention and restore (`RISK-0003`) after secure access and audit, per `docs/governance/BACKUP_POLICY.md`.
 - Select production WSGI/ASGI server, worker count, media layout, monitoring and exact deploy mechanics in P0-A ADRs.
-- `RISK-0007` (staging capacity) is CLOSED. `RISK-0009` is CLOSED (admin/static/health + password + TOTP on production). `RISK-0003` still needs CMS-postgres restore/import evidence before contact persistence. `/api/` and `/media/` stay unpublished. `DEFER-0015` covers TOTP recovery codes.
+- `RISK-0007` (staging capacity) is CLOSED. `RISK-0009` is CLOSED (admin/static/health + password + TOTP on production). `RISK-0003` still needs CMS-postgres restore/import evidence before contact persistence. `/api/` and `/media/` stay unpublished (`DEFER-0017`). `DEFER-0015` CLOSED (recovery codes in repo; owner rebuild).

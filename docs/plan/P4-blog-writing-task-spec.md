@@ -1,5 +1,12 @@
 # Task Specification — P4 Blog/Writing
 
+## Status
+
+- Status: `PARTIAL` (2026-08-16) — code + tests + docs in repo; production migrate / CMS_API_BASE publish / feed remain owner or deferred.
+- Gate: P3 CMS runtime live (`RISK-0009` CLOSED). Public Caddy proxy for `/api/` and `/media/` is **out of scope** for this Task Spec — recorded as `DEFER-0017` until a separate owner-authorized Task Spec opens those edges.
+- Astro blog builds may use optional `CMS_API_BASE` at build time; when unset, published lists render empty honestly (no invented articles). Production public HTML does not require edge `/api/` exposure.
+- Feed: RSS/Atom not shipped — `DEFER-0018`.
+
 ## Task: P4 — Blog/Writing with Article/Series, list/detail, feed
 
 - Goal: extend the P3 Article shell to a full blog/writing section with Article (body rich text, media attachments, topic tags, license, accessibility metadata, reading metrics), a Series model, locale-aware list/detail routes, sitemap entries, structured data, and an optional RSS/Atom feed.
@@ -52,7 +59,7 @@
 - Migration/data impact:
   - Django migration for Article field changes (body type change is non-destructive for PostgreSQL — TextField and RichTextField both map to `text`; new fields are nullable or have defaults).
   - New tables: `content_series`, `content_topic_tag`, M2M junction tables.
-  - No data loss: P3 Article shell has no production data (CMS not deployed).
+  - No data loss expected for greenfield Article rows; production CMS is live but P4 migrations apply only after owner backup evidence (`RISK-0003`) and an approved migrate window — this Task Spec does not authorize production migrate.
 - Locale, visibility and publication impact:
   - Articles are locale-specific (fa/en); slug unique per locale.
   - Public projection: only `status=published` + `published_at <= now` (inherited from `ContentQuerySet.public()`).
@@ -186,6 +193,7 @@
 
 | ID | Item | Why deferred | Target |
 |---|---|---|---|
+| DEFER-0017 | Public Caddy `/api/` (and related `/media/` for featured images) for blog | Edge exposure needs a separate Task Spec + owner approval; P4 ships in-process API + optional build-time `CMS_API_BASE` only | Separate publish-API Task Spec |
 | DEFER-P4-COMMENTS | Comment system | Complex; needs auth, moderation, spam protection | P7+ or owner decision |
 | DEFER-P4-SOCIAL | Social sharing analytics | Needs provider/consent decision | Owner decision |
 | DEFER-P4-PAYWALL | Paywalled content | Needs subscription/auth infrastructure | Not planned |
@@ -195,5 +203,5 @@
 
 - Files changed (task-owned only): `apps/cms/apps/content/models.py`, `apps/cms/apps/content/tests/`, `apps/cms/apps/api/`, `apps/cms/apps/content/admin.py` (snippet registration), `apps/web/src/pages/{locale}/blog/`, `apps/web/src/components/` (ArticleCard, ArticleDetail, SeriesNav, TagList, Breadcrumbs), `docs/plan/P4-blog-writing-task-spec.md` (this file), `docs/status/*`, `Task-list.md`.
 - Verification actually run (command + result): recorded in WORK_LOG after each step.
-- Deferred/risk IDs: DEFER-P4-COMMENTS, DEFER-P4-SOCIAL, DEFER-P4-PAYWALL, DEFER-P4-SEARCH.
-- Explicit blockers and next input: P3 CMS runtime must be deployed (RISK-0009 CLOSED) before P4 can begin. Owner provides topic tags, series structure, license preference and any content for initial articles.
+- Deferred/risk IDs: DEFER-0017, DEFER-P4-COMMENTS, DEFER-P4-SOCIAL, DEFER-P4-PAYWALL, DEFER-P4-SEARCH.
+- Explicit blockers and next input: P3 CMS runtime is deployed (`RISK-0009` CLOSED). Owner still owns `RISK-0003` backup evidence before production migrate; public `/api/` remains closed (`DEFER-0017`). Owner provides topic tags, series structure, license preference and any content for initial articles.

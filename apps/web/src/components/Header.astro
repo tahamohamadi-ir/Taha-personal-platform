@@ -36,6 +36,9 @@ const switchLang = otherLang;
         <a href={`/${content.lang}/about/`} class="header-link">
           {content.about.heading}
         </a>
+        <a href={`/${content.lang}/blog/`} class="header-link">
+          {content.blog.heading}
+        </a>
         <a href={`/${content.lang}/cv/`} class="header-link">
           {content.downloads.heading}
         </a>
@@ -75,11 +78,13 @@ const switchLang = otherLang;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 0.5rem;
     padding-block: 0.625rem;
     padding-inline: clamp(1rem, 5vw, 2.5rem);
     max-width: 1280px;
     margin-inline: auto;
     width: 100%;
+    box-sizing: border-box;
   }
 
   .brand {
@@ -90,6 +95,7 @@ const switchLang = otherLang;
     color: var(--color-ink);
     font-weight: 600;
     min-height: 2.75rem;
+    min-width: 0;
   }
 
   .brand-logo {
@@ -102,7 +108,22 @@ const switchLang = otherLang;
   .header-nav-group {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.25rem;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .header-nav,
+  .header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.15rem;
+    min-width: 0;
+    max-width: 100%;
   }
 
   .header-link {
@@ -123,14 +144,16 @@ const switchLang = otherLang;
     background-color: var(--color-brand-soft);
   }
 
-  @media (max-width: 32rem) {
+  /* About + Writing + CV + language switch: wrap inside the viewport instead
+     of expanding document scrollWidth (mobile-overflow QA). */
+  @media (max-width: 40rem) {
     .site-header-inner {
-      gap: 0.25rem;
+      flex-wrap: wrap;
+      gap: 0.35rem;
       padding-inline: 0.75rem;
     }
 
     .brand {
-      min-width: 0;
       flex: 1 1 auto;
       gap: 0.5rem;
     }
@@ -144,58 +167,48 @@ const switchLang = otherLang;
     }
 
     .header-nav-group {
-      flex: 0 0 auto;
-      gap: 0;
+      flex: 1 1 12rem;
     }
 
     .header-link {
-      padding-inline: 0.5rem;
-      font-size: 0.875rem;
+      padding-inline: 0.45rem;
+      font-size: 0.8125rem;
     }
   }
 
-  /* At the 160px/195px zoom-approximation viewports, fallback font metrics can
-     make the inline brand plus the three required navigation links wider than
-     the header. Keep every action reachable by giving navigation its own
-     two-column row with the language switch spanning it. */
+  /* Zoom-approximation 160/195 CSS px: logo row + 2×2 link grid so every
+     `.site-header a` stays within the short viewport after scroll. */
   @media (max-width: 14rem) {
     .site-header-inner {
-      flex-wrap: wrap;
-      justify-content: center;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      justify-content: stretch;
+      gap: 0.25rem;
       padding: 0.5rem;
     }
 
     .brand {
-      flex: 0 0 auto;
+      grid-column: 1 / -1;
+      justify-content: center;
+      min-height: 2.25rem;
     }
 
     .brand-name {
       display: none;
     }
 
-    .header-nav-group {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      flex: 1 0 100%;
-      gap: 0.25rem;
-      width: 100%;
-    }
-
+    .header-nav-group,
     .header-nav,
     .header-actions {
-      display: flex;
-      min-width: 0;
-    }
-
-    .header-actions {
-      grid-column: 1 / -1;
-      justify-content: center;
+      display: contents;
     }
 
     .header-link {
       justify-content: center;
       width: 100%;
+      min-height: 2.25rem;
       padding-inline: 0.25rem;
+      font-size: 0.75rem;
       overflow-wrap: anywhere;
     }
   }

@@ -76,7 +76,7 @@ uv run pytest -q                        # test suite (75 passed)
 ## Status snapshot
 
 - Live (2026-08-16): static site at https://tahamohamadi.ir plus CMS Compose `taha-cms`. `/admin/login/` is Wagtail; `/health/` is CMS JSON `db=ok`; `/health.json` is still the static artifact. `/static/wagtailadmin/css/core.css` currently 404s on the Astro 404 page until Caddy proxies `/static*`. Evidence: [WORK_LOG.md](docs/status/WORK_LOG.md) LOG-0126.
-- Open: `RISK-0003` (restic restore evidence for the new CMS postgres volume); `DEFER-0015` (TOTP recovery codes). `/api/` and `/media/` stay unpublished. `RISK-0009` CLOSED.
+- Open: `RISK-0003` (restic restore evidence for the new CMS postgres volume); `DEFER-0017` (public Caddy `/api/` for blog). `/api/` and `/media/` stay unpublished. `RISK-0009` CLOSED. `DEFER-0015` CLOSED (recovery codes in repo; owner rebuild).
 
 ## Security and governance notes
 

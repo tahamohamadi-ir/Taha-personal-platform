@@ -1309,6 +1309,17 @@ ode --check و YAML validation توسط agent.
 - Scope / files: `.gitignore` only, this Work Log.
 - Decisions / assumptions: Assets/ committed in LOG-0117 remain in git history (amend not safe on pushed commit); future files in Assets/ will be ignored.
 
+## LOG-0133 - 2026-08-16 - P4 / Blog Writing code-first (models, API, Astro, SEO)
+
+- Outcome: P4 Blog/Writing implemented code-first without opening public Caddy `/api/` or `/media/`. Article/Series/TopicTag + ArticleSlugRedirect models and migration; Wagtail snippet admin; Ninja list/detail/pagination/tag/series/redirect endpoints (published-only); Astro `/{locale}/blog/` routes with optional `CMS_API_BASE` (empty-honest when unset); BlogPosting + BreadcrumbList JSON-LD; sitemap blog entries; RSS deferred as DEFER-0018; public API edge deferred as DEFER-0017.
+- Why: Execute approved P4 plan after P3 runtime; keep edge surface closed until a separate publish-API Task Spec.
+- Scope / files: `apps/cms/apps/content/{models,admin,migrations/0002_*,wagtail_hooks}.py`, `apps/cms/apps/api/api.py`, `apps/cms/tests/test_{content,api}.py`, `apps/web/src/{lib/cms,components/blog,pages/*/blog,data,components/Header.astro,pages/sitemap.xml.ts}`, Task Spec + ledgers.
+- Commands or actions actually performed: `uv sync --python 3.12`; `makemigrations content`; `ruff check`; `pytest` 122 PASS; `npm run check` 0 errors; `npm run build` (blog index routes present; empty CMS).
+- Verification actually performed and result: CMS ruff clean; 122 pytest PASS; Astro check 0 errors/warnings; static build Complete with `/en/blog/` + `/fa/blog/`.
+- Decisions / assumptions: Featured images omitted from public UI while `/media/` unpublished; feed not shipped (DEFER-0018); no infra/Caddy changes.
+- Deferred or risk IDs: DEFER-0017 OPEN; DEFER-0018 OPEN; RISK-0003 OPEN (owner backup before prod migrate); DEFER-0014/0016 unchanged.
+- Rollback / recovery: revert P4 commits; drop migration 0002 if applied only in non-prod.
+
 ## LOG-0132 - 2026-08-16 - P3 / Staff draft preview boundary (P3-07)
 
 - Outcome: Staff-only read-only preview at `/admin/preview/<kind>/<pk>/` for Landing/Profile/Article (no Wagtail Page models). Body sanitized with Wagtail Whitelister; `X-Robots-Tag: noindex, nofollow, noarchive` and `Cache-Control: no-store`. Public share-token preview recorded as DEFER-0016. Task-list P3-07 safe minimum DONE.

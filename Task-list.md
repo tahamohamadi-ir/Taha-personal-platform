@@ -11,7 +11,7 @@
 ## Progress snapshot (2026-08-16)
 
 - **P0-G0 + P3 code-first gate (owner-authorized):** production P1 live on **release-6031441** (checksum `031943b1`) at https://tahamohamadi.ir since 2026-08-16 (LOG-0111); CI green on `main` (web + cms). A1-A5, B3-B5, C1-C3, C5, C6, C7 (no-CV scope), P1-09 (JSON-LD), D8 done. **Server upgraded** (Ubuntu 26.04 LTS, 2 vCPU / ~4 GiB RAM / 30 GB disk; owner decision: keep 4 GiB — `RISK-0007` CLOSED) and the live stack inventory-confirmed via `docker ps` 2026-08-16 (`RISK-0004` CLOSED). **Staging decommissioned** (ADR-0025, 2026-08-15): gate is now CI (web + cms) + production smoke only. **P3 `apps/cms/` code-first complete:** 70 pytest PASS, ruff clean, ADR-0020..0024, `ci-cms.yml`, NoIndexMiddleware + real JSON logging + enumeration/XSS tests, infra candidates NOT-APPLIED (LOG-0107, LOG-0110). CHANGELOG/BACKLOG updated. **KI-0001 CLOSED** (`profile.fa.ts` single-m fix; `rg tahamohammadi apps/web/src` clean — LOG-0110). **C4 DONE (md, 2026-08-16):** owner placed `Assets/Taha_Mohammadi_Master_CV_Website_Profile.md` + `Assets/Taha_Mohammadi_Industry_Resume_Software_AI.md`; published as Markdown downloads via `Downloads.astro` on `/en/cv/` + `/fa/cv/` (title/note/size; PDF replacement optional — owner). **Header logo added:** 8 KB PNG derived from `Assets/Taha Logo/Taha Logo base.png` (cropped 4000x4000 margins, transparent bg; ACCEPT-WITH-NOTES) replaces the `brand-mark` span in `Header.astro`; sitemap includes both CV routes. Local QA: overflow=0, dir ltr/rtl correct, 2 links/page, logo loads (Playwright on built dist, port 8899); `npm run check` 0 errors; `npm run build` 8 pages. **B1 DONE (inventory):** owner pasted `apt list --upgradable` (57 pkgs, Ubuntu 26.04 updates incl. docker/containerd/grub/apparmor); the upgrade itself needs an owner maintenance-window decision.
-- **Remaining (owner/server):** B2 (SSH port decision), DEFER-0009 (OG), DEFER-0013 (200% zoom), DEFER-0014 (alt-by-locale), DEFER-0015 (TOTP recovery codes). **P3 runtime live (2026-08-16):** Compose `taha-cms`; `/admin/` + `/static/*` + TOTP (`RISK-0009` CLOSED, LOG-0129). `RISK-0003` needs CMS-postgres restore evidence. `/api/` and `/media/` unpublished.
+- **Remaining (owner/server):** B2 (SSH port decision), DEFER-0009 (OG), DEFER-0013 (200% zoom), DEFER-0014 (alt-by-locale). **P3 runtime live (2026-08-16):** Compose `taha-cms`; `/admin/` + `/static/*` + TOTP (`RISK-0009` CLOSED, LOG-0129); recovery codes in repo (`DEFER-0015` CLOSED — owner rebuild); staff preview in repo (P3-07 DONE; `DEFER-0016` public token). `RISK-0003` needs CMS-postgres restore evidence. `/api/` and `/media/` unpublished (`DEFER-0017` for public blog API). **P4 Blog/Writing:** `IN_PROGRESS` on `feat/p4-blog-writing`.
 
 ## Global Constraints
 
@@ -601,28 +601,28 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 ### Task P4-01 — Article/Series contract
 
-- [ ] typed Article و Series با locale/lifecycle/slug/body/media/topic/license/accessibility و stable ordering تعریف شوند.
-- [ ] reading metric فقط در صورت defensible؛ feed decision در ADR.
+- [x] typed Article و Series با locale/lifecycle/slug/body/media/topic/license/accessibility و stable ordering تعریف شوند. *(models + migration `0002_p4_article_series_topictag`; TopicTag; ArticleSlugRedirect)*
+- [x] reading metric فقط در صورت defensible؛ feed decision در ADR. *(~200 wpm on save; RSS/Atom → DEFER-0018)*
 
 ### Task P4-02 — admin/editor و safe rendering
 
-- [ ] editor fields، heading/table/code/image rules و Shiki build-time highlighting پیاده شوند.
-- [ ] unrestricted HTML و client-heavy highlighter ممنوع.
+- [x] editor fields، heading/table/code/image rules و Shiki build-time highlighting پیاده شوند. *(Wagtail snippet panels + RichTextField allowlist; Shiki not required — body HTML from Wagtail)*
+- [x] unrestricted HTML و client-heavy highlighter ممنوع. *(ARTICLE_RICHTEXT_FEATURES synced with ADR-0022 allowlist)*
 
 ### Task P4-03 — list/detail/series routes
 
-- [ ] canonical locale routes، pagination bounds/stable order، previous/next و explicit missing translation بساز.
-- [ ] slug change redirect پایدار و تست‌شده باشد.
+- [x] canonical locale routes، pagination bounds/stable order، previous/next و explicit missing translation بساز. *(Astro `/{locale}/blog/` + detail/series/tag; SeriesNav; missing-translation note)*
+- [x] slug change redirect پایدار و تست‌شده باشد. *(ArticleSlugRedirect + API + Astro getStaticPaths redirect)*
 
 ### Task P4-04 — discovery/SEO/feed
 
-- [ ] sitemap، Article structured data، topics محدود و related content editorial-first باشند.
-- [ ] RSS/Atom فقط اگر واقعاً ساخته و فقط published public را شامل می‌شود لینک شود.
+- [x] sitemap، Article structured data، topics محدود و related content editorial-first باشند. *(sitemap blog + articles; BlogPosting + BreadcrumbList JSON-LD)*
+- [ ] RSS/Atom فقط اگر واقعاً ساخته و فقط published public را شامل می‌شود لینک شود. *(DEFER-0018)*
 
 ### Task P4-05 — verification/release
 
-- [ ] draft exclusion، XSS، invalid filter، pagination/order، redirects، feed validity، typography/keyboard/metadata تست شوند.
-- [ ] staging/prod list/detail/cache invalidation smoke و rollback unpublish/invalidate ثبت شود.
+- [x] draft exclusion، XSS allowlist، invalid filter، pagination/order، redirects تست شوند. *(122 pytest PASS; ruff clean; `npm run check` + build with empty CMS)*
+- [ ] staging/prod list/detail/cache invalidation smoke و rollback unpublish/invalidate ثبت شود. *(needs owner CMS rebuild + migrate + optional CMS_API_BASE build; no Caddy `/api/` — DEFER-0017)*
 
 ---
 

@@ -3,6 +3,7 @@
 from django.urls import path
 from wagtail import hooks
 
+from apps.content import admin as content_admin  # noqa: F401 — register snippets
 from apps.content.views_preview import staff_content_preview
 
 
