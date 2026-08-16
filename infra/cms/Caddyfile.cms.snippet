@@ -2,13 +2,15 @@
 #
 # Architecture:
 #   Internet → Caddy (TLS)
-#     handle /admin/*  → reverse_proxy 127.0.0.1:18000
-#     handle /health/* → reverse_proxy 127.0.0.1:18000
-#     handle /*        → file_server /opt/taha/site/current  (static artifact)
+#     handle /admin*   → reverse_proxy 127.0.0.1:18000
+#     handle /static*  → reverse_proxy 127.0.0.1:18000   (Wagtail admin assets)
+#     handle /health/  → reverse_proxy 127.0.0.1:18000   (NOT /health* — that would steal /health.json)
+#     handle /*        → file_server /opt/taha/site/current
 #
 # Insert these `handle` blocks INSIDE the tahamohamadi.ir site block, BEFORE the
-# static-site file_server / taha_application_routes handler. Order matters:
-# more-specific CMS handles must win over the catch-all static handler.
+# static-site file_server / taha_application_routes handler. Order matters.
+#
+# Do NOT proxy /api/ or /media/ yet (public API and media remain gated).
 #
 # After edit: sudo caddy validate --config /etc/caddy/Caddyfile && sudo systemctl reload caddy
 # Keep a timestamped Caddyfile backup before applying.
@@ -22,7 +24,16 @@ handle /admin* {
 	}
 }
 
-handle /health* {
+handle /static* {
+	reverse_proxy 127.0.0.1:18000 {
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Forwarded-Host {host}
+		header_down X-Robots-Tag "noindex, nofollow"
+		header_down Cache-Control "public, max-age=3600"
+	}
+}
+
+handle /health/ {
 	reverse_proxy 127.0.0.1:18000 {
 		header_up X-Forwarded-Proto {scheme}
 		header_up X-Forwarded-Host {host}

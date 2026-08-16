@@ -10,8 +10,15 @@ from django.core.exceptions import ImproperlyConfigured
 
 from .base import *  # noqa: F403
 from .base import BASE_DIR  # noqa: F401
+from .base import MIDDLEWARE as BASE_MIDDLEWARE
 
 DEBUG = False
+
+# Serve Wagtail/Django static files from gunicorn (Caddy proxies /static*).
+_middleware = list(BASE_MIDDLEWARE)
+if "whitenoise.middleware.WhiteNoiseMiddleware" not in _middleware:
+    _middleware.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
+MIDDLEWARE = _middleware
 
 ALLOWED_HOSTS = [
     host.strip()

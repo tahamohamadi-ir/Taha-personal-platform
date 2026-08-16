@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Minimal CMS smoke after Caddy proxy is applied.
-# Usage: ./infra/deploy/smoke-cms.sh https://tahamohamadi.ir
+# Usage: bash infra/deploy/smoke-cms.sh https://tahamohamadi.ir
 
 set -euo pipefail
 
@@ -22,12 +22,18 @@ check() {
   fi
 }
 
-# Anonymous admin login page (Wagtail) should be reachable — typically 200.
 check "/admin/login/" "200"
-# CMS readiness JSON (proxied). Static site health remains /health.json.
 check "/health/" "200"
-# Static site still healthy.
+if ! grep -q '"db"' /tmp/cms-smoke-body; then
+  echo "FAIL /health/ body is not CMS JSON" >&2
+  fail=1
+fi
+# Must remain the static artifact — /health* glob would steal this path.
 check "/health.json" "200"
+if ! grep -q '"service":"static"' /tmp/cms-smoke-body && ! grep -q '"service": "static"' /tmp/cms-smoke-body; then
+  echo "FAIL /health.json was not the static-site payload (Caddy must not proxy /health*)" >&2
+  fail=1
+fi
 check "/" "200"
 
 if [[ "$fail" -ne 0 ]]; then

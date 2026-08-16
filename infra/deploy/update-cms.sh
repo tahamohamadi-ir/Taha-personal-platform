@@ -108,13 +108,26 @@ if [[ "$ready" != "1" ]]; then
 fi
 
 docker compose -f "$COMPOSE_FILE" exec -T cms python manage.py migrate --noinput
+docker compose -f "$COMPOSE_FILE" exec -T cms python -c "import argon2, whitenoise; print('runtime-deps-ok')"
 docker compose -f "$COMPOSE_FILE" ps
 
 echo "Loopback health:"
 curl -fsS "http://127.0.0.1:18000/health/"
 echo
+echo "Loopback admin login (forwarded proto, as Caddy will send):"
+admin_code="$(curl -sS -o /tmp/cms-admin-login -w "%{http_code}" \
+  -H "Host: tahamohamadi.ir" \
+  -H "X-Forwarded-Proto: https" \
+  "http://127.0.0.1:18000/admin/login/")"
+if [[ "$admin_code" != "200" ]]; then
+  echo "loopback /admin/login/ expected 200 got ${admin_code}" >&2
+  exit 1
+fi
+echo "PASS /admin/login/ ${admin_code}"
+echo
 echo "CMS stack updated."
-echo "If https://tahamohamadi.ir/admin/login/ is still not Wagtail, merge infra/cms/Caddyfile.cms.snippet into the site block, then:"
+echo "Merge infra/cms/Caddyfile.cms.snippet into the Caddy site block (before file_server), then:"
 echo "  bash infra/deploy/smoke-cms.sh https://tahamohamadi.ir"
-echo "Create superuser (owner interactive):"
+echo "Create superuser (owner interactive; password must be at least 12 characters):"
 echo "  docker compose -f ${COMPOSE_FILE} exec cms python manage.py createsuperuser"
+

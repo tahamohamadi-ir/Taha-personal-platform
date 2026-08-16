@@ -9,7 +9,9 @@ Internet
 Caddy  (TLS + routing)
    ├── /*            → static Astro artifact (/opt/taha/site/current)  [NOT containerized]
    ├── /admin*       → reverse_proxy 127.0.0.1:18000
-   └── /health*      → reverse_proxy 127.0.0.1:18000
+   ├── /static*      → reverse_proxy 127.0.0.1:18000
+   └── /health/      → reverse_proxy 127.0.0.1:18000
+       /health.json  → static artifact (do not glob /health*)
 
 Docker Compose (this directory)
    ├── cms   ← ghcr.io/<owner>/taha-cms:<git-sha>
@@ -30,7 +32,7 @@ served directly from disk by Caddy (lower cost, simpler rollback).
 |---|---|
 | `Dockerfile.cms` | Multi-stage image; venv on `PATH`; gunicorn |
 | `docker-compose.cms.yml` | `db` + `cms`; loopback publish `127.0.0.1:18000` |
-| `Caddyfile.cms.snippet` | `/admin*` + `/health*` reverse_proxy fragment |
+| `Caddyfile.cms.snippet` | `/admin*` + `/static*` + `/health/` reverse_proxy fragment |
 | `.env.example` | Template for server-side `.env` (never commit real secrets) |
 
 ## Image tags
@@ -69,9 +71,12 @@ bash infra/deploy/update-cms.sh
 #   export CMS_IMAGE=taha-cms:local CMS_BUILD=1
 #   bash infra/deploy/update-cms.sh
 
-# One-time / when snippet changes: merge Caddyfile.cms.snippet into site block, validate, reload
+# One-time / when snippet changes: merge Caddyfile.cms.snippet into site block
+# (before file_server). Do not use handle /health* — it would steal /health.json.
+# Then: sudo caddy validate && sudo systemctl reload caddy
 bash infra/deploy/smoke-cms.sh https://tahamohamadi.ir
 
+# Password must be at least 12 characters (do not bypass validation).
 docker compose -f infra/cms/docker-compose.cms.yml exec cms python manage.py createsuperuser
 ```
 
@@ -87,7 +92,7 @@ export CMS_IMAGE=ghcr.io/tahamohamadi-ir/taha-cms:<previous-sha>
 ./infra/deploy/update-cms.sh
 ```
 
-Volumes are preserved (`postgres_data`, `cms_media`, `cms_static`).
+Volumes are preserved (`postgres_data`, `cms_media`). Admin static files are baked into the image (`STATIC_ROOT=/app/staticfiles`); do not mount an empty volume over that path.
 
 ## Local build (optional)
 
