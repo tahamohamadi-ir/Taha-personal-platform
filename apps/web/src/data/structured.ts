@@ -34,6 +34,50 @@ export function personJsonLd(locale: LocaleCode): JsonLdBlock {
   };
 }
 
+export function blogPostingJsonLd(input: {
+  locale: LocaleCode;
+  title: string;
+  description: string;
+  slug: string;
+  publishedAt: string | null;
+  updatedAt: string | null;
+  wordCount: number;
+}): JsonLdBlock {
+  const url = new URL(`/${input.locale}/blog/${input.slug}/`, site.url).href;
+  const block: JsonLdBlock = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: input.title,
+    description: input.description,
+    url,
+    inLanguage: input.locale,
+    author: {
+      "@type": "Person",
+      name: content.en.name,
+      url: site.url,
+    },
+    wordCount: input.wordCount,
+  };
+  if (input.publishedAt) block.datePublished = input.publishedAt;
+  if (input.updatedAt) block.dateModified = input.updatedAt;
+  return block;
+}
+
+export function breadcrumbJsonLd(
+  crumbs: Array<{ name: string; path: string }>,
+): JsonLdBlock {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: crumbs.map((crumb, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: crumb.name,
+      item: new URL(crumb.path, site.url).href,
+    })),
+  };
+}
+
 export function validateStructuredData(...blocks: JsonLdBlock[]): void {
   for (const block of blocks) {
     const serialized = JSON.stringify(block);

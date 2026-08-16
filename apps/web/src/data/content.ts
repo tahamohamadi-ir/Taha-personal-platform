@@ -37,6 +37,17 @@ export interface LocaleContent {
     label: string;
     heading: string;
   };
+  blog: {
+    heading: string;
+    intro: string;
+    empty: string;
+    readingLabel: string;
+    licenseLabel: string;
+    prevLabel: string;
+    nextLabel: string;
+    seriesNavLabel: string;
+    missingTranslation: string;
+  };
   downloads: {
     heading: string;
     intro: string;
@@ -132,6 +143,18 @@ export const content: Record<LocaleCode, LocaleContent> = {
     about: {
       label: "02 · Identity",
       heading: "About",
+    },
+    blog: {
+      heading: "Writing",
+      intro:
+        "Published articles from the CMS. When the public API is not configured for this build, this list stays empty.",
+      empty: "No published articles are available in this build.",
+      readingLabel: "min read",
+      licenseLabel: "License",
+      prevLabel: "Previous in series",
+      nextLabel: "Next in series",
+      seriesNavLabel: "Series navigation",
+      missingTranslation: "This article is not yet translated into Persian.",
     },
     downloads: {
       heading: "CV & Resume",
@@ -229,6 +252,18 @@ export const content: Record<LocaleCode, LocaleContent> = {
     about: {
       label: "۰۲ · هویت",
       heading: "درباره",
+    },
+    blog: {
+      heading: "نوشته‌ها",
+      intro:
+        "مقاله‌های منتشرشده از CMS. اگر API عمومی برای این build پیکربندی نشده باشد، فهرست خالی می‌ماند.",
+      empty: "در این build هیچ مقالهٔ منتشرشده‌ای در دسترس نیست.",
+      readingLabel: "دقیقه مطالعه",
+      licenseLabel: "مجوز",
+      prevLabel: "قبلی در مجموعه",
+      nextLabel: "بعدی در مجموعه",
+      seriesNavLabel: "ناوبری مجموعه",
+      missingTranslation: "این مقاله هنوز به انگلیسی ترجمه نشده است.",
     },
     downloads: {
       heading: "رزومه و CV",

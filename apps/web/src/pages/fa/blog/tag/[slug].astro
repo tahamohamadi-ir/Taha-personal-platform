@@ -1,0 +1,79 @@
+---
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../../../components/blog/Breadcrumbs.astro";
+import ArticleCard from "../../../../components/blog/ArticleCard.astro";
+import { content } from "../../../../data/content";
+import {
+  articlesForTag,
+  getPublishedArticles,
+  getTopicTags,
+} from "../../../../lib/cms/articles";
+
+export async function getStaticPaths() {
+  const locale = "fa" as const;
+  const tags = await getTopicTags(locale);
+  return tags.map((tag) => ({
+    params: { slug: tag.slug },
+    props: { tag },
+  }));
+}
+
+const locale = "fa" as const;
+const pageContent = content[locale];
+const blog = pageContent.blog;
+const { tag } = Astro.props;
+const articles = articlesForTag(await getPublishedArticles(locale), tag.slug);
+---
+
+<BaseLayout
+  content={{
+    ...pageContent,
+    meta: {
+      title: `${tag.name} — ${blog.heading}`,
+      description: blog.intro,
+    },
+  }}
+  alternateHref={`/en/blog/tag/${tag.slug}/`}
+>
+  <section class="blog-page">
+    <Breadcrumbs
+      items={[
+        { label: pageContent.name, href: `/${locale}/` },
+        { label: blog.heading, href: `/${locale}/blog/` },
+        { label: tag.name },
+      ]}
+    />
+    <h1>{tag.name}</h1>
+    {
+      articles.length === 0 ? (
+        <p class="blog-empty">{blog.empty}</p>
+      ) : (
+        articles.map((article) => (
+          <ArticleCard
+            locale={locale}
+            article={article}
+            readingLabel={blog.readingLabel}
+          />
+        ))
+      )
+    }
+  </section>
+</BaseLayout>
+
+<style>
+  .blog-page {
+    max-width: 44rem;
+    margin-inline: auto;
+    padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem;
+  }
+
+  .blog-page h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 4vw, 2.4rem);
+    margin: 0 0 0.75rem;
+  }
+
+  .blog-empty {
+    color: var(--color-ink-muted);
+  }
+</style>

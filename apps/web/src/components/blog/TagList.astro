@@ -1,0 +1,39 @@
+---
+import type { TopicTagDto } from "../../lib/cms/articles";
+
+interface Props {
+  locale: "fa" | "en";
+  tags: TopicTagDto[];
+}
+
+const { locale, tags } = Astro.props;
+---
+
+{
+  tags.length > 0 && (
+    <ul class="tag-list">
+      {tags.map((tag) => (
+        <li>
+          <a href={`/${locale}/blog/tag/${tag.slug}/`}>{tag.name}</a>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .tag-list a {
+    color: var(--color-ink-muted);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+</style>

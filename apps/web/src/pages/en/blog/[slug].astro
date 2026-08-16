@@ -1,0 +1,139 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../../components/blog/Breadcrumbs.astro";
+import ArticleDetail from "../../../components/blog/ArticleDetail.astro";
+import SeriesNav from "../../../components/blog/SeriesNav.astro";
+import { content } from "../../../data/content";
+import {
+  blogPostingJsonLd,
+  breadcrumbJsonLd,
+  validateStructuredData,
+} from "../../../data/structured";
+import {
+  getArticleRedirects,
+  getPublishedArticle,
+  getPublishedArticles,
+  seriesNeighbors,
+} from "../../../lib/cms/articles";
+
+export async function getStaticPaths() {
+  const locale = "en" as const;
+  const articles = await getPublishedArticles(locale);
+  const redirects = await getArticleRedirects(locale);
+  const articlePaths = articles.map((article) => ({
+    params: { slug: article.slug },
+    props: { mode: "article" as const, targetSlug: article.slug },
+  }));
+  const redirectPaths = redirects
+    .filter((r) => !articles.some((a) => a.slug === r.old_slug))
+    .map((r) => ({
+      params: { slug: r.old_slug },
+      redirect: `/${locale}/blog/${r.new_slug}/`,
+    }));
+  return [...articlePaths, ...redirectPaths];
+}
+
+const locale = "en" as const;
+const pageContent = content[locale];
+const blog = pageContent.blog;
+const { targetSlug } = Astro.props as { mode: "article"; targetSlug: string };
+
+const article = await getPublishedArticle(locale, targetSlug);
+if (!article) {
+  return Astro.redirect(`/${locale}/blog/`, 302);
+}
+
+const allArticles = await getPublishedArticles(locale);
+const primarySeries = article.series[0];
+const neighbors = primarySeries
+  ? seriesNeighbors(allArticles, primarySeries.slug, article.slug)
+  : { prev: null, next: null };
+
+const description =
+  article.excerpt ||
+  article.body.replace(/<[^>]+>/g, " ").trim().slice(0, 160);
+const pageMeta = {
+  ...pageContent,
+  meta: {
+    title: `${article.title} — ${pageContent.name}`,
+    description,
+  },
+};
+
+const structured = [
+  blogPostingJsonLd({
+    locale,
+    title: article.title,
+    description,
+    slug: article.slug,
+    publishedAt: article.published_at,
+    updatedAt: article.updated_at,
+    wordCount: article.body
+      .replace(/<[^>]+>/g, " ")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean).length,
+  }),
+  breadcrumbJsonLd([
+    { name: pageContent.name, path: `/${locale}/` },
+    { name: blog.heading, path: `/${locale}/blog/` },
+    { name: article.title, path: `/${locale}/blog/${article.slug}/` },
+  ]),
+];
+validateStructuredData(...structured);
+
+const alternateExists = (await getPublishedArticle("fa", article.slug)) !== null;
+---
+
+<BaseLayout
+  content={pageMeta}
+  alternateHref={alternateExists ? `/fa/blog/${article.slug}/` : null}
+>
+  {
+    structured.map((block) => (
+      <script type="application/ld+json" is:inline set:html={JSON.stringify(block)} />
+    ))
+  }
+  <section class="blog-page">
+    <Breadcrumbs
+      items={[
+        { label: pageContent.name, href: `/${locale}/` },
+        { label: blog.heading, href: `/${locale}/blog/` },
+        { label: article.title },
+      ]}
+    />
+    {
+      !alternateExists && (
+        <p class="missing-translation">{blog.missingTranslation}</p>
+      )
+    }
+    <ArticleDetail
+      locale={locale}
+      article={article}
+      readingLabel={blog.readingLabel}
+      licenseLabel={blog.licenseLabel}
+    />
+    <SeriesNav
+      locale={locale}
+      prev={neighbors.prev}
+      next={neighbors.next}
+      prevLabel={blog.prevLabel}
+      nextLabel={blog.nextLabel}
+      seriesLabel={blog.seriesNavLabel}
+    />
+  </section>
+</BaseLayout>
+
+<style>
+  .blog-page {
+    max-width: 44rem;
+    margin-inline: auto;
+    padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem;
+  }
+
+  .missing-translation {
+    margin: 0 0 1rem;
+    color: var(--color-ink-muted);
+    font-size: 0.95rem;
+  }
+</style>
