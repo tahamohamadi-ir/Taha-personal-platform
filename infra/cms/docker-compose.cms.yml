@@ -1,9 +1,9 @@
-# NOT-APPLIED — candidate only; deploy requires owner capacity decision (RISK-0007) and a separate Task Spec
+# NOT-APPLIED — candidate only; deploy requires MFA enforcement, RISK-0003 DB-import evidence and a separate deploy Task Spec
 #
-# Candidate Compose topology for the CMS runtime in the 2GB VPS co-host scenario.
-# Capacity is UNRESOLVED: the limits below are conservative guesses pending the
-# RISK-0007 owner capacity decision and a measured budget — the running static
-# site stack must never be degraded.
+# Candidate Compose topology for the CMS runtime co-hosted on the 4 GiB VPS.
+# Capacity is RESOLVED (RISK-0007 CLOSED 2026-08-15: owner keeps the 4 GiB
+# plan): the limits below stay conservative until a measured budget exists —
+# the running static site stack must never be degraded.
 #
 # Not used yet. When authorized by a deploy Task Spec:
 #   - create infra/cms/.env on the server from a template (never commit secrets;

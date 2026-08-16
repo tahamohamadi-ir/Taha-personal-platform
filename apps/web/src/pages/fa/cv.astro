@@ -1,0 +1,25 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Downloads from "../../components/Downloads.astro";
+import { content } from "../../data/content";
+
+const fa = content.fa;
+const files = [
+  {
+    title: "CV دانشگاهی — پروفایل جامع حرفه‌ای",
+    filename: "Taha_Mohammadi_Master_CV_Website_Profile.md",
+    note: "پروفایل کامل حرفه‌ای: هویت، سوابق، تحصیلات، پژوهش، انتشارات و گواهی‌ها.",
+    sizeKb: 11,
+  },
+  {
+    title: "رزومهٔ حرفه‌ای — نرم‌افزار و هوش مصنوعی",
+    filename: "Taha_Mohammadi_Industry_Resume_Software_AI.md",
+    note: "رزومهٔ متمرکز بر نقش‌های مهندسی نرم‌افزار و هوش مصنوعی کاربردی.",
+    sizeKb: 7,
+  },
+];
+---
+
+<BaseLayout content={fa} alternateHref="/en/cv/">
+  <Downloads content={fa} files={files} />
+</BaseLayout>

@@ -22,10 +22,10 @@
 | C1 | Owner content inventory (P2) | DONE | owner | form P2-C1 filled; full master CV + SOP delivered; en full, fa per approved-Persian-only rule |
 | C2 | Typed profile contract | DONE | S-model | profile.ts + en/fa + validateProfile; full contract; LOG-0085/LOG-0087 |
 | C3 | About pages | DONE | S-model | /en/about/ + /fa/about/ live in build; en full / fa minimal; LOG-0085/LOG-0087 |
-| C4 | Resume/CV pages + downloads | BLOCKED(owner) | owner | approved CV/Resume files+details (title/type/size/route) pending owner |
+| C4 | Resume/CV pages + downloads | DONE | owner/S-model | owner placed master CV + industry resume md files 2026-08-16; published as Markdown downloads via `Downloads.astro` on /en/cv/ + /fa/cv/ (title/note/size); PDF replacement optional (owner decision 2026-08-16) |
 | C5 | Contact path | DONE | owner | decision: omit in P2 (DEFER-0007 closed); honest state stays |
 | C6 | Navigation update | DONE | S-model | About link in header; LOG-0085 |
-| C7 | P2 verification + release | BLOCKED(C4) | — | owner decision 2026-08-15: P2 closes without CV/Resume; C4 stays in backlog; no deployment claimed |
+| C7 | P2 verification + release | DONE | L-model | no-CV scope per owner decision 2026-08-15; C4 delivered as md 2026-08-16; production deploy of the new artifact (logo + CV) pending owner; no deployment claimed |
 | D1 | P3 gate move (Task Spec + owner auth) | DONE | owner/L-model | gate code-first 2026-08-15; P3-gate-code-first-task-spec.md; LOG-0107 |
 | D2 | P3 environment (Python 3.12.13 + uv + .venv) | DONE | main | uv install + sync; DEFER-0003 CLOSED; LOG-0107 |
 | D3 | P3 content contracts + lifecycle + Ninja API | DONE | sub-agent (general) | 19 tests (content+api); public() only; LOG-0107 |
@@ -34,6 +34,8 @@
 | D6 | P3 CI workflow + infra candidates + rebuild trigger | DONE | sub-agent (general) | ci-cms.yml; infra/cms NOT-APPLIED; 6 tests; LOG-0107 |
 | D7 | P3 runtime deploy (Compose/Caddy/MFA/DB) | BLOCKED(owner) | owner | MFA + RISK-0003 DB-import + separate Task Spec; RISK-0009 BLOCKED (capacity solved — RISK-0007 CLOSED) |
 | D8 | Staging decommission | DONE | owner/L-model | ADR-0025 accepted 2026-08-15; staging Caddy block removed on VPS (owner, sudo) + DNS removed if present; gate now CI (web + cms) + production smoke; server upgraded (Ubuntu 26.04 LTS, 2 vCPU / ~4 GiB / 30 GB); live stack inventory-confirmed via docker ps 2026-08-16; LOG-0110 |
+| D9 | Header logo (Assets → public/logo.png) | DONE | S-model | 8 KB PNG from `Assets/Taha Logo/Taha Logo base.png` (cropped 4000x4000 white margins, transparent bg); visually reviewed ACCEPT-WITH-NOTES (black outline heavy but acceptable at 48px); replaces `brand-mark` text span in `Header.astro` (mark/TM glyph removed from header; footer mark untouched); other logo variants (electric/gold/green/red/yasi/black) unused — alternatives pending final brand pass |
+| D10 | CV/Resume md download pages (/en/cv/ + /fa/cv/) | DONE | S-model | `Downloads.astro` + 2 owner md files in public/downloads; header CV link added; sitemap includes both routes; local QA: overflow=0, dir ltr/rtl correct, 2 links/page, logo loads (Playwright on built dist via http.server:8899); `npm run check` 0 errors; build 8 pages |
 
 ## Review log (append-only)
 
@@ -50,6 +52,10 @@
 | 2026-08-15 | D1-D6 | DONE (main) | L-model | P3 code-first: 62 pytest PASS, ruff clean, migrations consistent, ci-cms.yml authored, infra NOT-APPLIED; LOG-0107 |
 | 2026-08-15 | D7 | BLOCKED(owner) | owner | runtime deploy needs RISK-0007/RISK-0003/MFA/deploy Task Spec; RISK-0009 BLOCKED |
 | 2026-08-15/16 | D8 | DONE (owner) | L-model | staging decommissioned (ADR-0025); gate = CI (web + cms) + production smoke; RISK-0007 CLOSED (keep 4 GiB); live stack docker ps evidence 2026-08-16 07:19 UTC; RISK-0004 CLOSED; LOG-0110 |
+| 2026-08-16 | C4 | DONE | L-model | owner files placed; md downloads live in build (/en/cv/, /fa/cv/); PDF optional (owner decision 2026-08-16); label+route approved; download smoke HTTP 200 PASS |
+| 2026-08-16 | C7 | DONE | L-model | no-CV scope closed (owner decision 2026-08-15); C4 delivered as md; production deploy of new artifact (logo + CV) pending owner |
+| 2026-08-16 | B1 | DONE (owner) | L-model | apt list --upgradable pasted (57 pkgs, Ubuntu 26.04 updates); actual upgrade needs owner maintenance-window decision |
+| 2026-08-16 | D9/D10 | DONE (main) | L-model | logo + CV pages verified in build: check 0 errors, build 8 pages, Playwright QA overflow=0 (dist via http.server:8899); sitemap includes /en/cv/ + /fa/cv/ |
 | 2026-08-15 | B4 | submitted for review | S-model | Restore drill cadence section appended; git diff --check exit 0; single heading; no invented dates/RPO-RTO/owners beyond Project owner |
 | 2026-08-15 | B3 | submitted for review | S-model | Observability (P0A-11) section extended per task; git diff --check exit 0; single Observability heading at line 95 |
 | 2026-08-15 | B5 | submitted for review | S-model | adoption brief written; all 6 required section headings present; §98 checklist copied verbatim; git diff --check exit 0; no motion/gsap/three import added in apps/web (grep clean) |

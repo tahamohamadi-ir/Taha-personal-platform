@@ -2,6 +2,15 @@
 
 > هر slice واقعی (کد، زیرساخت، مستندات) که در `docs/status/WORK_LOG.md` ثبت می‌شود می‌تواند یک ردیف خلاصه اینجا داشته باشد. Append-only؛ جدیدترین در بالا.
 
+## 2026-08-16 — C4 (CV/Resume) + header logo + B1 inventory + old-stack decommission
+
+- **C4 DONE (md):** the owner placed `Assets/Taha_Mohammadi_Master_CV_Website_Profile.md` and `Assets/Taha_Mohammadi_Industry_Resume_Software_AI.md`; they are published as Markdown downloads (title/note/size) via `apps/web/src/components/Downloads.astro` on new locale pages `/en/cv/` and `/fa/cv/`. Per contract, agents do not generate PDFs; PDF replacement remains an owner option (owner decision 2026-08-16). Header nav gained a CV link; sitemap now includes `/en/cv/` and `/fa/cv/`. Local QA (Playwright against built dist via python http.server on port 8899): overflow=0, dir ltr/rtl correct, 2 links per page, logo loads; `npm run check` 0 errors; `npm run build` 8 pages.
+- **Header logo:** `apps/web/public/logo.png` (8 KB) derived from `Assets/Taha Logo/Taha Logo base.png` — cropped (4000x4000 white margins removed) with transparent background; visually reviewed ACCEPT-WITH-NOTES (black outline heavy but acceptable at 48px). Replaces the `brand-mark` text span in `apps/web/src/components/Header.astro` (mark/TM glyph usage removed from header; footer mark untouched). Other logo variants (electric/gold/green/red/yasi/black) not used — recorded as alternatives pending a final brand pass.
+- **B1 DONE (inventory):** the owner pasted `apt list --upgradable` (2026-08-16): 57 packages (Ubuntu 26.04 "resolute" updates) incl. docker-ce 29.7.2, docker-compose-plugin 5.4.0, containerd.io 2.3.3, grub-pc, linux-firmware*, bind9*, ubuntu-* meta packages, apparmor 5.0.2, libgcrypt20. Security-relevant: docker, containerd, grub, bind9, apparmor, libgcrypt20. Inventory only — the actual upgrade needs an owner maintenance-window decision.
+- **Old-stack decommission authorized (2026-08-16):** the owner approved bringing down the pre-existing compose stack (`taha-prod-frontend`/`backend`/`postgres` at `/opt/taha/repository`); execution is owner-sudo; runbook `infra/deploy/decommission-old-stack.md` in progress.
+- **DEFER-0009 stays OPEN:** owner decision 2026-08-16 — the Gemini-generated images in `Assets/` are 2048x2048 contact sheets (3x3 mascot grids) with white backgrounds, AI artifacts and visible Apple logos, not production-ready as og:image; stays OPEN awaiting a real image.
+- **Pending:** production deploy of the new artifact built from HEAD (header logo + CV pages, 8 pages); release id follows the current pattern. CMS runtime deploy still BLOCKED (MFA enforcement + `RISK-0003` DB-import + deploy Task Spec — `RISK-0009` BLOCKED).
+
 ## 2026-08-15/16 — Server upgrade + staging decommission + KI-0001 + CMS gap closure
 
 - **Server upgrade (owner):** VPS اکنون Ubuntu 26.04 LTS با 2 vCPU / ~3910 MB RAM (~4 GiB) / 30 GB disk (~17 GB free) است؛ plan 4 GiB نگه داشته شد (`RISK-0007` CLOSED). stack زنده با `docker ps` در 2026-08-16 07:19 UTC inventory-confirm شد: `taha-prod-frontend-1` روی 127.0.0.1:13000، `taha-prod-backend-1` روی 127.0.0.1:18080، `taha-prod-postgres-1` (`RISK-0004` CLOSED).

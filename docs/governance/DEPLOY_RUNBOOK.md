@@ -86,3 +86,20 @@ ln -sfn releases/release-<previous-version>-<checksum8> "$SITE_ROOT/current"
   free).
 - No agent may sign up for any monitoring service; provider selection and
   account creation are owner-only steps.
+
+## Old pre-existing stack decommission (2026-08-16)
+
+The old pre-existing Compose stack on the VPS (`taha-prod-frontend-1`,
+`taha-prod-backend-1`, `taha-prod-postgres-1`; project at
+`/opt/taha/repository/`) is being brought down by the owner. It has no role in
+the current site: the production site is unaffected because Caddy serves only
+the static artifact from `/opt/taha/site/current` and never reverse-proxies
+those containers (RISK-0004, closed 2026-08-16).
+
+- The step-by-step runbook is `infra/deploy/decommission-old-stack.md`.
+- The OWNER executes the sudo steps (the `deploy` user's NOPASSWD sudo covers
+  only `/opt/taha/bin/update-release.sh` and `/opt/taha/bin/caddy-apply.sh`).
+- `docker compose down` runs WITHOUT `-v`: postgres volumes are preserved and
+  the restic backups under `/opt/taha/backups` are never touched.
+- This section is informational; it does not change the production deploy or
+  rollback mechanics above.

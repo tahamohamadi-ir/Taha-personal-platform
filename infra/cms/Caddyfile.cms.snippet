@@ -1,10 +1,10 @@
-# NOT-APPLIED — candidate only; deploy requires owner capacity decision (RISK-0007) and a separate Task Spec
+# NOT-APPLIED — candidate only; deploy requires MFA enforcement, RISK-0003 DB-import evidence and a separate deploy Task Spec
 # !! NOT-APPLIED !!
 #
 # Illustrative reverse-proxy snippet ONLY. The live Caddy configuration
 # (see infra/caddy/static-site.caddy and the deployed server Caddyfile) MUST NOT
-# be edited until the owner capacity decision (RISK-0007) and a separate deploy
-# Task Spec authorize the CMS runtime.
+# be edited until MFA enforcement, the RISK-0003 DB-import evidence and a
+# separate deploy Task Spec authorize the CMS runtime.
 #
 # Intended placement: inside the site block so /admin/ and /health/ are
 # reverse-proxied to the cms service on the private compose network

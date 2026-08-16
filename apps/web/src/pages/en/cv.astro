@@ -1,0 +1,25 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Downloads from "../../components/Downloads.astro";
+import { content } from "../../data/content";
+
+const en = content.en;
+const files = [
+  {
+    title: "Academic CV — Master Career Profile",
+    filename: "Taha_Mohammadi_Master_CV_Website_Profile.md",
+    note: "Full academic career profile: identity, experience, education, research, publications and certificates.",
+    sizeKb: 11,
+  },
+  {
+    title: "Professional Resume — Software & AI",
+    filename: "Taha_Mohammadi_Industry_Resume_Software_AI.md",
+    note: "Industry-focused resume for software engineering and applied AI roles.",
+    sizeKb: 7,
+  },
+];
+---
+
+<BaseLayout content={en} alternateHref="/fa/cv/">
+  <Downloads content={en} files={files} />
+</BaseLayout>

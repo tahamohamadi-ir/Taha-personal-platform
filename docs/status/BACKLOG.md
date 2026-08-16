@@ -4,9 +4,10 @@
 
 | ID | Phase | Item | Blocked by / prerequisite | Owner | Evidence |
 |---|---|---|---|---|---|
-| C4 | P2 | Resume/CV pages + downloads | فایل‌های PDF واقعی مالک (Academic CV / Professional Resume) در `apps/web/public/downloads/` | Project owner | S-PLAN-STATE C4 |
-| C7 | P2 | P2 verification + release (About/C6 ساخته و CI-verif شده) | C4 (اگر CV منتشر شود) | Project owner | LOG-0104 |
-| B1 | P0-B | Pending updates inventory (caddy/docker package names) | مالک باید خروجی `apt list --upgradable` و نام پکیج‌ها را paste کند | Project owner | S-PLAN-STATE B1 |
+| C4 | P2 | Resume/CV pages + downloads — **CLOSED 2026-08-16**: Academic CV + Professional Resume published as Markdown downloads on `/en/cv/` + `/fa/cv/` (owner files in `Assets/`)؛ PDF replacement optional (owner decision 2026-08-16) | — | Project owner | S-PLAN-STATE C4 (DONE) |
+| C7 | P2 | P2 verification + release — **CLOSED 2026-08-16** (no-CV scope per owner decision 2026-08-15؛ C4 delivered as md)؛ production deploy of the new artifact (logo + CV) pending owner | — | Project owner | S-PLAN-STATE C7 (DONE) |
+| B1 | P0-B | Pending updates inventory — **CLOSED 2026-08-16**: owner pasted `apt list --upgradable` (57 pkgs: docker-ce 29.7.2، docker-compose-plugin 5.4.0، containerd.io 2.3.3، grub-pc، linux-firmware*، bind9*، ubuntu-* meta، apparmor 5.0.2، libgcrypt20 — Ubuntu 26.04 "resolute" updates). Inventory only؛ the actual upgrade needs an owner maintenance-window decision (P0B-01 execution) | owner maintenance-window decision | Project owner | S-PLAN-STATE B1 (DONE)؛ LOG next |
+| Old-stack decommission | ops | Shutdown of pre-existing compose stack (`taha-prod-frontend`/`backend`/`postgres` at `/opt/taha/repository`) — **AUTHORIZED 2026-08-16**؛ execution is owner-sudo | owner-sudo execution + runbook | Project owner | infra/deploy/decommission-old-stack.md (in progress) |
 | B2 | P0-B | Canonical SSH port decision | مالک | Project owner | S-PLAN-STATE B2 |
 | KI-0001 | P2 | اصلاح handle گیت‌هاب fa (`tahamohammadi-ir` → `tahamohamadi-ir`) — **CLOSED 2026-08-15**: در `profile.fa.ts` اصلاح شد؛ `rg tahamohammadi apps/web/src` → no matches | مالک | Project owner | known-issues.md (CLOSED)؛ LOG-0110 |
 | DEFER-0009 | P1 | OG image + social preview | asset تأییدشدهٔ مالک | Project owner | deferred-validation.md |

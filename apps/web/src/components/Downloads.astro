@@ -1,0 +1,138 @@
+---
+import type { LocaleContent } from "../data/content";
+
+interface Props {
+  content: LocaleContent;
+  files: {
+    title: string;
+    filename: string;
+    note: string;
+    sizeKb: number;
+  }[];
+}
+
+const { content, files } = Astro.props;
+---
+
+<section class="downloads">
+  <h1 class="downloads-heading">{content.downloads.heading}</h1>
+  <p class="downloads-intro">{content.downloads.intro}</p>
+  <ul class="downloads-list">
+    {files.map((file) => (
+      <li class="downloads-item">
+        <div class="downloads-copy">
+          <p class="downloads-title">{file.title}</p>
+          <p class="downloads-note">{file.note}</p>
+          <p class="downloads-meta">
+            Markdown · {file.sizeKb} KB · {content.downloads.updatedLabel}{" "}
+            2026-08-16
+          </p>
+        </div>
+        <a
+          class="downloads-link"
+          href={`/downloads/${file.filename}`}
+          download={file.filename}
+        >
+          {content.downloads.downloadLabel}
+        </a>
+      </li>
+    ))}
+  </ul>
+  <p class="downloads-fallback">
+    {content.downloads.fallback}
+  </p>
+</section>
+
+<style>
+  .downloads {
+    max-width: 1280px;
+    margin-inline: auto;
+    width: 100%;
+    padding-block: 3rem 4rem;
+    padding-inline: clamp(1rem, 5vw, 2.5rem);
+  }
+
+  .downloads-heading {
+    margin: 0;
+    font-size: clamp(1.75rem, 1.15rem + 2vw, 2.5rem);
+    line-height: 1.2;
+    font-weight: 700;
+  }
+
+  .downloads-intro {
+    margin: 0.75rem 0 2rem;
+    max-width: 60ch;
+    color: var(--color-ink-secondary);
+  }
+
+  .downloads-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .downloads-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    padding: 1.5rem;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface);
+  }
+
+  .downloads-copy {
+    min-width: 0;
+  }
+
+  .downloads-title {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.125rem;
+  }
+
+  .downloads-note {
+    margin: 0.375rem 0 0;
+    color: var(--color-ink-secondary);
+    max-width: 62ch;
+  }
+
+  .downloads-meta {
+    margin: 0.5rem 0 0;
+    font-size: 0.8rem;
+    color: var(--color-ink-tertiary);
+  }
+
+  .downloads-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding-inline: 1.25rem;
+    border-radius: var(--radius-md);
+    background-color: var(--color-navy-950);
+    color: var(--color-inverse);
+    font-weight: 600;
+    text-decoration: none;
+    flex: none;
+  }
+
+  .downloads-link:hover {
+    background-color: var(--color-brand);
+    color: var(--color-navy-950);
+  }
+
+  .downloads-link:focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 3px;
+  }
+
+  .downloads-fallback {
+    margin: 1.5rem 0 0;
+    font-size: 0.875rem;
+    color: var(--color-ink-tertiary);
+  }
+</style>

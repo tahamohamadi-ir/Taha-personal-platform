@@ -10,7 +10,6 @@ interface Props {
 const { content } = Astro.props;
 const otherLang = content.lang === "fa" ? "en" : "fa";
 const other = allContent[otherLang];
-const mark = content.mark;
 const switchHref = Astro.props.alternateHref ?? `/${otherLang}/`;
 const switchLabel =
   content.lang === "fa"
@@ -22,13 +21,23 @@ const switchLang = otherLang;
 <header class="site-header">
   <div class="site-header-inner">
     <a href={`/${content.lang}/`} class="brand" aria-label={content.name}>
-      <span class="brand-mark" aria-hidden="true">{mark}</span>
+      <img
+        src="/logo.png"
+        alt=""
+        class="brand-logo"
+        width="64"
+        height="58"
+        loading="eager"
+      />
       <span class="brand-name">{content.name}</span>
     </a>
     <div class="header-nav-group">
       <nav class="header-nav" aria-label={content.about.heading}>
         <a href={`/${content.lang}/about/`} class="header-link">
           {content.about.heading}
+        </a>
+        <a href={`/${content.lang}/cv/`} class="header-link">
+          {content.downloads.heading}
         </a>
       </nav>
       <nav class="header-actions" aria-label={content.footer.switchLabel}>
@@ -83,16 +92,11 @@ const switchLang = otherLang;
     min-height: 2.75rem;
   }
 
-  .brand-mark {
-    display: grid;
-    place-items: center;
+  .brand-logo {
     width: 2.25rem;
-    height: 2.25rem;
-    background-color: var(--color-navy-950);
-    color: var(--color-turquoise-500);
-    border-radius: var(--radius-md);
-    font-weight: 700;
-    letter-spacing: 0.02em;
+    height: auto;
+    display: block;
+    flex: none;
   }
 
   .header-nav-group {

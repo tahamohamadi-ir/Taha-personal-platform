@@ -37,6 +37,13 @@ export interface LocaleContent {
     label: string;
     heading: string;
   };
+  downloads: {
+    heading: string;
+    intro: string;
+    downloadLabel: string;
+    updatedLabel: string;
+    fallback: string;
+  };
   sections?: {
     experience: string;
     education: string;
@@ -126,6 +133,15 @@ export const content: Record<LocaleCode, LocaleContent> = {
       label: "02 · Identity",
       heading: "About",
     },
+    downloads: {
+      heading: "CV & Resume",
+      intro:
+        "Current versions of the academic CV and the professional resume. Files are Markdown; PDF editions will replace them when approved.",
+      downloadLabel: "Download",
+      updatedLabel: "Updated",
+      fallback:
+        "If a download does not work, the file may be temporarily unavailable; please try again later.",
+    },
     sections: {
       experience: "Experience",
       education: "Education",
@@ -213,6 +229,15 @@ export const content: Record<LocaleCode, LocaleContent> = {
     about: {
       label: "۰۲ · هویت",
       heading: "درباره",
+    },
+    downloads: {
+      heading: "رزومه و CV",
+      intro:
+        "نسخه‌های فعلی CV دانشگاهی و رزومهٔ حرفه‌ای. فایل‌ها Markdown هستند؛ نسخهٔ PDF پس از تأیید جایگزین می‌شود.",
+      downloadLabel: "دانلود",
+      updatedLabel: "به‌روزرسانی",
+      fallback:
+        "اگر دانلود کار نکرد، فایل احتمالاً موقتاً در دسترس نیست؛ بعداً دوباره تلاش کنید.",
     },
     sections: {
       experience: "سوابق کاری",
