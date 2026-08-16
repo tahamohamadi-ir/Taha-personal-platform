@@ -1309,6 +1309,15 @@ ode --check و YAML validation توسط agent.
 - Scope / files: `.gitignore` only, this Work Log.
 - Decisions / assumptions: Assets/ committed in LOG-0117 remain in git history (amend not safe on pushed commit); future files in Assets/ will be ignored.
 
+## LOG-0131 - 2026-08-16 - P3 / TOTP recovery codes + MFA disable (DEFER-0015 CLOSED)
+
+- Outcome: Hashed one-time recovery codes (64-bit, reveal-once session), login accepts unused recovery codes after password, regenerate/disable under `/admin/account/two-factor/` with second-factor confirm. Audit actions `mfa.recovery_issued`, `mfa.recovery_used`, `mfa.disabled` (no plaintext). DEFER-0015 CLOSED in repo; production needs CMS image rebuild.
+- Why: Authenticator loss previously required VPS emergency paths only.
+- Scope / files: `apps/cms/apps/security/{models,recovery,forms,views_totp,wagtail_hooks}.py`, templates, migration `0002_recovery_code`, `tests/test_mfa.py`, Task Spec, ADR-0020, ledgers, AGENTS.md.
+- Verification: `uv run ruff check` clean on touched paths; `uv run pytest` 97 passed.
+- Deferred or risk IDs: DEFER-0015 CLOSED; RISK-0003 OPEN (owner backup evidence); `/api/`/`/media/` unpublished.
+- Rollback / recovery: previous CMS image; migration reverse removes RecoveryCode rows only.
+
 ## LOG-0130 - 2026-08-16 - P3 / CMS-aware backup script + rendition contract (RISK-0003 prep)
 
 - Outcome: `infra/backup/taha-platform-backup.sh` now requires live `taha-cms-db-1`, dumps `cms-postgres-all.sql` (tags `cms`/`postgres`), optionally dumps legacy postgres, backs up CMS media volume when present, supports `--dry-run`. Added `infra/backup/README.md` and `docs/plan/P3-cms-backup-restore-task-spec.md`. Media public-delivery contract coded in `apps.media.renditions` with tests (no `/media/` exposure). S-PLAN D7 marked DONE; RISK-0003 remains OPEN until owner VPS evidence.

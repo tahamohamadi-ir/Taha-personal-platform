@@ -8,7 +8,7 @@ P0-G0 is **PASS for static-only P1** (2026-08-14). The Astro public frontend (`a
 
 **Staging is decommissioned** per ADR-0025 (2026-08-15): `staging.tahamohamadi.ir` has no Caddy block or DNS record, and deploy now requires CI green (web + cms workflows) + production smoke only — no staging smoke step exists. Development and deployment happen directly on `tahamohamadi.ir`.
 
-**P3 CMS runtime (2026-08-16, owner-authorized):** Compose `taha-cms` live on production; `/admin/login/` Wagtail; `/static/*` proxied; `/health/` CMS JSON; `/health.json` static; TOTP enrolled and admin password rotated (`RISK-0009` CLOSED). Public `/api/`, `/media/`, contact persistence and media upload remain blocked until a later Task Spec. `RISK-0003` still needs owner install of the CMS-aware backup script + isolated restore evidence (`docs/plan/P3-cms-backup-restore-task-spec.md`). Canonical Caddy handles: `infra/cms/Caddyfile.cms.snippet`. Recovery codes deferred (`DEFER-0015`).
+**P3 CMS runtime (2026-08-16, owner-authorized):** Compose `taha-cms` live on production; `/admin/login/` Wagtail; `/static/*` proxied; `/health/` CMS JSON; `/health.json` static; TOTP enrolled and admin password rotated (`RISK-0009` CLOSED). Hashed TOTP recovery codes + disable/re-enroll are in repo (`DEFER-0015` closed when this lands); owner rebuild needed to use them on production. Public `/api/`, `/media/`, contact persistence and media upload remain blocked until a later Task Spec. `RISK-0003` still needs owner install of the CMS-aware backup script + isolated restore evidence (`docs/plan/P3-cms-backup-restore-task-spec.md`). Canonical Caddy handles: `infra/cms/Caddyfile.cms.snippet`.
 
 ## Ownership
 

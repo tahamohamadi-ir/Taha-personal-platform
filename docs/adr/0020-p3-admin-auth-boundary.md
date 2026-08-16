@@ -23,8 +23,10 @@ no secrets in Git.
 - MFA uses django-otp TOTP. Runtime UX (2026-08-16): Wagtail
   `OTPLoginForm`, enrollment at `/admin/account/two-factor/`, Account panel,
   and `MFAEnforcementMiddleware` that redirects staff without a confirmed
-  device to enrollment (account/password still reachable). Recovery codes
-  remain deferred.
+  device to enrollment (account/password still reachable). Hashed one-time
+  recovery codes (issue/reveal-once, regenerate, disable/re-enroll) are
+  part of the same admin boundary; login accepts authenticator or unused
+  recovery code after password.
 
 ## Consequences
 
