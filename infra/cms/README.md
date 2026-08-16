@@ -80,6 +80,9 @@ bash infra/deploy/smoke-cms.sh https://tahamohamadi.ir
 
 # Password must be at least 12 characters (do not bypass validation).
 docker compose -f infra/cms/docker-compose.cms.yml exec cms python manage.py createsuperuser
+
+# After this image is running: Account → Two-factor authentication
+# (or https://tahamohamadi.ir/admin/account/two-factor/) — scan QR, confirm code.
 ```
 
 Always invoke with `bash infra/deploy/...` (scripts are executable in git, but `bash` avoids Permission denied if the bit was lost on checkout).

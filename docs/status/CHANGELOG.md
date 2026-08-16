@@ -2,6 +2,11 @@
 
 > هر slice واقعی (کد، زیرساخت، مستندات) که در `docs/status/WORK_LOG.md` ثبت می‌شود می‌تواند یک ردیف خلاصه اینجا داشته باشد. Append-only؛ جدیدترین در بالا.
 
+## 2026-08-16 — Wagtail TOTP enrollment + OTP login (code)
+
+- Account panel + `/admin/account/two-factor/` (QR + confirm); login requires OTP after enrollment; middleware redirects unenrolled staff to setup.
+- `qrcode` runtime dependency; 88 pytest PASS. Owner must rebuild production image then enroll; RISK-0009 still OPEN for password + production TOTP.
+
 ## 2026-08-16 — Caddy `/static/*` live; CMS smoke full PASS
 
 - Production Caddyfile gained `handle /static/*` → CMS; origin CSS 200; `smoke-cms.sh` full PASS (admin + CSS + health split).

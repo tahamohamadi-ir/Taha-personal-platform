@@ -1309,6 +1309,15 @@ ode --check و YAML validation توسط agent.
 - Scope / files: `.gitignore` only, this Work Log.
 - Decisions / assumptions: Assets/ committed in LOG-0117 remain in git history (amend not safe on pushed commit); future files in Assets/ will be ignored.
 
+## LOG-0128 - 2026-08-16 - P3 / Wagtail TOTP enrollment + OTP login
+
+- Outcome: Account had no OTP section because MFA was enforcement-only. Added Wagtail `OTPLoginForm`, `/admin/account/two-factor/` enrollment (QR via `qrcode` + manual secret), Account profile panel + menu item, and middleware that redirects staff without a confirmed device to setup (account/password still reachable). Login requires OTP only after enrollment. Security fix: setup/QR not exempt for enrolled users without OTP session; QR serves unconfirmed devices only; session `cycle_key` on confirm.
+- Why: Unblock RISK-0009 TOTP residual; owner could not enroll from Account UI.
+- Scope / files: `apps/cms/apps/security/{forms,mfa,views_totp,wagtail_hooks}.py`, templates, `tests/test_mfa.py` + security test updates, `qrcode` dep, Dockerfile/update-cms import check, ADR-0020, ledgers.
+- Verification: `uv run pytest` 88 passed; ruff clean; Django check (treebeard E001 advisory only).
+- Deferred or risk IDs: DEFER-0015 (TOTP recovery codes); RISK-0009 OPEN until owner rebuilds image, rotates password, enrolls TOTP on production. RISK-0003 unchanged.
+- Rollback / recovery: previous CMS image tag; Caddy unchanged.
+
 ## LOG-0127 - 2026-08-16 - P3 / Caddy `/static/*` applied; CMS smoke full PASS
 
 - Outcome: Owner patched production Caddyfile with `handle /static/*` → `127.0.0.1:18000` before `import taha_application_routes`. Validate + reload succeeded. Origin `--resolve` to 127.0.0.1 returned 200 for `/static/wagtailadmin/css/core.css`. `bash infra/deploy/smoke-cms.sh https://tahamohamadi.ir` PASS (admin Wagtail, static CSS, `/health/`, `/health.json`, `/`).

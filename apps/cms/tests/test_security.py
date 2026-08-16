@@ -65,6 +65,14 @@ class TestAuditMiddleware:
         assert row.ip == "203.0.113.11"
 
     def test_admin_mutation_recorded(self, db, admin_client, admin_user):
+        from django_otp.plugins.otp_totp.models import TOTPDevice
+
+        device = TOTPDevice.objects.create(
+            user=admin_user, name="default", confirmed=True
+        )
+        session = admin_client.session
+        session["otp_device_id"] = device.persistent_id
+        session.save()
         response = admin_client.post("/admin/pages/1234/edit/")
         assert response.status_code == 404
         row = AuditLog.objects.get(action="admin.mutation")
@@ -175,7 +183,20 @@ class TestWagtailAdminAccess:
         response = client.get("/admin/")
         assert response.status_code in (301, 302, 403)
 
-    def test_superuser_reaches_admin(self, db, admin_client):
+    def test_superuser_reaches_admin(self, db, admin_client, admin_user):
+        from django_otp.plugins.otp_totp.models import TOTPDevice
+
+        # Without TOTP, MFA middleware sends staff to enrollment.
+        response = admin_client.get("/admin/")
+        assert response.status_code == 302
+        assert "/admin/account/two-factor/" in response.url
+
+        device = TOTPDevice.objects.create(
+            user=admin_user, name="default", confirmed=True
+        )
+        session = admin_client.session
+        session["otp_device_id"] = device.persistent_id
+        session.save()
         response = admin_client.get("/admin/")
         assert response.status_code == 200
 

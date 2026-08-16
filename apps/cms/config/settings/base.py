@@ -111,6 +111,7 @@ USE_TZ = True
 
 WAGTAILADMIN_BASE_URL = "http://localhost:8000"
 WAGTAIL_SITE_NAME = "Taha Personal Platform"
+WAGTAILADMIN_USER_LOGIN_FORM = "apps.security.forms.OTPLoginForm"
 
 WAGTAIL_RICHTEXT_FEATURES = [
     "h2",

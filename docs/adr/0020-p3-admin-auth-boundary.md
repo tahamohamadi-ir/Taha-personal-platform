@@ -20,9 +20,11 @@ no secrets in Git.
 - Admin security baseline in `apps/security`: `AuditLog` (login/admin
   mutations, never request bodies/secrets), cache-backed login rate limit
   (5 attempts / 5 min per IP → 429), read-only audit admin.
-- MFA is designed here (django-otp/TOTP is the candidate) but NOT enforced
-  until the runtime deploy Task Spec; enforcing MFA before public admin PASS
-  remains a P3-09 requirement.
+- MFA uses django-otp TOTP. Runtime UX (2026-08-16): Wagtail
+  `OTPLoginForm`, enrollment at `/admin/account/two-factor/`, Account panel,
+  and `MFAEnforcementMiddleware` that redirects staff without a confirmed
+  device to enrollment (account/password still reachable). Recovery codes
+  remain deferred.
 
 ## Consequences
 
