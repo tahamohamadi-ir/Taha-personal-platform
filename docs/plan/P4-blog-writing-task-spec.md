@@ -194,6 +194,7 @@
 | ID | Item | Why deferred | Target |
 |---|---|---|---|
 | DEFER-0017 | Public Caddy `/api/` (and related `/media/` for featured images) for blog | Edge exposure needs a separate Task Spec + owner approval; P4 ships in-process API + optional build-time `CMS_API_BASE` only | Separate publish-API Task Spec |
+| DEFER-0018 | RSS/Atom `/{locale}/blog/feed.xml` | Prefer shipping SEO + redirects first; feed needs dedicated tests and `rel=alternate` wiring | P4 follow-up or owner decision |
 | DEFER-P4-COMMENTS | Comment system | Complex; needs auth, moderation, spam protection | P7+ or owner decision |
 | DEFER-P4-SOCIAL | Social sharing analytics | Needs provider/consent decision | Owner decision |
 | DEFER-P4-PAYWALL | Paywalled content | Needs subscription/auth infrastructure | Not planned |
@@ -203,5 +204,5 @@
 
 - Files changed (task-owned only): `apps/cms/apps/content/models.py`, `apps/cms/apps/content/tests/`, `apps/cms/apps/api/`, `apps/cms/apps/content/admin.py` (snippet registration), `apps/web/src/pages/{locale}/blog/`, `apps/web/src/components/` (ArticleCard, ArticleDetail, SeriesNav, TagList, Breadcrumbs), `docs/plan/P4-blog-writing-task-spec.md` (this file), `docs/status/*`, `Task-list.md`.
 - Verification actually run (command + result): recorded in WORK_LOG after each step.
-- Deferred/risk IDs: DEFER-0017, DEFER-P4-COMMENTS, DEFER-P4-SOCIAL, DEFER-P4-PAYWALL, DEFER-P4-SEARCH.
-- Explicit blockers and next input: P3 CMS runtime is deployed (`RISK-0009` CLOSED). Owner still owns `RISK-0003` backup evidence before production migrate; public `/api/` remains closed (`DEFER-0017`). Owner provides topic tags, series structure, license preference and any content for initial articles.
+- Deferred/risk IDs: DEFER-0017, DEFER-0018, DEFER-P4-COMMENTS, DEFER-P4-SOCIAL, DEFER-P4-PAYWALL, DEFER-P4-SEARCH.
+- Explicit blockers and next input: P3 CMS runtime is deployed (`RISK-0009` CLOSED). Owner still owns `RISK-0003` backup evidence before production migrate; public `/api/` remains closed (`DEFER-0017`); RSS/Atom remains deferred (`DEFER-0018`). Owner provides topic tags, series structure, license preference and any content for initial articles. Code-first P4 is on `main` (PR #14 + #15); Task Spec status `PARTIAL` until prod migrate / optional `CMS_API_BASE` publish.

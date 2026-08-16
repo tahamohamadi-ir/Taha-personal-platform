@@ -2,6 +2,10 @@
 
 > هر slice واقعی (کد، زیرساخت، مستندات) که در `docs/status/WORK_LOG.md` ثبت می‌شود می‌تواند یک ردیف خلاصه اینجا داشته باشد. Append-only؛ جدیدترین در بالا.
 
+## 2026-08-16 — P4 security harden (public projection)
+
+- Redirect targets limited to public articles; API body re-sanitized; JSON-LD script breakout escaped (PR #15).
+
 ## 2026-08-16 — P4 Blog/Writing code-first (no public `/api/`)
 
 - Article/Series/TopicTag models + Wagtail snippets + Ninja published-only API; Astro blog routes with optional `CMS_API_BASE`.
