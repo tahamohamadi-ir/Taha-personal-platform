@@ -1,4 +1,4 @@
-"""Lifecycle and locale-uniqueness tests for content models (P3)."""
+﻿"""Lifecycle and locale-uniqueness tests for content models (P3)."""
 
 from datetime import timedelta
 
@@ -6,7 +6,16 @@ import pytest
 from django.db import IntegrityError
 from django.utils import timezone
 
-from apps.content.models import Article, Landing, LifecycleStatus, Locale, Profile
+from apps.content.models import (
+    Article,
+    ArticleSlugRedirect,
+    Landing,
+    LifecycleStatus,
+    Locale,
+    Profile,
+    Series,
+    TopicTag,
+)
 
 
 def make_landing(**overrides) -> Landing:
@@ -65,7 +74,7 @@ def test_public_never_leaks_draft_with_blank_published_at():
 
 @pytest.mark.django_db
 def test_same_slug_allowed_across_locales():
-    fa = make_landing(locale=Locale.FA, slug="about", title="درباره")
+    fa = make_landing(locale=Locale.FA, slug="about", title="Ø¯Ø±Ø¨Ø§Ø±Ù‡")
     en = make_landing(locale=Locale.EN, slug="about", title="About")
     assert Landing.objects.filter(slug="about").count() == 2
     assert {item.locale for item in Landing.objects.filter(slug="about")} == {
@@ -128,3 +137,99 @@ def test_article_shell_public_only_published():
         status=LifecycleStatus.DRAFT,
     )
     assert list(Article.objects.public()) == [published]
+
+# --- P4 Article / Series / TopicTag ---
+
+
+@pytest.mark.django_db
+def test_article_reading_time_computed_on_save():
+    words = " ".join([f"w{i}" for i in range(250)])
+    article = Article.objects.create(
+        locale=Locale.EN,
+        slug="long-post",
+        title="Long",
+        body=f"<p>{words}</p>",
+        status=LifecycleStatus.PUBLISHED,
+        published_at=past(),
+    )
+    assert article.reading_time_minutes == 2
+
+
+@pytest.mark.django_db
+def test_article_empty_body_reading_time_zero():
+    article = Article.objects.create(
+        locale=Locale.EN,
+        slug="empty-body",
+        title="Empty",
+        body="",
+        status=LifecycleStatus.DRAFT,
+    )
+    assert article.reading_time_minutes == 0
+
+
+@pytest.mark.django_db
+def test_series_locale_slug_unique():
+    Series.objects.create(
+        locale=Locale.EN, slug="core", title="Core", status=LifecycleStatus.DRAFT
+    )
+    with pytest.raises(IntegrityError):
+        Series.objects.create(
+            locale=Locale.EN, slug="core", title="Core 2", status=LifecycleStatus.DRAFT
+        )
+
+
+@pytest.mark.django_db
+def test_topic_tag_slug_globally_unique():
+    TopicTag.objects.create(locale=Locale.EN, slug="ai", name="AI")
+    with pytest.raises(IntegrityError):
+        TopicTag.objects.create(locale=Locale.FA, slug="ai", name="Ù‡ÙˆØ´")
+
+
+@pytest.mark.django_db
+def test_article_tag_and_series_relationships():
+    tag = TopicTag.objects.create(locale=Locale.EN, slug="systems", name="Systems")
+    series = Series.objects.create(
+        locale=Locale.EN,
+        slug="foundations",
+        title="Foundations",
+        status=LifecycleStatus.PUBLISHED,
+        published_at=past(),
+        ordering=1,
+    )
+    article = Article.objects.create(
+        locale=Locale.EN,
+        slug="intro",
+        title="Intro",
+        body="<p>Hello world</p>",
+        excerpt="Hello",
+        status=LifecycleStatus.PUBLISHED,
+        published_at=past(),
+    )
+    article.topic_tags.add(tag)
+    article.series.add(series)
+    assert list(article.topic_tags.all()) == [tag]
+    assert list(Article.objects.public().filter(series=series)) == [article]
+
+
+@pytest.mark.django_db
+def test_series_public_excludes_draft():
+    Series.objects.create(
+        locale=Locale.EN, slug="draft-series", title="Draft", status=LifecycleStatus.DRAFT
+    )
+    published = Series.objects.create(
+        locale=Locale.EN,
+        slug="live-series",
+        title="Live",
+        status=LifecycleStatus.PUBLISHED,
+        published_at=past(),
+    )
+    assert list(Series.objects.public()) == [published]
+
+
+@pytest.mark.django_db
+def test_article_slug_redirect_unique_per_locale():
+    ArticleSlugRedirect.objects.create(locale=Locale.EN, old_slug="old", new_slug="new")
+    with pytest.raises(IntegrityError):
+        ArticleSlugRedirect.objects.create(
+            locale=Locale.EN, old_slug="old", new_slug="other"
+        )
