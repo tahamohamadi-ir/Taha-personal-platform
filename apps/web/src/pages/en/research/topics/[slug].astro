@@ -1,0 +1,110 @@
+---
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../../../components/blog/Breadcrumbs.astro";
+import { content } from "../../../../data/content";
+import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../../data/structured";
+import { getResearchTopic, getResearchTopics } from "../../../../lib/cms/research";
+
+export async function getStaticPaths() {
+  const locale = "en" as const;
+  const topics = await getResearchTopics(locale);
+  return topics.map((topic) => ({ params: { slug: topic.slug } }));
+}
+
+const locale = "en" as const;
+const pageContent = content[locale];
+const research = pageContent.research;
+const slug = Astro.params.slug as string;
+const topic = await getResearchTopic(locale, slug);
+if (!topic) {
+  return Astro.redirect(`/${locale}/research/`, 302);
+}
+
+const structured = [
+  breadcrumbJsonLd([
+    { name: pageContent.name, path: `/${locale}/` },
+    { name: research.heading, path: `/${locale}/research/` },
+    { name: topic.title, path: `/${locale}/research/topics/${topic.slug}/` },
+  ]),
+];
+validateStructuredData(...structured);
+const alternateExists = (await getResearchTopic("fa", topic.slug)) !== null;
+---
+
+<BaseLayout
+  content={{
+    ...pageContent,
+    meta: {
+      title: `${topic.title} — ${pageContent.name}`,
+      description: topic.summary || research.intro,
+    },
+  }}
+  alternateHref={alternateExists ? `/fa/research/topics/${topic.slug}/` : null}
+>
+  <script type="application/ld+json" is:inline set:html={jsonLdScriptContent(structured[0])} />
+  <section class="research-page">
+    <Breadcrumbs
+      items={[
+        { label: pageContent.name, href: `/${locale}/` },
+        { label: research.heading, href: `/${locale}/research/` },
+        { label: topic.title },
+      ]}
+    />
+    {!alternateExists && <p class="missing">{research.missingTranslation}</p>}
+    <h1>{topic.title}</h1>
+    {topic.summary && <p class="lead">{topic.summary}</p>}
+    {topic.motivation && <><h2>Motivation</h2><p>{topic.motivation}</p></>}
+    {topic.problems && <><h2>Problems</h2><p>{topic.problems}</p></>}
+    {topic.research_questions && <><h2>Research questions</h2><p>{topic.research_questions}</p></>}
+    {topic.methods && <><h2>Methods</h2><p>{topic.methods}</p></>}
+    {topic.future_directions && <><h2>Future directions</h2><p>{topic.future_directions}</p></>}
+    <h2>{research.relatedHeading}</h2>
+    <h3>{research.projectsHeading}</h3>
+    {
+      topic.projects.length === 0 ? (
+        <p class="empty">{research.empty}</p>
+      ) : (
+        <ul>
+          {topic.projects.map((p) => (
+            <li>
+              <a href={`/${locale}/research/projects/${p.slug}/`}>{p.title}</a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+    <h3>{research.publicationsHeading}</h3>
+    {
+      topic.publications.length === 0 ? (
+        <p class="empty">{research.empty}</p>
+      ) : (
+        <ul>
+          {topic.publications.map((p) => (
+            <li>
+              <a href={`/${locale}/research/publications/${p.slug}/`}>{p.title}</a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+    <p class="contact-note">
+      <a href={`/${locale}/about/`}>{pageContent.about.heading}</a> — {research.contactNote}
+    </p>
+  </section>
+</BaseLayout>
+
+<style>
+  .research-page {
+    max-width: 44rem;
+    margin-inline: auto;
+    padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem;
+  }
+  .research-page h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 4vw, 2.4rem);
+    margin: 0 0 0.75rem;
+  }
+  .lead, .empty, .missing, .contact-note { color: var(--color-ink-muted); }
+  ul { list-style: none; margin: 0 0 1rem; padding: 0; }
+  li { margin-bottom: 0.5rem; }
+</style>

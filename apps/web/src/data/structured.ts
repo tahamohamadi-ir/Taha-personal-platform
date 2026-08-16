@@ -63,6 +63,47 @@ export function blogPostingJsonLd(input: {
   return block;
 }
 
+/** ScholarlyArticle only when a real DOI or absolute URL identifier exists. */
+export function scholarlyArticleJsonLd(input: {
+  locale: LocaleCode;
+  title: string;
+  slug: string;
+  authors: string;
+  venue: string;
+  date: string | null;
+  doi: string;
+  url: string;
+}): JsonLdBlock | null {
+  const doi = input.doi.trim();
+  const absoluteUrl = input.url.trim();
+  if (!doi && !/^https?:\/\//.test(absoluteUrl)) {
+    return null;
+  }
+  const pageUrl = new URL(
+    `/${input.locale}/research/publications/${input.slug}/`,
+    site.url,
+  ).href;
+  const block: JsonLdBlock = {
+    "@context": "https://schema.org",
+    "@type": "ScholarlyArticle",
+    headline: input.title,
+    url: pageUrl,
+    inLanguage: input.locale,
+    author: {
+      "@type": "Person",
+      name: input.authors || content.en.name,
+    },
+  };
+  if (input.venue) block.isPartOf = { "@type": "Periodical", name: input.venue };
+  if (input.date) block.datePublished = input.date;
+  if (doi) {
+    block.identifier = doi.startsWith("10.") ? `https://doi.org/${doi}` : doi;
+  } else if (absoluteUrl) {
+    block.sameAs = absoluteUrl;
+  }
+  return block;
+}
+
 export function breadcrumbJsonLd(
   crumbs: Array<{ name: string; path: string }>,
 ): JsonLdBlock {

@@ -48,6 +48,27 @@ export interface LocaleContent {
     seriesNavLabel: string;
     missingTranslation: string;
   };
+  research: {
+    heading: string;
+    intro: string;
+    empty: string;
+    topicsHeading: string;
+    statementHeading: string;
+    statementEmpty: string;
+    projectsHeading: string;
+    publicationsHeading: string;
+    relatedHeading: string;
+    availabilityLabel: string;
+    codeLabel: string;
+    dataLabel: string;
+    demoLabel: string;
+    licenseLabel: string;
+    evidenceHeading: string;
+    collaboratorsHeading: string;
+    fundingHeading: string;
+    contactNote: string;
+    missingTranslation: string;
+  };
   downloads: {
     heading: string;
     intro: string;
@@ -155,6 +176,29 @@ export const content: Record<LocaleCode, LocaleContent> = {
       nextLabel: "Next in series",
       seriesNavLabel: "Series navigation",
       missingTranslation: "This article is not yet translated into Persian.",
+    },
+    research: {
+      heading: "Research",
+      intro:
+        "Research topics, statement, projects and publications from the CMS. When CMS_API_BASE is not set for this build, lists stay empty.",
+      empty: "No published research items are available in this build.",
+      topicsHeading: "Topics",
+      statementHeading: "Research statement",
+      statementEmpty: "No published research statement is available in this build.",
+      projectsHeading: "Projects",
+      publicationsHeading: "Publications",
+      relatedHeading: "Related",
+      availabilityLabel: "Availability",
+      codeLabel: "Code",
+      dataLabel: "Data",
+      demoLabel: "Demo",
+      licenseLabel: "License",
+      evidenceHeading: "Evidence",
+      collaboratorsHeading: "Collaborators",
+      fundingHeading: "Funding",
+      contactNote:
+        "For collaboration inquiries, see About. A contact form is not published yet.",
+      missingTranslation: "This research page is not yet translated into Persian.",
     },
     downloads: {
       heading: "CV & Resume",
@@ -264,6 +308,29 @@ export const content: Record<LocaleCode, LocaleContent> = {
       nextLabel: "بعدی در مجموعه",
       seriesNavLabel: "ناوبری مجموعه",
       missingTranslation: "این مقاله هنوز به انگلیسی ترجمه نشده است.",
+    },
+    research: {
+      heading: "پژوهش",
+      intro:
+        "موضوع‌ها، بیانیه، پروژه‌ها و انتشارات پژوهشی از CMS. اگر CMS_API_BASE برای این build تنظیم نشده باشد، فهرست‌ها خالی می‌مانند.",
+      empty: "در این build هیچ مورد پژوهشی منتشرشده‌ای در دسترس نیست.",
+      topicsHeading: "موضوع‌ها",
+      statementHeading: "بیانیهٔ پژوهشی",
+      statementEmpty: "در این build بیانیهٔ پژوهشی منتشرشده‌ای در دسترس نیست.",
+      projectsHeading: "پروژه‌ها",
+      publicationsHeading: "انتشارات",
+      relatedHeading: "مرتبط",
+      availabilityLabel: "دسترسی",
+      codeLabel: "کد",
+      dataLabel: "داده",
+      demoLabel: "دمو",
+      licenseLabel: "مجوز",
+      evidenceHeading: "شواهد",
+      collaboratorsHeading: "همکاران",
+      fundingHeading: "حمایت مالی",
+      contactNote:
+        "برای همکاری، صفحهٔ درباره را ببینید. فرم تماس هنوز منتشر نشده است.",
+      missingTranslation: "این صفحهٔ پژوهشی هنوز به انگلیسی ترجمه نشده است.",
     },
     downloads: {
       heading: "رزومه و CV",

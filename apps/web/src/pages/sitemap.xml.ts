@@ -1,6 +1,11 @@
 import type { APIRoute } from "astro";
 import { site } from "../data/site";
 import { getPublishedArticles } from "../lib/cms/articles";
+import {
+  getResearchProjects,
+  getResearchPublications,
+  getResearchTopics,
+} from "../lib/cms/research";
 
 export const prerender = true;
 
@@ -15,20 +20,62 @@ export const GET: APIRoute = async () => {
     "/fa/cv/",
     "/en/blog/",
     "/fa/blog/",
+    "/en/research/",
+    "/fa/research/",
+    "/en/research/statement/",
+    "/fa/research/statement/",
   ];
 
   const staticEntries = staticPaths
     .map((path) => `  <url><loc>${new URL(path, site.url).href}</loc></url>`)
     .join("\n");
 
-  const articleEntries: string[] = [];
+  const dynamicEntries: string[] = [];
   for (const locale of site.locales) {
     const articles = await getPublishedArticles(locale);
     for (const article of articles) {
       const path = `/${locale}/blog/${article.slug}/`;
       const lastmod = article.updated_at ?? article.published_at;
-      const lastmodTag = lastmod ? `<lastmod>${lastmod.slice(0, 10)}</lastmod>` : "";
-      articleEntries.push(
+      const lastmodTag = lastmod
+        ? `<lastmod>${lastmod.slice(0, 10)}</lastmod>`
+        : "";
+      dynamicEntries.push(
+        `  <url><loc>${new URL(path, site.url).href}</loc>${lastmodTag}<changefreq>monthly</changefreq><priority>0.7</priority></url>`,
+      );
+    }
+
+    const topics = await getResearchTopics(locale);
+    for (const topic of topics) {
+      const path = `/${locale}/research/topics/${topic.slug}/`;
+      const lastmod = topic.updated_at ?? topic.published_at;
+      const lastmodTag = lastmod
+        ? `<lastmod>${lastmod.slice(0, 10)}</lastmod>`
+        : "";
+      dynamicEntries.push(
+        `  <url><loc>${new URL(path, site.url).href}</loc>${lastmodTag}<changefreq>monthly</changefreq><priority>0.7</priority></url>`,
+      );
+    }
+
+    const projects = await getResearchProjects(locale);
+    for (const project of projects) {
+      const path = `/${locale}/research/projects/${project.slug}/`;
+      const lastmod = project.updated_at ?? project.published_at;
+      const lastmodTag = lastmod
+        ? `<lastmod>${lastmod.slice(0, 10)}</lastmod>`
+        : "";
+      dynamicEntries.push(
+        `  <url><loc>${new URL(path, site.url).href}</loc>${lastmodTag}<changefreq>monthly</changefreq><priority>0.7</priority></url>`,
+      );
+    }
+
+    const publications = await getResearchPublications(locale);
+    for (const publication of publications) {
+      const path = `/${locale}/research/publications/${publication.slug}/`;
+      const lastmod = publication.updated_at ?? publication.published_at;
+      const lastmodTag = lastmod
+        ? `<lastmod>${lastmod.slice(0, 10)}</lastmod>`
+        : "";
+      dynamicEntries.push(
         `  <url><loc>${new URL(path, site.url).href}</loc>${lastmodTag}<changefreq>monthly</changefreq><priority>0.7</priority></url>`,
       );
     }
@@ -37,7 +84,7 @@ export const GET: APIRoute = async () => {
   const body = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${staticEntries}
-${articleEntries.join("\n")}
+${dynamicEntries.join("\n")}
 </urlset>
 `;
   return new Response(body, {

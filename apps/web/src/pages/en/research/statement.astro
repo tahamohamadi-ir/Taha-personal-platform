@@ -1,0 +1,73 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../../components/blog/Breadcrumbs.astro";
+import { content } from "../../../data/content";
+import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../data/structured";
+import { getResearchStatement } from "../../../lib/cms/research";
+
+const locale = "en" as const;
+const pageContent = content[locale];
+const research = pageContent.research;
+const statement = await getResearchStatement(locale);
+
+const structured = [
+  breadcrumbJsonLd([
+    { name: pageContent.name, path: `/${locale}/` },
+    { name: research.heading, path: `/${locale}/research/` },
+    { name: research.statementHeading, path: `/${locale}/research/statement/` },
+  ]),
+];
+validateStructuredData(...structured);
+
+const title = statement?.title ?? research.statementHeading;
+const description = statement
+  ? statement.body.replace(/<[^>]+>/g, " ").trim().slice(0, 160)
+  : research.statementEmpty;
+---
+
+<BaseLayout
+  content={{
+    ...pageContent,
+    meta: { title: `${title} — ${pageContent.name}`, description },
+  }}
+  alternateHref="/fa/research/statement/"
+>
+  <script type="application/ld+json" is:inline set:html={jsonLdScriptContent(structured[0])} />
+  <section class="research-page">
+    <Breadcrumbs
+      items={[
+        { label: pageContent.name, href: `/${locale}/` },
+        { label: research.heading, href: `/${locale}/research/` },
+        { label: research.statementHeading },
+      ]}
+    />
+    {
+      statement ? (
+        <>
+          <h1>{statement.title}</h1>
+          <div class="body" set:html={statement.body} />
+        </>
+      ) : (
+        <>
+          <h1>{research.statementHeading}</h1>
+          <p class="empty">{research.statementEmpty}</p>
+        </>
+      )
+    }
+  </section>
+</BaseLayout>
+
+<style>
+  .research-page {
+    max-width: 44rem;
+    margin-inline: auto;
+    padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem;
+  }
+  .research-page h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 4vw, 2.4rem);
+    margin: 0 0 1rem;
+  }
+  .empty { color: var(--color-ink-muted); }
+  .body :global(p) { margin: 0 0 1rem; line-height: 1.7; }
+</style>

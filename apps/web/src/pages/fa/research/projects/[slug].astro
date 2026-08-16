@@ -1,0 +1,143 @@
+---
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../../../components/blog/Breadcrumbs.astro";
+import { content } from "../../../../data/content";
+import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../../data/structured";
+import { getResearchProject, getResearchProjects } from "../../../../lib/cms/research";
+
+export async function getStaticPaths() {
+  const locale = "fa" as const;
+  const projects = await getResearchProjects(locale);
+  return projects.map((project) => ({ params: { slug: project.slug } }));
+}
+
+const locale = "fa" as const;
+const pageContent = content[locale];
+const research = pageContent.research;
+const slug = Astro.params.slug as string;
+const project = await getResearchProject(locale, slug);
+if (!project) {
+  return Astro.redirect(`/${locale}/research/`, 302);
+}
+
+const structured = [
+  breadcrumbJsonLd([
+    { name: pageContent.name, path: `/${locale}/` },
+    { name: research.heading, path: `/${locale}/research/` },
+    { name: project.title, path: `/${locale}/research/projects/${project.slug}/` },
+  ]),
+];
+validateStructuredData(...structured);
+const alternateExists = (await getResearchProject("en", project.slug)) !== null;
+---
+
+<BaseLayout
+  content={{
+    ...pageContent,
+    meta: {
+      title: `${project.title} — ${pageContent.name}`,
+      description: project.objective || research.intro,
+    },
+  }}
+  alternateHref={alternateExists ? `/en/research/projects/${project.slug}/` : null}
+>
+  <script type="application/ld+json" is:inline set:html={jsonLdScriptContent(structured[0])} />
+  <section class="research-page">
+    <Breadcrumbs
+      items={[
+        { label: pageContent.name, href: `/${locale}/` },
+        { label: research.heading, href: `/${locale}/research/` },
+        { label: project.title },
+      ]}
+    />
+    {!alternateExists && <p class="missing">{research.missingTranslation}</p>}
+    <h1>{project.title}</h1>
+    <p class="meta">{project.project_type} · {research.licenseLabel}: {project.license}</p>
+    {project.objective && <p class="lead">{project.objective}</p>}
+    {project.methods_summary && <><h2>روش‌ها</h2><p>{project.methods_summary}</p></>}
+    {project.role && <><h2>نقش</h2><p>{project.role}</p></>}
+    <h2>{research.availabilityLabel}</h2>
+    <ul class="availability">
+      <li>
+        {research.codeLabel}: {project.code_availability}
+        {project.code_url ? <> — <a href={project.code_url} rel="noopener noreferrer">{project.code_url}</a></> : null}
+      </li>
+      <li>
+        {research.dataLabel}: {project.data_availability}
+        {project.data_url ? <> — <a href={project.data_url} rel="noopener noreferrer">{project.data_url}</a></> : null}
+      </li>
+      <li>
+        {research.demoLabel}: {project.demo_availability}
+        {project.demo_url ? <> — <a href={project.demo_url} rel="noopener noreferrer">{project.demo_url}</a></> : null}
+      </li>
+    </ul>
+    {
+      project.evidence.length > 0 && (
+        <>
+          <h2>{research.evidenceHeading}</h2>
+          <ul>
+            {project.evidence.map((e) => (
+              <li>
+                <strong>{e.label}</strong>: {e.value}
+                <span class="source"> ({e.source})</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )
+    }
+    {
+      project.collaborators.length > 0 && (
+        <>
+          <h2>{research.collaboratorsHeading}</h2>
+          <ul>
+            {project.collaborators.map((c) => (
+              <li>{c.name}{c.role ? ` — ${c.role}` : ""}</li>
+            ))}
+          </ul>
+        </>
+      )
+    }
+    {
+      project.funding.length > 0 && (
+        <>
+          <h2>{research.fundingHeading}</h2>
+          <ul>
+            {project.funding.map((f) => (
+              <li>{f.funder}{f.grant_id ? ` (${f.grant_id})` : ""}</li>
+            ))}
+          </ul>
+        </>
+      )
+    }
+    <h2>{research.relatedHeading}</h2>
+    <h3>{research.topicsHeading}</h3>
+    <ul>
+      {project.topics.map((t) => (
+        <li><a href={`/${locale}/research/topics/${t.slug}/`}>{t.title}</a></li>
+      ))}
+    </ul>
+    <h3>{research.publicationsHeading}</h3>
+    <ul>
+      {project.publications.map((p) => (
+        <li><a href={`/${locale}/research/publications/${p.slug}/`}>{p.title}</a></li>
+      ))}
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .research-page {
+    max-width: 44rem;
+    margin-inline: auto;
+    padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem;
+  }
+  .research-page h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 4vw, 2.4rem);
+    margin: 0 0 0.5rem;
+  }
+  .meta, .lead, .missing, .source { color: var(--color-ink-muted); }
+  ul { list-style: none; margin: 0 0 1rem; padding: 0; }
+  li { margin-bottom: 0.5rem; }
+</style>

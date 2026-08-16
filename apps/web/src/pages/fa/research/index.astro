@@ -1,0 +1,158 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../../components/blog/Breadcrumbs.astro";
+import { content } from "../../../data/content";
+import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../data/structured";
+import {
+  getResearchProjects,
+  getResearchPublications,
+  getResearchStatement,
+  getResearchTopics,
+} from "../../../lib/cms/research";
+
+const locale = "fa" as const;
+const pageContent = content[locale];
+const research = pageContent.research;
+const topics = await getResearchTopics(locale);
+const projects = await getResearchProjects(locale);
+const publications = await getResearchPublications(locale);
+const statement = await getResearchStatement(locale);
+const empty =
+  topics.length === 0 &&
+  projects.length === 0 &&
+  publications.length === 0 &&
+  !statement;
+
+const structured = [
+  breadcrumbJsonLd([
+    { name: pageContent.name, path: `/${locale}/` },
+    { name: research.heading, path: `/${locale}/research/` },
+  ]),
+];
+validateStructuredData(...structured);
+---
+
+<BaseLayout
+  content={{
+    ...pageContent,
+    meta: {
+      title: `${research.heading} — ${pageContent.name}`,
+      description: research.intro,
+    },
+  }}
+  alternateHref="/en/research/"
+>
+  <script type="application/ld+json" is:inline set:html={jsonLdScriptContent(structured[0])} />
+  <section class="research-page">
+    <Breadcrumbs
+      items={[
+        { label: pageContent.name, href: `/${locale}/` },
+        { label: research.heading },
+      ]}
+    />
+    <h1>{research.heading}</h1>
+    <p class="lead">{research.intro}</p>
+    {
+      empty ? (
+        <p class="empty">{research.empty}</p>
+      ) : (
+        <>
+          <section>
+            <h2>{research.statementHeading}</h2>
+            {statement ? (
+              <p>
+                <a href={`/${locale}/research/statement/`}>{statement.title}</a>
+              </p>
+            ) : (
+              <p class="empty">{research.statementEmpty}</p>
+            )}
+          </section>
+          <section>
+            <h2>{research.topicsHeading}</h2>
+            {topics.length === 0 ? (
+              <p class="empty">{research.empty}</p>
+            ) : (
+              <ul>
+                {topics.map((topic) => (
+                  <li>
+                    <a href={`/${locale}/research/topics/${topic.slug}/`}>{topic.title}</a>
+                    {topic.summary ? <p>{topic.summary}</p> : null}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+          <section>
+            <h2>{research.projectsHeading}</h2>
+            {projects.length === 0 ? (
+              <p class="empty">{research.empty}</p>
+            ) : (
+              <ul>
+                {projects.map((project) => (
+                  <li>
+                    <a href={`/${locale}/research/projects/${project.slug}/`}>{project.title}</a>
+                    <p>{project.objective}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+          <section>
+            <h2>{research.publicationsHeading}</h2>
+            {publications.length === 0 ? (
+              <p class="empty">{research.empty}</p>
+            ) : (
+              <ul>
+                {publications.map((pub) => (
+                  <li>
+                    <a href={`/${locale}/research/publications/${pub.slug}/`}>{pub.title}</a>
+                    <p>{pub.authors}{pub.venue ? ` — ${pub.venue}` : ""}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </>
+      )
+    }
+    <p class="contact-note">
+      <a href={`/${locale}/about/`}>{pageContent.about.heading}</a>
+      {" — "}
+      {research.contactNote}
+    </p>
+  </section>
+</BaseLayout>
+
+<style>
+  .research-page {
+    max-width: 44rem;
+    margin-inline: auto;
+    padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem;
+  }
+  .research-page h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 4vw, 2.4rem);
+    margin: 0 0 0.75rem;
+  }
+  .research-page h2 {
+    font-size: 1.25rem;
+    margin: 2rem 0 0.75rem;
+  }
+  .lead,
+  .empty,
+  .contact-note {
+    color: var(--color-ink-muted);
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  li {
+    margin-bottom: 1rem;
+  }
+  li p {
+    margin: 0.25rem 0 0;
+    color: var(--color-ink-muted);
+  }
+</style>
