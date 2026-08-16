@@ -1309,6 +1309,14 @@ ode --check و YAML validation توسط agent.
 - Scope / files: `.gitignore` only, this Work Log.
 - Decisions / assumptions: Assets/ committed in LOG-0117 remain in git history (amend not safe on pushed commit); future files in Assets/ will be ignored.
 
+## LOG-0124 - 2026-08-16 - P3 / CMS db hostname DNS after leftover compose project
+
+- Outcome: After port 18000 was freed, `taha-cms-cms-1` started but `migrate` / `createsuperuser` failed with `failed to resolve host 'db'`. `/health/` HTTP 200 is not DB-ready (returns `db:error` while gunicorn is up). Likely a stale cms container/network from the failed bind, plus leftover `cms-*` from the first compose project name. `update-cms.sh` now force-recreates, removes `cms-cms-1`/`cms-db-1`, waits until `db` resolves and health JSON has `db=ok`. Compose gives `hostname: db` and network aliases. Treebeard E001 warnings are upstream advisory, not this failure.
+- Why: Unblock first migrate/superuser on the VPS.
+- Scope / files: `infra/cms/docker-compose.cms.yml`, `infra/deploy/update-cms.sh`, this Work Log.
+- Deferred or risk IDs: RISK-0009 until migrate + superuser + Caddy + smoke PASS.
+- Rollback / recovery: revert compose/script; operator can `up -d --force-recreate` without the script.
+
 ## LOG-0123 - 2026-08-16 - P3 / CMS update-cms port conflict + local pull_policy
 
 - Outcome: VPS build of `taha-cms:local` succeeded but `compose up` failed with `Bind for 127.0.0.1:18000 failed: port is already allocated` (leftover `cms-cms-1` from the previous project name) and also attempted a registry pull of the local tag. `update-cms.sh` now forces `CMS_PULL_POLICY=never` when `CMS_BUILD=1`, uses `up --pull never`, and stops containers already bound to `:18000` before recreate.
@@ -1316,6 +1324,8 @@ ode --check و YAML validation توسط agent.
 - Scope / files: `infra/deploy/update-cms.sh`, this Work Log.
 - Deferred or risk IDs: RISK-0009 until smoke PASS; also fix `chown -R deploy:deploy /home/deploy/cms-repo` so deploy user can `git pull` without root.
 - Rollback / recovery: revert script; manual `docker stop` of the binder on 18000.
+
+## LOG-0122 - 2026-08-16 - P3 / CMS image CI visibility step fail-open
 
 - Outcome: CI image push on PR #2 succeeded (`ghcr.io/tahamohamadi-ir/taha-cms:main` / `:a402a60`) but the follow-up `PUT …/visibility` returned HTTP 404 with `GITHUB_TOKEN`, failing the workflow. Softened the step to `continue-on-error` + warning so publish success is not masked. VPS can proceed with `CMS_BUILD=1` or after owner sets the package Public in GitHub UI.
 - Why: Unblock operators; Actions token cannot always change package visibility.

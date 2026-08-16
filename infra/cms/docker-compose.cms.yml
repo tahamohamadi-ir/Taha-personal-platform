@@ -22,6 +22,7 @@ name: taha-cms
 services:
   db:
     image: postgres:17-alpine
+    hostname: db
     env_file: .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -34,7 +35,10 @@ services:
     mem_limit: 512m
     cpus: "0.50"
     networks:
-      - cms_internal
+      cms_internal:
+        aliases:
+          - db
+          - postgres
 
   cms:
     image: ${CMS_IMAGE:-ghcr.io/tahamohamadi-ir/taha-cms:main}
@@ -59,14 +63,16 @@ services:
       - cms_static:/app/staticfiles
       - cms_media:/app/media
     networks:
-      - cms_internal
+      cms_internal:
+        aliases:
+          - cms
     healthcheck:
       test:
         [
           "CMD",
           "python",
           "-c",
-          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/', timeout=3)",
+          "import json,urllib.request; d=json.load(urllib.request.urlopen('http://127.0.0.1:8000/health/', timeout=3)); raise SystemExit(0 if d.get('db')=='ok' else 1)",
         ]
       interval: 30s
       timeout: 5s
