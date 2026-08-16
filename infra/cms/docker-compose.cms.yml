@@ -28,6 +28,7 @@ services:
       - cms_internal
 
   cms:
+    image: taha-cms:latest
     build:
       context: ../..
       dockerfile: infra/cms/Dockerfile.cms

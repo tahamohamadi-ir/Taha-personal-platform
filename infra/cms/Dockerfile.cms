@@ -21,7 +21,10 @@ RUN useradd --create-home --uid 10001 --shell /usr/sbin/nologin app \
     && mkdir -p staticfiles media \
     && chown -R app:app /app
 # Build-time-only dummy values for collectstatic; not secrets and never used at runtime.
-RUN ALLOWED_HOSTS=localhost DJANGO_SECRET_KEY=build-time-only-no-secret \
+RUN USER=app GROUP=app HOME=/home/app \
+    DJANGO_SETTINGS_MODULE=config.settings.test \
+    DJANGO_SECRET_KEY=build-time-only-no-secret \
+    ALLOWED_HOSTS=localhost \
     ./.venv/bin/python manage.py collectstatic --noinput
 
 USER app
