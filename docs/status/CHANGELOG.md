@@ -2,6 +2,11 @@
 
 > هر slice واقعی (کد، زیرساخت، مستندات) که در `docs/status/WORK_LOG.md` ثبت می‌شود می‌تواند یک ردیف خلاصه اینجا داشته باشد. Append-only؛ جدیدترین در بالا.
 
+## 2026-08-16 — P3-07 staff draft preview boundary
+
+- Staff-only `/admin/preview/<kind>/<pk>/` for Landing/Profile/Article; Whitelister sanitize; `noindex,nofollow,noarchive` + `Cache-Control: no-store`.
+- Public share-token preview deferred as DEFER-0016. pytest suite green.
+
 ## 2026-08-16 — TOTP recovery codes + MFA disable (DEFER-0015 CLOSED)
 
 - Hashed one-time recovery codes after enroll; login accepts recovery codes; regenerate/disable under Account two-factor.

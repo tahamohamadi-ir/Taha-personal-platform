@@ -578,9 +578,9 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 ### Task P3-07 — rich text و preview
 
 - [x] allowlist sanitize در editor/preview/public یکسان باشد. *(allowlist ثابت در settings + تست قفل‌شده)*
-- [ ] preview noindex/no-cache و token/access boundary امن باشد. *(نیازمند preview runtime)*
-- [x] stored XSS در preview/public و draft leak blocking tests داشته باشد. *(allowlist تست‌شده + stored-XSS sanitizer test اضافه شد — LOG-0110؛ XSS E2E بعد از runtime)*
-- [ ] advanced frontend-faithful preview می‌تواند تا P7 defer شود؛ safe minimum نمی‌تواند. *(به P7 محول — ADR-0022)*
+- [x] preview noindex/no-cache و token/access boundary امن باشد. *(staff preview `/admin/preview/<kind>/<pk>/` + headers; public token → DEFER-0016)*
+- [x] stored XSS در preview/public و draft leak blocking tests داشته باشد. *(allowlist تست‌شده + stored-XSS sanitizer test + preview Whitelister + anonymous leak tests — LOG-0132)*
+- [x] advanced frontend-faithful preview می‌تواند تا P7 defer شود؛ safe minimum نمی‌تواند. *(به P7 محول — ADR-0022؛ safe minimum DONE LOG-0132)*
 
 ### Task P3-08 — CMS→Astro publish/rebuild
 

@@ -16,8 +16,10 @@ preview and public render. Preview must never be indexed or cached publicly.
 - Content models use the same allowlist wherever rich text is edited; the same
   sanitization is applied in preview and public output (single source of
   truth).
-- Preview pages carry `noindex, noarchive` and `no-cache` semantics; preview is
-  token/access-boundary secured in the deploy slice.
+- Preview pages carry `noindex, noarchive` and `no-cache`/`no-store` semantics.
+  Staff-session preview is implemented under `/admin/preview/<kind>/<pk>/`
+  (Landing/Profile/Article; MFA-gated). Public share-token preview is deferred
+  (`DEFER-0016`).
 - The allowlist is pinned by a pytest that fails if it drifts.
 
 ## Consequences
@@ -25,3 +27,4 @@ preview and public render. Preview must never be indexed or cached publicly.
 - Stored-XSS surface is limited to the allowlist; further tightening (per-slice
   entity rules) can extend the list only through a new Task Spec.
 - A future frontend-faithful preview (P7) does not relax this minimum.
+- Public tokenized preview remains out of the staff-only minimum (DEFER-0016).
