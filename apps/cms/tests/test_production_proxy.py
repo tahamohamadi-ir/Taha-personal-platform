@@ -34,3 +34,16 @@ def test_production_csrf_origins_exclude_loopback(monkeypatch):
     assert "https://tahamohamadi.ir" in production.CSRF_TRUSTED_ORIGINS
     assert "https://www.tahamohamadi.ir" in production.CSRF_TRUSTED_ORIGINS
     assert "https://127.0.0.1" not in production.CSRF_TRUSTED_ORIGINS
+
+
+def test_production_serves_static_via_whitenoise(monkeypatch):
+    production = _load_production_settings(monkeypatch)
+    assert production.MIDDLEWARE[0] == "django.middleware.security.SecurityMiddleware"
+    assert production.MIDDLEWARE[1] == "whitenoise.middleware.WhiteNoiseMiddleware"
+
+
+def test_argon2_hasher_library_is_installed():
+    from django.contrib.auth.hashers import Argon2PasswordHasher
+
+    encoded = Argon2PasswordHasher().encode("runtime-check-password", "saltsalt")
+    assert encoded.startswith("argon2")
