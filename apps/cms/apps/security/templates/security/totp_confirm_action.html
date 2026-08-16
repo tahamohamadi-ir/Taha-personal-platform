@@ -1,0 +1,24 @@
+{% extends "wagtailadmin/admin_base.html" %}
+{% load i18n wagtailadmin_tags %}
+
+{% block titletag %}{{ title }}{% endblock %}
+
+{% block furniture %}
+    <main class="content-wrapper" id="main">
+        <h1>{{ title }}</h1>
+        <p>{{ intro }}</p>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <ul class="errorlist">
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            {% formattedfield form.otp_token %}
+            <button type="submit" class="button">{{ submit_label }}</button>
+            <a class="button button-secondary" href="{% url 'security_totp_setup' %}">{% trans "Cancel" %}</a>
+        </form>
+    </main>
+{% endblock %}

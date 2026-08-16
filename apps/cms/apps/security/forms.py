@@ -1,24 +1,28 @@
-"""Wagtail login form with optional TOTP when the user has a confirmed device."""
+"""Wagtail login form with optional TOTP / recovery-code second factor."""
 
 from django import forms
 from django.utils.translation import gettext_lazy as _
 from django_otp import user_has_device
 from django_otp.forms import OTPAuthenticationFormMixin
+from django_otp.plugins.otp_totp.models import TOTPDevice
 from wagtail.admin.forms.auth import LoginForm
+
+from apps.security.recovery import consume_recovery_code
 
 
 class OTPLoginForm(OTPAuthenticationFormMixin, LoginForm):
-    """Password login; require OTP only when the user already enrolled a TOTP device."""
+    """Password login; require OTP or recovery code when a TOTP device exists."""
 
     otp_device = forms.CharField(required=False, widget=forms.Select)
     otp_token = forms.CharField(
         label=_("Authentication code"),
         required=False,
+        max_length=40,
         widget=forms.TextInput(
             attrs={
                 "autocomplete": "one-time-code",
-                "inputmode": "numeric",
-                "placeholder": _("6-digit code from your authenticator app"),
+                "inputmode": "text",
+                "placeholder": _("Authenticator or recovery code"),
             }
         ),
     )
@@ -28,7 +32,28 @@ class OTPLoginForm(OTPAuthenticationFormMixin, LoginForm):
         cleaned_data = super().clean()
         user = self.get_user()
         if user is not None and user_has_device(user, confirmed=True):
-            self.clean_otp(user)
+            token = (cleaned_data.get("otp_token") or "").strip()
+            try:
+                self.clean_otp(user)
+            except forms.ValidationError as exc:
+                codes = {getattr(err, "code", None) for err in getattr(exc, "error_list", [])}
+                if getattr(exc, "code", None):
+                    codes.add(exc.code)
+                if "token_required" in codes or not token:
+                    raise
+                ip = ""
+                request = getattr(self, "request", None)
+                if request is not None:
+                    ip = (request.META.get("REMOTE_ADDR") or "")[:45]
+                if not consume_recovery_code(user, token, ip=ip):
+                    raise
+                device = TOTPDevice.objects.filter(user=user, confirmed=True).first()
+                if device is None:
+                    raise forms.ValidationError(
+                        self.otp_error_messages["invalid_token"],
+                        code="invalid_token",
+                    ) from None
+                user.otp_device = device
         return cleaned_data
 
 
@@ -43,6 +68,23 @@ class TOTPConfirmForm(forms.Form):
             attrs={
                 "autocomplete": "one-time-code",
                 "inputmode": "numeric",
+                "autofocus": True,
+            }
+        ),
+    )
+
+
+class MFAConfirmForm(forms.Form):
+    """Confirm regenerate/disable with authenticator or recovery code."""
+
+    otp_token = forms.CharField(
+        label=_("Authentication or recovery code"),
+        min_length=6,
+        max_length=40,
+        widget=forms.TextInput(
+            attrs={
+                "autocomplete": "one-time-code",
+                "inputmode": "text",
                 "autofocus": True,
             }
         ),

@@ -9,8 +9,11 @@
 
         {% if enrolled %}
             <p>{% trans "TOTP is enabled on this account. You will be asked for a code from your authenticator app at each sign-in." %}</p>
+            <p>{% blocktrans count counter=unused_recovery_codes %}{{ counter }} unused recovery code remains.{% plural %}{{ counter }} unused recovery codes remain.{% endblocktrans %}</p>
             <p>
                 <a class="button" href="{% url 'wagtailadmin_home' %}">{% trans "Back to dashboard" %}</a>
+                <a class="button button-secondary" href="{{ regenerate_url }}">{% trans "Regenerate recovery codes" %}</a>
+                <a class="button button-secondary" href="{{ disable_url }}">{% trans "Disable two-factor" %}</a>
                 <a class="button button-secondary" href="{% url 'wagtailadmin_account' %}">{% trans "Account settings" %}</a>
             </p>
         {% else %}
