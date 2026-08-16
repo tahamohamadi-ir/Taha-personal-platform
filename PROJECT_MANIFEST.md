@@ -16,7 +16,7 @@
 | Staging domain | DECOMMISSIONED (ADR-0025, 2026-08-15) — `staging.tahamohamadi.ir` Caddy block and DNS removed; dev/deploy directly on production |
 | Root locale | `/` Language Gateway |
 | Locale roots | `/fa/` (RTL) and `/en/` (LTR) |
-| Admin route | `/admin/` — Wagtail live; `/static*` Caddy handle still missing (RISK-0009) |
+| Admin route | `/admin/` — Wagtail live; `/static/*` proxied (smoke CSS 200); RISK-0009 residual = password + TOTP |
 
 ## Approved architecture
 
