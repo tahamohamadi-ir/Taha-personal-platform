@@ -1309,6 +1309,17 @@ ode --check و YAML validation توسط agent.
 - Scope / files: `.gitignore` only, this Work Log.
 - Decisions / assumptions: Assets/ committed in LOG-0117 remain in git history (amend not safe on pushed commit); future files in Assets/ will be ignored.
 
+## LOG-0137 - 2026-08-16 - ops / P4+P5 static production deploy (CMS migrate gated)
+
+- Outcome: Production static site switched to **`release-59bf91e`** (checksum `40472597`, from `origin/main` tip after PR #17). Live routes `/en|fa/blog/`, `/en|fa/research/` (+ statement) return **200** with **honest empty** lists (`CMS_API_BASE` unset; DEFER-0017). `/health.json` 200, `/health/` CMS `db=ok`, `/admin/login/` Wagtail 200. Public `/api/` and `/media/` remain **404** (static 404 page — not proxied). **CMS image/migrate NOT applied**: `RISK-0003` still OPEN (no VPS CMS-aware backup install + isolated restore evidence); deploy user has no passwordless Docker (`docker.sock` root:docker); `cms-repo` remains at `95a740f` after a failed ff-only pull was reset clean (root-owned `apps/cms/apps/security/templates/security/*` blocked checkout).
+- Why: Bring public artifact through P5 as far as policy allows without risky prod migrate or inventing a loopback `CMS_API_BASE` build pattern (not in DEPLOY_RUNBOOK).
+- Scope / files: VPS `/opt/taha/site/current` → `release-59bf91e`; ledger/docs update only in this commit. No Caddy `/api/`/`/media/` changes. No CMS container recreate.
+- Commands or actions actually performed: `git fetch origin/main` (`59bf91e`); CI green (web + CMS CI + CMS image); local `npm run check`/`build` without `CMS_API_BASE`; `scp` artifact to `/home/deploy/taha-stage/release-59bf91e`; `sudo -n /opt/taha/bin/update-release.sh`; `infra/deploy/smoke.sh` 7 PASS; route curls; `cms-repo` `git pull` failed (permission) then `git reset --hard HEAD` + `git clean -fd` restored clean `95a740f`.
+- Verification actually performed and result: `deploy.log` `2026-08-16T21:44:36Z updated release-59bf91e 40472597`; smoke PASS; empty copy present on en/fa blog+research; CMS loopback health still ok on prior image.
+- Decisions / assumptions: Stop before migrate per RISK-0003; do not document/use VPS loopback `CMS_API_BASE` until runbook establishes it; leave `/api/`/`/media/` closed.
+- Deferred or risk IDs: RISK-0003 OPEN (blocker for migrate 0002/0003); DEFER-0017 OPEN; cms-repo ownership/chown owner; Docker group or interactive sudo for `update-cms.sh`.
+- Rollback / recovery: `sudo -n /opt/taha/bin/update-release.sh /home/deploy/taha-stage/release-aae2cb9` (previous artifact retained under `/opt/taha/site/releases/`).
+
 ## LOG-0136 - 2026-08-16 - P5 / Research code-first (models, admin, API, Astro, SEO)
 
 - Outcome: P5 Research implemented code-first without opening public Caddy `/api/` or `/media/`. Models + migration `0003_p5_research_models` (ResearchTopic, ResearchStatement, Project, Publication, evidence/collaborator/funding); Wagtail snippets; Ninja research endpoints with redact/draft exclusion; Astro `/{locale}/research/*` with optional `CMS_API_BASE` (honest empty); breadcrumbs + ScholarlyArticle only with real DOI/URL; sitemap research URLs. Security review Approve (no medium+). DEFER-0017 kept (blog+research edge); DEFER-0019/0020 recorded. About static `researchProjects` untouched.
