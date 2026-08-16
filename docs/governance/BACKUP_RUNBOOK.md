@@ -9,13 +9,21 @@
 
 The job creates separate encrypted restic snapshots for:
 
-- a streamed `pg_dumpall` from the running `taha-prod-postgres-1` container;
-- the verified Docker media volume;
-- the live Caddyfile and both observed Compose files.
+- a streamed `pg_dumpall` from the live CMS container `taha-cms-db-1`
+  (`cms-postgres-all.sql`, tags `cms` + `postgres`) — **required**;
+- optionally a dump from legacy `taha-prod-postgres-1` if that container still
+  runs (`legacy-postgres-all.sql`);
+- CMS media volume `taha-cms_cms_media` when present (plus legacy media volume
+  if still on disk);
+- the live Caddyfile and CMS `docker-compose.cms.yml` (plus legacy compose files
+  if still readable).
 
 The dump is sent directly to restic by `--stdin-from-command`; no plaintext SQL
 dump is retained on the VPS. If PostgreSQL dump exits non-zero, restic fails that
 snapshot instead of reporting an empty successful dump.
+
+Operator install and `--dry-run`: `infra/backup/README.md`.
+CMS isolated restore checklist: `docs/plan/P3-cms-backup-restore-task-spec.md`.
 
 ## Server files and permissions
 
@@ -49,26 +57,31 @@ systemctl status taha-platform-backup.service --no-pager
 restic snapshots
 ```
 
-## Restore procedure — staging only
+## Restore procedure — isolated target only (never live Compose)
 
-Never restore this backup directly into the live production Compose project.
+Never restore this backup directly into the live `taha-cms` project or any
+shared production volume.
 
-1. Confirm a distinct staging Compose project, database, volumes, ports and
-   Caddy route exist. Stop if staging would share any production data path.
-2. Set the three protected restic/rclone environment variables as the root user.
-3. Inspect snapshots and restore into an empty, root-owned staging-only target:
+Canonical CMS checklist: `docs/plan/P3-cms-backup-restore-task-spec.md`.
+
+1. Create a root-only restore directory, then restore a snapshot into it:
 
    ```bash
+   RESTORE_DIR="/srv/taha-cms-restore-$(date +%s)"
+   install -d -m 700 "$RESTORE_DIR"
    restic snapshots
-   install -d -m 700 /srv/taha-staging-restore
-   restic restore <SNAPSHOT_ID> --target /srv/taha-staging-restore
+   restic restore <SNAPSHOT_ID> --target "$RESTORE_DIR"
    ```
 
-4. Validate restored media/config files and import `postgres-all.sql` only into
-   the isolated staging database using the target application's documented
-   restore command. Record the result in `WORK_LOG.md`.
-5. Remove the staging restore directory only after the owner accepts the test;
-   never use a broad recursive delete or a production path.
+2. Import `cms-postgres-all.sql` only into a **disposable** postgres container
+   (see Task Spec). Do not use the decommissioned staging hostname.
+
+3. Validate Wagtail/Django tables, then destroy the disposable container and
+   remove `$RESTORE_DIR` (owner-confirmed). Never use a broad recursive delete
+   against a production path.
+
+4. Legacy `legacy-postgres-all.sql` / old media paths are optional if those
+   snapshots still exist; prefer CMS artifacts for RISK-0003 closure.
 
 ## Failure response
 

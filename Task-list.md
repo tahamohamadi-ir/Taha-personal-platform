@@ -567,7 +567,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 - [x] MIME+signature allowlist، size limit، safe storage names، private default و alt-by-locale enforce شوند. *(filetype sniff + 5MB + نام امن + is_active=False؛ alt-by-locale به P3 rest)*
 - [x] archive/inactive media public projection و delayed-request race تست شوند. *(active_public() تست‌شده؛ race بعد از runtime)*
-- [ ] original بزرگ مستقیم به public تحویل نشود؛ rendition contract تعریف شود. *(ADR-0021؛ rendition به فاز deploy/آینده)*
+- [x] original بزرگ مستقیم به public تحویل نشود؛ rendition contract تعریف شود. *(`apps.media.renditions` thumb/card/full; tests LOG-0130؛ تولید فایل واقعی در media-runtime)*
 
 ### Task P3-06 — admin security
 

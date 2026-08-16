@@ -26,5 +26,6 @@ safe storage names, private default, no direct delivery of originals.
 - Malicious/renamed files are rejected by content signature, not by name.
 - The media provider decision (local disk vs S3-like) is deferred to the
   capacity/owner decision; `MEDIA_ROOT` is config-based.
-- Original files are never delivered directly in public projections; a
-  rendition contract is defined later (P3-05 remainder, P4+).
+- Original files are never delivered directly in public projections; the
+  rendition contract lives in `apps.media.renditions` (`RENDITION_SPECS`:
+  thumb/card/full WebP). Real file generation remains media-runtime phase.

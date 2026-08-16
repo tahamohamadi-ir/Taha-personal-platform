@@ -1309,6 +1309,15 @@ ode --check و YAML validation توسط agent.
 - Scope / files: `.gitignore` only, this Work Log.
 - Decisions / assumptions: Assets/ committed in LOG-0117 remain in git history (amend not safe on pushed commit); future files in Assets/ will be ignored.
 
+## LOG-0130 - 2026-08-16 - P3 / CMS-aware backup script + rendition contract (RISK-0003 prep)
+
+- Outcome: `infra/backup/taha-platform-backup.sh` now requires live `taha-cms-db-1`, dumps `cms-postgres-all.sql` (tags `cms`/`postgres`), optionally dumps legacy postgres, backs up CMS media volume when present, supports `--dry-run`. Added `infra/backup/README.md` and `docs/plan/P3-cms-backup-restore-task-spec.md`. Media public-delivery contract coded in `apps.media.renditions` with tests (no `/media/` exposure). S-PLAN D7 marked DONE; RISK-0003 remains OPEN until owner VPS evidence.
+- Why: Live CMS data was outside the legacy `taha-prod-postgres-1` backup path.
+- Scope / files: `infra/backup/**`, BACKUP_POLICY/RUNBOOK, ADR-0021 note, `apps/cms/apps/media/renditions.py`, `tests/test_media.py`, ledgers, S-PLAN-STATE.
+- Verification: `bash -n` on backup script; `uv run pytest` (media + suite).
+- Deferred or risk IDs: RISK-0003 OPEN (owner install + restore); DEFER-0014/0015 unchanged; `/api/`/`/media/` unpublished.
+- Rollback / recovery: previous `/usr/local/sbin/taha-platform-backup` backup on VPS before install.
+
 ## LOG-0129 - 2026-08-16 - P3 / RISK-0009 CLOSED (password + production TOTP)
 
 - Outcome: Owner rebuilt CMS image from `main` (`95a740f`), `update-cms.sh` + `smoke-cms.sh` PASS, then attested password rotation and TOTP enrollment on production. RISK-0009 CLOSED.
