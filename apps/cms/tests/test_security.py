@@ -207,6 +207,10 @@ class TestNoIndexMiddleware:
         assert response.status_code == 200
         assert response.headers["X-Robots-Tag"] == "noindex, nofollow"
 
+    def test_admin_paths_do_not_get_preview_cache_control(self, db):
+        response = Client().get("/admin/login/")
+        assert response.headers.get("Cache-Control") != "no-store"
+
     def test_api_is_noindexed(self, db):
         response = Client().get("/api/landings/fa")
         assert response.status_code == 200
@@ -221,6 +225,31 @@ class TestNoIndexMiddleware:
         response = Client().get("/health/")
         assert response.status_code == 200
         assert "X-Robots-Tag" not in response.headers
+
+    def test_preview_path_adds_noarchive_and_no_store(self, db, admin_user):
+        from django_otp.plugins.otp_totp.models import TOTPDevice
+
+        from apps.content.models import Landing, LifecycleStatus, Locale
+
+        landing = Landing.objects.create(
+            locale=Locale.EN,
+            slug="preview-headers",
+            title="Preview headers",
+            body="body",
+            status=LifecycleStatus.DRAFT,
+        )
+        client = Client()
+        client.force_login(admin_user)
+        device = TOTPDevice.objects.create(
+            user=admin_user, name="default", confirmed=True
+        )
+        session = client.session
+        session["otp_device_id"] = device.persistent_id
+        session.save()
+        response = client.get(f"/admin/preview/landing/{landing.pk}/")
+        assert response.status_code == 200
+        assert response.headers["X-Robots-Tag"] == "noindex, nofollow, noarchive"
+        assert response.headers["Cache-Control"] == "no-store"
 
 
 class TestRichTextAllowlist:
