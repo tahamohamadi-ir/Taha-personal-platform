@@ -1,8 +1,9 @@
 # Backup Policy
 
-**Status:** P0-A partially provisioned — PostgreSQL/media/config snapshots, repository check, retention, enabled timer and isolated file-level restore rehearsal exist; staging database import remains.  
+**Status:** P0-A partially provisioned — PostgreSQL/media/config snapshots, repository check, retention, enabled timer and isolated file-level restore rehearsal exist; **CMS postgres (`taha-cms-db-1`) must be included in the daily job** (script updated 2026-08-16) and an isolated CMS DB import remains before closing `RISK-0003`.  
 **Decision ADR:** `docs/adr/0010-encrypted-google-drive-backup.md`
 **Operational runbook:** `BACKUP_RUNBOOK.md`
+**CMS restore Task Spec:** `docs/plan/P3-cms-backup-restore-task-spec.md`
 
 ## Scope
 
@@ -30,7 +31,7 @@ The backup set covers PostgreSQL dumps once PostgreSQL exists, CMS/media assets 
 1. Secret handling and Google Drive access configured without logging sensitive values. **Completed for the rclone OAuth/access portion and the restic repository password on 2026-08-14; the password value itself is never recorded here.**
 2. A scheduled job completes and records a non-sensitive success/failure result.
 3. Retention is observed and documented.
-4. A restore to staging is performed and verified against expected files/database state. **The file-level encrypted restore and source-file comparison passed on 2026-08-14; an isolated staging database import is still required.**
+4. A restore to staging is performed and verified against expected files/database state. **The file-level encrypted restore and source-file comparison passed on 2026-08-14; an isolated CMS database import of `cms-postgres-all.sql` is still required (see P3-cms-backup-restore-task-spec).**
 5. Runbook and recovery owner are recorded in `WORK_LOG.md`.
 
 ## Restore drill cadence

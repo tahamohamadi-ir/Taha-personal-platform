@@ -2,6 +2,11 @@
 
 > هر slice واقعی (کد، زیرساخت، مستندات) که در `docs/status/WORK_LOG.md` ثبت می‌شود می‌تواند یک ردیف خلاصه اینجا داشته باشد. Append-only؛ جدیدترین در بالا.
 
+## 2026-08-16 — CMS-aware backup script + media rendition contract
+
+- Backup job targets `taha-cms-db-1` (+ optional legacy); `--dry-run` added. RISK-0003 still OPEN pending owner VPS evidence (`P3-cms-backup-restore-task-spec.md`).
+- `apps.media.renditions` defines thumb/card/full WebP contract; originals forbidden for public images (tests).
+
 ## 2026-08-16 — RISK-0009 CLOSED (production TOTP + password)
 
 - Owner rebuilt CMS to `95a740f`, smoke PASS, rotated admin password, enrolled TOTP on production.
