@@ -20,7 +20,7 @@ const canonical = new URL("/", site.url).href;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#071225" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="robots" content="index,follow" />
@@ -91,7 +91,14 @@ const canonical = new URL("/", site.url).href;
     </svg>
     <main class="gateway-stage" id="main">
       <div class="gateway-panel">
-        <span class="gateway-mark" aria-hidden="true">{en.mark}</span>
+        <img
+          class="gateway-mark"
+          src="/logo-gateway.png"
+          alt=""
+          width="96"
+          height="88"
+          loading="eager"
+        />
         <h1 class="gateway-name">
           <span class="gateway-name-en" lang="en" dir="ltr">{en.name}</span>
           <span class="gateway-name-fa" lang="fa" dir="rtl">{fa.name}</span>
@@ -191,15 +198,10 @@ const canonical = new URL("/", site.url).href;
   }
 
   .gateway-mark {
-    display: grid;
-    place-items: center;
-    width: 3.5rem;
-    height: 3.5rem;
-    background-color: var(--color-turquoise-500);
-    color: var(--color-navy-950);
-    border-radius: var(--radius-md);
-    font-weight: 800;
-    font-size: 1.25rem;
+    display: block;
+    width: 4.5rem;
+    height: auto;
+    max-width: 100%;
   }
 
   .gateway-name {

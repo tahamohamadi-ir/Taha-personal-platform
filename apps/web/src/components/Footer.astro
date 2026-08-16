@@ -10,7 +10,6 @@ interface Props {
 const { content } = Astro.props;
 const otherLang = content.lang === "fa" ? "en" : "fa";
 const other = allContent[otherLang];
-const mark = content.mark;
 const switchHref = Astro.props.alternateHref ?? `/${otherLang}/`;
 const switchLabel =
   content.lang === "fa"
@@ -21,7 +20,14 @@ const switchLang = otherLang;
 
 <footer class="site-footer">
   <div class="footer-brand">
-    <span class="footer-mark" aria-hidden="true">{mark}</span>
+    <img
+      class="footer-mark"
+      src="/logo.png"
+      alt=""
+      width="64"
+      height="58"
+      loading="lazy"
+    />
     <div class="footer-brand-copy">
       <p class="footer-name">{content.name}</p>
       <p class="footer-tagline">{content.footer.tagline}</p>
@@ -67,16 +73,10 @@ const switchLang = otherLang;
   }
 
   .footer-mark {
-    display: grid;
-    place-items: center;
+    display: block;
     width: 2.25rem;
-    height: 2.25rem;
+    height: auto;
     flex-shrink: 0;
-    background-color: var(--color-navy-950);
-    color: var(--color-turquoise-500);
-    border-radius: var(--radius-md);
-    font-weight: 700;
-    font-size: 0.875rem;
   }
 
   .footer-brand-copy {
