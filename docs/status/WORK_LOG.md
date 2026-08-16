@@ -1309,6 +1309,15 @@ ode --check و YAML validation توسط agent.
 - Scope / files: `.gitignore` only, this Work Log.
 - Decisions / assumptions: Assets/ committed in LOG-0117 remain in git history (amend not safe on pushed commit); future files in Assets/ will be ignored.
 
+## LOG-0122 - 2026-08-16 - P3 / CMS image CI visibility step fail-open
+
+- Outcome: CI image push on PR #2 succeeded (`ghcr.io/tahamohamadi-ir/taha-cms:main` / `:a402a60`) but the follow-up `PUT …/visibility` returned HTTP 404 with `GITHUB_TOKEN`, failing the workflow. Softened the step to `continue-on-error` + warning so publish success is not masked. VPS can proceed with `CMS_BUILD=1` or after owner sets the package Public in GitHub UI.
+- Why: Unblock operators; Actions token cannot always change package visibility.
+- Scope / files: `.github/workflows/ci-cms-image.yml`, this Work Log.
+- Verification: prior push job already built/pushed tags; this change is CI control-flow only.
+- Deferred or risk IDs: RISK-0009 unchanged until VPS smoke PASS.
+- Rollback / recovery: revert workflow step.
+
 ## LOG-0121 - 2026-08-16 - P3 / CMS deploy ops fixes (GHCR public + script invoke)
 
 - Outcome: Operator bring-up failed on VPS for three mechanical reasons: (1) `docker login ghcr.io` with GitHub password → denied (need PAT `read:packages` or public package); (2) `./infra/deploy/*.sh` Permission denied (mode not executable / invoke via bash); (3) placeholder `<sha>` caused bash syntax error. Fixed by making GHCR package public in CI after push, documenting `bash infra/deploy/...`, adding `CMS_BUILD=1` local build fallback, and auto-appending missing `DJANGO_SETTINGS_MODULE` / `POSTGRES_HOST` in `.env`.

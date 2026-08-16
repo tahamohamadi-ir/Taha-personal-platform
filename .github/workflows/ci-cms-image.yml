@@ -102,19 +102,24 @@ jobs:
           cache-to: type=gha,mode=max
           provenance: false
 
-      # GHCR packages default to private; VPS pulls must not require a PAT for a public site.
-      - name: Make GHCR package public
+      # GHCR packages default to private. GITHUB_TOKEN often cannot change visibility
+      # (404); owner can set Public in the package UI. Do not fail the image job.
+      - name: Attempt to make GHCR package public
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -euo pipefail
+          set -u
           OWNER="${{ github.repository_owner }}"
           PKG="taha-cms"
-          # User-owned packages use /user/... ; org-owned use /orgs/...
-          if gh api "user/packages/container/${PKG}" >/dev/null 2>&1; then
-            ENDPOINT="user/packages/container/${PKG}/visibility"
-          else
-            ENDPOINT="orgs/${OWNER}/packages/container/${PKG}/visibility"
-          fi
-          gh api --method PUT "$ENDPOINT" -f visibility=public
-          echo "Package ${OWNER}/${PKG} visibility set to public"
+          for ENDPOINT in \
+            "user/packages/container/${PKG}/visibility" \
+            "orgs/${OWNER}/packages/container/${PKG}/visibility"
+          do
+            if gh api --method PUT "$ENDPOINT" -f visibility=public; then
+              echo "Package visibility set via ${ENDPOINT}"
+              exit 0
+            fi
+          done
+          echo "::warning::Could not set package public via API. Owner: GitHub → Packages → taha-cms → Package settings → Change visibility → Public."
+          exit 0
