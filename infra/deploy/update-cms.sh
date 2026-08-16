@@ -23,8 +23,13 @@ set -euo pipefail
 
 CMS_REPO_DIR="${CMS_REPO_DIR:-/home/deploy/cms-repo}"
 COMPOSE_FILE="infra/cms/docker-compose.cms.yml"
-CMS_PULL_POLICY="${CMS_PULL_POLICY:-always}"
 CMS_BUILD="${CMS_BUILD:-0}"
+# Local builds must never hit a registry for the app image.
+if [[ "$CMS_BUILD" == "1" ]]; then
+  CMS_PULL_POLICY="${CMS_PULL_POLICY:-never}"
+else
+  CMS_PULL_POLICY="${CMS_PULL_POLICY:-always}"
+fi
 
 if [[ -z "${CMS_IMAGE:-}" ]]; then
   echo "CMS_IMAGE is required." >&2
@@ -66,7 +71,18 @@ else
   fi
 fi
 
-docker compose -f "$COMPOSE_FILE" up -d --remove-orphans
+# If a previous bring-up left a container on 127.0.0.1:18000 (old project name
+# cms-* vs taha-cms-*), remove only the conflicting cms service containers.
+if ss -lnt 2>/dev/null | grep -q ':18000 ' || netstat -lnt 2>/dev/null | grep -q ':18000 '; then
+  echo "Port 127.0.0.1:18000 is in use — stopping older CMS containers on that bind..."
+  docker ps --format '{{.ID}} {{.Names}} {{.Ports}}' | awk '/18000->/ {print $1}' | while read -r cid; do
+    [[ -n "$cid" ]] || continue
+    docker stop "$cid" >/dev/null || true
+    docker rm "$cid" >/dev/null || true
+  done
+fi
+
+docker compose -f "$COMPOSE_FILE" up -d --remove-orphans --pull never
 
 echo "Waiting for cms health..."
 ready=0
