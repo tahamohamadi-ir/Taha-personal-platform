@@ -32,10 +32,14 @@
 | D4 | P3 media library + upload security | DONE | sub-agent (general) | 18 tests; filetype allowlist; private default; LOG-0107 |
 | D5 | P3 admin security + rich text allowlist | DONE | sub-agent (general) | 19 tests; audit+rate limit; allowlist pinned; LOG-0107 |
 | D6 | P3 CI workflow + infra candidates + rebuild trigger | DONE | sub-agent (general) | ci-cms.yml; infra/cms NOT-APPLIED; 6 tests; LOG-0107 |
-| D7 | P3 runtime deploy (Compose/Caddy/MFA/DB) | BLOCKED(owner) | owner | MFA + RISK-0003 DB-import + separate Task Spec; RISK-0009 BLOCKED (capacity solved — RISK-0007 CLOSED) |
+| D7 | P3 runtime deploy (Compose/Caddy/MFA/DB) | BLOCKED(owner) | owner | MFA code DONE (D11); deploy Task Spec DONE (D12); remaining: RISK-0003 DB-import evidence + owner approval + old-stack decommission execution; RISK-0009 BLOCKED (capacity solved — RISK-0007 CLOSED) |
 | D8 | Staging decommission | DONE | owner/L-model | ADR-0025 accepted 2026-08-15; staging Caddy block removed on VPS (owner, sudo) + DNS removed if present; gate now CI (web + cms) + production smoke; server upgraded (Ubuntu 26.04 LTS, 2 vCPU / ~4 GiB / 30 GB); live stack inventory-confirmed via docker ps 2026-08-16; LOG-0110 |
 | D9 | Header logo (Assets → public/logo.png) | DONE | S-model | 8 KB PNG from `Assets/Taha Logo/Taha Logo base.png` (cropped 4000x4000 white margins, transparent bg); visually reviewed ACCEPT-WITH-NOTES (black outline heavy but acceptable at 48px); replaces `brand-mark` text span in `Header.astro` (mark/TM glyph removed from header; footer mark untouched); other logo variants (electric/gold/green/red/yasi/black) unused — alternatives pending final brand pass |
 | D10 | CV/Resume md download pages (/en/cv/ + /fa/cv/) | DONE | S-model | `Downloads.astro` + 2 owner md files in public/downloads; header CV link added; sitemap includes both routes; local QA: overflow=0, dir ltr/rtl correct, 2 links/page, logo loads (Playwright on built dist via http.server:8899); `npm run check` 0 errors; build 8 pages |
+| D11 | MFA enforcement (django-otp) | DONE | S-model | `apps/security/mfa.py` middleware + django-otp 1.5.4; OTPMiddleware + MFAEnforcementMiddleware wired; 75 pytest PASS (5 new MFA tests); LOG-0116 |
+| D12 | CMS deploy Task Spec | DONE | S-model | `docs/plan/P3-cms-deploy-task-spec.md` (~260 lines); 7 prerequisites, 8 deploy steps, 22 ACs, rollback; LOG-0116 |
+| D13 | Incident runbook + SLO | DONE | S-model | `docs/governance/INCIDENT_RUNBOOK.md` (126 lines); SLOs (99.5%, <1% 5xx, p95 <2s); SEV-1/2/3 runbooks; DEPLOY_RUNBOOK xref; LOG-0116 |
+| D14 | CI hardening (diff-check + secret scan) | DONE | S-model | `ci-cms.yml` +2 steps: git diff --check + secret pattern scan; LOG-0116 |
 
 ## Review log (append-only)
 

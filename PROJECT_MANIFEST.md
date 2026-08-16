@@ -105,7 +105,7 @@ uv run python manage.py makemigrations --check --dry-run   # verified: No change
 uv run pytest -q               # verified: 70 passed
 ```
 
-CMS runtime deploy/migrate/run commands (gunicorn, collectstatic, migrate on a real DB, media) remain unapproved; the owner capacity decision was made (2026-08-15: keep 4 GiB — `RISK-0007` CLOSED), so runtime approval now awaits MFA enforcement, the RISK-0003 DB-import evidence and a separate deploy Task Spec.
+CMS runtime deploy/migrate/run commands (gunicorn, collectstatic, migrate on a real DB, media) remain unapproved; the owner capacity decision was made (2026-08-15: keep 4 GiB — `RISK-0007` CLOSED), MFA enforcement code is done (django-otp 1.5.4, 75 pytest PASS, LOG-0116) and a deploy Task Spec exists (`docs/plan/P3-cms-deploy-task-spec.md`). Runtime approval now awaits RISK-0003 DB-import evidence on staging PostgreSQL + owner approval for admin exposure + old-stack decommission execution.
 
 ## Agent tooling (developer workstation, verified 2026-08-15)
 
@@ -162,4 +162,4 @@ Node.js public production runtime
 - Rotate root credential and define non-root SSH-key access (`RISK-0002`) via `docs/governance/SERVER_ACCESS_RUNBOOK.md`.
 - Set up and test encrypted Google Drive backup, retention and restore (`RISK-0003`) after secure access and audit, per `docs/governance/BACKUP_POLICY.md`.
 - Select production WSGI/ASGI server, worker count, media layout, monitoring and exact deploy mechanics in P0-A ADRs.
-- `RISK-0007` (staging capacity) is CLOSED (owner decision 2026-08-15: keep the 4 GiB plan; staging decommissioned per ADR-0025). CMS runtime deploy still requires MFA enforcement, RISK-0003 DB-import evidence and a separate deploy Task Spec (`RISK-0009` BLOCKED).
+- `RISK-0007` (staging capacity) is CLOSED (owner decision 2026-08-15: keep the 4 GiB plan; staging decommissioned per ADR-0025). CMS runtime deploy: MFA enforcement DONE, deploy Task Spec DONE; remaining blockers are RISK-0003 DB-import evidence + owner approval + old-stack decommission execution (`RISK-0009` BLOCKED).

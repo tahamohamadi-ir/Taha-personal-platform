@@ -35,6 +35,8 @@ INSTALLED_APPS = [
     "apps.security",
     "apps.api",
     "apps.rebuild",
+    "django_otp",
+    "django_otp.plugins.otp_totp",
 ]
 
 MIDDLEWARE = [
@@ -43,6 +45,8 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django_otp.middleware.OTPMiddleware",
+    "apps.security.mfa.MFAEnforcementMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "apps.security.middleware.AuditMiddleware",
@@ -130,3 +134,6 @@ MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+OTP_TOTP_ISSUER = "tahamohamadi.ir"
+OTP_EMAIL_SENDER = "noreply@tahamohamadi.ir"

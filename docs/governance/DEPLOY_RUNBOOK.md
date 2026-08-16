@@ -87,6 +87,12 @@ ln -sfn releases/release-<previous-version>-<checksum8> "$SITE_ROOT/current"
 - No agent may sign up for any monitoring service; provider selection and
   account creation are owner-only steps.
 
+## Incident response
+
+For SLO definitions, monitoring points, severity classification and incident
+runbooks (static site and future CMS runtime), see
+[INCIDENT_RUNBOOK.md](INCIDENT_RUNBOOK.md).
+
 ## Old pre-existing stack decommission (2026-08-16)
 
 The old pre-existing Compose stack on the VPS (`taha-prod-frontend-1`,

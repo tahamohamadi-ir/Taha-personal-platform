@@ -1274,3 +1274,18 @@ ode --check و YAML validation توسط agent.
 - Decisions / assumptions: favicon.svg remains on disk but is no longer referenced (PNG preferred for the raster logo); gateway uses the navy-mapped variant so the black outline does not clash with the dark panel.
 - Deferred or risk IDs: none new; DEFER-0009/0013, RISK-0009 unchanged.
 - Rollback / recovery: `sudo ln -sfn /opt/taha/site/releases/release-aae2cb9-1 /opt/taha/site/current` if a newer release replaced it; previous release-aae2cb9..aa17b09 artifacts retained on disk.
+
+## LOG-0116 - 2026-08-16 - P3 / MFA enforcement + deploy Task Spec + incident runbook + CI hardening
+
+- Outcome: four P3/P0-B deliverables completed in parallel sub-agents:
+  1. **MFA enforcement (django-otp 1.5.4):** `apps/security/mfa.py` middleware (`MFAEnforcementMiddleware`) checks `django_otp.user_has_device` for `/admin/` paths — staff without OTP device allowed (first-time setup); staff with device but no verified OTP blocked; OTP-verified staff allowed. `OTPMiddleware` wired in settings. Tests: 75 passed (5 new MFA tests). RISK-0009 blocker "MFA enforcement" now has code.
+  2. **Deploy Task Spec:** `docs/plan/P3-cms-deploy-task-spec.md` (~260 lines) covers prerequisites (RISK-0003 DB-import, MFA merged, owner approval, old-stack decommissioned), 8 deployment mechanics steps, resource limits (512 MiB cms + 512 MiB db), 22 acceptance criteria, rollback procedure, deferred items.
+  3. **Incident runbook + SLO:** `docs/governance/INCIDENT_RUNBOOK.md` (126 lines) defines SLOs (99.5% availability, <1% 5xx/5min, p95 <2s), monitoring points, SEV-1/2/3 classification, static site and CMS runtime runbooks, escalation rules. `DEPLOY_RUNBOOK.md` cross-referenced.
+  4. **CI hardening:** `ci-cms.yml` gains `git diff --check` and secret-pattern scan steps (matching web CI pattern).
+- Why: RISK-0009 (CMS runtime deploy) requires MFA enforcement + deploy Task Spec before admin exposure; P0B-03 requires incident runbook and SLO definitions.
+- Scope / files: `apps/cms/apps/security/mfa.py` (new), `apps/cms/tests/test_mfa.py` (new), `apps/cms/config/settings/base.py` (MFA settings), `apps/cms/pyproject.toml` + `uv.lock` (django-otp), `docs/plan/P3-cms-deploy-task-spec.md` (new), `docs/governance/INCIDENT_RUNBOOK.md` (new), `docs/governance/DEPLOY_RUNBOOK.md` (xref), `.github/workflows/ci-cms.yml` (2 new steps), this Work Log.
+- Commands or actions actually performed: `uv sync` (django-otp installed); `uv run pytest -q` (75 passed); `uv run ruff check .` (clean); `uv run python manage.py check` (0 errors); `uv run python manage.py makemigrations --check --dry-run` (no changes); `git diff --check` (clean).
+- Verification actually performed and result: all four agents reported green; full suite 75 passed; CI runs on push will verify the new steps.
+- Decisions / assumptions: MFA guard uses `request.user.otp_device` (set by OTPMiddleware) — more robust than raw session key; no custom URL/view needed (django_otp provides OTP device management at `/admin/otp_totp/totpdevice/`); deploy Task Spec documents that RISK-0003 DB-import evidence is the remaining server-side blocker; incident runbook is documentation-only (no alerting infrastructure).
+- Deferred or risk IDs: RISK-0009 still BLOCKED (MFA code done; remaining: RISK-0003 DB-import evidence + owner approval + old-stack decommission); P0B-03 partially done (SLO + incident runbook done; visual regression baseline still open; dependency/container scan — secret scan added to CI).
+- Rollback / recovery: remove MFA middleware from MIDDLEWARE in base.py; revert deploy Task Spec and incident runbook files; CI steps are additive only.

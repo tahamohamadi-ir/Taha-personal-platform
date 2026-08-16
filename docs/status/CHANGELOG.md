@@ -44,3 +44,12 @@
 ## 2026-08-15 — R2 first live
 
 - Production P1 live (Language Gateway + bilingual landing)؛ A1-A5، B3-B5، C1-C3/C5/C6؛ V1 visual QA (LOG-0064..0104). رجوع: `docs/plan/RELEASE-P1.md`.
+
+## 2026-08-16 (P3 hardening round)
+
+- **MFA enforcement** (`django-otp` 1.5.4): `MFAEnforcementMiddleware` guards `/admin/` paths; 75 pytest PASS. RISK-0009 MFA blocker resolved in code.
+- **Deploy Task Spec**: `docs/plan/P3-cms-deploy-task-spec.md` (~260 lines) — 7 prerequisites, 8 deploy steps, 22 ACs, rollback.
+- **Incident runbook + SLO**: `docs/governance/INCIDENT_RUNBOOK.md` — SLOs (99.5% availability, <1% 5xx, p95 <2s), SEV-1/2/3 runbooks, escalation.
+- **CI hardening**: `ci-cms.yml` +`git diff --check` + secret-pattern scan.
+- **BACKLOG.md** rewritten (UTF-8 encoding fix + P3 deploy row updated).
+- **Remaining CMS runtime blockers**: RISK-0003 DB-import evidence + owner approval + old-stack decommission execution (all owner/server-side).
