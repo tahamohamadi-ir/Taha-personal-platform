@@ -2,6 +2,11 @@
 
 > هر slice واقعی (کد، زیرساخت، مستندات) که در `docs/status/WORK_LOG.md` ثبت می‌شود می‌تواند یک ردیف خلاصه اینجا داشته باشد. Append-only؛ جدیدترین در بالا.
 
+## 2026-08-16 — P4 Blog/Writing code-first (no public `/api/`)
+
+- Article/Series/TopicTag models + Wagtail snippets + Ninja published-only API; Astro blog routes with optional `CMS_API_BASE`.
+- DEFER-0017 (public Caddy `/api/`) and DEFER-0018 (RSS/Atom) recorded. 122 pytest PASS; web check/build green.
+
 ## 2026-08-16 — P3-07 staff draft preview boundary
 
 - Staff-only `/admin/preview/<kind>/<pk>/` for Landing/Profile/Article; Whitelister sanitize; `noindex,nofollow,noarchive` + `Cache-Control: no-store`.

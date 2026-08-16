@@ -19,7 +19,9 @@
 | P3-05 rest | P3 | Media rendition contract + archive/inactive race tests | after deploy runtime | Project owner | ADR-0021 |
 | P3-09 | P3 | P3 high-risk verification (migrations forward/fallback, backup/import, permissions, XSS, upload, projection) | deploy runtime | Project owner | Task-list §8 |
 | DEFER-0014 | P3-05 | Media alt-by-locale | media runtime phase | Project owner | deferred-validation.md; Task-list P3-05 note |
-| P4 | P4 | Blog/Writing (Article/Series, list/detail, feed) | P3 runtime | Project owner | Task-list §9 |
+| DEFER-0017 | P4 | Public Caddy `/api/` for blog | Deferred — in-process API + optional build-time CMS_API_BASE only | Project owner | deferred-validation.md |
+| DEFER-0018 | P4 | RSS/Atom blog feed | Deferred — SEO/sitemap/JSON-LD shipped without feed | Project owner | deferred-validation.md |
+| P4 | P4 | Blog/Writing (Article/Series, list/detail, feed) | Code in `feat/p4-blog-writing`; prod migrate blocked on RISK-0003; feed DEFER-0018 | Project owner | Task-list §9, LOG-0133 |
 | P5 | P5 | Research (Topic/Project/Publication minimal) | P4 | Project owner | Task-list §10 |
 | P6 | P6 | Projects + case studies | P5 | Project owner | Task-list §11 |
 | P7 | P7 | Professional admin (roles/revisions/dashboard/composition) | P3 runtime + P5 | Project owner | Task-list §12 |
