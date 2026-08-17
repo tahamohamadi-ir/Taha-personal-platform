@@ -8,6 +8,7 @@ from django.test import Client
 from django.utils import timezone
 
 from apps.content.models import (
+    Article,
     Landing,
     LifecycleStatus,
     Profile,
@@ -28,10 +29,13 @@ def test_seed_site_content_populates_public_api():
     assert ResearchTopic.objects.public().count() == 6
     assert Publication.objects.public().count() == 6
     assert Project.objects.public().count() == 6
+    assert Article.objects.public().count() == 4
 
     client = Client()
     topics = client.get("/api/research/topics/en").json()
     assert len(topics["items"]) == 3
+    articles = client.get("/api/articles/en").json()
+    assert len(articles["items"]) == 2
     statements = client.get("/api/research/statements/en").json()
     assert len(statements) == 1
     assert statements[0]["slug"] == "statement"

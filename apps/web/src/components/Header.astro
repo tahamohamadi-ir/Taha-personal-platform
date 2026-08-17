@@ -1,6 +1,7 @@
 ﻿---
 import type { LocaleContent } from "../data/content";
 import { content as allContent } from "../data/content";
+import logo from "../branding/logo.png";
 
 interface Props {
   content: LocaleContent;
@@ -22,11 +23,11 @@ const switchLang = otherLang;
   <div class="site-header-inner">
     <a href={`/${content.lang}/`} class="brand" aria-label={content.name}>
       <img
-        src="/logo.png"
+        src={logo.src}
         alt=""
         class="brand-logo"
-        width="64"
-        height="58"
+        width={logo.width}
+        height={logo.height}
         loading="eager"
       />
       <span class="brand-name">{content.name}</span>

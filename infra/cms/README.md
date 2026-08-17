@@ -86,6 +86,45 @@ docker compose -f infra/cms/docker-compose.cms.yml exec cms python manage.py cre
 docker compose -f infra/cms/docker-compose.cms.yml exec cms python manage.py seed_site_content
 # Refresh existing canonical slugs: add --force
 
+## Edit content in Wagtail admin
+
+Public pages are **Astro static**; CMS stores editorial data exposed via `/api/*`.
+Wagtail **Pages** (default “Welcome…”) are not used for the public site.
+
+After login at `/admin/`, open **Site content** in the sidebar:
+
+| Menu item | What it edits |
+|-----------|----------------|
+| Articles | Blog / writing (`/en/blog/`, `/fa/blog/`) |
+| Research topics, statements, publications, projects | Research section |
+| Landing / Profiles | CMS copies of hero/about (static rebuild required) |
+| Case studies | P6 project depth pages |
+
+Set **Status = Published** and **Published at** in the past, then rebuild static
+(`rebuild-static.sh` or local build with `CMS_API_BASE` tunnel).
+
+Upload images via **Images** (Wagtail library) and attach to articles as needed.
+
+## Public `/api/` and `/media/` (DEFER-0017)
+
+Optional: expose read-only API at the edge for RSS, ISR, or off-VPS builds.
+
+```bash
+# Backup Caddyfile first
+sudo cp -a /etc/caddy/Caddyfile /etc/caddy/Caddyfile.pre-api.$(date -u +%Y%m%dT%H%M%SZ)
+
+# Merge infra/cms/Caddyfile.cms.api.snippet into tahamohamadi.ir block
+# BEFORE import taha_application_routes / file_server (order matters).
+
+sudo caddy validate --config /etc/caddy/Caddyfile
+sudo systemctl reload caddy
+
+curl -fsS https://tahamohamadi.ir/api/research/topics/en | head -c 200
+curl -fsS -o /dev/null -w '%{http_code}\n' https://tahamohamadi.ir/api/articles/en
+```
+
+See `docs/plan/P3-public-api-caddy-task-spec.md` for rollback and smoke steps.
+
 # After this image is running: Account → Two-factor authentication
 # (or https://tahamohamadi.ir/admin/account/two-factor/) — scan QR, confirm code.
 ```

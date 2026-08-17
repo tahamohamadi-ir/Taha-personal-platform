@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-08-17 — Wagtail Site content admin + article seed + hashed logos
+
+- Wagtail admin menu **Site content** edits Django content models (Articles, Research, Projects). Not Wagtail Pages.
+- `seed_site_content` now publishes 4 articles (2 en / 2 fa) from research prose.
+- Header/gateway/footer logos use hashed `/_astro/*.png` URLs.
+- `infra/deploy/apply-caddy-api.sh` merges public `/api/` + `/media/` into Caddy (DEFER-0017).
+
+
 ## 2026-08-17 — P4/P5 routes live + logo PNG + loopback CMS_API_BASE
 
 - Production `release-82d51c6` serves blog/research/projects routes (200). Public `/api/` still 404 (DEFER-0017).

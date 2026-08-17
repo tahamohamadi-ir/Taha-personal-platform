@@ -77,6 +77,14 @@ class ProjectSeed(TypedDict):
     publication_slugs: tuple[str, ...]
 
 
+class ArticleSeed(TypedDict):
+    slug: str
+    title: str
+    excerpt: str
+    body: str
+    license: str
+
+
 LANDINGS: dict[str, LandingSeed] = {
     "en": {
         "slug": "home",
@@ -635,6 +643,83 @@ PROJECTS: dict[str, tuple[ProjectSeed, ...]] = {
             "code_url": "",
             "topic_slugs": ("visual-political-communication",),
             "publication_slugs": ("visual-discourse-presidential-elections",),
+        },
+    ),
+}
+
+ARTICLES: dict[str, tuple[ArticleSeed, ...]] = {
+    "en": (
+        {
+            "slug": "pars-sql-vtd-edge-overview",
+            "title": "PARS-SQL / VTD-Edge: Privacy-First Persian NLP-to-SQL",
+            "excerpt": (
+                "Why local, privacy-first Persian Text-to-SQL matters for mental-health "
+                "and lifestyle analytics — and how PARS-SQL / VTD-Edge approaches robustness, "
+                "safety, and edge deployment."
+            ),
+            "body": (
+                "<p>Local, privacy-first Persian Text-to-SQL system for mental-health and "
+                "lifestyle analytics. Supports colloquial Persian, typos, Finglish, "
+                "mixed Persian-English, Jalali date expressions, ambiguity handling, "
+                "unsafe-query routing, validation, abstention, and explainable output.</p>"
+                "<h2>Shared core</h2>"
+                "<p>Research runtime and edge runtime share a common normalization, linking, "
+                "validation, execution, and formatting core.</p>"
+                "<h2>Evaluation priorities</h2>"
+                "<p>Reliability, safety, robustness, latency, memory, dataset documentation, "
+                "human agreement, and reproducibility.</p>"
+            ),
+            "license": "cc-by-nc-4",
+        },
+        {
+            "slug": "story-driven-dashboard-design-intro",
+            "title": "Story-Driven Dashboard Design: From KPI Panels to Narrative Decisions",
+            "excerpt": (
+                "A design-science framework for transforming static KPI panels into "
+                "narrative decision-support systems — applied in national public-administration "
+                "dashboard programmes."
+            ),
+            "body": (
+                "<p>Design-science framework for transforming static KPI panels into "
+                "narrative decision-support systems. Integrates data storytelling, DIKW, "
+                "SMART/GQM/GQMD, data architecture, visual perception, cognitive load, HCI, "
+                "interaction, evaluation, training, governance, and AI-enhanced analytics.</p>"
+                "<p>Applied in a national public-administration case with nine organizational "
+                "dashboard suites.</p>"
+            ),
+            "license": "cc-by-nc-4",
+        },
+    ),
+    "fa": (
+        {
+            "slug": "pars-sql-vtd-edge-overview",
+            "title": "PARS-SQL / VTD-Edge: Text-to-SQL فارسی محلی و حریم‌خصوصی‌محور",
+            "excerpt": (
+                "چرا Text-to-SQL فارسی محلی و حریم‌خصوصی‌محور برای تحلیل سلامت روان و "
+                "سبک زندگی اهمیت دارد — و PARS-SQL / VTD-Edge چگونه استحکام، ایمنی و "
+                "استقرار edge را دنبال می‌کند."
+            ),
+            "body": (
+                "<p>سامانهٔ Text-to-SQL فارسی محلی و حریم‌خصوصی‌محور برای تحلیل سلامت "
+                "روان و سبک زندگی.</p>"
+                "<h2>هستهٔ مشترک</h2>"
+                "<p>زمان اجرای پژوهشی و edge هستهٔ مشترکی از نرمال‌سازی، پیوند، "
+                "اعتبارسنجی، اجرا و قالب‌بندی دارند.</p>"
+            ),
+            "license": "cc-by-nc-4",
+        },
+        {
+            "slug": "story-driven-dashboard-design-intro",
+            "title": "طراحی داشبورد روایت‌محور: از پنل KPI تا تصمیم روایی",
+            "excerpt": (
+                "چارچوب علم طراحی برای تبدیل پنل‌های KPI ایستا به سامانه‌های "
+                "پشتیبان تصمیم روایی."
+            ),
+            "body": (
+                "<p>چارچوب علم طراحی برای تبدیل پنل‌های KPI ایستا به سامانه‌های "
+                "پشتیبان تصمیم روایی.</p>"
+            ),
+            "license": "cc-by-nc-4",
         },
     ),
 }

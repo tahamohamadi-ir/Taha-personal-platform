@@ -1,6 +1,7 @@
 ---
 import type { LocaleContent } from "../data/content";
 import { content as allContent } from "../data/content";
+import logo from "../branding/logo.png";
 
 interface Props {
   content: LocaleContent;
@@ -22,10 +23,10 @@ const switchLang = otherLang;
   <div class="footer-brand">
     <img
       class="footer-mark"
-      src="/logo.png"
+      src={logo.src}
       alt=""
-      width="64"
-      height="58"
+      width={logo.width}
+      height={logo.height}
       loading="lazy"
     />
     <div class="footer-brand-copy">

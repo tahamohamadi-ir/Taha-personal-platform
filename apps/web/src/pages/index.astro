@@ -3,6 +3,7 @@ import "../styles/global.css";
 import { site } from "../data/site";
 import { content } from "../data/content";
 import { websiteJsonLd, validateStructuredData } from "../data/structured";
+import logoGateway from "../branding/logo-gateway.png";
 
 const structured = websiteJsonLd();
 validateStructuredData(structured);
@@ -93,10 +94,10 @@ const canonical = new URL("/", site.url).href;
       <div class="gateway-panel">
         <img
           class="gateway-mark"
-          src="/logo-gateway.png"
+          src={logoGateway.src}
           alt=""
-          width="96"
-          height="88"
+          width={logoGateway.width}
+          height={logoGateway.height}
           loading="eager"
         />
         <h1 class="gateway-name">
