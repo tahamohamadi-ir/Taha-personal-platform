@@ -1,5 +1,16 @@
 # Work Log
 
+## LOG-0144 — 2026-08-17 — Research index card catalog (filter + sort)
+
+- Outcome: `/en/research/` and `/fa/research/` use CV-style cards (`ResearchCatalog.astro`). Filter by type and sort by type/title/newest. Each card links to the existing detail route. Intro no longer mentions `CMS_API_BASE`. Content remains in HTML without JS; filter/sort enhance via a small script.
+- Why: Long topic paragraphs on the research index were hard to scan; owner asked for the same card pattern as CV with click-through.
+- Scope / files: `ResearchCatalog.astro`, `en|fa/research/index.astro`, `content.ts`, this entry.
+- Commands or actions actually performed: `npm run check` (see verification).
+- Verification actually performed and result: `npm run check` → 0 errors (62 files).
+- Decisions / assumptions: no new CMS fields; reuse existing topics/projects/publications/statement routes.
+- Deferred or risk IDs: none.
+- Rollback / recovery: revert this commit; previous list markup returns.
+
 ## LOG-0143 — 2026-08-17 — Public `/api/` + article seed + `release-9ca2f3b`
 
 - Outcome: Owner applied Caddy `/api/*` + `/media/*`; public topics JSON 200. Merged PR #24 (`9ca2f3b`); CMS image `taha-cms:9ca2f3b`; seed `created=4` articles (`skipped=24` prior rows). Static `release-9ca2f3b` checksum `eebe1cc7` (38 pages: blog list + 4 article details fa/en).

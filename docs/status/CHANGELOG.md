@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-08-17 — Research index: cards, filter, sort
+
+- Research landing matches CV card layout. Filter (all / statement / topics / projects / publications) and sort (type / title / newest). Card click opens the dedicated page.
+
 ## 2026-08-17 — Public `/api/` live + blog pages + CMS admin image
 
 - Caddy `handle /api/*` + `/media/*` on `tahamohamadi.ir` (DEFER-0017 CLOSED).

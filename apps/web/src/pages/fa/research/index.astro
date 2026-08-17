@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Breadcrumbs from "../../../components/blog/Breadcrumbs.astro";
+import ResearchCatalog from "../../../components/ResearchCatalog.astro";
 import { content } from "../../../data/content";
 import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../data/structured";
 import {
@@ -56,63 +57,14 @@ validateStructuredData(...structured);
       empty ? (
         <p class="empty">{research.empty}</p>
       ) : (
-        <>
-          <section>
-            <h2>{research.statementHeading}</h2>
-            {statement ? (
-              <p>
-                <a href={`/${locale}/research/statement/`}>{statement.title}</a>
-              </p>
-            ) : (
-              <p class="empty">{research.statementEmpty}</p>
-            )}
-          </section>
-          <section>
-            <h2>{research.topicsHeading}</h2>
-            {topics.length === 0 ? (
-              <p class="empty">{research.empty}</p>
-            ) : (
-              <ul>
-                {topics.map((topic) => (
-                  <li>
-                    <a href={`/${locale}/research/topics/${topic.slug}/`}>{topic.title}</a>
-                    {topic.summary ? <p>{topic.summary}</p> : null}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-          <section>
-            <h2>{research.projectsHeading}</h2>
-            {projects.length === 0 ? (
-              <p class="empty">{research.empty}</p>
-            ) : (
-              <ul>
-                {projects.map((project) => (
-                  <li>
-                    <a href={`/${locale}/research/projects/${project.slug}/`}>{project.title}</a>
-                    <p>{project.objective}</p>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-          <section>
-            <h2>{research.publicationsHeading}</h2>
-            {publications.length === 0 ? (
-              <p class="empty">{research.empty}</p>
-            ) : (
-              <ul>
-                {publications.map((pub) => (
-                  <li>
-                    <a href={`/${locale}/research/publications/${pub.slug}/`}>{pub.title}</a>
-                    <p>{pub.authors}{pub.venue ? ` — ${pub.venue}` : ""}</p>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-        </>
+        <ResearchCatalog
+          locale={locale}
+          content={pageContent}
+          statement={statement}
+          topics={topics}
+          projects={projects}
+          publications={publications}
+        />
       )
     }
     <p class="contact-note">
@@ -125,34 +77,28 @@ validateStructuredData(...structured);
 
 <style>
   .research-page {
-    max-width: 44rem;
+    max-width: 1280px;
     margin-inline: auto;
-    padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem;
+    width: 100%;
+    padding-block: 3rem 4rem;
+    padding-inline: clamp(1rem, 5vw, 2.5rem);
   }
   .research-page h1 {
-    font-family: var(--font-display);
-    font-size: clamp(1.75rem, 4vw, 2.4rem);
-    margin: 0 0 0.75rem;
-  }
-  .research-page h2 {
-    font-size: 1.25rem;
-    margin: 2rem 0 0.75rem;
+    margin: 0;
+    font-size: clamp(1.75rem, 1.15rem + 2vw, 2.5rem);
+    line-height: 1.2;
+    font-weight: 700;
   }
   .lead,
   .empty,
   .contact-note {
-    color: var(--color-ink-muted);
+    color: var(--color-ink-secondary);
   }
-  ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  .lead {
+    margin: 0.75rem 0 0;
+    max-width: 60ch;
   }
-  li {
-    margin-bottom: 1rem;
-  }
-  li p {
-    margin: 0.25rem 0 0;
-    color: var(--color-ink-muted);
+  .contact-note {
+    margin: 2rem 0 0;
   }
 </style>
