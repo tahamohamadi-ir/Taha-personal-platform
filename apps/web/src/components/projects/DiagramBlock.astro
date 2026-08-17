@@ -1,0 +1,47 @@
+---
+import type { DiagramDto } from "../../lib/cms/projects";
+
+interface Props {
+  diagram: DiagramDto;
+  labels: {
+    versionLabel: string;
+    dateLabel: string;
+  };
+}
+
+const { diagram, labels } = Astro.props;
+---
+
+<figure class="diagram-block">
+  <figcaption>
+    <strong>{diagram.title}</strong>
+    <span class="meta">
+      {labels.versionLabel}: {diagram.version} · {labels.dateLabel}: {diagram.diagram_date}
+    </span>
+  </figcaption>
+  <p class="alt">{diagram.alt_text}</p>
+  {diagram.long_description && <p class="description">{diagram.long_description}</p>}
+</figure>
+
+<style>
+  .diagram-block {
+    margin: 0 0 1.25rem;
+    padding: 1rem;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
+  }
+  .meta {
+    display: block;
+    color: var(--color-ink-muted);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+  }
+  .alt {
+    font-weight: 600;
+    margin: 0.75rem 0 0.35rem;
+  }
+  .description {
+    margin: 0;
+    color: var(--color-ink-secondary);
+  }
+</style>

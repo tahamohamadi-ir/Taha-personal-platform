@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-08-17 — P6 Projects + case studies (code-first)
+
+- **P6 code-first:** `ProjectCaseStudyDetails` OneToOne extension on canonical `Project`; `ProjectDiagram` and `ProjectScreenshot` with visibility redact; featured case study publish gate (problem/role/trade-offs/outcomes/availability/license). Migration `0004_p6_case_study_models`.
+- **CMS API v0.4.0:** `/api/projects/{locale}` list (case-study projects) + detail; research project DTO gains `has_case_study`, case study fields, diagrams/screenshots (metadata only — no `/media/` URLs).
+- **Astro:** `/{locale}/projects/` list + `/{locale}/projects/{slug}/` detail; research project pages cross-link to full case study; header Projects nav; sitemap entries; optional `CreativeWork` JSON-LD when real fields exist.
+- **Ledgers:** `P6-case-studies-task-spec.md`; DEFER-0017 scope note (projects); DEFER-0021 (live demo embed); Task-list §11 ticked.
+- **Verification:** 152 CMS pytest PASS; `npm run check` 0 errors; static build 16 pages. Prod migrate remains owner/`RISK-0003`.
+
 > هر slice واقعی (کد، زیرساخت، مستندات) که در `docs/status/WORK_LOG.md` ثبت می‌شود می‌تواند یک ردیف خلاصه اینجا داشته باشد. Append-only؛ جدیدترین در بالا.
 
 ## 2026-08-16 — Production static P4+P5 (`release-59bf91e`)

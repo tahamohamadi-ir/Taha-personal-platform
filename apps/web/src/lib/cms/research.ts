@@ -62,6 +62,8 @@ export interface ProjectListDto {
   demo_availability: string;
   published_at: string | null;
   updated_at: string | null;
+  has_case_study: boolean;
+  case_study_depth: string | null;
 }
 
 export interface ProjectDetailDto extends ProjectListDto {
@@ -77,6 +79,28 @@ export interface ProjectDetailDto extends ProjectListDto {
   evidence: EvidenceDto[];
   collaborators: CollaboratorDto[];
   funding: FundingDto[];
+  case_study: {
+    depth: string;
+    problem: string;
+    constraints: string;
+    technical_decisions: string;
+    trade_offs: string;
+    outcomes_summary: string;
+    lessons_learned: string;
+    testing_summary: string;
+  } | null;
+  diagrams: Array<{
+    title: string;
+    version: string;
+    diagram_date: string;
+    alt_text: string;
+    long_description: string;
+  }>;
+  screenshots: Array<{
+    caption: string;
+    alt_text: string;
+    external_url: string;
+  }>;
 }
 
 export interface PublicationListDto {

@@ -68,6 +68,36 @@ export interface LocaleContent {
     fundingHeading: string;
     contactNote: string;
     missingTranslation: string;
+    caseStudyLinkLabel: string;
+  };
+  projects: {
+    heading: string;
+    intro: string;
+    empty: string;
+    depthLabel: string;
+    problemHeading: string;
+    constraintsHeading: string;
+    decisionsHeading: string;
+    tradeOffsHeading: string;
+    outcomesHeading: string;
+    lessonsHeading: string;
+    testingHeading: string;
+    evidenceHeading: string;
+    collaboratorsHeading: string;
+    fundingHeading: string;
+    diagramsHeading: string;
+    screenshotsHeading: string;
+    relatedHeading: string;
+    topicsHeading: string;
+    publicationsHeading: string;
+    licenseLabel: string;
+    versionLabel: string;
+    dateLabel: string;
+    availabilityLabel: string;
+    codeLabel: string;
+    dataLabel: string;
+    demoLabel: string;
+    missingTranslation: string;
   };
   downloads: {
     heading: string;
@@ -199,6 +229,37 @@ export const content: Record<LocaleCode, LocaleContent> = {
       contactNote:
         "For collaboration inquiries, see About. A contact form is not published yet.",
       missingTranslation: "This research page is not yet translated into Persian.",
+      caseStudyLinkLabel: "View full case study",
+    },
+    projects: {
+      heading: "Projects",
+      intro:
+        "Engineering case studies from the CMS. When CMS_API_BASE is not set for this build, this list stays empty.",
+      empty: "No published case studies are available in this build.",
+      depthLabel: "Depth",
+      problemHeading: "Problem",
+      constraintsHeading: "Constraints",
+      decisionsHeading: "Technical decisions",
+      tradeOffsHeading: "Trade-offs",
+      outcomesHeading: "Outcomes",
+      lessonsHeading: "Lessons learned",
+      testingHeading: "Testing",
+      evidenceHeading: "Evidence",
+      collaboratorsHeading: "Collaborators",
+      fundingHeading: "Funding",
+      diagramsHeading: "Architecture diagrams",
+      screenshotsHeading: "Screenshots",
+      relatedHeading: "Related",
+      topicsHeading: "Research topics",
+      publicationsHeading: "Publications",
+      licenseLabel: "License",
+      versionLabel: "Version",
+      dateLabel: "Date",
+      availabilityLabel: "Availability",
+      codeLabel: "Code",
+      dataLabel: "Data",
+      demoLabel: "Demo",
+      missingTranslation: "This case study is not yet translated into Persian.",
     },
     downloads: {
       heading: "CV & Resume",
@@ -331,6 +392,37 @@ export const content: Record<LocaleCode, LocaleContent> = {
       contactNote:
         "برای همکاری، صفحهٔ درباره را ببینید. فرم تماس هنوز منتشر نشده است.",
       missingTranslation: "این صفحهٔ پژوهشی هنوز به انگلیسی ترجمه نشده است.",
+      caseStudyLinkLabel: "مشاهدهٔ مطالعهٔ موردی کامل",
+    },
+    projects: {
+      heading: "پروژه‌ها",
+      intro:
+        "مطالعات موردی مهندسی از CMS. اگر CMS_API_BASE برای این build تنظیم نشده باشد، فهرست خالی می‌ماند.",
+      empty: "در این build هیچ مطالعهٔ موردی منتشرشده‌ای در دسترس نیست.",
+      depthLabel: "عمق",
+      problemHeading: "مسئله",
+      constraintsHeading: "محدودیت‌ها",
+      decisionsHeading: "تصمیم‌های فنی",
+      tradeOffsHeading: "بده‌بستان‌ها",
+      outcomesHeading: "نتایج",
+      lessonsHeading: "درس‌های آموخته",
+      testingHeading: "آزمون",
+      evidenceHeading: "شواهد",
+      collaboratorsHeading: "همکاران",
+      fundingHeading: "حمایت مالی",
+      diagramsHeading: "نمودارهای معماری",
+      screenshotsHeading: "نماگرفت‌ها",
+      relatedHeading: "مرتبط",
+      topicsHeading: "موضوع‌های پژوهشی",
+      publicationsHeading: "انتشارات",
+      licenseLabel: "مجوز",
+      versionLabel: "نسخه",
+      dateLabel: "تاریخ",
+      availabilityLabel: "دسترسی",
+      codeLabel: "کد",
+      dataLabel: "داده",
+      demoLabel: "دمو",
+      missingTranslation: "این مطالعهٔ موردی هنوز به انگلیسی ترجمه نشده است.",
     },
     downloads: {
       heading: "رزومه و CV",

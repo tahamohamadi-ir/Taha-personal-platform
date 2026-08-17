@@ -41,6 +41,7 @@
 | D13 | Incident runbook + SLO | DONE | S-model | `docs/governance/INCIDENT_RUNBOOK.md` (126 lines); SLOs (99.5%, <1% 5xx, p95 <2s); SEV-1/2/3 runbooks; DEPLOY_RUNBOOK xref; LOG-0116 |
 | D14 | CI hardening (diff-check + secret scan) | DONE | S-model | `ci-cms.yml` +2 steps: git diff --check + secret pattern scan; LOG-0116 |
 | P5 | Research Topic/Statement/Project/Publication | DONE (code-first) | agent | LOG-0136; security Approve; prod migrate owner/RISK-0003; DEFER-0017/0019/0020 |
+| P6 | Projects + Engineering Case Studies | DONE (code-first) | agent | LOG-0137; security Approve-with-notes; DEFER-0017/0021 |
 
 ## Review log (append-only)
 

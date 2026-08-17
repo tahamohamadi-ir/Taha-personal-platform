@@ -1317,8 +1317,19 @@ ode --check و YAML validation توسط agent.
 - Commands or actions actually performed: `git fetch origin/main` (`59bf91e`); CI green (web + CMS CI + CMS image); local `npm run check`/`build` without `CMS_API_BASE`; `scp` artifact to `/home/deploy/taha-stage/release-59bf91e`; `sudo -n /opt/taha/bin/update-release.sh`; `infra/deploy/smoke.sh` 7 PASS; route curls; `cms-repo` `git pull` failed (permission) then `git reset --hard HEAD` + `git clean -fd` restored clean `95a740f`.
 - Verification actually performed and result: `deploy.log` `2026-08-16T21:44:36Z updated release-59bf91e 40472597`; smoke PASS; empty copy present on en/fa blog+research; CMS loopback health still ok on prior image.
 - Decisions / assumptions: Stop before migrate per RISK-0003; do not document/use VPS loopback `CMS_API_BASE` until runbook establishes it; leave `/api/`/`/media/` closed.
-- Deferred or risk IDs: RISK-0003 OPEN (blocker for migrate 0002/0003); DEFER-0017 OPEN; cms-repo ownership/chown owner; Docker group or interactive sudo for `update-cms.sh`.
+- Deferred or risk IDs: RISK-0003 OPEN (blocker for migrate 0002/0003/0004); DEFER-0017 OPEN; cms-repo ownership/chown owner; Docker group or interactive sudo for `update-cms.sh`.
 - Rollback / recovery: `sudo -n /opt/taha/bin/update-release.sh /home/deploy/taha-stage/release-aae2cb9` (previous artifact retained under `/opt/taha/site/releases/`).
+
+## LOG-0138 - 2026-08-17 - P6 / Projects + case studies code-first
+
+- Outcome: P6 case studies on canonical `Project`: `ProjectCaseStudyDetails` OneToOne, `ProjectDiagram`/`ProjectScreenshot` FK rows, featured publish gate, Wagtail snippet admin, Ninja `/api/projects/{locale}` (+ extended research project DTO with `has_case_study`), Astro `/{locale}/projects/*` with research cross-link, sitemap + BreadcrumbList + optional `CreativeWork` JSON-LD. No infra/Caddy `/api/`/`/media/`. DEFER-0017 scope expanded to projects; DEFER-0021 (live demo embed) recorded.
+- Why: Execute approved P6 plan after P5 merge on `origin/main`; code-first with honest empty lists when `CMS_API_BASE` unset.
+- Scope / files: `apps/cms/apps/content/{models,admin,migrations/0004_*}`, `apps/cms/apps/api/api.py`, `apps/cms/tests/test_{case_study,api_case_study}.py`, `apps/web/src/{lib/cms/projects.ts,components/projects,pages/*/projects,data,Header,sitemap,structured}`, research project cross-link pages, Task Spec + ledgers, Task-list §11.
+- Commands or actions actually performed: `makemigrations 0004_p6_case_study_models`; `ruff check` clean; `pytest` **152 passed**; `npm ci`; `npm run check` 0 errors; `npm run build` **16 pages** (includes `/en|fa/projects/`).
+- Verification actually performed and result: featured publish gate tests; diagram/screenshot redact tests; API forbidden-field tests; XSS sanitizer on `technical_decisions`; draft 404. Independent security review **Approve-with-notes** (manual): no draft/media URL leak; external URLs http(s)-only; `set:html` matches P4/P5 pattern — admin PII help text remains editorial responsibility.
+- Decisions / assumptions: no parallel Project model; diagram images admin-only until `/media/` Task Spec; live demo iframe out of scope (DEFER-0021).
+- Deferred or risk IDs: DEFER-0017 OPEN (blog+research+projects); DEFER-0021 OPEN; RISK-0003 OPEN (owner prod migrate 0003+0004).
+- Rollback / recovery: revert P6 commits; reverse migration 0004 only in non-prod.
 
 ## LOG-0136 - 2026-08-16 - P5 / Research code-first (models, admin, API, Astro, SEO)
 

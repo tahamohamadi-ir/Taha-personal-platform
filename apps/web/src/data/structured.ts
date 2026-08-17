@@ -104,6 +104,33 @@ export function scholarlyArticleJsonLd(input: {
   return block;
 }
 
+/** CreativeWork only when title + description exist for a real case study page. */
+export function creativeWorkJsonLd(input: {
+  locale: LocaleCode;
+  title: string;
+  slug: string;
+  description: string;
+  license: string;
+  publishedAt: string | null;
+}): JsonLdBlock | null {
+  const description = (input.description || "").trim();
+  if (!input.title.trim() || !description) {
+    return null;
+  }
+  const url = new URL(`/${input.locale}/projects/${input.slug}/`, site.url).href;
+  const block: JsonLdBlock = {
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    name: input.title,
+    description,
+    url,
+    inLanguage: input.locale,
+  };
+  if (input.publishedAt) block.datePublished = input.publishedAt;
+  if (input.license) block.license = input.license;
+  return block;
+}
+
 export function breadcrumbJsonLd(
   crumbs: Array<{ name: string; path: string }>,
 ): JsonLdBlock {
