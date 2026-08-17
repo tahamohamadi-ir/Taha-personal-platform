@@ -4,6 +4,11 @@
 
 - Research landing matches CV card layout. Filter (all / statement / topics / projects / publications) and sort (type / title / newest). Card click opens the dedicated page.
 
+## 2026-08-17 — Public `/api/` live + blog pages + CMS admin image
+
+- Caddy `handle /api/*` + `/media/*` on `tahamohamadi.ir` (DEFER-0017 CLOSED).
+- CMS image `9ca2f3b`; seed `created=4` articles; static `release-9ca2f3b` (38 pages including blog details).
+- Public smoke: `/api/articles/en` 200, `/en/blog/pars-sql-vtd-edge-overview/` 200, hashed logo 8075 bytes.
 
 ## 2026-08-17 — Wagtail Site content admin + article seed + hashed logos
 

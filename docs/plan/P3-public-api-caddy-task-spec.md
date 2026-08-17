@@ -1,6 +1,6 @@
 # Task Spec — P3/P4 public Caddy `/api/` + `/media/` edge (DEFER-0017)
 
-**Status:** OPEN (repo snippet + runbook ready; owner VPS apply pending)  
+**Status:** DONE (2026-08-17 — owner applied Caddy `/api/*` + `/media/*`; public JSON 200)  
 **ID:** P3-public-api-caddy  
 **Related:** DEFER-0017, P4-blog-writing-task-spec, P5-research-task-spec, P6 case studies, ADR-0020, LOG-0137
 
