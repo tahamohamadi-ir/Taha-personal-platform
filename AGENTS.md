@@ -12,7 +12,7 @@ P0-G0 is **PASS for static-only P1** (2026-08-14). The Astro public frontend (`a
 
 **P4 Blog/Writing (code-first):** Article/Series/TopicTag models, Ninja published-only API, and Astro `/{locale}/blog/` routes ship with optional build-time `CMS_API_BASE` (honest empty lists when unset). No infra/Caddy `/api/` or `/media/` exposure. RSS/Atom deferred (`DEFER-0018`). Production migrate blocked on owner `RISK-0003` evidence.
 
-**P5 Research (code-first):** ResearchTopic / ResearchStatement / canonical Project / minimal Publication per `docs/plan/P5-research-task-spec.md` (`PARTIAL` — prod migrate owner). Astro `/{locale}/research/*` with optional `CMS_API_BASE`. Public edge `/api/` remains `DEFER-0017` (blog + research). Statement PDF `DEFER-0019`; curated graph viz `DEFER-0020`. No claim of production research content live until owner migrate + content approval.
+**P5 Research (code-first + static live):** ResearchTopic / ResearchStatement / canonical Project / minimal Publication per `docs/plan/P5-research-task-spec.md` (`PARTIAL`). Public static artifact `release-59bf91e` serves `/en|fa/research/*` and blog routes with honest empty lists (`CMS_API_BASE` unset). Public edge `/api/` remains `DEFER-0017` (blog + research). Statement PDF `DEFER-0019`; curated graph viz `DEFER-0020`. Production CMS migrate (0002/0003) blocked on owner `RISK-0003` evidence — do not claim populated research/blog content until migrate + publish + optional rebuild.
 
 ## Ownership
 

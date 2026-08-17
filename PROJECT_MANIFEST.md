@@ -52,7 +52,7 @@ docs/templates/         task specifications
 |---|---|---|---|
 | `dev` | Local Windows control plane; WSL only for Linux/Docker tests | Available | fake/sanitized only |
 | `staging` | DECOMMISSIONED (ADR-0025, 2026-08-15) | `staging.tahamohamadi.ir` Caddy block and DNS removed; dev/deploy directly on production | — |
-| `prod` | `tahamohamadi.ir` | Static P1 deployed (2026-08-16, release-aae2cb9, checksum `349db221`) | published, approved and backed-up data only |
+| `prod` | `tahamohamadi.ir` | Static P4+P5 routes live (2026-08-16, release-59bf91e, checksum `40472597`); CMS still pre-P4 image pending RISK-0003 | published, approved and backed-up data only |
 
 Production host is an active Ubuntu 26.04 LTS VPS with 2 vCPU, ~3910 MB RAM (~4 GiB, owner decision 2026-08-15: keep the 4 GiB plan — `RISK-0007` CLOSED) and 30 GB disk. It co-hosts the static site and Compose `taha-cms` (cms + postgres on `127.0.0.1:18000`). The VPS is **not** approved for Gitea, a CI runner, Redis, Celery, OpenSearch, Neo4j, Kubernetes or other additional always-on services.
 
