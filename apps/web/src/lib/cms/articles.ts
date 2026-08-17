@@ -1,5 +1,7 @@
 /** CMS public article DTOs consumed by Astro at build time (optional CMS_API_BASE). */
 
+import { cmsFetchJson } from "./client";
+
 export interface TopicTagDto {
   name: string;
   slug: string;
@@ -41,22 +43,8 @@ export interface ArticleSlugRedirectDto {
 
 type Locale = "fa" | "en";
 
-function cmsBase(): string | null {
-  const raw = (import.meta.env.CMS_API_BASE as string | undefined)?.trim();
-  if (!raw) return null;
-  return raw.replace(/\/$/, "");
-}
-
 async function fetchJson<T>(path: string): Promise<T | null> {
-  const base = cmsBase();
-  if (!base) return null;
-  try {
-    const response = await fetch(`${base}${path}`);
-    if (!response.ok) return null;
-    return (await response.json()) as T;
-  } catch {
-    return null;
-  }
+  return cmsFetchJson<T>(path);
 }
 
 function unwrapItems<T>(payload: T[] | { items: T[] } | null): T[] {

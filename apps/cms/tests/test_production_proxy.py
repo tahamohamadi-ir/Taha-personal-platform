@@ -26,7 +26,7 @@ def test_production_trusts_caddy_forwarded_proto(monkeypatch):
     production = _load_production_settings(monkeypatch)
     assert production.SECURE_PROXY_SSL_HEADER == ("HTTP_X_FORWARDED_PROTO", "https")
     assert production.USE_X_FORWARDED_HOST is True
-    assert production.SECURE_REDIRECT_EXEMPT == [r"^health/"]
+    assert production.SECURE_REDIRECT_EXEMPT == [r"^health/", r"^api/"]
 
 
 def test_production_csrf_origins_exclude_loopback(monkeypatch):

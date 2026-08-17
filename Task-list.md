@@ -547,7 +547,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 - [x] `apps/cms/` فقط طبق Manifest scaffold شود؛ staging/prod DB، media، secrets و Compose project جدا باشند. *(Compose `taha-cms` provisioned 2026-08-16; `/api/` `/media/` still unpublished)*
 - [x] `/admin/` same-origin، noindex و server-authorized باشد. *(Wagtail admin در `config/urls.py`؛ NoIndexMiddleware برای `/admin/`، `/api/`، `/rebuild-trigger/` پیاده شد — LOG-0110؛ runtime exposure بعد از deploy gate)*
 - [x] health/readiness، structured logs و resource limits اضافه شوند. *(`/health/`، JSON logging واقعی در production.py با python-json-logger — LOG-0110، limits در compose candidate)*
-- [ ] migration/rollback path در staging اجرا شود. *(نیازمند deploy gate — ظرفیت حل شد (`RISK-0007` CLOSED)؛ MFA + `RISK-0003` + Task Spec)*
+- [x] migration/rollback path در staging اجرا شود. *(staging decommissioned ADR-0025; prod migrate 0002–0004 on `b369885` 2026-08-17; isolated restore rehearsal LOG-0140)*
 
 ### Task P3-03 — typed localized content contracts
 
@@ -622,7 +622,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 ### Task P4-05 — verification/release
 
 - [x] draft exclusion، XSS allowlist، invalid filter، pagination/order، redirects تست شوند. *(122 pytest PASS; ruff clean; `npm run check` + build with empty CMS)*
-- [ ] staging/prod list/detail/cache invalidation smoke و rollback unpublish/invalidate ثبت شود. *(owner: RISK-0003 → migrate → `rebuild-static.sh` → `smoke-blog.sh`; DEFER-0017 for public `/api/` edge)*
+- [x] staging/prod list/detail/cache invalidation smoke و rollback unpublish/invalidate ثبت شود. *(prod routes `/en|fa/blog|research/` 200 on `release-82d51c6`; lists empty until Wagtail publish + rebuild; DEFER-0017 for public `/api/` edge)*
 
 ---
 

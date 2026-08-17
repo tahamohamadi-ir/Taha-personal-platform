@@ -7,12 +7,14 @@ set -euo pipefail
 BASE_URL="${1:-https://tahamohamadi.ir}"
 BASE_URL="${BASE_URL%/}"
 fail=0
+BODY="$(mktemp)"
+trap 'rm -f "$BODY"' EXIT
 
 check() {
   local path="$1"
   local expect="$2"
   local code
-  code="$(curl -sS -o /tmp/blog-smoke-body -w "%{http_code}" "${BASE_URL}${path}")"
+  code="$(curl -sS -o "$BODY" -w "%{http_code}" "${BASE_URL}${path}")"
   if [[ "$code" != "$expect" ]]; then
     echo "FAIL ${path} expected ${expect} got ${code}" >&2
     fail=1
@@ -27,7 +29,7 @@ for locale in en fa; do
 done
 
 # Public /api/ remains blocked until DEFER-0017 owner approval.
-code="$(curl -sS -o /tmp/blog-smoke-body -w "%{http_code}" "${BASE_URL}/api/articles/en")"
+code="$(curl -sS -o "$BODY" -w "%{http_code}" "${BASE_URL}/api/articles/en")"
 if [[ "$code" == "200" ]]; then
   echo "WARN /api/articles/en returned 200 — confirm this is intentional (DEFER-0017)"
 else

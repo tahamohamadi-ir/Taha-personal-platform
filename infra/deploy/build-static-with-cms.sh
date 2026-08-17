@@ -38,6 +38,13 @@ if ! curl -fsS "${CMS_API_BASE%/}/health/" | grep -q '"db"'; then
 fi
 echo "CMS health OK at ${CMS_API_BASE}"
 
+if ! command -v npm >/dev/null 2>&1; then
+  echo "error: npm not found on this host." >&2
+  echo "Install Node 24 (PROJECT_MANIFEST) or build on a machine with an SSH tunnel:" >&2
+  echo "  ssh -L 18000:127.0.0.1:18000 … then CMS_API_BASE=http://127.0.0.1:18000 npm run build" >&2
+  exit 1
+fi
+
 echo "=== build Astro with CMS_API_BASE=${CMS_API_BASE} ==="
 cd "$WEB_DIR"
 npm ci

@@ -56,8 +56,10 @@ if not DATABASES["default"]["USER"] or not DATABASES["default"]["PASSWORD"]:
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
 SECURE_SSL_REDIRECT = True
-# In-container / host-loopback health probes are plain HTTP without the proxy.
-SECURE_REDIRECT_EXEMPT = [r"^health/"]
+# In-container / host-loopback health probes and CMS_API_BASE builds are plain
+# HTTP without Caddy. gunicorn binds 127.0.0.1 only; Caddy still sends
+# X-Forwarded-Proto: https for public traffic so these paths stay secure.
+SECURE_REDIRECT_EXEMPT = [r"^health/", r"^api/"]
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_HSTS_SECONDS = 31536000

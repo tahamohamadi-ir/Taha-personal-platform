@@ -1309,6 +1309,17 @@ ode --check و YAML validation توسط agent.
 - Scope / files: `.gitignore` only, this Work Log.
 - Decisions / assumptions: Assets/ committed in LOG-0117 remain in git history (amend not safe on pushed commit); future files in Assets/ will be ignored.
 
+## LOG-0141 - 2026-08-17 - web/prod / P4–P5 routes live + PNG + CMS_API_BASE loopback fix
+
+- Outcome: Production static **`release-82d51c6`** (checksum `bc6c6a1d`) serves 16 pages including `/en|fa/blog/` and `/en|fa/research/` (200). Lists remain honestly empty: no published CMS articles, and loopback `CMS_API_BASE` was broken by `SECURE_SSL_REDIRECT` 301 to `https://127.0.0.1:18000`. This change: (1) renormalize `apps/web/public/*.png` so the PNG signature keeps CR (8075 B); (2) Astro CMS fetch sends `X-Forwarded-Proto: https`; (3) exempt `^api/` from SSL redirect on loopback gunicorn; (4) `smoke-blog.sh` uses mktemp; (5) `build-static-with-cms.sh` fails fast if `npm` is missing.
+- Why: Complete P3/P4 production closeout residuals after RISK-0003 CLOSED and migrate `b369885`.
+- Scope / files: `apps/web/public/{logo,logo-gateway,favicon}.png`, `apps/web/src/lib/cms/{client,articles,research,projects}.ts`, `apps/cms/config/settings/production.py`, `apps/cms/tests/test_production_proxy.py`, `infra/deploy/{smoke-blog,build-static-with-cms}.sh`, ledgers.
+- Commands or actions actually performed: owner Windows `npm run build` + scp `release-82d51c6`; `update-release.sh`; origin curls 200 for blog/research; API loopback with forwarded proto returns `{"items":[],"count":0}`.
+- Verification actually performed and result: loopback `/api/articles/en` + `X-Forwarded-Proto: https` → 200 empty list; without proto → 301 HTTPS; origin logo still 8074 until this PNG commit is deployed.
+- Decisions / assumptions: do not open public Caddy `/api/` (DEFER-0017) in this slice; content populate requires owner Wagtail publish then rebuild.
+- Deferred or risk IDs: DEFER-0017 OPEN; DEFER-0018 RSS OPEN; RISK-0003 CLOSED (LOG-0140).
+- Rollback / recovery: previous `release-6c68cbb` / `release-82d51c6`; previous CMS image `b369885`.
+
 ## LOG-0140 - 2026-08-17 - P3 / RISK-0003 CLOSED (CMS backup + isolated restore)
 
 - Outcome: Owner installed refreshed `/usr/local/sbin/taha-platform-backup` from `cms-repo` `be28671`. `--dry-run` PASS (CMS dump source `taha-cms-db-1`). `systemctl start taha-platform-backup.service` exited 0. restic snapshot `3afdfc96` (2026-08-17 10:39 UTC) tagged `production,cms,postgres`, path `/cms-postgres-all.sql` (~240 KiB). Isolated restore into throwaway `postgres:17-alpine` (`taha-cms-restore-db`); import as `postgres` superuser created database `taha_cms`; `\dt` 75 tables (Wagtail + `content_article`/`content_series`/`content_project` + `security_recoverycode`); `django_migrations` content 0001–0004 and security 0001–0002. Cleanup: `docker rm -f taha-cms-restore-db`, `rm -rf /srv/taha-cms-restore-615721`. **RISK-0003 CLOSED.**
