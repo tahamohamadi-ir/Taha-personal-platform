@@ -64,13 +64,12 @@ try {
         if (desktopWidths.includes(viewport.width)) {
           const wider = await page.evaluate(() => {
             const bio = document.querySelector(".about-bio")?.getBoundingClientRect();
-            const visiblePanel = [...document.querySelectorAll(".about-tab-panel")].find(
-              (panel) =>
-                getComputedStyle(panel).display !== "none" &&
-                getComputedStyle(panel).visibility !== "hidden",
-            );
-            const card = visiblePanel?.querySelector(".entry")?.getBoundingClientRect();
-            if (!bio || !card) return { ok: false, reason: "bio or entry card in visible panel missing" };
+            const card = document
+              .querySelector(".about-evidence .entry")
+              ?.getBoundingClientRect();
+            if (!bio || !card) {
+              return { ok: false, reason: "bio or stacked entry card missing" };
+            }
             return { ok: card.width > bio.width, bioWidth: bio.width, cardWidth: card.width };
           });
           if (wider.ok) {
@@ -83,65 +82,58 @@ try {
           }
         }
 
-        const geometry = await page.evaluate(() => {
-          const controls = document.querySelector(".about-tab-controls");
-          const panels = document.querySelector(".about-tab-panels");
-          const visiblePanels = [...document.querySelectorAll(".about-tab-panel")].filter(
-            (panel) => getComputedStyle(panel).display !== "none",
-          );
-          if (!controls || !panels) {
-            return { ok: false, reason: "tab controls or panels missing" };
+        const stacked = await page.evaluate(() => {
+          const toc = document.querySelector(".about-toc");
+          const evidence = document.querySelector(".about-evidence");
+          const sections = [...document.querySelectorAll(".about-evidence .about-section")];
+          const education = document.querySelector("#education");
+          const educationVisible =
+            !!education &&
+            getComputedStyle(education).display !== "none" &&
+            education.textContent.includes("Sooreh University");
+          if (!toc || !evidence || sections.length < 2) {
+            return {
+              ok: false,
+              reason: "stacked about evidence or fragment nav missing",
+              sectionCount: sections.length,
+            };
           }
-          const controlsRect = controls.getBoundingClientRect();
-          const panelsRect = panels.getBoundingClientRect();
+          const tocRect = toc.getBoundingClientRect();
+          const evidenceRect = evidence.getBoundingClientRect();
+          const allVisible = sections.every(
+            (section) => getComputedStyle(section).display !== "none",
+          );
           return {
-            ok:
-              controlsRect.bottom <= panelsRect.top + 1 &&
-              visiblePanels.length === 1,
-            controlsBottom: controlsRect.bottom,
-            panelsTop: panelsRect.top,
-            visiblePanels: visiblePanels.length,
+            ok: tocRect.bottom <= evidenceRect.top + 1 && allVisible && educationVisible,
+            sectionCount: sections.length,
+            educationVisible,
           };
         });
 
-        if (geometry.ok) {
-          console.log(`PASS geometry ${target.path}@${viewport.width}`);
+        if (stacked.ok) {
+          console.log(`PASS stacked-evidence ${target.path}@${viewport.width} sections=${stacked.sectionCount}`);
         } else {
           failures += 1;
-          console.log(`FAIL geometry ${target.path}@${viewport.width} ${JSON.stringify(geometry)}`);
+          console.log(`FAIL stacked-evidence ${target.path}@${viewport.width} ${JSON.stringify(stacked)}`);
         }
 
-        const radios = page.locator('input[name="about-sections"]');
-        const labels = page.locator(".about-tab-label");
-        const initialCount = await radios.count();
-        if (initialCount < 2) {
-          failures += 1;
-          console.log(`FAIL tabs ${target.path}@${viewport.width} count=${initialCount}`);
-        } else {
-          await radios.nth(0).focus();
-          const direction = await page.locator("html").getAttribute("dir");
-          await page.keyboard.press(direction === "rtl" ? "ArrowLeft" : "ArrowRight");
-          if (!(await radios.nth(1).isChecked())) {
-            await page.keyboard.press("ArrowDown");
-          }
-          if (await radios.nth(1).isChecked()) {
-            console.log(`PASS keyboard ${target.path}@${viewport.width}`);
-          } else {
-            failures += 1;
-            console.log(`FAIL keyboard ${target.path}@${viewport.width}`);
-          }
+        const fragmentNav = await page.evaluate(() => {
+          const link = document.querySelector('.about-toc a[href="#education"]');
+          const target = document.querySelector("#education");
+          return {
+            ok:
+              !!link &&
+              !!target &&
+              link.getAttribute("href") === "#education" &&
+              target.querySelector(".entry") !== null,
+          };
+        });
 
-          await labels.nth(0).click();
-          const firstVisible = await page.locator(".about-tab-panel").nth(0).isVisible();
-          await labels.nth(1).click();
-          const secondVisible = await page.locator(".about-tab-panel").nth(1).isVisible();
-          const firstHidden = !(await page.locator(".about-tab-panel").nth(0).isVisible());
-          if (firstVisible && secondVisible && firstHidden) {
-            console.log(`PASS activation ${target.path}@${viewport.width}`);
-          } else {
-            failures += 1;
-            console.log(`FAIL activation ${target.path}@${viewport.width}`);
-          }
+        if (fragmentNav.ok) {
+          console.log(`PASS fragment-nav ${target.path}@${viewport.width}`);
+        } else {
+          failures += 1;
+          console.log(`FAIL fragment-nav ${target.path}@${viewport.width} ${JSON.stringify(fragmentNav)}`);
         }
 
         const switchPaths = await page

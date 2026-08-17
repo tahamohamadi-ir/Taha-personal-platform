@@ -1,5 +1,18 @@
 # Work Log
 
+## LOG-0145 — 2026-08-17 — P2-H honesty closeout (main-aware)
+
+- Outcome: Hero CTAs → About + CV; perspective cards link to live Research/Projects/Writing; landing adds Current Focus + Selected Evidence from `profile.*`; About stacked with fragment TOC (closes `DEBT-0002`); locale 404 recovery; footer explore links; header `aria-current` + language switch labels. **Header kept Research/Projects/Writing links** because P4–P6 routes are live on `main` (not the pre-P4 fake-live case).
+- Why: Landing still said “later release”; About tabs hid education/research from find-in-page; 404 was bilingual-only; footer lacked explore links.
+- Scope / files: `Header.astro`, `Landing.astro`, `About.astro`, `Footer.astro`, `404.astro`, `content.ts`, `global.css`, `qa/about-tabs.spec.mjs`, `docs/plan/P2-honesty-closeout-task-spec.md`, ledgers.
+- Verification actually performed and result:
+  - `rg "DebugProbe" apps/web/src` → 0 matches
+  - `npm run check` → 0 errors (62 files)
+  - `npm run build` → 16 pages
+  - `node qa/about-tabs.spec.mjs` + `node qa/mobile-overflow.spec.mjs` with `PREVIEW_URL=http://127.0.0.1:8765` → all PASS
+- Deferred or risk IDs: none new. `DEBT-0002` CLOSED. Pre-P4 `KI-0002` never applied on `main`.
+- Rollback / recovery: revert this commit; previous static artifact remains deployable.
+
 ## LOG-0144 — 2026-08-17 — Research index card catalog (filter + sort)
 
 - Outcome: `/en/research/` and `/fa/research/` use CV-style cards (`ResearchCatalog.astro`). Filter by type and sort by type/title/newest. Each card links to the existing detail route. Intro no longer mentions `CMS_API_BASE`. Content remains in HTML without JS; filter/sort enhance via a small script.

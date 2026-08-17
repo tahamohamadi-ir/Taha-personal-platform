@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-08-17 — P2-H honesty closeout (landing, About, 404, footer)
+
+- Hero CTAs point to live About and CV; perspective cards link to Research, Projects, and Writing.
+- Landing adds Current Focus (`profile.availability`) and Selected Evidence from typed profile data.
+- About evidence is stacked with fragment nav (find-in-page without tab clicks); closes `DEBT-0002`.
+- Locale-prefixed 404 pages show single-locale chrome and recovery to home, About, and CV.
+- Footer adds explore links to live locale destinations; header gains `aria-current` and language switch labels.
+
 ## 2026-08-17 — Research index: cards, filter, sort
 
 - Research landing matches CV card layout. Filter (all / statement / topics / projects / publications) and sort (type / title / newest). Card click opens the dedicated page.

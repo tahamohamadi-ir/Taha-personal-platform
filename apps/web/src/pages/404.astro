@@ -4,13 +4,29 @@ import { content } from "../data/content";
 
 const en = content.en;
 const fa = content.fa;
-const title = `${en.notfound.heading} · ${en.name}`;
-const gatewayLabel = `${en.notfound.gatewayLabel} · ${fa.notfound.gatewayLabel}`;
-const actionsLabel = `${en.notfound.gatewayLabel} / ${fa.notfound.gatewayLabel}`;
+
+const pathname = Astro.url.pathname;
+const locale = pathname.startsWith("/fa/") || pathname === "/fa"
+  ? fa
+  : pathname.startsWith("/en/") || pathname === "/en"
+    ? en
+    : null;
+
+const page = locale ?? en;
+const title = locale
+  ? `${page.notfound.heading} · ${page.name}`
+  : `${en.notfound.heading} · ${en.name}`;
+const actionsLabel = locale
+  ? page.notfound.gatewayLabel
+  : `${en.notfound.gatewayLabel} / ${fa.notfound.gatewayLabel}`;
+const skip = locale?.skip ?? en.notfound.skip;
+const homeHref = locale ? `/${page.lang}/` : "/";
+const aboutHref = locale ? `/${page.lang}/about/` : null;
+const cvHref = locale ? `/${page.lang}/cv/` : null;
 ---
 
 <!doctype html>
-<html lang="en" dir="ltr">
+<html lang={locale?.lang ?? "en"} dir={locale?.dir ?? "ltr"}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -20,7 +36,7 @@ const actionsLabel = `${en.notfound.gatewayLabel} / ${fa.notfound.gatewayLabel}`
     <meta name="robots" content="noindex" />
   </head>
   <body class="notfound">
-    <a class="skip-link" href="#main">{en.notfound.skip}</a>
+    <a class="skip-link" href="#main">{skip}</a>
     <svg
       class="notfound-field"
       aria-hidden="true"
@@ -40,15 +56,31 @@ const actionsLabel = `${en.notfound.gatewayLabel} / ${fa.notfound.gatewayLabel}`
       <circle cx="1040" cy="660" r="5" fill="rgba(22,184,166,0.4)" />
     </svg>
     <main class="notfound-panel" id="main">
-      <p class="notfound-code">{en.notfound.code}</p>
+      <p class="notfound-code">{page.notfound.code}</p>
       <h1 class="notfound-title">
-        <span lang="en" dir="ltr">{en.notfound.heading}</span>
-        <span lang="fa" dir="rtl">{fa.notfound.heading}</span>
+        {locale ? (
+          page.notfound.heading
+        ) : (
+          <>
+            <span lang="en" dir="ltr">{en.notfound.heading}</span>
+            <span lang="fa" dir="rtl">{fa.notfound.heading}</span>
+          </>
+        )}
       </h1>
       <nav class="notfound-actions" aria-label={actionsLabel}>
-        <a href="/">{gatewayLabel}</a>
-        <a href="/en/" hreflang="en" lang="en" dir="ltr">{en.notfound.enLabel}</a>
-        <a href="/fa/" hreflang="fa" lang="fa" dir="rtl">{fa.notfound.faLabel}</a>
+        {locale ? (
+          <>
+            <a href={homeHref}>{page.notfound.gatewayLabel}</a>
+            {aboutHref && <a href={aboutHref}>{page.about.heading}</a>}
+            {cvHref && <a href={cvHref}>{page.downloads.heading}</a>}
+          </>
+        ) : (
+          <>
+            <a href="/">{actionsLabel}</a>
+            <a href="/en/" hreflang="en" lang="en" dir="ltr">{en.notfound.enLabel}</a>
+            <a href="/fa/" hreflang="fa" lang="fa" dir="rtl">{fa.notfound.faLabel}</a>
+          </>
+        )}
       </nav>
     </main>
   </body>
