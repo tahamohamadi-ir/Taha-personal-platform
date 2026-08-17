@@ -7,7 +7,7 @@
 - Release type: `STANDARD`
 - Risk level: Medium (new models + projection/redact rules; confidentiality mistake requires immediate unpublish path)
 - Owner and handoff recipient: Project owner (gate) → agent implements → CI → owner review; prod migrate blocked on RISK-0003.
-- Status: `PARTIAL` (code-first complete; prod migrate + content smoke owner / RISK-0003)
+- Status: `PARTIAL` (code-first on `main`; static Astro P5 routes live on prod as empty-honest `release-59bf91e`; prod CMS migrate 0003 + content smoke still owner / RISK-0003)
 
 ## Prerequisites
 

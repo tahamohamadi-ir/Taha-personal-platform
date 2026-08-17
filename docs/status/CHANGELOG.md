@@ -10,6 +10,11 @@
 
 > هر slice واقعی (کد، زیرساخت، مستندات) که در `docs/status/WORK_LOG.md` ثبت می‌شود می‌تواند یک ردیف خلاصه اینجا داشته باشد. Append-only؛ جدیدترین در بالا.
 
+## 2026-08-16 — Production static P4+P5 (`release-59bf91e`)
+
+- Deployed Astro artifact from `origin/main` `59bf91e` (checksum `40472597`); blog/research routes live empty-honest; `/api/`/`/media/` still 404.
+- CMS migrate/image update **stopped** at RISK-0003 + no passwordless Docker for deploy user (`cms-repo` tip still `95a740f`). LOG-0137.
+
 ## 2026-08-16 — P5 Research code-first (no public `/api/`)
 
 - ResearchTopic/Statement/Project/Publication + Wagtail snippets + Ninja published-only API; Astro research routes with optional `CMS_API_BASE`.

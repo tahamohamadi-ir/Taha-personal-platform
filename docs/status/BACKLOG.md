@@ -4,6 +4,7 @@
 
 | ID | Phase | Item | Blocked by / prerequisite | Owner | Evidence |
 |---|---|---|---|---|---|
+| P4+P5 CMS prod | P4–P5 | Pull `cms-repo` to `59bf91e`, `update-cms.sh` image + migrate 0002/0003 | RISK-0003 evidence; owner sudo/docker; chown root-owned security templates | Project owner | LOG-0137; P3-cms-backup-restore-task-spec |
 | P3 versioned CI/CD | P3 | GHCR sha-tagged CMS image + proxy/health fixes + update-cms.sh | merge branch; VPS pull + Caddy snippet + smoke-cms.sh | Project owner | P3-cms-versioned-cicd-task-spec.md, LOG-0120 |
 | P3-07 preview | P3 | Staff draft preview + noindex/no-store | DONE in repo — optional CMS rebuild | Project owner | LOG-0132 |
 | RISK-0003 | P0-A | Install CMS-aware backup script + isolated restore evidence | Owner VPS; P3-cms-backup-restore-task-spec | Project owner | LOG-0130, infra/backup/README.md |
