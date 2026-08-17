@@ -1,5 +1,16 @@
 # Work Log
 
+## LOG-0143 — 2026-08-17 — Public `/api/` + article seed + `release-9ca2f3b`
+
+- Outcome: Owner applied Caddy `/api/*` + `/media/*`; public topics JSON 200. Merged PR #24 (`9ca2f3b`); CMS image `taha-cms:9ca2f3b`; seed `created=4` articles (`skipped=24` prior rows). Static `release-9ca2f3b` checksum `eebe1cc7` (38 pages: blog list + 4 article details fa/en).
+- Why: Close DEFER-0017 and ship seeded writing to the public site.
+- Scope / files: VPS `/etc/caddy/Caddyfile`; CMS DB seed; `/opt/taha/site/current` → `release-9ca2f3b`. Ledgers: deferred-validation, BACKLOG, P3-public-api-caddy-task-spec, this entry.
+- Commands or actions actually performed: owner Caddy insert + reload; `update-cms.sh ghcr.io/tahamohamadi-ir/taha-cms:9ca2f3b`; `seed_site_content`; Windows `CMS_API_BASE` build + `update-release.sh`.
+- Verification actually performed and result: `https://tahamohamadi.ir/api/research/topics/en` 200; `/api/articles/en` 200; `/en/blog/` 200; `/en/blog/pars-sql-vtd-edge-overview/` 200; `/en/research/` 200; `/_astro/logo.YrmYLcZm.png` 200 size 8075.
+- Decisions / assumptions: `/media/` proxied; no published media files yet (Images library still empty until owner uploads).
+- Deferred or risk IDs: DEFER-0017 CLOSED; DEFER-0018 RSS still OPEN; rebuild webhook still disabled.
+- Rollback / recovery: restore `/etc/caddy/Caddyfile.pre-api.*`; `update-release.sh` prior release; pin previous CMS image sha.
+
 ## LOG-0142 — 2026-08-17 — CMS admin UI + article seed + hashed logos + Caddy API apply script
 
 - Outcome: Wagtail **Site content** ModelViewSets for Article/Research/Project/Landing/Profile; seed adds 4 published articles (fa/en); Astro logos imported from `src/assets/branding` (hashed URLs); `infra/deploy/apply-caddy-api.sh` inserts `/api/*` + `/media/*` into production Caddyfile.
