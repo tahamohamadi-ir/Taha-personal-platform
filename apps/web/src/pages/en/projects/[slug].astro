@@ -1,0 +1,92 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../../components/blog/Breadcrumbs.astro";
+import CaseStudyDetail from "../../../components/projects/CaseStudyDetail.astro";
+import { content } from "../../../data/content";
+import {
+  breadcrumbJsonLd,
+  creativeWorkJsonLd,
+  jsonLdScriptContent,
+  validateStructuredData,
+} from "../../../data/structured";
+import { getProject, getProjects } from "../../../lib/cms/projects";
+
+export async function getStaticPaths() {
+  const locale = "en" as const;
+  const projects = await getProjects(locale);
+  return projects.map((project) => ({ params: { slug: project.slug } }));
+}
+
+const locale = "en" as const;
+const pageContent = content[locale];
+const projectsCopy = pageContent.projects;
+const slug = Astro.params.slug as string;
+const project = await getProject(locale, slug);
+if (!project) {
+  return Astro.redirect(`/${locale}/projects/`, 302);
+}
+
+const creative = creativeWorkJsonLd({
+  locale,
+  title: project.title,
+  slug: project.slug,
+  description: project.case_study?.problem || project.objective,
+  license: project.license,
+  publishedAt: project.published_at,
+});
+const structured = [
+  breadcrumbJsonLd([
+    { name: pageContent.name, path: `/${locale}/` },
+    { name: projectsCopy.heading, path: `/${locale}/projects/` },
+    { name: project.title, path: `/${locale}/projects/${project.slug}/` },
+  ]),
+];
+if (creative) structured.push(creative);
+validateStructuredData(...structured);
+const alternateExists = (await getProject("fa", project.slug)) !== null;
+---
+
+<BaseLayout
+  content={{
+    ...pageContent,
+    meta: {
+      title: `${project.title} — ${pageContent.name}`,
+      description: project.case_study?.problem || project.objective || projectsCopy.intro,
+    },
+  }}
+  alternateHref={alternateExists ? `/fa/projects/${project.slug}/` : null}
+>
+  {
+    structured.map((block) => (
+      <script type="application/ld+json" is:inline set:html={jsonLdScriptContent(block)} />
+    ))
+  }
+  <section class="projects-page">
+    <Breadcrumbs
+      items={[
+        { label: pageContent.name, href: `/${locale}/` },
+        { label: projectsCopy.heading, href: `/${locale}/projects/` },
+        { label: project.title },
+      ]}
+    />
+    {!alternateExists && <p class="missing">{projectsCopy.missingTranslation}</p>}
+    <h1>{project.title}</h1>
+    <CaseStudyDetail locale={locale} project={project} copy={projectsCopy} />
+  </section>
+</BaseLayout>
+
+<style>
+  .projects-page {
+    max-width: 44rem;
+    margin-inline: auto;
+    padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem;
+  }
+  .projects-page h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 4vw, 2.4rem);
+    margin: 0 0 0.75rem;
+  }
+  .missing {
+    color: var(--color-ink-muted);
+  }
+</style>

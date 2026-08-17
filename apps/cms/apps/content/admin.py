@@ -8,9 +8,12 @@ from apps.content.models import (
     Article,
     ArticleSlugRedirect,
     Project,
+    ProjectCaseStudyDetails,
     ProjectCollaborator,
+    ProjectDiagram,
     ProjectEvidence,
     ProjectFunding,
+    ProjectScreenshot,
     Publication,
     ResearchStatement,
     ResearchTopic,
@@ -230,6 +233,65 @@ class ProjectViewSet(SnippetViewSet):
     ]
 
 
+class ProjectCaseStudyDetailsViewSet(SnippetViewSet):
+    model = ProjectCaseStudyDetails
+    icon = "doc-full"
+    menu_label = "Project case studies"
+    menu_order = 275
+    list_display = ["project", "depth"]
+    list_filter = ["depth"]
+    search_fields = ["problem", "trade_offs", "outcomes_summary"]
+    panels = [
+        FieldPanel("project"),
+        FieldPanel("depth"),
+        FieldPanel("problem"),
+        FieldPanel("constraints"),
+        FieldPanel("technical_decisions"),
+        FieldPanel("trade_offs"),
+        FieldPanel("outcomes_summary"),
+        FieldPanel("lessons_learned"),
+        FieldPanel("testing_summary"),
+    ]
+
+
+class ProjectDiagramViewSet(SnippetViewSet):
+    model = ProjectDiagram
+    icon = "image"
+    menu_label = "Project diagrams"
+    menu_order = 276
+    list_display = ["title", "project", "version", "visibility"]
+    list_filter = ["visibility"]
+    search_fields = ["title", "alt_text", "long_description"]
+    panels = [
+        FieldPanel("project"),
+        FieldPanel("title"),
+        FieldPanel("version"),
+        FieldPanel("diagram_date"),
+        FieldPanel("alt_text"),
+        FieldPanel("long_description"),
+        FieldPanel("diagram_image"),
+        FieldPanel("visibility"),
+    ]
+
+
+class ProjectScreenshotViewSet(SnippetViewSet):
+    model = ProjectScreenshot
+    icon = "image"
+    menu_label = "Project screenshots"
+    menu_order = 277
+    list_display = ["caption", "project", "visibility"]
+    list_filter = ["visibility"]
+    search_fields = ["caption", "alt_text"]
+    panels = [
+        FieldPanel("project"),
+        FieldPanel("caption"),
+        FieldPanel("alt_text"),
+        FieldPanel("external_url"),
+        FieldPanel("screenshot_image"),
+        FieldPanel("visibility"),
+    ]
+
+
 class ProjectEvidenceViewSet(SnippetViewSet):
     model = ProjectEvidence
     icon = "pick"
@@ -288,6 +350,9 @@ register_snippet(ResearchTopicViewSet)
 register_snippet(ResearchStatementViewSet)
 register_snippet(PublicationViewSet)
 register_snippet(ProjectViewSet)
+register_snippet(ProjectCaseStudyDetailsViewSet)
+register_snippet(ProjectDiagramViewSet)
+register_snippet(ProjectScreenshotViewSet)
 register_snippet(ProjectEvidenceViewSet)
 register_snippet(ProjectCollaboratorViewSet)
 register_snippet(ProjectFundingViewSet)

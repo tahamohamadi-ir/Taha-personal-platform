@@ -513,6 +513,213 @@ class Project(LocalizedContentMixin, LifecycleMixin):
             return self.demo_url or ""
         return ""
 
+    def clean(self) -> None:
+        """P6: featured case study publish gate when extension exists."""
+        from django.core.exceptions import ValidationError
+
+        super().clean()
+        if self.status != LifecycleStatus.PUBLISHED:
+            return
+        try:
+            case_study = self.case_study
+        except ProjectCaseStudyDetails.DoesNotExist:
+            return
+        try:
+            case_study.validate_featured_publish_gate()
+        except ValidationError as exc:
+            raise ValidationError(exc.message_dict) from exc
+
+    def save(self, *args, **kwargs) -> None:
+        if self.status == LifecycleStatus.PUBLISHED:
+            self.full_clean()
+        super().save(*args, **kwargs)
+
+    @property
+    def has_case_study(self) -> bool:
+        try:
+            return self.case_study is not None
+        except ProjectCaseStudyDetails.DoesNotExist:
+            return False
+
+
+class CaseStudyDepth(models.TextChoices):
+    """Case study presentation depth (product §30)."""
+
+    FEATURED = "featured_case_study", "Featured case study"
+    STANDARD = "standard", "Standard"
+    EXPERIMENT = "experiment", "Experiment"
+
+
+class ProjectCaseStudyDetails(models.Model):
+    """Typed case-study extension for canonical Project (P6); no parallel model."""
+
+    project = models.OneToOneField(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="case_study",
+    )
+    depth = models.CharField(
+        max_length=32,
+        choices=CaseStudyDepth.choices,
+        default=CaseStudyDepth.STANDARD,
+    )
+    problem = models.TextField(blank=True)
+    constraints = models.TextField(blank=True)
+    technical_decisions = RichTextField(
+        features=ARTICLE_RICHTEXT_FEATURES,
+        blank=True,
+    )
+    trade_offs = models.TextField(blank=True)
+    outcomes_summary = models.TextField(blank=True)
+    lessons_learned = models.TextField(blank=True)
+    testing_summary = models.TextField(blank=True)
+
+    class Meta:
+        db_table = "content_project_case_study_details"
+
+    def __str__(self) -> str:
+        return f"Case study ({self.project_id})"
+
+    def validate_featured_publish_gate(self) -> None:
+        """Reject publish when featured baseline is incomplete."""
+        from django.core.exceptions import ValidationError
+
+        if self.depth != CaseStudyDepth.FEATURED:
+            return
+        if self.project.status != LifecycleStatus.PUBLISHED:
+            return
+        errors: dict[str, str] = {}
+        if not (self.problem or "").strip():
+            errors["problem"] = (
+                "Required for published featured case studies."
+            )
+        if not (self.project.role or "").strip():
+            errors["role"] = (
+                "Project role is required for published featured case studies."
+            )
+        if not (self.trade_offs or "").strip():
+            errors["trade_offs"] = (
+                "Required for published featured case studies."
+            )
+        if not (self.outcomes_summary or "").strip():
+            errors["outcomes_summary"] = (
+                "Required for published featured case studies."
+            )
+        if not (self.project.license or "").strip():
+            errors["license"] = (
+                "License is required for published featured case studies."
+            )
+        for field in (
+            "code_availability",
+            "data_availability",
+            "demo_availability",
+        ):
+            if not getattr(self.project, field):
+                errors[field] = (
+                    "Availability state is required for published featured case studies."
+                )
+        if errors:
+            raise ValidationError(errors)
+
+    def clean(self) -> None:
+        super().clean()
+        self.validate_featured_publish_gate()
+
+    def save(self, *args, **kwargs) -> None:
+        if self.project.status == LifecycleStatus.PUBLISHED:
+            self.full_clean()
+        super().save(*args, **kwargs)
+
+
+class ProjectDiagram(models.Model):
+    """Architecture diagram metadata for a Project (image admin-only until /media/)."""
+
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="diagrams",
+    )
+    title = models.CharField(max_length=200)
+    version = models.CharField(max_length=50)
+    diagram_date = models.DateField()
+    alt_text = models.TextField(blank=True)
+    long_description = models.TextField(blank=True)
+    diagram_image = models.ForeignKey(
+        "wagtailimages.Image",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+    visibility = models.CharField(
+        max_length=20,
+        choices=EvidenceVisibility.choices,
+        default=EvidenceVisibility.INTERNAL,
+    )
+
+    class Meta:
+        db_table = "content_project_diagram"
+        ordering = ["id"]
+
+    def __str__(self) -> str:
+        return f"{self.title} ({self.project_id})"
+
+    def is_publicly_projectable(self) -> bool:
+        return (
+            self.visibility == EvidenceVisibility.PUBLIC
+            and bool((self.alt_text or "").strip())
+            and bool((self.title or "").strip())
+            and bool((self.version or "").strip())
+            and self.diagram_date is not None
+        )
+
+
+class ProjectScreenshot(models.Model):
+    """Optional screenshot row; no PII/credentials in public projection."""
+
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="screenshots",
+    )
+    caption = models.CharField(max_length=300, blank=True)
+    alt_text = models.TextField(blank=True)
+    external_url = models.URLField(blank=True)
+    screenshot_image = models.ForeignKey(
+        "wagtailimages.Image",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+    visibility = models.CharField(
+        max_length=20,
+        choices=EvidenceVisibility.choices,
+        default=EvidenceVisibility.INTERNAL,
+    )
+
+    class Meta:
+        db_table = "content_project_screenshot"
+        ordering = ["id"]
+
+    def __str__(self) -> str:
+        return f"Screenshot ({self.project_id})"
+
+    def is_publicly_projectable(self) -> bool:
+        return (
+            self.visibility == EvidenceVisibility.PUBLIC
+            and bool((self.alt_text or "").strip())
+            and bool((self.caption or "").strip())
+        )
+
+    def public_external_url(self) -> str:
+        url = (self.external_url or "").strip()
+        if not url or not self.is_publicly_projectable():
+            return ""
+        if url.startswith("http://") or url.startswith("https://"):
+            return url
+        return ""
+
 
 class ProjectEvidence(models.Model):
     """Structured outcome/evidence row for a Project (visibility-gated)."""

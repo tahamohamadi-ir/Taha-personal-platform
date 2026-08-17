@@ -27,7 +27,7 @@ from apps.content.models import (
     TopicTag,
 )
 
-api = NinjaAPI(title="Taha CMS Public API", version="0.3.0")
+api = NinjaAPI(title="Taha CMS Public API", version="0.4.0")
 _BODY_WHITELISTER = Whitelister()
 
 
@@ -273,6 +273,41 @@ class FundingOut(Schema):
     grant_id: str
 
 
+class CaseStudyOut(Schema):
+    """Public case study fields when extension exists."""
+
+    depth: str
+    problem: str
+    constraints: str
+    technical_decisions: str
+    trade_offs: str
+    outcomes_summary: str
+    lessons_learned: str
+    testing_summary: str
+
+    @staticmethod
+    def resolve_technical_decisions(obj) -> str:
+        return sanitize_public_richtext(str(obj.technical_decisions or ""))
+
+
+class DiagramOut(Schema):
+    """Public diagram metadata (no image URL while /media/ is closed)."""
+
+    title: str
+    version: str
+    diagram_date: date
+    alt_text: str
+    long_description: str
+
+
+class ScreenshotOut(Schema):
+    """Public screenshot metadata (no image URL while /media/ is closed)."""
+
+    caption: str
+    alt_text: str
+    external_url: str = ""
+
+
 class ResearchTopicListOut(Schema):
     """Public research topic list card."""
 
@@ -342,6 +377,19 @@ class ProjectListOut(Schema):
     demo_availability: str
     published_at: datetime | None
     updated_at: datetime | None
+    has_case_study: bool = False
+    case_study_depth: str | None = None
+
+    @staticmethod
+    def resolve_has_case_study(obj: Project) -> bool:
+        return obj.has_case_study
+
+    @staticmethod
+    def resolve_case_study_depth(obj: Project) -> str | None:
+        try:
+            return obj.case_study.depth
+        except Exception:
+            return None
 
 
 class ProjectDetailOut(ProjectListOut):
@@ -359,6 +407,9 @@ class ProjectDetailOut(ProjectListOut):
     evidence: list[EvidenceOut] = Field(default_factory=list)
     collaborators: list[CollaboratorOut] = Field(default_factory=list)
     funding: list[FundingOut] = Field(default_factory=list)
+    case_study: CaseStudyOut | None = None
+    diagrams: list[DiagramOut] = Field(default_factory=list)
+    screenshots: list[ScreenshotOut] = Field(default_factory=list)
 
     @staticmethod
     def resolve_code_url(obj: Project) -> str:
@@ -412,6 +463,59 @@ class ProjectDetailOut(ProjectListOut):
             FundingOut(funder=row.funder, grant_id=row.grant_id)
             for row in obj.funding_items.filter(publication_approved=True)
         ]
+
+    @staticmethod
+    def resolve_case_study(obj: Project):
+        try:
+            return obj.case_study
+        except Exception:
+            return None
+
+    @staticmethod
+    def resolve_diagrams(obj: Project) -> list[DiagramOut]:
+        return [
+            DiagramOut(
+                title=row.title,
+                version=row.version,
+                diagram_date=row.diagram_date,
+                alt_text=row.alt_text,
+                long_description=row.long_description,
+            )
+            for row in obj.diagrams.all()
+            if row.is_publicly_projectable()
+        ]
+
+    @staticmethod
+    def resolve_screenshots(obj: Project) -> list[ScreenshotOut]:
+        return [
+            ScreenshotOut(
+                caption=row.caption,
+                alt_text=row.alt_text,
+                external_url=row.public_external_url(),
+            )
+            for row in obj.screenshots.all()
+            if row.is_publicly_projectable()
+        ]
+
+
+def _project_detail_queryset():
+    return Project.objects.public().prefetch_related(
+        "topics",
+        "publications",
+        "evidence_items",
+        "collaborators",
+        "funding_items",
+        "diagrams",
+        "screenshots",
+        "case_study",
+    )
+
+
+def _get_public_project(locale: str, slug: str) -> Project:
+    project = _project_detail_queryset().filter(locale=locale, slug=slug).first()
+    if project is None:
+        raise HttpError(404, "project not found")
+    return project
 
 
 class PublicationListOut(Schema):
@@ -498,13 +602,43 @@ def get_research_statement(request, locale: str, slug: str) -> ResearchStatement
 
 
 @api.get(
+    "/projects/{locale}",
+    response=list[ProjectListOut],
+    summary="List published projects with case study extension (paginated)",
+)
+@paginate(PageNumberPagination, page_size=10)
+def list_projects(request, locale: str, has_case_study: bool = True):
+    qs = Project.objects.public().filter(locale=locale).order_by("-published_at", "slug")
+    if has_case_study:
+        qs = qs.filter(case_study__isnull=False).select_related("case_study")
+    return qs
+
+
+@api.get(
+    "/projects/{locale}/{slug}",
+    response=ProjectDetailOut,
+    summary="Get one published project case study by slug",
+)
+def get_project(request, locale: str, slug: str) -> Project:
+    project = _get_public_project(locale, slug)
+    if not project.has_case_study:
+        raise HttpError(404, "project not found")
+    return project
+
+
+@api.get(
     "/research/projects/{locale}",
     response=list[ProjectListOut],
     summary="List published projects for a locale (paginated)",
 )
 @paginate(PageNumberPagination, page_size=10)
 def list_research_projects(request, locale: str):
-    return Project.objects.public().filter(locale=locale).order_by("-published_at", "slug")
+    return (
+        Project.objects.public()
+        .filter(locale=locale)
+        .select_related("case_study")
+        .order_by("-published_at", "slug")
+    )
 
 
 @api.get(
@@ -513,21 +647,7 @@ def list_research_projects(request, locale: str):
     summary="Get one published project by slug",
 )
 def get_research_project(request, locale: str, slug: str) -> Project:
-    project = (
-        Project.objects.public()
-        .filter(locale=locale, slug=slug)
-        .prefetch_related(
-            "topics",
-            "publications",
-            "evidence_items",
-            "collaborators",
-            "funding_items",
-        )
-        .first()
-    )
-    if project is None:
-        raise HttpError(404, "project not found")
-    return project
+    return _get_public_project(locale, slug)
 
 
 @api.get(

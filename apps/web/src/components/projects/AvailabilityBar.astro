@@ -1,0 +1,66 @@
+---
+import type { ProjectDetailDto } from "../../lib/cms/projects";
+
+interface Props {
+  project: ProjectDetailDto;
+  labels: {
+    codeLabel: string;
+    dataLabel: string;
+    demoLabel: string;
+    availabilityLabel: string;
+  };
+}
+
+const { project, labels } = Astro.props;
+---
+
+<section class="availability-bar" aria-label={labels.availabilityLabel}>
+  <h2>{labels.availabilityLabel}</h2>
+  <ul>
+    <li>
+      {labels.codeLabel}: {project.code_availability}
+      {
+        project.code_url ? (
+          <>
+            {" "}
+            — <a href={project.code_url} rel="noopener noreferrer">{project.code_url}</a>
+          </>
+        ) : null
+      }
+    </li>
+    <li>
+      {labels.dataLabel}: {project.data_availability}
+      {
+        project.data_url ? (
+          <>
+            {" "}
+            — <a href={project.data_url} rel="noopener noreferrer">{project.data_url}</a>
+          </>
+        ) : null
+      }
+    </li>
+    <li>
+      {labels.demoLabel}: {project.demo_availability}
+      {
+        project.demo_url ? (
+          <>
+            {" "}
+            — <a href={project.demo_url} rel="noopener noreferrer">{project.demo_url}</a>
+          </>
+        ) : null
+      }
+    </li>
+  </ul>
+</section>
+
+<style>
+  .availability-bar ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .availability-bar li {
+    margin-bottom: 0.5rem;
+    color: var(--color-ink-muted);
+  }
+</style>
