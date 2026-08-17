@@ -656,18 +656,18 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 ### Task P6-01 — Project presentation extensions
 
-- [ ] extension typed به canonical Project برای problem/role/constraints/decisions/trade-offs/outcomes بساز؛ model موازی ممنوع.
-- [ ] evidence source-backed و code/demo/data state صریح باشد.
+- [x] extension typed به canonical Project برای problem/role/constraints/decisions/trade-offs/outcomes بساز؛ model موازی ممنوع.
+- [x] evidence source-backed و code/demo/data state صریح باشد.
 
 ### Task P6-02 — diagram/media accessibility
 
-- [ ] architecture diagram version/date، alt و long description داشته باشد.
-- [ ] screenshotها PII/credential نداشته و external links safe باشند.
+- [x] architecture diagram version/date، alt و long description داشته باشد.
+- [x] screenshotها PII/credential نداشته و external links safe باشند.
 
 ### Task P6-03 — listing/detail و verification
 
-- [ ] states public/restricted/unavailable، responsive diagram، projection ACL و canonical SEO تست شوند.
-- [ ] هر featured case study acceptance کامل Product Baseline را پاس کند یا published نشود.
+- [x] states public/restricted/unavailable، responsive diagram، projection ACL و canonical SEO تست شوند.
+- [x] هر featured case study acceptance کامل Product Baseline را پاس کند یا published نشود.
 
 ---
 
