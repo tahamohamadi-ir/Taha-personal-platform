@@ -82,6 +82,10 @@ bash infra/deploy/smoke-cms.sh https://tahamohamadi.ir
 # Password must be at least 12 characters (do not bypass validation).
 docker compose -f infra/cms/docker-compose.cms.yml exec cms python manage.py createsuperuser
 
+# One-time (or after static-site content changes): load published CMS rows from repo seed data
+docker compose -f infra/cms/docker-compose.cms.yml exec cms python manage.py seed_site_content
+# Refresh existing canonical slugs: add --force
+
 # After this image is running: Account → Two-factor authentication
 # (or https://tahamohamadi.ir/admin/account/two-factor/) — scan QR, confirm code.
 ```

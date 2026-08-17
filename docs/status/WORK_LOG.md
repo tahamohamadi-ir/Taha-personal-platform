@@ -1522,3 +1522,15 @@ ode --check و YAML validation توسط agent.
 - Decisions / assumptions: the CMS runs on `127.0.0.1:18000` (no public port) and Caddy reverse-proxies `/admin/*` and `/health/*` only; everything else stays on the static site. `.env` never leaves the VPS (secrets generated on-server). `POSTGRES_HOST=db` per compose network. Old repo at `/opt/taha/repository` untouched (decommissioned containers only).
 - Deferred or risk IDs: RISK-0009 stays BLOCKED until the runtime smoke PASS (owner executes deploy scripts); DEFER-0009/0013 unchanged.
 - Rollback / recovery: `docker compose -f infra/cms/docker-compose.cms.yml down` (volumes preserved); restore Caddyfile from the timestamped backup the add-caddy script prints; static site is unaffected either way.
+
+## LOG-0121 — 2026-08-17 — CMS content seed from static site sources
+
+- Outcome: Added idempotent `seed_site_content` management command and canonical payloads in `apps/cms/apps/content/data/site_content.py` mirroring approved static content (`content.ts`, `profile.*.ts`, Master CV). Seeds published fa/en rows for Landing, Profile, ResearchStatement, ResearchTopic (3×2), Publication (3×2), and Project (3×2). No blog articles (no published static writing corpus yet).
+- Why: Production research/blog/project lists were empty because Wagtail had no published rows; build-time CMS fetch needs published API records.
+- Scope / files: `apps/cms/apps/content/data/site_content.py`, `apps/cms/apps/content/management/commands/seed_site_content.py`, `apps/cms/tests/test_seed_site_content.py`, `infra/cms/README.md`, this entry.
+- Commands or actions actually performed: `uv run pytest tests/test_seed_site_content.py -v` → 3 passed; full CMS suite → 155 passed.
+- Verification actually performed and result: seed populates `/api/research/topics/en`, `/api/research/statements/en`, `/api/research/projects/en/pars-sql-vtd-edge` in tests; idempotent without `--force`.
+- Decisions / assumptions: prose copied verbatim from static sources; empty `role` and no case-study extensions until owner-authored P6 depth content exists; articles intentionally omitted.
+- Deferred or risk IDs: owner must run seed on VPS after merge + static rebuild; blog/articles remain empty until writing slice content exists.
+- Rollback / recovery: delete seeded rows in Wagtail admin or re-run with `--force` after editing `site_content.py`; no schema migration.
+
