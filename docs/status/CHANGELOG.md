@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-08-17 — RISK-0003 CLOSED (CMS backup + isolated restore)
+
+- Owner installed refreshed `taha-platform-backup`; `--dry-run` PASS; systemd job SUCCESS; restic snapshot `3afdfc96` tagged `cms,postgres`.
+- Isolated restore into throwaway postgres: import created `taha_cms`; `\dt` 75 tables; content migrations 0001–0004 + security 0001–0002; cleanup PASS (LOG-0140).
+
 ## 2026-08-17 — P6 Projects + case studies (code-first)
 
 - **P6 code-first:** `ProjectCaseStudyDetails` OneToOne extension on canonical `Project`; `ProjectDiagram` and `ProjectScreenshot` with visibility redact; featured case study publish gate (problem/role/trade-offs/outcomes/availability/license). Migration `0004_p6_case_study_models`.

@@ -1,8 +1,8 @@
 # Task Spec — P3 CMS backup + isolated restore evidence (RISK-0003)
 
-**Status:** PARTIAL (repo script updated 2026-08-16; owner VPS evidence pending)  
+**Status:** DONE (owner VPS evidence 2026-08-17; RISK-0003 CLOSED, LOG-0140)  
 **ID:** P3-cms-backup-restore  
-**Related:** RISK-0003, ADR-0010, BACKUP_POLICY, BACKUP_RUNBOOK, LOG-0130
+**Related:** RISK-0003, ADR-0010, BACKUP_POLICY, BACKUP_RUNBOOK, LOG-0130, LOG-0140
 
 ## Goal
 
@@ -29,20 +29,20 @@ in the daily restic set, and record isolated restore/import evidence so
 
 ### Owner (VPS) — required to CLOSE RISK-0003
 
-- [ ] Install refreshed `/usr/local/sbin/taha-platform-backup` and reload systemd.
-- [ ] `taha-platform-backup --dry-run` prints CMS postgres + expected paths.
-- [ ] One successful `systemctl start taha-platform-backup.service` (journal OK).
-- [ ] `restic snapshots` shows a recent snapshot tagged `cms` (do not paste secrets).
-- [ ] Isolated restore rehearsal:
+- [x] Install refreshed `/usr/local/sbin/taha-platform-backup` and reload systemd.
+- [x] `taha-platform-backup --dry-run` prints CMS postgres + expected paths.
+- [x] One successful `systemctl start taha-platform-backup.service` (journal OK).
+- [x] `restic snapshots` shows a recent snapshot tagged `cms` (do not paste secrets).
+- [x] Isolated restore rehearsal:
   1. `RESTORE_DIR=/srv/taha-cms-restore-$$; install -d -m 700 "$RESTORE_DIR"`
   2. `restic restore <id> --target "$RESTORE_DIR"`
   3. Start a disposable postgres:  
-     `docker run -d --name taha-cms-restore-db -e POSTGRES_PASSWORD=temp -e POSTGRES_USER=cms -e POSTGRES_DB=cms postgres:17-alpine`
-  4. Import as the container superuser (pg_dumpall format):  
-     `docker exec -i taha-cms-restore-db psql -U cms < "$RESTORE_DIR/cms-postgres-all.sql"`
-  5. Smoke: `\dt` shows Wagtail/Django tables; then  
+     `docker run -d --name taha-cms-restore-db -e POSTGRES_PASSWORD=temp postgres:17-alpine`
+  4. Import as the container superuser (`pg_dumpall` format):  
+     `docker exec -i taha-cms-restore-db psql -U postgres < dump` (live DB name is `taha_cms`, not `cms`)
+  5. Smoke: `\dt` on `taha_cms` shows Wagtail/Django tables; then  
      `docker rm -f taha-cms-restore-db` and `rm -rf "$RESTORE_DIR"` (owner-confirmed).
-- [ ] Record non-secret evidence in WORK_LOG (commands + PASS/FAIL only).
+- [x] Record non-secret evidence in WORK_LOG (commands + PASS/FAIL only).
 
 ## Validation (repo)
 

@@ -537,7 +537,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 ### Task P3-01 — unlock prerequisites
 
-- [x] `RISK-0003` database import PASS، MFA enforcement و runtime/worker decision freeze شوند. *(MFA + runtime + TOTP on production 2026-08-16 — RISK-0009 CLOSED; `RISK-0003` still OPEN for CMS postgres restore)*
+- [x] `RISK-0003` database import PASS، MFA enforcement و runtime/worker decision freeze شوند. *(MFA + runtime + TOTP on production 2026-08-16 — RISK-0009 CLOSED; RISK-0003 CLOSED 2026-08-17 LOG-0140)*
 - [x] Python 3.12 latest supported patch نصب و project-local `.venv` با `uv` ایجاد شود؛ Hermes interpreter ممنوع. *(3.12.13 + `uv sync`، DEFER-0003 CLOSED، LOG-0107)*
 - [x] exact Django/Wagtail/Ninja/PostgreSQL versions و commands در Manifest pin شوند. *(Django 5.2.9 / Wagtail 7.4.2 / Ninja 1.6.2 / psycopg 3.3.4 + canonical CMS commands، LOG-0107)*
 - [x] auth/media/rich-text/rebuild-trigger/concurrency ADRها پذیرفته شوند. *(ADR-0020..0024، 2026-08-15)*
