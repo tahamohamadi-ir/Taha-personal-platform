@@ -8,8 +8,20 @@ infra/backup/*.service text eol=lf
 infra/backup/*.timer text eol=lf
 infra/backup/*.example text eol=lf
 infra/** text eol=lf
+apps/cms/scripts/** text eol=lf
 
 # CI workflows run on GitHub-hosted Linux runners; frontend source is consumed
 # cross-platform. Keep LF in the repository representation.
 .github/** text eol=lf
 apps/web/** text eol=lf
+
+# PNG (and other binary) signatures include literal CR bytes; never text-normalize.
+apps/web/public/** -text
+*.png binary
+*.ico binary
+*.webp binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.woff binary
+*.woff2 binary

@@ -18,8 +18,11 @@ invented endpoints; builds must never replace the current artifact on failure.
   shared secret, freshness ≤ 5 minutes, gated by `REBUILD_TRIGGER_ENABLED`
   (default `False`) and `REBUILD_TRIGGER_SECRET` (env-only in production).
   Generic 403 on failure (no detail leakage).
-- The actual build hook (calling the Astro pipeline) is wired in the deploy
-  slice, never in this code-first slice.
+- The actual build hook (repo pull + web build + artifact publish) is wired in
+  `infra/deploy/rebuild-static.sh` (loopback `CMS_API_BASE`, atomic
+  `update-release.sh`). Disabled by default at the CMS endpoint until
+  `REBUILD_TRIGGER_ENABLED=True` and the deploy user configures a post-accept
+  caller on the VPS.
 
 ## Consequences
 

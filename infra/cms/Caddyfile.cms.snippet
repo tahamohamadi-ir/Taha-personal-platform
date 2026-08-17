@@ -11,7 +11,9 @@
 # `import taha_application_routes` (or any catch-all file_server). Order matters.
 #
 # Match the live VPS style: `/admin/*` `/static/*` `/health/*` (not bare `/admin*`).
-# Do NOT proxy /api/ or /media/ yet (public API and media remain gated).
+# Do NOT proxy /api/ or /media/ until owner approves DEFER-0017.
+# When approved, merge infra/cms/Caddyfile.cms.api.snippet (see
+# docs/plan/P3-public-api-caddy-task-spec.md) before file_server.
 #
 # After edit: sudo caddy validate --config /etc/caddy/Caddyfile && sudo systemctl reload caddy
 # Keep a timestamped Caddyfile backup before applying.

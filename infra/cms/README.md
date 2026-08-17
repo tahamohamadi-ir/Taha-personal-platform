@@ -33,6 +33,7 @@ served directly from disk by Caddy (lower cost, simpler rollback).
 | `Dockerfile.cms` | Multi-stage image; venv on `PATH`; gunicorn |
 | `docker-compose.cms.yml` | `db` + `cms`; loopback publish `127.0.0.1:18000` |
 | `Caddyfile.cms.snippet` | `/admin*` + `/static*` + `/health/` reverse_proxy fragment |
+| `Caddyfile.cms.api.snippet` | **Optional** `/api*` + `/media*` (DEFER-0017; owner apply) |
 | `.env.example` | Template for server-side `.env` (never commit real secrets) |
 
 ## Image tags
@@ -84,6 +85,21 @@ docker compose -f infra/cms/docker-compose.cms.yml exec cms python manage.py cre
 # After this image is running: Account → Two-factor authentication
 # (or https://tahamohamadi.ir/admin/account/two-factor/) — scan QR, confirm code.
 ```
+
+## Static rebuild with CMS content (P3-08 / P4+)
+
+Loopback build on the VPS (no public `/api/` required):
+
+```bash
+cd /home/deploy/cms-repo
+git pull --ff-only origin main
+bash infra/deploy/rebuild-static.sh
+# build-only: SKIP_DEPLOY=1 bash infra/deploy/rebuild-static.sh
+```
+
+Uses `CMS_API_BASE=http://127.0.0.1:18000` by default. See
+`infra/deploy/build-static-with-cms.sh` and `docs/plan/P3-public-api-caddy-task-spec.md`
+for public-edge builds after DEFER-0017.
 
 Always invoke with `bash infra/deploy/...` (scripts are executable in git, but `bash` avoids Permission denied if the bit was lost on checkout).
 
