@@ -4,10 +4,10 @@
 
 | ID | Phase | Item | Blocked by / prerequisite | Owner | Evidence |
 |---|---|---|---|---|---|
-| P4+P5 CMS prod | P4–P5 | Pull `cms-repo` to `59bf91e`, `update-cms.sh` image + migrate 0002/0003 | RISK-0003 evidence; owner sudo/docker; chown root-owned security templates | Project owner | LOG-0137; P3-cms-backup-restore-task-spec |
+| P4+P5 CMS prod | P4–P5 | Publish CMS content + `rebuild-static.sh` (loopback `CMS_API_BASE`) | RISK-0003 CLOSED; migrate 0002–0004 already on `b369885` | Project owner | LOG-0131, LOG-0140 |
 | P3 versioned CI/CD | P3 | GHCR sha-tagged CMS image + proxy/health fixes + update-cms.sh | merge branch; VPS pull + Caddy snippet + smoke-cms.sh | Project owner | P3-cms-versioned-cicd-task-spec.md, LOG-0120 |
 | P3-07 preview | P3 | Staff draft preview + noindex/no-store | DONE in repo — optional CMS rebuild | Project owner | LOG-0132 |
-| RISK-0003 | P0-A | Install CMS-aware backup script + isolated restore evidence | Owner VPS; P3-cms-backup-restore-task-spec | Project owner | LOG-0130, infra/backup/README.md |
+| RISK-0003 | P0-A | CMS-aware backup + isolated restore | DONE — CLOSED 2026-08-17 | Project owner | LOG-0140 |
 | DEFER-0015 | P3 | TOTP recovery codes + disable/re-enroll | DONE in repo — owner CMS rebuild to use on production | Project owner | LOG-0131 |
 | DEFER-0016 | P3-07 | Public preview share-token | Deferred — staff session is access boundary | Project owner | deferred-validation.md |
 | P3 deploy | P3 | CMS runtime hygiene (password + TOTP) | DONE — RISK-0009 CLOSED 2026-08-16 | Project owner | LOG-0129 |

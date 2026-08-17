@@ -1309,6 +1309,17 @@ ode --check و YAML validation توسط agent.
 - Scope / files: `.gitignore` only, this Work Log.
 - Decisions / assumptions: Assets/ committed in LOG-0117 remain in git history (amend not safe on pushed commit); future files in Assets/ will be ignored.
 
+## LOG-0140 - 2026-08-17 - P3 / RISK-0003 CLOSED (CMS backup + isolated restore)
+
+- Outcome: Owner installed refreshed `/usr/local/sbin/taha-platform-backup` from `cms-repo` `be28671`. `--dry-run` PASS (CMS dump source `taha-cms-db-1`). `systemctl start taha-platform-backup.service` exited 0. restic snapshot `3afdfc96` (2026-08-17 10:39 UTC) tagged `production,cms,postgres`, path `/cms-postgres-all.sql` (~240 KiB). Isolated restore into throwaway `postgres:17-alpine` (`taha-cms-restore-db`); import as `postgres` superuser created database `taha_cms`; `\dt` 75 tables (Wagtail + `content_article`/`content_series`/`content_project` + `security_recoverycode`); `django_migrations` content 0001–0004 and security 0001–0002. Cleanup: `docker rm -f taha-cms-restore-db`, `rm -rf /srv/taha-cms-restore-615721`. **RISK-0003 CLOSED.**
+- Why: Close the CMS-postgres backup/restore gap before treating P3 backup as production-complete.
+- Scope / files: VPS `/usr/local/sbin/taha-platform-backup`; restic snapshot `3afdfc96`; ledgers (this log, RISK_REGISTER, Task Spec, BACKLOG, CHANGELOG, AGENTS.md, Task-list P3-01). No production CMS restart; no `/api/`/`/media/` change.
+- Commands or actions actually performed: owner as root — install script, dry-run, systemd start, restic snapshots `--tag cms`, restore `3afdfc96`, disposable postgres import, `\dt` + migrations query, cleanup.
+- Verification actually performed and result: dry-run OK; service SUCCESS; snapshot tags `cms,postgres`; restore `\dt` 75 rows; migrations 6 rows as listed; `restore_rehearsal PASS`.
+- Decisions / assumptions: live dump database name is `taha_cms` (spec's example `-d cms` does not match production). Import uses `psql -U postgres`, not the CMS role.
+- Deferred or risk IDs: RISK-0003 CLOSED; DEFER-0017 (`/api/`/`/media/`) still OPEN; contact persistence still gated on a later Task Spec.
+- Rollback / recovery: previous `/usr/local/sbin/taha-platform-backup.bak.*` if present; restic snapshot retained in repository.
+
 ## LOG-0137 - 2026-08-16 - ops / P4+P5 static production deploy (CMS migrate gated)
 
 - Outcome: Production static site switched to **`release-59bf91e`** (checksum `40472597`, from `origin/main` tip after PR #17). Live routes `/en|fa/blog/`, `/en|fa/research/` (+ statement) return **200** with **honest empty** lists (`CMS_API_BASE` unset; DEFER-0017). `/health.json` 200, `/health/` CMS `db=ok`, `/admin/login/` Wagtail 200. Public `/api/` and `/media/` remain **404** (static 404 page — not proxied). **CMS image/migrate NOT applied**: `RISK-0003` still OPEN (no VPS CMS-aware backup install + isolated restore evidence); deploy user has no passwordless Docker (`docker.sock` root:docker); `cms-repo` remains at `95a740f` after a failed ff-only pull was reset clean (root-owned `apps/cms/apps/security/templates/security/*` blocked checkout).
