@@ -20,7 +20,7 @@
 | P3-05 rest | P3 | Media rendition contract + archive/inactive race tests | after deploy runtime | Project owner | ADR-0021 |
 | P3-09 | P3 | P3 high-risk verification (migrations forward/fallback, backup/import, permissions, XSS, upload, projection) | deploy runtime | Project owner | Task-list §8 |
 | DEFER-0014 | P3-05 | Media alt-by-locale | media runtime phase | Project owner | deferred-validation.md; Task-list P3-05 note |
-| DEFER-0017 | P4–P6 | Public Caddy `/api/` (blog + research + projects) | Deferred — in-process API + optional build-time CMS_API_BASE only | Project owner | deferred-validation.md |
+| DEFER-0017 | P4–P6 | Public Caddy `/api/` (blog + research + projects) | DONE — CLOSED 2026-08-17 | Project owner | deferred-validation.md; LOG-0143 |
 | DEFER-0018 | P4 | RSS/Atom blog feed | Deferred — SEO/sitemap/JSON-LD shipped without feed | Project owner | deferred-validation.md |
 | DEFER-0019 | P5 | Research Statement PDF | Deferred — rich text only; no `/media/` PDF | Project owner | deferred-validation.md |
 | DEFER-0020 | P5 | Curated collections / complex research graph | Deferred — list/tree only in P5 | Project owner | deferred-validation.md |
