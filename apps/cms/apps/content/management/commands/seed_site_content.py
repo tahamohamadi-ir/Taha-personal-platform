@@ -11,6 +11,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from apps.content.data.site_content import (
+    ARTICLES,
     LANDINGS,
     PROFILES,
     PROJECTS,
@@ -19,6 +20,7 @@ from apps.content.data.site_content import (
     RESEARCH_TOPICS,
 )
 from apps.content.models import (
+    Article,
     Landing,
     LifecycleStatus,
     Profile,
@@ -50,7 +52,7 @@ class SeedCounts:
 class Command(BaseCommand):
     help = (
         "Seed published Landing, Profile, research topics/statements, publications, "
-        "and projects from apps/content/data/site_content.py (static site mirror)."
+        "projects, and articles from apps/content/data/site_content.py (static site mirror)."
     )
 
     def add_arguments(self, parser) -> None:
@@ -88,6 +90,7 @@ class Command(BaseCommand):
                 topic_map,
                 publication_map,
             )
+            self._seed_articles(force, dry_run, published_at, counts)
 
             if dry_run:
                 transaction.set_rollback(True)
@@ -321,4 +324,23 @@ class Command(BaseCommand):
             if missing_topics:
                 raise CommandError(
                     "Some project topic links were missing after seed; re-run with --force."
+                )
+
+    def _seed_articles(self, force, dry_run, published_at, counts: SeedCounts) -> None:
+        for locale_code, rows in ARTICLES.items():
+            for payload in rows:
+                self._upsert(
+                    Article,
+                    lookup={"locale": locale_code, "slug": payload["slug"]},
+                    defaults={
+                        **self._published_defaults(published_at),
+                        "title": payload["title"],
+                        "excerpt": payload["excerpt"],
+                        "body": payload["body"],
+                        "license": payload["license"],
+                    },
+                    force=force,
+                    dry_run=dry_run,
+                    kind="article",
+                    counts=counts,
                 )

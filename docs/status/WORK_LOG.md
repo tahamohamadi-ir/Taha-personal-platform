@@ -1,5 +1,17 @@
 # Work Log
 
+## LOG-0142 — 2026-08-17 — CMS admin UI + article seed + hashed logos + Caddy API apply script
+
+- Outcome: Wagtail **Site content** ModelViewSets for Article/Research/Project/Landing/Profile; seed adds 4 published articles (fa/en); Astro logos imported from `src/assets/branding` (hashed URLs); `infra/deploy/apply-caddy-api.sh` inserts `/api/*` + `/media/*` into production Caddyfile.
+- Why: Owner cannot edit CMS rows from Wagtail Pages; blog empty; public `/api/` still 404 because snippet was never merged; browser logo cache on `/logo.png`.
+- Scope / files: `apps/cms/apps/content/viewsets.py`, `wagtail_hooks.py`, `site_content.py`, `seed_site_content.py`, `tests/test_content_admin.py`, Header/Footer/index.astro, `infra/deploy/apply-caddy-api.sh`, `infra/cms/README.md`.
+- Commands or actions actually performed: `uv run pytest tests/test_content_admin.py tests/test_seed_site_content.py` → 5 passed; `npm run check` → 0 errors.
+- Verification actually performed and result: local tests PASS. Production apply of Caddy + new CMS image pending merge + owner VPS commands.
+- Decisions / assumptions: keep Astro SSG; Wagtail Pages unused; public API is read-only Ninja projection.
+- Deferred or risk IDs: DEFER-0017 closes after `apply-caddy-api.sh` PASS on VPS; rebuild webhook still disabled.
+- Rollback / recovery: restore `/etc/caddy/Caddyfile.pre-api.*`; pin previous CMS image sha; static rollback via `update-release.sh`.
+
+
 > مرجع chronological و append-only برای فعالیت‌های انجام‌شده. برای سیاست و قالب کامل، `docs/governance/DOCUMENTATION_POLICY.md` را بخوانید.
 
 ## قالب entry

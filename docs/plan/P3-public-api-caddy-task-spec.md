@@ -52,20 +52,10 @@ the VPS only (`infra/deploy/build-static-with-cms.sh`).
 ## Caddy apply (owner copy-paste)
 
 ```bash
-# 1. Backup
-sudo cp -a /etc/caddy/Caddyfile "/etc/caddy/Caddyfile.pre-api.$(date -u +%Y%m%dT%H%M%SZ)"
-
-# 2. Insert infra/cms/Caddyfile.cms.api.snippet handles inside tahamohamadi.ir
-#    site block BEFORE import taha_application_routes (same order as admin/static/health)
-
-# 3. Validate + reload
-sudo caddy validate --config /etc/caddy/Caddyfile
-sudo systemctl reload caddy
-
-# 4. Smoke
-bash /home/deploy/cms-repo/infra/deploy/smoke-cms.sh https://tahamohamadi.ir
-bash /home/deploy/cms-repo/infra/deploy/smoke-blog.sh https://tahamohamadi.ir
-curl -sS -o /dev/null -w "%{http_code}\n" https://tahamohamadi.ir/api/articles/en
+cd /home/deploy/cms-repo
+git pull --ff-only origin main
+bash infra/deploy/apply-caddy-api.sh
+curl -fsS https://tahamohamadi.ir/api/research/topics/en | head -c 200
 ```
 
 ## Static rebuild with CMS content (owner, after migrate + publish)
