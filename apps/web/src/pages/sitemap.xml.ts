@@ -6,6 +6,7 @@ import {
   getResearchPublications,
   getResearchTopics,
 } from "../lib/cms/research";
+import { getProjects } from "../lib/cms/projects";
 
 export const prerender = true;
 
@@ -24,6 +25,8 @@ export const GET: APIRoute = async () => {
     "/fa/research/",
     "/en/research/statement/",
     "/fa/research/statement/",
+    "/en/projects/",
+    "/fa/projects/",
   ];
 
   const staticEntries = staticPaths
@@ -72,6 +75,18 @@ export const GET: APIRoute = async () => {
     for (const publication of publications) {
       const path = `/${locale}/research/publications/${publication.slug}/`;
       const lastmod = publication.updated_at ?? publication.published_at;
+      const lastmodTag = lastmod
+        ? `<lastmod>${lastmod.slice(0, 10)}</lastmod>`
+        : "";
+      dynamicEntries.push(
+        `  <url><loc>${new URL(path, site.url).href}</loc>${lastmodTag}<changefreq>monthly</changefreq><priority>0.7</priority></url>`,
+      );
+    }
+
+    const caseStudies = await getProjects(locale);
+    for (const project of caseStudies) {
+      const path = `/${locale}/projects/${project.slug}/`;
+      const lastmod = project.updated_at ?? project.published_at;
       const lastmodTag = lastmod
         ? `<lastmod>${lastmod.slice(0, 10)}</lastmod>`
         : "";

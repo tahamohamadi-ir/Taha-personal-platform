@@ -1,0 +1,87 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../../components/blog/Breadcrumbs.astro";
+import { content } from "../../../data/content";
+import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../data/structured";
+import { getProjects } from "../../../lib/cms/projects";
+
+const locale = "fa" as const;
+const pageContent = content[locale];
+const projectsCopy = pageContent.projects;
+const projects = await getProjects(locale);
+
+const structured = [
+  breadcrumbJsonLd([
+    { name: pageContent.name, path: `/${locale}/` },
+    { name: projectsCopy.heading, path: `/${locale}/projects/` },
+  ]),
+];
+validateStructuredData(...structured);
+---
+
+<BaseLayout
+  content={{
+    ...pageContent,
+    meta: {
+      title: `${projectsCopy.heading} — ${pageContent.name}`,
+      description: projectsCopy.intro,
+    },
+  }}
+  alternateHref="/en/projects/"
+>
+  <script type="application/ld+json" is:inline set:html={jsonLdScriptContent(structured[0])} />
+  <section class="projects-page">
+    <Breadcrumbs
+      items={[
+        { label: pageContent.name, href: `/${locale}/` },
+        { label: projectsCopy.heading },
+      ]}
+    />
+    <h1>{projectsCopy.heading}</h1>
+    <p class="lead">{projectsCopy.intro}</p>
+    {
+      projects.length === 0 ? (
+        <p class="empty">{projectsCopy.empty}</p>
+      ) : (
+        <ul class="project-list">
+          {projects.map((project) => (
+            <li>
+              <a href={`/${locale}/projects/${project.slug}/`}>{project.title}</a>
+              {project.objective ? <p>{project.objective}</p> : null}
+              {project.case_study_depth ? (
+                <p class="depth">{projectsCopy.depthLabel}: {project.case_study_depth}</p>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </section>
+</BaseLayout>
+
+<style>
+  .projects-page {
+    max-width: 44rem;
+    margin-inline: auto;
+    padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem;
+  }
+  .projects-page h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 4vw, 2.4rem);
+    margin: 0 0 0.5rem;
+  }
+  .lead, .empty, .depth {
+    color: var(--color-ink-muted);
+  }
+  .project-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .project-list li {
+    margin-bottom: 1.25rem;
+  }
+  .project-list a {
+    font-weight: 600;
+  }
+</style>
