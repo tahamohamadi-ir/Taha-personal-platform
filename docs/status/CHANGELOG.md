@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-08-17 — P4/P5 routes live + logo PNG + loopback CMS_API_BASE
+
+- Production `release-82d51c6` serves blog/research/projects routes (200). Public `/api/` still 404 (DEFER-0017).
+- PNG signatures renormalized (CR restored). Astro CMS fetch sends `X-Forwarded-Proto: https`; production exempts `^api/` from SSL redirect so loopback builds work. `smoke-blog.sh` no longer writes `/tmp/blog-smoke-body`.
+
 ## 2026-08-17 — RISK-0003 CLOSED (CMS backup + isolated restore)
 
 - Owner installed refreshed `taha-platform-backup`; `--dry-run` PASS; systemd job SUCCESS; restic snapshot `3afdfc96` tagged `cms,postgres`.
