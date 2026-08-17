@@ -1,5 +1,17 @@
 # Work Log
 
+## LOG-0144 — 2026-08-17 — Research index card catalog (filter + sort)
+
+- Outcome: `/en/research/` and `/fa/research/` use CV-style cards (`ResearchCatalog.astro`). Filter by type and sort by type/title/newest. Each card links to the existing detail route. Intro no longer mentions `CMS_API_BASE`. Content remains in HTML without JS; filter/sort enhance via a small script.
+- Why: Long topic paragraphs on the research index were hard to scan; owner asked for the same card pattern as CV with click-through.
+- Scope / files: `ResearchCatalog.astro`, `en|fa/research/index.astro`, `content.ts`, this entry.
+- Commands or actions actually performed: `npm run check` (see verification).
+- Verification actually performed and result: `npm run check` → 0 errors (62 files).
+- Decisions / assumptions: no new CMS fields; reuse existing topics/projects/publications/statement routes.
+- Deferred or risk IDs: none.
+- Rollback / recovery: revert this commit; previous list markup returns.
+
+
 ## LOG-0142 — 2026-08-17 — CMS admin UI + article seed + hashed logos + Caddy API apply script
 
 - Outcome: Wagtail **Site content** ModelViewSets for Article/Research/Project/Landing/Profile; seed adds 4 published articles (fa/en); Astro logos imported from `src/assets/branding` (hashed URLs); `infra/deploy/apply-caddy-api.sh` inserts `/api/*` + `/media/*` into production Caddyfile.

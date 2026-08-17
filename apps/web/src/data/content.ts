@@ -69,6 +69,13 @@ export interface LocaleContent {
     contactNote: string;
     missingTranslation: string;
     caseStudyLinkLabel: string;
+    filterLabel: string;
+    sortLabel: string;
+    filterAll: string;
+    sortKind: string;
+    sortTitle: string;
+    sortNewest: string;
+    viewLabel: string;
   };
   projects: {
     heading: string;
@@ -210,7 +217,7 @@ export const content: Record<LocaleCode, LocaleContent> = {
     research: {
       heading: "Research",
       intro:
-        "Research topics, statement, projects and publications from the CMS. When CMS_API_BASE is not set for this build, lists stay empty.",
+        "Topics, statement, projects, and publications. Open a card for the full page.",
       empty: "No published research items are available in this build.",
       topicsHeading: "Topics",
       statementHeading: "Research statement",
@@ -230,6 +237,13 @@ export const content: Record<LocaleCode, LocaleContent> = {
         "For collaboration inquiries, see About. A contact form is not published yet.",
       missingTranslation: "This research page is not yet translated into Persian.",
       caseStudyLinkLabel: "View full case study",
+      filterLabel: "Filter",
+      sortLabel: "Sort",
+      filterAll: "All",
+      sortKind: "Type",
+      sortTitle: "Title",
+      sortNewest: "Newest",
+      viewLabel: "View",
     },
     projects: {
       heading: "Projects",
@@ -373,7 +387,7 @@ export const content: Record<LocaleCode, LocaleContent> = {
     research: {
       heading: "پژوهش",
       intro:
-        "موضوع‌ها، بیانیه، پروژه‌ها و انتشارات پژوهشی از CMS. اگر CMS_API_BASE برای این build تنظیم نشده باشد، فهرست‌ها خالی می‌مانند.",
+        "موضوع‌ها، بیانیه، پروژه‌ها و انتشارات. برای صفحهٔ کامل، روی کارت بزنید.",
       empty: "در این build هیچ مورد پژوهشی منتشرشده‌ای در دسترس نیست.",
       topicsHeading: "موضوع‌ها",
       statementHeading: "بیانیهٔ پژوهشی",
@@ -393,6 +407,13 @@ export const content: Record<LocaleCode, LocaleContent> = {
         "برای همکاری، صفحهٔ درباره را ببینید. فرم تماس هنوز منتشر نشده است.",
       missingTranslation: "این صفحهٔ پژوهشی هنوز به انگلیسی ترجمه نشده است.",
       caseStudyLinkLabel: "مشاهدهٔ مطالعهٔ موردی کامل",
+      filterLabel: "فیلتر",
+      sortLabel: "مرتب‌سازی",
+      filterAll: "همه",
+      sortKind: "نوع",
+      sortTitle: "عنوان",
+      sortNewest: "جدیدترین",
+      viewLabel: "مشاهده",
     },
     projects: {
       heading: "پروژه‌ها",

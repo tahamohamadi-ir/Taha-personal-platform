@@ -1,0 +1,317 @@
+---
+import type { LocaleContent } from "../data/content";
+import type { LocaleCode } from "../data/site";
+import type {
+  ProjectListDto,
+  PublicationListDto,
+  ResearchStatementDto,
+  ResearchTopicListDto,
+} from "../lib/cms/research";
+
+export interface Props {
+  locale: LocaleCode;
+  content: LocaleContent;
+  statement: ResearchStatementDto | null;
+  topics: ResearchTopicListDto[];
+  projects: ProjectListDto[];
+  publications: PublicationListDto[];
+}
+
+type Kind = "statement" | "topic" | "project" | "publication";
+
+interface CatalogCard {
+  kind: Kind;
+  kindLabel: string;
+  title: string;
+  excerpt: string;
+  href: string;
+  publishedAt: string | null;
+  sortKey: string;
+}
+
+function excerptFrom(text: string, max = 180): string {
+  const clean = text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  if (clean.length <= max) return clean;
+  return `${clean.slice(0, max).trimEnd()}…`;
+}
+
+function dateLabel(iso: string | null): string {
+  if (!iso) return "";
+  return iso.slice(0, 10);
+}
+
+const { locale, content, statement, topics, projects, publications } = Astro.props;
+const research = content.research;
+
+const kindLabels: Record<Kind, string> = {
+  statement: research.statementHeading,
+  topic: research.topicsHeading,
+  project: research.projectsHeading,
+  publication: research.publicationsHeading,
+};
+
+const cards: CatalogCard[] = [];
+
+if (statement) {
+  cards.push({
+    kind: "statement",
+    kindLabel: kindLabels.statement,
+    title: statement.title,
+    excerpt: excerptFrom(statement.body),
+    href: `/${locale}/research/statement/`,
+    publishedAt: statement.published_at,
+    sortKey: `0-${statement.title}`,
+  });
+}
+
+for (const topic of topics) {
+  cards.push({
+    kind: "topic",
+    kindLabel: kindLabels.topic,
+    title: topic.title,
+    excerpt: excerptFrom(topic.summary),
+    href: `/${locale}/research/topics/${topic.slug}/`,
+    publishedAt: topic.published_at,
+    sortKey: `1-${topic.title}`,
+  });
+}
+
+for (const project of projects) {
+  cards.push({
+    kind: "project",
+    kindLabel: kindLabels.project,
+    title: project.title,
+    excerpt: excerptFrom(project.objective),
+    href: `/${locale}/research/projects/${project.slug}/`,
+    publishedAt: project.published_at,
+    sortKey: `2-${project.title}`,
+  });
+}
+
+for (const pub of publications) {
+  const byline = [pub.authors, pub.venue].filter(Boolean).join(" — ");
+  cards.push({
+    kind: "publication",
+    kindLabel: kindLabels.publication,
+    title: pub.title,
+    excerpt: excerptFrom(byline),
+    href: `/${locale}/research/publications/${pub.slug}/`,
+    publishedAt: pub.published_at,
+    sortKey: `3-${pub.title}`,
+  });
+}
+
+cards.sort((a, b) => a.sortKey.localeCompare(b.sortKey, locale));
+---
+
+<div class="research-catalog" data-research-catalog>
+  <div class="research-toolbar">
+    <label class="research-control">
+      <span>{research.filterLabel}</span>
+      <select data-research-filter>
+        <option value="all">{research.filterAll}</option>
+        <option value="statement">{research.statementHeading}</option>
+        <option value="topic">{research.topicsHeading}</option>
+        <option value="project">{research.projectsHeading}</option>
+        <option value="publication">{research.publicationsHeading}</option>
+      </select>
+    </label>
+    <label class="research-control">
+      <span>{research.sortLabel}</span>
+      <select data-research-sort>
+        <option value="kind">{research.sortKind}</option>
+        <option value="title">{research.sortTitle}</option>
+        <option value="newest">{research.sortNewest}</option>
+      </select>
+    </label>
+  </div>
+  <ul class="research-list" data-research-list>
+    {
+      cards.map((card) => (
+        <li
+          class="research-item"
+          data-kind={card.kind}
+          data-title={card.title}
+          data-published={card.publishedAt ?? ""}
+          data-sort-key={card.sortKey}
+        >
+          <a class="research-card" href={card.href}>
+            <div class="research-copy">
+              <p class="research-kind">{card.kindLabel}</p>
+              <p class="research-title">{card.title}</p>
+              {card.excerpt ? <p class="research-note">{card.excerpt}</p> : null}
+              {card.publishedAt ? (
+                <p class="research-meta">{dateLabel(card.publishedAt)}</p>
+              ) : null}
+            </div>
+            <span class="research-cta">{research.viewLabel}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<script>
+  function bindCatalog(root: HTMLElement) {
+    const list = root.querySelector<HTMLElement>("[data-research-list]");
+    const filter = root.querySelector<HTMLSelectElement>("[data-research-filter]");
+    const sort = root.querySelector<HTMLSelectElement>("[data-research-sort]");
+    if (!list || !filter || !sort) return;
+
+    const items = Array.from(list.querySelectorAll<HTMLElement>(":scope > li"));
+
+    const apply = () => {
+      const kind = filter.value;
+      const mode = sort.value;
+      const visible = items.filter((item) => {
+        const match = kind === "all" || item.dataset.kind === kind;
+        item.hidden = !match;
+        return match;
+      });
+
+      visible.sort((a, b) => {
+        if (mode === "title") {
+          return (a.dataset.title ?? "").localeCompare(b.dataset.title ?? "", undefined, {
+            sensitivity: "base",
+          });
+        }
+        if (mode === "newest") {
+          return (b.dataset.published ?? "").localeCompare(a.dataset.published ?? "");
+        }
+        return (a.dataset.sortKey ?? "").localeCompare(b.dataset.sortKey ?? "");
+      });
+
+      for (const item of visible) {
+        list.appendChild(item);
+      }
+    };
+
+    filter.addEventListener("change", apply);
+    sort.addEventListener("change", apply);
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-research-catalog]").forEach(bindCatalog);
+</script>
+
+<style>
+  .research-catalog {
+    margin-top: 1.5rem;
+  }
+
+  .research-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .research-control {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-ink-secondary);
+  }
+
+  .research-control select {
+    min-height: 2.75rem;
+    min-width: 10rem;
+    padding-inline: 0.75rem;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+    font: inherit;
+  }
+
+  .research-control select:focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+
+  .research-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .research-item[hidden] {
+    display: none;
+  }
+
+  .research-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    padding: 1.5rem;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface);
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .research-card:hover {
+    border-color: var(--color-brand);
+  }
+
+  .research-card:focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 3px;
+  }
+
+  .research-copy {
+    min-width: 0;
+    flex: 1 1 16rem;
+  }
+
+  .research-kind {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-brand);
+  }
+
+  .research-title {
+    margin: 0.35rem 0 0;
+    font-weight: 700;
+    font-size: 1.125rem;
+  }
+
+  .research-note {
+    margin: 0.375rem 0 0;
+    color: var(--color-ink-secondary);
+    max-width: 62ch;
+  }
+
+  .research-meta {
+    margin: 0.5rem 0 0;
+    font-size: 0.8rem;
+    color: var(--color-ink-tertiary);
+  }
+
+  .research-cta {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding-inline: 1.25rem;
+    border-radius: var(--radius-md);
+    background-color: var(--color-navy-950);
+    color: var(--color-inverse);
+    font-weight: 600;
+    flex: none;
+  }
+
+  .research-card:hover .research-cta {
+    background-color: var(--color-brand);
+    color: var(--color-navy-950);
+  }
+</style>

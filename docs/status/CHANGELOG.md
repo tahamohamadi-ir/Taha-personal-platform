@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-08-17 — Research index: cards, filter, sort
+
+- Research landing matches CV card layout. Filter (all / statement / topics / projects / publications) and sort (type / title / newest). Card click opens the dedicated page.
+
+
 ## 2026-08-17 — Wagtail Site content admin + article seed + hashed logos
 
 - Wagtail admin menu **Site content** edits Django content models (Articles, Research, Projects). Not Wagtail Pages.
