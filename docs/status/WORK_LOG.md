@@ -1309,6 +1309,17 @@ ode --check و YAML validation توسط agent.
 - Scope / files: `.gitignore` only, this Work Log.
 - Decisions / assumptions: Assets/ committed in LOG-0117 remain in git history (amend not safe on pushed commit); future files in Assets/ will be ignored.
 
+## LOG-0137 - 2026-08-17 - P6 / Projects + case studies code-first
+
+- Outcome: P6 case studies on canonical `Project`: `ProjectCaseStudyDetails` OneToOne, `ProjectDiagram`/`ProjectScreenshot` FK rows, featured publish gate, Wagtail snippet admin, Ninja `/api/projects/{locale}` (+ extended research project DTO with `has_case_study`), Astro `/{locale}/projects/*` with research cross-link, sitemap + BreadcrumbList + optional `CreativeWork` JSON-LD. No infra/Caddy `/api/`/`/media/`. DEFER-0017 scope expanded to projects; DEFER-0021 (live demo embed) recorded.
+- Why: Execute approved P6 plan after P5 merge on `origin/main`; code-first with honest empty lists when `CMS_API_BASE` unset.
+- Scope / files: `apps/cms/apps/content/{models,admin,migrations/0004_*}`, `apps/cms/apps/api/api.py`, `apps/cms/tests/test_{case_study,api_case_study}.py`, `apps/web/src/{lib/cms/projects.ts,components/projects,pages/*/projects,data,Header,sitemap,structured}`, research project cross-link pages, Task Spec + ledgers, Task-list §11.
+- Commands or actions actually performed: `makemigrations 0004_p6_case_study_models`; `ruff check` clean; `pytest` **152 passed**; `npm ci`; `npm run check` 0 errors; `npm run build` **16 pages** (includes `/en|fa/projects/`).
+- Verification actually performed and result: featured publish gate tests; diagram/screenshot redact tests; API forbidden-field tests; XSS sanitizer on `technical_decisions`; draft 404. Independent security review **Approve-with-notes** (manual): no draft/media URL leak; external URLs http(s)-only; `set:html` matches P4/P5 pattern — admin PII help text remains editorial responsibility.
+- Decisions / assumptions: no parallel Project model; diagram images admin-only until `/media/` Task Spec; live demo iframe out of scope (DEFER-0021).
+- Deferred or risk IDs: DEFER-0017 OPEN (blog+research+projects); DEFER-0021 OPEN; RISK-0003 OPEN (owner prod migrate 0003+0004).
+- Rollback / recovery: revert P6 commits; reverse migration 0004 only in non-prod.
+
 ## LOG-0136 - 2026-08-16 - P5 / Research code-first (models, admin, API, Astro, SEO)
 
 - Outcome: P5 Research implemented code-first without opening public Caddy `/api/` or `/media/`. Models + migration `0003_p5_research_models` (ResearchTopic, ResearchStatement, Project, Publication, evidence/collaborator/funding); Wagtail snippets; Ninja research endpoints with redact/draft exclusion; Astro `/{locale}/research/*` with optional `CMS_API_BASE` (honest empty); breadcrumbs + ScholarlyArticle only with real DOI/URL; sitemap research URLs. Security review Approve (no medium+). DEFER-0017 kept (blog+research edge); DEFER-0019/0020 recorded. About static `researchProjects` untouched.
