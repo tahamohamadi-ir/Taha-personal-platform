@@ -60,5 +60,8 @@ Assets/
 .worktrees/
 worktrees/
 
+# graphify pipeline outputs (regenerate with /graphify)
+graphify-out/
+
 # Local editor/agent tooling state
 .serena/

@@ -585,14 +585,14 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 ### Task P3-08 — CMS→Astro publish/rebuild
 
 - [x] manual rebuild/deploy fallback ابتدا کار کند. *(`apps/cms/scripts/manual-rebuild.sh` + سرو شدن artifact قبلی روی failure — مطابق DEPLOY_RUNBOOK)*
-- [x] signed automatic trigger فقط بعد از auth/replay/rate/failure design اضافه شود. *(HMAC + freshness ≤5min + disabled default؛ hook واقعی در deploy slice)*
-- [ ] publish موفق CMS و build شکست‌خورده به‌صورت صریح stale state نشان دهند. *(نیازمند deploy)*
-- [ ] previous public artifact روی build failure باقی بماند. *(قرارداد DEPLOY_RUNBOOK؛ آزمون بعد از deploy)*
+- [x] signed automatic trigger فقط بعد از auth/replay/rate/failure design اضافه شود. *(HMAC + freshness ≤5min + disabled default; `rebuild-static.sh` deploy slice wired — ADR-0023)*
+- [ ] publish موفق CMS و build شکست‌خورده به‌صورت صریح stale state نشان دهند. *(runbook: previous release retained; owner smoke after first rebuild-static)*
+- [x] previous public artifact روی build failure باقی بماند. *(`update-release.sh` only after successful build; prior release on disk — LOG-0139)*
 
 ### Task P3-09 — P3 high-risk verification/release
 
-- [ ] migrations forward/fallback، backup/import، lifecycle، permissions، XSS، upload و projection integration tests PASS. *(code-level PASS؛ integration روی runtime باقی است)*
-- [ ] staging با admin کم‌دسترسی و کامل، preview، publish، archive و public build smoke شود.
+- [ ] migrations forward/fallback، backup/import، lifecycle، permissions، XSS، upload و projection integration tests PASS. *(152 pytest PASS code-level; VPS migrate + rebuild-static owner — RISK-0003)*
+- [ ] staging با admin کم‌دسترسی و کامل، preview، publish، archive و public build smoke شود. *(production-only per ADR-0025; owner: migrate + rebuild-static + smoke-blog)*
 - [x] production admin فقط پس از owner approval، MFA و rollback آماده exposed شود. *(Wagtail admin + TOTP live; RISK-0009 CLOSED LOG-0129)*
 
 ---
@@ -622,7 +622,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 ### Task P4-05 — verification/release
 
 - [x] draft exclusion، XSS allowlist، invalid filter، pagination/order، redirects تست شوند. *(122 pytest PASS; ruff clean; `npm run check` + build with empty CMS)*
-- [ ] staging/prod list/detail/cache invalidation smoke و rollback unpublish/invalidate ثبت شود. *(needs owner CMS rebuild + migrate + optional CMS_API_BASE build; no Caddy `/api/` — DEFER-0017)*
+- [ ] staging/prod list/detail/cache invalidation smoke و rollback unpublish/invalidate ثبت شود. *(owner: RISK-0003 → migrate → `rebuild-static.sh` → `smoke-blog.sh`; DEFER-0017 for public `/api/` edge)*
 
 ---
 

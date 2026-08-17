@@ -1320,6 +1320,17 @@ ode --check و YAML validation توسط agent.
 - Deferred or risk IDs: RISK-0003 OPEN (blocker for migrate 0002/0003/0004); DEFER-0017 OPEN; cms-repo ownership/chown owner; Docker group or interactive sudo for `update-cms.sh`.
 - Rollback / recovery: `sudo -n /opt/taha/bin/update-release.sh /home/deploy/taha-stage/release-aae2cb9` (previous artifact retained under `/opt/taha/site/releases/`).
 
+## LOG-0139 - 2026-08-17 - P3/P4 closeout — rebuild wiring, API Caddy spec, deploy ops
+
+- Outcome: P3/P4 repo closure slice on `feat/p3-p4-closeout` from `origin/main`: wired CMS→Astro rebuild (`build-static-with-cms.sh`, `rebuild-static.sh`, updated `manual-rebuild.sh`); optional public `/api/`/`/media/` Caddy fragment + `P3-public-api-caddy-task-spec.md` (DEFER-0017); VPS CMS migrate helpers (`prod-cms-update-migrate.sh`, `prod-cms-reset-and-migrate.sh`, `install-update-cms-sudo.sh`, `run-prod-cms-migrate.ps1`); blog smoke (`smoke-blog.sh`); Astro `CMS_API_BASE` env schema; `.gitattributes` PNG binary guard. P4 code-first already on main (PR #14–16); RSS remains DEFER-0018.
+- Why: Complete agent-executable P3/P4 closure without owner VPS steps; document exact owner commands for RISK-0003, migrate, Caddy apply, and content-populated static rebuild.
+- Scope / files: `infra/deploy/*`, `infra/cms/Caddyfile.cms*.snippet`, `apps/cms/scripts/manual-rebuild.sh`, `apps/web/astro.config.mjs`, `.gitattributes`, `docs/plan/P3-public-api-caddy-task-spec.md`, `docs/adr/0023-p3-rebuild-trigger.md`, Task-list §8–9, deferred-validation, AGENTS, WORK_LOG.
+- Commands or actions actually performed: local worktree edits; validation below.
+- Verification actually performed and result: `bash -n` PASS on new deploy scripts (after LF normalize); `uv run ruff check` clean; `pytest -q` **152 passed**; `npm run check` 0 errors; `npm run build` **16 pages** (blog/research/projects routes, empty CMS).
+- Decisions / assumptions: loopback `CMS_API_BASE=http://127.0.0.1:18000` avoids public `/api/` until DEFER-0017 owner apply; `rebuild-static.sh` does not enable `REBUILD_TRIGGER_ENABLED` automatically.
+- Deferred or risk IDs: RISK-0003 OPEN (owner backup + restore); DEFER-0017 OPEN (owner Caddy apply); DEFER-0018 OPEN (RSS); P4-05 prod smoke owner after migrate.
+- Rollback / recovery: revert this branch; Caddy/API snippet not applied until owner action; static `current` unchanged until owner runs `rebuild-static.sh`.
+
 ## LOG-0138 - 2026-08-17 - P6 / Projects + case studies code-first
 
 - Outcome: P6 case studies on canonical `Project`: `ProjectCaseStudyDetails` OneToOne, `ProjectDiagram`/`ProjectScreenshot` FK rows, featured publish gate, Wagtail snippet admin, Ninja `/api/projects/{locale}` (+ extended research project DTO with `has_case_study`), Astro `/{locale}/projects/*` with research cross-link, sitemap + BreadcrumbList + optional `CreativeWork` JSON-LD. No infra/Caddy `/api/`/`/media/`. DEFER-0017 scope expanded to projects; DEFER-0021 (live demo embed) recorded.
