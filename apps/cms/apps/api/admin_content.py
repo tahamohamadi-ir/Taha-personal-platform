@@ -21,6 +21,7 @@ from ninja import Field, Router, Schema
 from apps.api.admin_common import (
     AdminError,
     _check_csrf,
+    _client_ip,
     _require_admin_otp,
 )
 from apps.content.models import (
@@ -32,6 +33,7 @@ from apps.content.models import (
     ResearchStatement,
     ResearchTopic,
 )
+from apps.security.models import AuditLog
 
 content_router = Router()
 
@@ -47,6 +49,17 @@ ENTITY_MODELS = {
 
 VALID_LOCALES = ("fa", "en")
 VALID_STATUSES = ("draft", "review", "published", "archived")
+
+# Allowed lifecycle transitions per current status (ADM-4). Statuses not listed
+# are terminal for a given transition; every row starts at "draft".
+ALLOWED_TRANSITIONS = {
+    "draft": {"review", "published", "archived"},
+    "review": {"draft", "published", "archived"},
+    "published": {"archived"},
+    "archived": {"draft"},
+}
+
+TRANSITION_REASON_MAX = 500
 
 # Sentinel returned by _coerce_field_value for blank numeric fields so the
 # caller leaves the field unchanged instead of failing on an empty string.
@@ -358,6 +371,13 @@ class ContentUpdateIn(Schema):
     fields: dict[str, object] | None = None
 
 
+class ContentTransitionIn(Schema):
+    """Lifecycle transition request (ADM-4)."""
+
+    to: str
+    reason: str | None = None
+
+
 def _detail_response(item, model, entity: str) -> ContentDetailOut:
     """Serialize an entity row into the shared detail envelope."""
     fields: dict[str, object] = {
@@ -568,6 +588,63 @@ def content_update(request, entity: str, id: int, payload: ContentUpdateIn):
                 raise AdminError(
                     409, "DUPLICATE", "A record with this locale and slug already exists."
                 ) from None
+    except model.DoesNotExist:
+        raise AdminError(404, "NOT_FOUND", "Content not found.") from None
+    return _detail_response(item, model, entity)
+
+
+@content_router.post(
+    "/{entity}/{id}/transition",
+    response=ContentDetailOut,
+    summary="Transition content lifecycle state.",
+)
+def content_transition(request, entity: str, id: int, payload: ContentTransitionIn):
+    _require_admin_otp(request)
+    _check_csrf(request)
+    model = ENTITY_MODELS.get(entity)
+    if model is None:
+        raise AdminError(404, "NOT_FOUND", "Unknown content entity.")
+    if payload.to not in VALID_STATUSES:
+        raise AdminError(
+            400,
+            "VALIDATION",
+            f"Invalid status. Expected one of: {', '.join(VALID_STATUSES)}.",
+        )
+    reason = (payload.reason or "").strip()[:TRANSITION_REASON_MAX]
+    try:
+        with transaction.atomic():
+            # Row lock (Postgres) so concurrent transitions cannot both
+            # validate against the same stale status; audit is written in the
+            # same transaction as the status change.
+            item = model.objects.select_for_update().get(pk=id)
+            old_status = item.status
+            if payload.to not in ALLOWED_TRANSITIONS.get(old_status, set()):
+                raise AdminError(
+                    400,
+                    "VALIDATION",
+                    f"Invalid transition from {old_status} to {payload.to}.",
+                )
+            item.status = payload.to
+            if (
+                payload.to == "published"
+                and hasattr(model, "published_at")
+                and item.published_at is None
+            ):
+                item.published_at = timezone.now()
+            try:
+                item.save()
+            except IntegrityError:
+                raise AdminError(
+                    409, "DUPLICATE", "A record with this locale and slug already exists."
+                ) from None
+            AuditLog.objects.create(
+                user=request.user,
+                action=f"lifecycle.{old_status}->{payload.to}",
+                model_name=entity,
+                object_id=str(id),
+                ip=_client_ip(request),
+                detail=f"reason={reason}",
+            )
     except model.DoesNotExist:
         raise AdminError(404, "NOT_FOUND", "Content not found.") from None
     return _detail_response(item, model, entity)
