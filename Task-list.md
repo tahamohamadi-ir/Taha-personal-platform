@@ -804,7 +804,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 ### Task ADM-1 — Admin foundation (real working admin)
 
 - [x] Ninja admin auth: `/api/v1/admin/auth/csrf|login|me|logout` با session+CSRF (با TOTP/recovery؛ CSRF صریح؛ rate-limit و AuditLog). *(2026-08-18: `apps/api/admin_api.py` + 13 pytest — LOG-0156)*
-- [ ] CRUD کامل Landing/Profile/Article + مدل‌های P4–P6 (projection published-only سمت عمومی دست نمی‌خورد). *(2026-08-18: read-side list/detail برای ۷ entity در `/api/v1/admin/content/*` + صفحات فهرست/جزئیات در SPA — LOG-0157؛ write/update هنوز باقی)*
+- [x] CRUD کامل Landing/Profile/Article + مدل‌های P4–P6 (projection published-only سمت عمومی دست نمی‌خورد). *(2026-08-18: read-side list/detail (LOG-0157) + write (create/update با If-Match optimistic lock) برای ۷ entity در `/api/v1/admin/content/*` + صفحات فهرست/جزئیات/ویرایش در SPA — LOG-0158)*
 - [x] پوسته‌ی React SPA: لاگین، سایدبار گروه‌بندی‌شده، داشبورد action-oriented (کارت‌های شمارش از `/dashboard/summary`), RTL/فارسی (Vazirmatn). *(2026-08-18: اسکفولد `apps/cms/admin-frontend/`، build و type-check در CI — LOG-0156؛ هنوز لیست/فرم entity ندارد)*
 - [ ] سرویسلایه: logic در service ها (transactional)، views نازک، schema سمت سرور — الگوی conventions نمونه. *(§14 S1)*
 - [x] خطاهای یکنواخت Problem Details: `{status, code, message, fields[]}` + کدهای AUTH_REQUIRED/FORBIDDEN/OTP_REQUIRED/AUTH_FAILED/CSRF_FAILED/RATE_LIMITED. *(بخش auth — LOG-0156)*

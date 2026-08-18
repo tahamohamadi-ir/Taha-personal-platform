@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-18 — ADM-1: content write API (create/update + optimistic lock) + SPA edit pages
+
+- `/api/v1/admin/content/*` حالا write هم دارد: `POST /{entity}` (create 201، 409 DUPLICATE)، `PUT /{entity}/{id}` (optimistic lock If-Match داخل `select_for_update`؛ 409 CONFLICT/DUPLICATE)، `GET /schema` (متادیتای فیلدها). Guard: staff+OTP+CSRF؛ publish فقط وقتی `published_at` خالی است؛ فیلد عددی خالی skip؛ خطاها با کلید camelCase.
+- SPA: صفحه‌ی ویرایش/ساخت (`/content/:entity/new` و `/:id/edit`) با فرم schema-driven، دکمه‌ی «+ ساخت»، مدیریت 409 با reload/discard.
+- ۲۰۹ تست پاس (۱۲ تست write + ۲ regression)، ruff تمیز، بدون migration؛ review مستقل با ۵ رفع.
+
 ## 2026-08-18 — ADM-1: content read API + dev preview route + SPA content pages
 
 - **Content read API:** `GET /content/{entity}` (فهرست با فیلترهای locale/status/q + صفحه‌بندی page/pageSize؛ خطاهای 400 VALIDATION / 404 NOT_FOUND) و `GET /content/{entity}/{id}` (جزئیات با مپ camelCase `fields`) برای ۷ موجودیت: landing, profile, article, research-topic, research-statement, project, publication — در `apps/cms/apps/api/admin_content.py` (new) و mount در `/api/v1/admin/content/`. `apps/cms/apps/api/admin_common.py` (new): AdminError، error handler، CSRF check، staff/OTP guards و client_ip مشترک شدند.
