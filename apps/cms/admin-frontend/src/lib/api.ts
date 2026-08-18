@@ -113,6 +113,39 @@ export interface ContentUpdatePayload {
   fields?: Record<string, string | number>;
 }
 
+export interface TransitionPayload {
+  to: ContentStatus;
+  reason?: string;
+}
+
+export interface TranslationLocaleStatus {
+  status: "complete" | "incomplete" | "missing";
+  missingFields: string[];
+}
+
+export interface TranslationQueueItem {
+  entity: string;
+  slug: string;
+  fa: TranslationLocaleStatus;
+  en: TranslationLocaleStatus;
+  status: "complete" | "incomplete" | "missing" | "partial";
+}
+
+export interface TranslationQueue {
+  items: TranslationQueueItem[];
+  truncated: boolean;
+}
+
+export interface ContentHealth {
+  published: number;
+  drafts: number;
+  review: number;
+  archived: number;
+  incompleteTranslations: number;
+  missingAltMedia: number;
+  orphanMedia: number;
+}
+
 export function isApiError(value: unknown): value is ApiError {
   return (
     typeof value === "object" &&
@@ -291,6 +324,25 @@ export async function updateContent(
     headers: { "If-Match": ifMatch },
     body: JSON.stringify(payload),
   });
+}
+
+export async function transitionContent(
+  entity: ContentEntity,
+  id: number,
+  payload: TransitionPayload
+): Promise<ContentDetail> {
+  return request<ContentDetail>(`/content/${entity}/${id}/transition`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchTranslationQueue(): Promise<TranslationQueue> {
+  return request<TranslationQueue>("/overview/translation-queue");
+}
+
+export async function fetchContentHealth(): Promise<ContentHealth> {
+  return request<ContentHealth>("/overview/content-health");
 }
 
 export interface MediaItem {

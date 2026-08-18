@@ -148,6 +148,15 @@ textarea.admin-input {
   color: var(--admin-danger);
 }
 
+.admin-banner-success {
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: #047857;
+}
+
 .admin-btn-secondary {
   background-color: var(--admin-bg);
   border-color: var(--admin-border);
@@ -231,6 +240,30 @@ textarea.admin-input {
   background-color: #f4f4f5;
   color: #6b7280;
   border-color: #e5e7eb;
+}
+
+.admin-status-complete {
+  background-color: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+.admin-status-incomplete {
+  background-color: #fffbeb;
+  color: #a16207;
+  border-color: #fde68a;
+}
+
+.admin-status-missing {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.admin-status-partial {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
 }
 
 .admin-table-wrap {
