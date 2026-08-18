@@ -47,7 +47,7 @@ jobs:
       - name: Secret pattern scan
         shell: bash
         run: |
-          if grep -rIiE '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36})' . --exclude-dir=.venv --exclude-dir=__pycache__ --exclude='uv.lock'; then
+          if grep -rIiE '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36})' . --exclude-dir=.venv --exclude-dir=__pycache__ --exclude-dir=node_modules --exclude='uv.lock'; then
             echo "secret-like pattern found in CMS tree" >&2
             exit 1
           fi

@@ -1670,3 +1670,18 @@ ode --check و YAML validation توسط agent.
 - Deferred or risk IDs: RISK-0010 (حفظ محتوا — backup گرفته شد: `/home/deploy/backups/pre-migrate-20260818-165018/cms-postgres-all.sql`).
 - Rollback / recovery: تصویر قبلی `31c6560`/`b369885` و backup پیش از migrate موجود است؛ بازگشت = `CMS_IMAGE=<قبلی> sudo bash infra/deploy/prod-cms-update-migrate.sh`.
 
+## LOG-0156 - 2026-08-18 - ADM-1 / Custom admin auth API + React SPA scaffold (foundation)
+
+- Outcome: بنیان ادمین اختصاصی (ADR-0026) به‌صورت **additive و غیرشکننده** ساخته شد — واگتِیل و `/admin/` فعلی تا cutover دست نخوردند:
+  1. **Backend** `apps/api/admin_api.py`: NinjaAPI مستقل در `/api/v1/admin/` — `auth/csrf`، `auth/login` (email+password+TOTP/recovery)، `auth/logout`، `auth/me`، `dashboard/summary` (شمارش محتوا، draft/published). Security: session+CSRF صریح (چون ninja همه‌ی views را csrf_exempt می‌کند)، دوباره‌استفاده از `AuditLog` + `django-otp` (`DEVICE_ID_SESSION_KEY`) + rate-limit cache (5/5min) + `_require_admin_otp` برای endpoint های محافظت‌شده. خطاها به شکل `{code, message, fields}`.
+  2. **Frontend** `apps/cms/admin-frontend/` (React 18 + Vite + TS + Tailwind v4 + Vazirmatn، RTL): صفحه‌ی ورود، AuthProvider/AuthGuard (csrf→login→me)، پوسته‌ی ادمین با سایدبار، داشبورد با کارت‌های `dashboard/summary`. `npm run build` و `npm run check` پاس.
+  3. **CI**: workflow جدید `ci-admin-frontend.yml` (npm ci → check → build روی تغییرات `apps/cms/admin-frontend/**`)؛ secret-scan سی‌ام‌اس node_modules را استثنا کرد.
+  4. **Caddy**: هندل `no-store` برای `/api/v1/admin/*` و `/api/admin/*` در `Caddyfile.cms.api.snippet` (اعمال روی سرور = مرحله‌ی جدا با تأیید مالک).
+- Why: اولین فاز اجرایی ADM-0/ADM-1؛ بدون حذف واگتِیل و بدون ریسک production؛ هر دو بخش (auth API و SPA) به‌صورت مستقل با تست/CI قابل تأییدند.
+- Scope / files: `apps/cms/apps/api/admin_api.py` (new)، `apps/cms/config/urls.py`، `apps/cms/tests/test_admin_api_auth.py` (new)، `apps/cms/admin-frontend/` (new، scaffold کامل)، `.github/workflows/ci-admin-frontend.yml` (new)، `.github/workflows/ci-cms.yml`، `infra/cms/Caddyfile.cms.api.snippet`، `Task-list.md` (§17 ADM-1)، این Work Log.
+- Commands or actions actually performed: `uv run pytest` (187 passed — کل سویییت)؛ `uv run ruff check .` (All checks passed)؛ `uv run python manage.py check` (فقط ۲ warning از قبل‌موجود treebeard)؛ `makemigrations --check --dry-run` (No changes detected)؛ `npm run build` در admin-frontend (PASS).
+- Verification actually performed and result: ۱۳ تست جدید admin auth (CSRF، login بدون OTP/با OTP/با OTP غلط/رمز غلط/non-staff، logout، me، dashboard guard، CSRF enforcement، rate-limit+audit) — 13 passed؛ کل سویییت CMS بدون regression (187 passed)؛ SPA build/type-check در CI گیت.
+- Decisions / assumptions: auth ادمین با همان قرارداد امنیتی موجود (session+CSRF+TOTP+audit+rate-limit)؛ `otpVerified` در پاسخ login منعکس‌کننده‌ی تأیید همان درخواست است؛ کاربر staff بدون دستگاه TOTP می‌تواند لاگین کند ولی endpoint های محافظت‌شده تا زمان enrollment در دسترس نیستند (همان policy واگتِیل فعلی)؛ docs/OpenAPI نینجا برای API ادمین فعلاً غیرفعال (عمومی نباشد).
+- Deferred or risk IDs: DEFER-0023 (cutover واگتِیل→SPA در ADM-1 نهایی)؛ RISK-0010 بدون تغییر؛ Caddy no-store هندل باید روی سرور با تأیید مالک اعمال شود.
+- Rollback / recovery: این slice additive است — حذف فایل‌ها/برنچ بدون اثر بر runtime؛ تولید هیچ‌چیز از این تغییر را استفاده نمی‌کند تا cutover.
+

@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-08-18 — ADM-1 foundation: custom admin auth API + React SPA scaffold
+
+- **Backend:** `/api/v1/admin/` (Django Ninja) — `auth/csrf|login|logout|me` + `dashboard/summary`؛ session+CSRF صریح + TOTP/recovery + AuditLog + rate-limit؛ خطاهای `{code,message,fields}`؛ ۱۳ تست جدید؛ کل سویییت ۱۸۷ پاس.
+- **Frontend:** `apps/cms/admin-frontend/` — React 18 + Vite + TS + Tailwind v4 + Vazirmatn (RTL فارسی)؛ ورود، AuthGuard، پوسته و داشبورد؛ build/type-check در CI جدید `ci-admin-frontend.yml`.
+- **Caddy:** هندل `no-store` برای `/api/v1/admin/*` و `/api/admin/*` در snippet (اعمال روی سرور جدا).
+- **Additive:** واگتِیل و `/admin/` فعلی تا cutover (ADM-1 نهایی) دست‌نخورده‌اند.
+
 ## 2026-08-18 — Server sync progress + stale CMS image pin fix
 
 - `prod-cms-update-migrate.sh` پیش‌فرض قدیمی `b369885` را از دست داد؛ `CMS_IMAGE` حالا الزامی است (آخرین sha از workflow «CMS image»). پیش‌فرض قدیمی باعث میشد migrations 0005/0006 اعمال نشوند و `import_profile_seed` در دسترس نباشد.
