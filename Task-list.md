@@ -803,12 +803,12 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 ### Task ADM-1 — Admin foundation (real working admin)
 
-- [ ] Ninja admin auth: `/api/v1/admin/auth/csrf|login|me|logout` با session+CSRF (pattern: `tahamohamadi-ir` plans/005 + auth flow).
+- [x] Ninja admin auth: `/api/v1/admin/auth/csrf|login|me|logout` با session+CSRF (با TOTP/recovery؛ CSRF صریح؛ rate-limit و AuditLog). *(2026-08-18: `apps/api/admin_api.py` + 13 pytest — LOG-0156)*
 - [ ] CRUD کامل Landing/Profile/Article + مدل‌های P4–P6 (projection published-only سمت عمومی دست نمی‌خورد).
-- [ ] پوسته‌ی React SPA: لاگین، سایدبار گروه‌بندی‌شده، داشبورد action-oriented (داشبورد پیشنویس‌ها/زمان‌بندی/ترجمه ناقص/رسانه بدون alt، هر کارت لینک به لیست فیلترشده), لیست/فرم هر entity با paging/filter، RTL/فارسی کامل ادمین.
+- [x] پوسته‌ی React SPA: لاگین، سایدبار گروه‌بندی‌شده، داشبورد action-oriented (کارت‌های شمارش از `/dashboard/summary`), RTL/فارسی (Vazirmatn). *(2026-08-18: اسکفولد `apps/cms/admin-frontend/`، build و type-check در CI — LOG-0156؛ هنوز لیست/فرم entity ندارد)*
 - [ ] سرویسلایه: logic در service ها (transactional)، views نازک، schema سمت سرور — الگوی conventions نمونه. *(§14 S1)*
-- [ ] خطاهای یکنواخت Problem Details: `{status, code, message, path, fields[]}` + 409/422/415. *(با پلن ۰۰۵ نمونه)*
-- [ ] OpenAPI/Swagger داخلی Ninja فقط admin-only (در معرض عمومی نباشد). *(§14 S7)*
+- [x] خطاهای یکنواخت Problem Details: `{status, code, message, fields[]}` + کدهای AUTH_REQUIRED/FORBIDDEN/OTP_REQUIRED/AUTH_FAILED/CSRF_FAILED/RATE_LIMITED. *(بخش auth — LOG-0156)*
+- [ ] OpenAPI/Swagger داخلی Ninja فقط admin-only (در معرض عمومی نباشد). *(§14 S7 — فعلاً docs/OpenAPI غیرفعال است)*
 - [ ] feature flags (adminNewShell، mediaPickerV2 و…) برای rollback کنترل‌شده. *(§14 S4)*
 - [ ] انتقال ادمین‌های Wagtail-session موجود (site content admin PR #24 و `/admin/profiles/` PR #31) به SPA.
 - [ ] cutover: واگتِیل روی production با SPA جایگزین می‌شود (با owner approval + rollback path).

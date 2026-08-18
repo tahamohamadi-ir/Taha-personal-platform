@@ -12,6 +12,27 @@
 #   sudo cp -a /etc/caddy/Caddyfile /etc/caddy/Caddyfile.pre-api.<timestamp>
 #   sudo caddy validate --config /etc/caddy/Caddyfile && sudo systemctl reload caddy
 
+# Admin APIs must NEVER be cached at the edge (session + CSRF + TOTP). Match
+# both the new /api/v1/admin/* namespace (ADR-0026) and the existing
+# /api/admin/* profile admin before the generic /api/* handle.
+handle /api/v1/admin/* {
+	reverse_proxy 127.0.0.1:18000 {
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Forwarded-Host {host}
+		header_down Cache-Control "no-store, no-cache, must-revalidate"
+		header_down X-Robots-Tag "noindex, nofollow"
+	}
+}
+
+handle /api/admin/* {
+	reverse_proxy 127.0.0.1:18000 {
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Forwarded-Host {host}
+		header_down Cache-Control "no-store, no-cache, must-revalidate"
+		header_down X-Robots-Tag "noindex, nofollow"
+	}
+}
+
 handle /api/* {
 	reverse_proxy 127.0.0.1:18000 {
 		header_up X-Forwarded-Proto {scheme}
