@@ -496,3 +496,143 @@ export function replaceMedia(
     return undefined as unknown;
   });
 }
+
+// ---------- Composition (ADM-3) ----------
+
+export type CompositionLayout = "1col" | "2col" | "3col";
+
+export interface CompositionPageItem {
+  id: number;
+  key: string;
+  locale: ContentLocale;
+  title: string;
+  status: ContentStatus;
+  publishedAt: string | null;
+  updatedAt: string;
+}
+
+export interface CompositionPageList {
+  items: CompositionPageItem[];
+  page: number;
+  pageSize: number;
+  total: number;
+}
+
+export interface CompositionBlockDoc {
+  blockType: string;
+  settings: Record<string, unknown>;
+  enabled: boolean;
+}
+
+export interface CompositionSectionDoc {
+  layout: CompositionLayout;
+  ratio: string;
+  enabled: boolean;
+  blocks: CompositionBlockDoc[];
+}
+
+export interface CompositionDetail {
+  id: number;
+  key: string;
+  locale: ContentLocale;
+  title: string;
+  status: ContentStatus;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  sections: Array<
+    CompositionSectionDoc & {
+      id: number;
+      position: number;
+      blocks: Array<
+        CompositionBlockDoc & {
+          id: number;
+          position: number;
+        }
+      >;
+    }
+  >;
+}
+
+export interface CompositionFieldSpec {
+  key: string;
+  label: string;
+  type: "text" | "textarea" | "number" | "select" | "media" | "mediaList";
+  options?: string[];
+}
+
+export interface CompositionBlockType {
+  type: string;
+  labelFa: string;
+  fields: CompositionFieldSpec[];
+}
+
+export interface CompositionLayoutSpec {
+  value: CompositionLayout;
+  label: string;
+  ratios: string[];
+}
+
+export interface CompositionSchema {
+  blockTypes: CompositionBlockType[];
+  sectionLayouts: CompositionLayoutSpec[];
+}
+
+export interface CompositionCreatePayload {
+  key: string;
+  locale: ContentLocale;
+  title: string;
+  status?: ContentStatus;
+}
+
+export interface CompositionUpdatePayload {
+  title?: string;
+  status?: ContentStatus;
+  sections: CompositionSectionDoc[];
+}
+
+export async function fetchCompositionPages(params: {
+  q?: string;
+  locale?: ContentLocale | "";
+  status?: ContentStatus | "";
+  page?: number;
+  pageSize?: number;
+}): Promise<CompositionPageList> {
+  const query = new URLSearchParams();
+  if (params.q !== undefined && params.q !== "") query.set("q", params.q);
+  if (params.locale) query.set("locale", params.locale);
+  if (params.status) query.set("status", params.status);
+  if (params.page !== undefined && params.page > 1) query.set("page", String(params.page));
+  if (params.pageSize !== undefined) query.set("pageSize", String(params.pageSize));
+  const qs = query.toString();
+  return request<CompositionPageList>(`/composition${qs ? `?${qs}` : ""}`);
+}
+
+export async function fetchCompositionSchema(): Promise<CompositionSchema> {
+  return request<CompositionSchema>("/composition/schema");
+}
+
+export async function fetchCompositionDetail(id: number): Promise<CompositionDetail> {
+  return request<CompositionDetail>(`/composition/${id}`);
+}
+
+export async function createComposition(
+  payload: CompositionCreatePayload
+): Promise<CompositionDetail> {
+  return request<CompositionDetail>("/composition", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateComposition(
+  id: number,
+  payload: CompositionUpdatePayload,
+  ifMatch: string
+): Promise<CompositionDetail> {
+  return request<CompositionDetail>(`/composition/${id}`, {
+    method: "PUT",
+    headers: { "If-Match": ifMatch },
+    body: JSON.stringify(payload),
+  });
+}

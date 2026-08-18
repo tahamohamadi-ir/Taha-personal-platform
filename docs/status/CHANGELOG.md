@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-08-18 — ADM-3: page composition (Section/Block, layouts, MediaPicker in blocks)
+
+- **Backend** اپ جدید `apps/cms/apps/composition/`: مدل‌های `CompositionPage` (key اسلاگ یکتا، locale fa/en، title، status draft/review/published/archived، published_at، created/updated_at)، `CompositionSection` (page FK، position، layout 1col/2col/3col، ratio، enabled؛ UniqueConstraint page+position)، `CompositionBlock` (section FK، position، block_type، settings JSONField، enabled؛ UniqueConstraint section+position)؛ migration `0001_initial.py`؛ `blocks.py` با کاتالوگ hero/heading/text/quote/cta/gallery/divider + `validate_block_settings` fail-closed + `SECTION_LAYOUT_RATIOS` + `composition_schema()`.
+- **API** `apps/api/admin_composition.py` mount در `/api/v1/admin/composition`: GET فهرست (q/locale/status/page/pageSize؛ 400 VALIDATION)، POST create (201؛ key regex `^[a-z0-9-]+$`؛ 409 DUPLICATE)، GET /schema، GET /{id}، PUT /{id} جایگزینی full-document (If-Match + select_for_update + atomic؛ 409 CONFLICT با currentUpdatedAt؛ fail-closed با field paths مثل `sections[0].blocks[1].settings`). Guards: staff+OTP+CSRF؛ ارجاع رسانه strict int (float/bool رد).
+- **Frontend** `apps/cms/admin-frontend/`: `src/lib/api.ts` (Composition types + fetchCompositionPages/Schema/Detail + createComposition/updateComposition)، `src/lib/composition.ts` (labels، ratioOptionsFor، REQUIRED_BLOCK_FIELDS)، `src/pages/CompositionListPage.tsx`، `src/pages/CompositionEditorPage.tsx` (schema-driven: layout/ratio سکشن‌ها، بلوک‌ها با فیلدهای text/textarea/select/media/mediaList از طریق MediaPicker، پیش‌نمایش grid، اعتبارسنجی client برای فیلدهای الزامی، 409 reload/discard، dirty-guard)، routes /composition، سایدبار «صفحات».
+- **اعتبارسنجی:** 249 passed (20 تست `test_admin_composition_api.py` با regression ارجاع رسانه float/bool)، ruff clean، بدون migration جدید، SPA build/check PASS.
+- **باقی:** projection عمومی (rendering در Astro) → ADM-6؛ rich blocks v2 (§14 U3) بعدی؛ Caddy no-store و deploy تصویر جدید CMS قدم‌های مالک؛ DEFER-0023 بدون تغییر؛ RISK-0010 بدون تغییر.
+
 ## 2026-08-18 — ADM-2: media library (upload/replace, alt-by-locale, orphans)
 
 - **Backend** `apps/cms/apps/api/admin_media.py` (new): `/api/v1/admin/media` — GET list (q / type image|pdf / active true|false / page/pageSize؛ 400 VALIDATION)، POST multipart upload (201؛ `is_active` پیش‌فرض false؛ `full_clean` → 400)، GET /orphans (usage==0)، GET /{id}، PUT /{id} (optimistic lock If-Match داخل atomic+select_for_update؛ 409 CONFLICT با currentUpdatedAt)، POST /{id}/replace (هم‌خانواده‌ی MIME؛ 400 در غیرهم‌خانواده/مفقود). `media_usage_count` + `MEDIA_REFERENCE_FIELDS` (رجیستری خالی؛ در ADM-3 وصل می‌شود). Guards: staff+OTP+CSRF.

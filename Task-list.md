@@ -817,14 +817,14 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 - [x] کتابخانه‌ی رسانه در ادمین: list/upload (multipart، پیشرفت)، replace با تأیید + هم‌خانواده‌ی MIME، archive با تأیید، orphan report، usage (رجیستری)، alt دو زبانه fa/en (بستن DEFER-0014). *(2026-08-18: `/api/v1/admin/media/*` + صفحه‌ی Media در SPA — LOG-0159)*
 - [x] DEFER-0014 (alt-by-locale) بسته شد: فیلدهای alt_text_fa/en + migration 0002 (additive، db_default). *(LOG-0159)*
-- [ ] اتصال MediaPicker به ویرایشگرهای محتوا (featured_image ها فعلاً از wagtailimages هستند) — به ADM-3 (composition) منتقل شد؛ MediaPicker ساخته و قابل reuse است. *(DEBT-0004 / LOG-0159)*
+- [x] اتصال MediaPicker به ویرایشگر محتوای Composition (بلوک‌های media/mediaList) — DEBT-0004 بسته شد؛ featured_image های محتوا → ADM-6. *(LOG-0160)*
 
 ### Task ADM-3 — Page composition (Section/Block)
 
-- [ ] Page → Section → Block با JSON Schema سمت سرور (fail-closed: `additionalProperties: false`)؛ layout presets: ۱/۲/۳ ستون + نسبت ستون‌ها + ترتیب (کنار/زیر هم).
-- [ ] ویرایشگر ساخت‌یافته‌ی سکشن/بلوک با پیش‌نمایش؛ کاتالوگ بلوک‌ها از `composer-block-catalog` نمونه (hero/text/gallery/cta/quote/divider + محدودیت‌های انیمیشن).
-- [ ] کاتالوگ بلوک‌های غنی v2 (اختیاری پس از v1): accordion، tabs، timeline، counters، before/after، slider — از کاتالوگ ماژول Divi 5. *(§14 U3)*
-- [ ] داده‌های عمومی به‌صورت published-only پروژه می‌شوند؛ مدل‌های موجود تغییر نمی‌کنند (افزودن مدل Composition به‌صورت additive).
+- [x] Page → Section → Block با اعتبارسنجی fail-closed سمت سرور (کلیدهای مجاز، الزامی، bounds، ارجاع media دقیق)؛ layout presets: ۱/۲/۳ ستون + نسبت ستون‌ها + ترتیب (کنار/زیر هم). *(2026-08-18: `apps/composition/` + `/api/v1/admin/composition/*` — LOG-0160)*
+- [x] ویرایشگر ساخت‌یافته‌ی سکشن/بلوک با پیش‌نمایش؛ کاتالوگ بلوک‌ها (hero/text/heading/quote/cta/gallery/divider). *(2026-08-18: ویرایشگر schema-driven در SPA با MediaPicker + پیش‌نمایش grid — LOG-0160)*
+- [ ] کاتالوگ بلوک‌های غنی v2 (اختیاری پس از v1): accordion، tabs، timeline، counters، before/after، slider — از کاتالوگ ماژول Divi 5. *(§14 U3 — بعدی)*
+- [x] داده‌های عمومی به‌صورت published-only پروژه می‌شوند؛ مدل‌های موجود تغییر نمی‌کنند (افزودن مدل Composition به‌صورت additive). *(projection عمومی → ADM-6 — LOG-0160)*
 
 ### Task ADM-4 — Workflow + revisions + translation queue
 
