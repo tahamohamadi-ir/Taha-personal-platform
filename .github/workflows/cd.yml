@@ -54,7 +54,7 @@ jobs:
         id: meta
         run: echo "release_name=release-${GITHUB_SHA:0:7}" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/upload-artifact@v7.0.1
+      - uses: actions/upload-artifact@v4
         with:
           name: web-dist-${{ github.sha }}
           path: apps/web/dist
@@ -67,7 +67,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - uses: actions/download-artifact@v7.0.1
+      - uses: actions/download-artifact@v4
         with:
           name: web-dist-${{ github.sha }}
           path: dist
