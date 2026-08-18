@@ -114,6 +114,46 @@ body {
   margin-bottom: 0.375rem;
 }
 
+.admin-form-row {
+  margin-bottom: 1rem;
+}
+
+.admin-form-row:last-child {
+  margin-bottom: 0;
+}
+
+textarea.admin-input {
+  resize: vertical;
+  line-height: 1.7;
+}
+
+.admin-field-error {
+  margin-top: 0.375rem;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8125rem;
+  color: var(--admin-danger);
+}
+
+.admin-field-error li {
+  margin-top: 0.25rem;
+}
+
+.admin-banner-error {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: var(--admin-danger);
+}
+
+.admin-btn-secondary {
+  background-color: var(--admin-bg);
+  border-color: var(--admin-border);
+  color: var(--admin-text);
+}
+
 .admin-link-active {
   background-color: #eff6ff;
   border-inline-start: 3px solid var(--admin-accent);

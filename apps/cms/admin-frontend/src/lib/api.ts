@@ -82,6 +82,36 @@ export interface ContentListParams {
   pageSize?: number;
 }
 
+export interface ContentFieldSpec {
+  key: string;
+  label: string;
+  type: "text" | "textarea" | "number" | "date";
+}
+
+export interface ContentEntitySchema {
+  entity: string;
+  fields: ContentFieldSpec[];
+}
+
+export interface ContentSchema {
+  entities: Record<string, ContentEntitySchema>;
+}
+
+export interface ContentPayload {
+  locale: ContentLocale;
+  slug: string;
+  title: string;
+  status?: ContentStatus;
+  fields: Record<string, string | number>;
+}
+
+export interface ContentUpdatePayload {
+  title?: string;
+  slug?: string;
+  status?: ContentStatus;
+  fields?: Record<string, string | number>;
+}
+
 export function isApiError(value: unknown): value is ApiError {
   return (
     typeof value === "object" &&
@@ -90,6 +120,14 @@ export function isApiError(value: unknown): value is ApiError {
     "code" in value &&
     "message" in value
   );
+}
+
+export function isConflict(error: unknown): boolean {
+  return isApiError(error) && error.code === "CONFLICT";
+}
+
+export function isDuplicate(error: unknown): boolean {
+  return isApiError(error) && error.code === "DUPLICATE";
 }
 
 interface CsrfResponse {
@@ -224,4 +262,31 @@ export async function fetchContentDetail(
   id: number
 ): Promise<ContentDetail> {
   return request<ContentDetail>(`/content/${entity}/${id}`);
+}
+
+export async function fetchContentSchema(): Promise<ContentSchema> {
+  return request<ContentSchema>("/content/schema");
+}
+
+export async function createContent(
+  entity: ContentEntity,
+  payload: ContentPayload
+): Promise<ContentDetail> {
+  return request<ContentDetail>(`/content/${entity}`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateContent(
+  entity: ContentEntity,
+  id: number,
+  payload: ContentUpdatePayload,
+  ifMatch: string
+): Promise<ContentDetail> {
+  return request<ContentDetail>(`/content/${entity}/${id}`, {
+    method: "PUT",
+    headers: { "If-Match": ifMatch },
+    body: JSON.stringify(payload),
+  });
 }

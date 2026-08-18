@@ -214,7 +214,15 @@ export default function ContentListPage(): ReactElement {
 
   return (
     <div>
-      <h1 className="mb-4 text-xl font-bold">مدیریت محتوا</h1>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-xl font-bold">مدیریت محتوا</h1>
+        <Link
+          to={`/content/${entity}/new`}
+          className="admin-btn admin-btn-primary"
+        >
+          + ساخت
+        </Link>
+      </div>
       {renderTabs(entity)}
 
       <div className="admin-card mb-4">
