@@ -17,7 +17,7 @@ Last reconciled: 2026-08-18.
 |---|---|---|---|
 | `P0-A-stack-inventory-task-spec.md` | BLOCKED (owner) | owner | Read-only VPS inventory. Not an agent task. |
 
-Owner remaining work that is **not** a new spec: production CMS `migrate` through `0005`/`0006` and `import_profile_seed` (`LOG-0150`). Until that runs, public About uses `profile.snapshot.json`.
+Owner remaining work that is **not** a new spec: after CMS profile edits, rerun CD on `main` (or trigger `cd.yml`) so static About picks up live `/api/profiles/*`. VPS has no Node — do not rely on `rebuild-static.sh` on the server.
 
 ## 2. Queued — do not start yet
 

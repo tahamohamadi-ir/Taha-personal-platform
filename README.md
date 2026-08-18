@@ -1,90 +1,113 @@
 # Taha Personal Platform
 
-Bilingual Persian/English personal research, professional and knowledge platform for Taha Mohammadi, live at https://tahamohamadi.ir. The public root is a Language Gateway (`/`) with direct locale roots `/fa/` (RTL) and `/en/` (LTR); all public content is static-first and readable without JavaScript, served as a versioned artifact by Caddy from `/opt/taha/site/current`. This repository is a monorepo: `apps/web/` is the Astro static public frontend, `apps/cms/` is the Django/Wagtail/Ninja CMS (runtime live, `/static*` Caddy proxy still outstanding), `infra/` holds deploy scripts and the CMS Compose stack, and `docs/` holds policies, ADRs, task specs and status ledgers. Source of truth for product, environments and commands: [PROJECT_MANIFEST.md](PROJECT_MANIFEST.md).
+Bilingual Persian/English personal research, professional and knowledge platform for Taha Mohammadi, live at https://tahamohamadi.ir. The public root is a Language Gateway (`/`) with direct locale roots `/fa/` (RTL) and `/en/` (LTR). Public pages are static-first and readable without JavaScript, served as a versioned artifact by Caddy from `/opt/taha/site/current`. CMS content (About profile, blog, research, projects) is authored in Wagtail and projected through published-only APIs at build time.
+
+This repository is a monorepo:
+
+| Path | Role |
+|---|---|
+| `apps/web/` | Astro 7 static public frontend |
+| `apps/cms/` | Django 5.2 / Wagtail 7.4 / Django Ninja CMS |
+| `infra/` | Deploy scripts, Caddy, Compose, backup |
+| `docs/` | Policies, ADRs, contracts, task specs, ledgers |
+
+**Read first:** [AGENTS.md](AGENTS.md) → [docs/README.md](docs/README.md) → [PROJECT_MANIFEST.md](PROJECT_MANIFEST.md).
 
 ## Repository layout
 
 ```text
-apps/web/       Astro 7 + TypeScript static public frontend (Language Gateway, /fa/ + /en/ landing, about, cv, 404, health, robots, sitemap)
-apps/cms/       Django 5.2.9 / Wagtail 7.4.2 / Django Ninja 1.6.2 / psycopg 3.3.4 on Python 3.12.13 — runtime on 127.0.0.1:18000
-infra/deploy/   versioned artifact switch (update-release.sh), smoke.sh, update-cms.sh, smoke-cms.sh
-infra/cms/      CMS Compose + Dockerfile + Caddy snippet (apply `/static*` before file_server)
-infra/caddy/    static-site Caddy config candidate
-infra/backup/   restic/rclone backup timer and .env.example
-docs/adr/       accepted/proposed architecture decisions (ADR-0002..0025 + index)
-docs/governance/ release, deploy, backup, server-access and documentation policies and runbooks
-docs/status/    WORK_LOG, RISK_REGISTER, deferred-validation, TECH_DEBT, known-issues, CHANGELOG, BACKLOG
-docs/plan/      task specs and phase plans (P0-G0, P0-A, P1, P2, P3, S-PLAN-STATE, RELEASE-P1)
-docs/design.md  design tokens and visual design baseline
-docs/templates/  task specification template
-.github/        GitHub Actions workflows: ci.yml (web) and ci-cms.yml (CMS)
-PROJECT_MANIFEST.md  product, approved baseline, environments, canonical commands
-AGENTS.md       agent and developer contract, ownership boundaries, current gate
-Task-list.md    phased implementation plan (P0-G0 → P11)
+apps/web/         Gateway, landing, About (+ section/detail routes), CV, blog, research, projects, 404, SEO
+apps/cms/         Wagtail admin, Profile API, blog/research/project models, custom /admin/profiles/
+infra/deploy/     update-release.sh, update-cms.sh, smoke-cms.sh, rebuild-static.sh, cd.yml deploy path
+infra/cms/        Compose stack, Dockerfile, Caddy snippet
+docs/contracts/   binding IA and design contract cards
+docs/plan/        task specs + plan index (docs/plan/README.md)
+docs/status/      WORK_LOG, risks, deferred work, changelog
+.github/          ci.yml, ci-cms.yml, ci-cms-image.yml, cd.yml
+AGENTS.md         agent contract and current gate
+PROJECT_MANIFEST.md   product baseline, environments, canonical commands
+Task-list.md      phased plan P0–P11
 ```
 
-New public assets: header logo `apps/web/public/logo.png` (cropped and transparent, from the approved base asset) and CV/Resume downloads `apps/web/public/downloads/*.md`, served on the `/fa/cv/` and `/en/cv/` pages. `apps/web/` and `apps/cms/` are the canonical paths; do not recreate `frontend/` or `backend/`.
+Do not recreate `frontend/` or `backend/`; canonical paths are `apps/web/` and `apps/cms/`.
 
 ## Getting started
 
-Prerequisites: Node 24 + npm for `apps/web/`; `uv` + Python 3.12 for `apps/cms/`. The default `python` command resolves to a Hermes-owned interpreter and is not the project interpreter — always use `uv`.
+**Prerequisites:** Node 24 + npm (`apps/web/`); `uv` + Python 3.12 (`apps/cms/`). The default `python` command resolves to a Hermes-owned interpreter — always use `uv`.
 
-Web (`apps/web/`):
+### Web (`apps/web/`)
 
 ```powershell
-npm install        # reproducible install from package-lock.json
-npm run check      # astro check (typecheck)
-npm run build      # astro build — static output in dist/
-npm run preview    # serve the built artifact locally
-npm audit          # dependency security scan
+npm install
+npm run check
+npm run build
+npm run preview
+node qa/cms-profile-build.spec.mjs   # dist-only About/profile check
 ```
 
-CMS (`apps/cms/`, with `$env:DJANGO_SETTINGS_MODULE = "config.settings.test"`):
+Optional CMS-backed build:
 
 ```powershell
-uv sync --python 3.12                    # reproducible install from pyproject.toml + uv.lock
-uv run ruff check .                      # lint
-uv run python manage.py check           # Django system check
-uv run python manage.py makemigrations --check --dry-run   # migration consistency
-uv run pytest -q                        # test suite (75 passed)
+$env:CMS_API_BASE = "http://127.0.0.1:18000"
+npm run build
+```
+
+### CMS (`apps/cms/`)
+
+```powershell
+uv sync --python 3.12
+$env:DJANGO_SETTINGS_MODULE = "config.settings.test"
+uv run ruff check .
+uv run python manage.py check
+uv run pytest -q
 ```
 
 ## CI/CD and deployment
 
-- `ci.yml` (web): Node 24; `npm ci` → `npm run check` → `npm run build` → build fingerprint → local-preview smoke via `infra/deploy/smoke.sh` → Playwright mobile-overflow and About-tabs regressions → `npm audit` → artifact completeness and no-secret check → artifact upload.
-- `ci-cms.yml` (CMS): `uv sync --python 3.12` → `manage.py check` → `makemigrations --check --dry-run` → `ruff check` → `pytest` → `manage.py test` → `git diff --check` → secret scan.
-- Artifact deploy mechanics: build a static artifact from a clean HEAD, upload it to the VPS, then run `sudo /opt/taha/bin/update-release.sh` (repo copy: [infra/deploy/update-release.sh](infra/deploy/update-release.sh)), which switches the `/opt/taha/site/current` symlink atomically; the deployed Caddy snippet `taha_application_routes` serves that root, so no Caddy reload is needed and the previous release stays on disk for rollback. Production smoke: `infra/deploy/smoke.sh https://tahamohamadi.ir` (7 PASS).
-- Release gate: CI green on `main` (web + cms workflows) plus production smoke only; no deploy without owner approval and a documented rollback path. Rollback and release mechanics: [DEPLOY_RUNBOOK.md](docs/governance/DEPLOY_RUNBOOK.md) and [RELEASE_POLICY.md](docs/governance/RELEASE_POLICY.md).
-- Staging is decommissioned (ADR-0025, 2026-08-15): `staging.tahamohamadi.ir` has no Caddy block or DNS record; development and deployment happen directly on `tahamohamadi.ir`.
-- GitHub Actions hosted runners are the CI baseline; no Gitea or self-hosted runner on the production VPS.
+| Workflow | Purpose |
+|---|---|
+| `ci.yml` | Web: check, build, Playwright regressions, audit, artifact |
+| `ci-cms.yml` | CMS: ruff, pytest, migration check |
+| `ci-cms-image.yml` | Build/push `ghcr.io/tahamohamadi-ir/taha-cms:<sha>` |
+| `cd.yml` | On push to `main`: build web with `CMS_API_BASE=https://tahamohamadi.ir`, rsync to VPS, `update-release.sh`, production smoke |
+
+**CMS deploy (operator, VPS):** pin `CMS_IMAGE` to a git sha, run `infra/deploy/update-cms.sh`, then `import_profile_seed` when profile schema/seed changes. See [DEPLOY_RUNBOOK.md](docs/governance/DEPLOY_RUNBOOK.md).
+
+**Rollback:** previous static release on disk via `update-release.sh`; CMS via previous `CMS_IMAGE` tag. Never `compose down -v`.
+
+Staging is decommissioned (ADR-0025). Gate: CI green + production smoke. No Gitea or self-hosted runner on the VPS.
 
 ## Documentation index
 
-- [PROJECT_MANIFEST.md](PROJECT_MANIFEST.md) — product, approved baseline, environments, canonical verified commands.
-- [AGENTS.md](AGENTS.md) — agent and developer contract, ownership boundaries, current gate.
-- [docs/adr/README.md](docs/adr/README.md) — ADR index (ADR-0002..0025, including static-first Astro, versioned artifact deploy, admin security boundary, P3 auth/media/rich-text/rebuild/lifecycle, staging decommission).
-- [docs/governance/RELEASE_POLICY.md](docs/governance/RELEASE_POLICY.md) — release gate and DoD.
-- [docs/governance/DEPLOY_RUNBOOK.md](docs/governance/DEPLOY_RUNBOOK.md) — deploy, smoke and rollback procedure.
-- [docs/governance/BACKUP_POLICY.md](docs/governance/BACKUP_POLICY.md) and [docs/governance/BACKUP_RUNBOOK.md](docs/governance/BACKUP_RUNBOOK.md) — encrypted Google Drive backup policy and runbook.
-- [docs/governance/SERVER_ACCESS_RUNBOOK.md](docs/governance/SERVER_ACCESS_RUNBOOK.md) — key-only non-root SSH access.
-- [docs/governance/DOCUMENTATION_POLICY.md](docs/governance/DOCUMENTATION_POLICY.md) — documentation contract.
-- [docs/status/](docs/status/) — ledgers: [WORK_LOG.md](docs/status/WORK_LOG.md), [RISK_REGISTER.md](docs/status/RISK_REGISTER.md), [deferred-validation.md](docs/status/deferred-validation.md), [TECH_DEBT.md](docs/status/TECH_DEBT.md), [known-issues.md](docs/status/known-issues.md), [CHANGELOG.md](docs/status/CHANGELOG.md), [BACKLOG.md](docs/status/BACKLOG.md).
-- [docs/plan/](docs/plan/) — task specs and phase plans; template in [docs/templates/TASK_SPEC_TEMPLATE.md](docs/templates/TASK_SPEC_TEMPLATE.md).
-- [docs/design.md](docs/design.md) — design tokens and visual baseline.
-- [Task-list.md](Task-list.md) — phased implementation plan and progress snapshot.
+- [docs/README.md](docs/README.md) — documentation entry point, read order, STOP conditions
+- [docs/contracts/IA-CONTRACT.md](docs/contracts/IA-CONTRACT.md) — binding URL and navigation rules
+- [docs/contracts/DESIGN-CONTRACT.md](docs/contracts/DESIGN-CONTRACT.md) — binding visual/token rules
+- [docs/plan/README.md](docs/plan/README.md) — which task spec is active vs archived
+- [docs/governance/DEPLOY_RUNBOOK.md](docs/governance/DEPLOY_RUNBOOK.md) — deploy, smoke, rollback
+- [docs/status/WORK_LOG.md](docs/status/WORK_LOG.md) — chronological evidence of work performed
 
-## Status snapshot
+## Status snapshot (2026-08-18)
 
-- Live (2026-08-16): static site at https://tahamohamadi.ir plus CMS Compose `taha-cms`. `/admin/login/` is Wagtail; `/health/` is CMS JSON `db=ok`; `/health.json` is still the static artifact. `/static/wagtailadmin/css/core.css` currently 404s on the Astro 404 page until Caddy proxies `/static*`. Evidence: [WORK_LOG.md](docs/status/WORK_LOG.md) LOG-0126.
-- Open: `RISK-0003` (restic restore evidence for the new CMS postgres volume); `DEFER-0017` (public Caddy `/api/` for blog). `/api/` and `/media/` stay unpublished. `RISK-0009` CLOSED. `DEFER-0015` CLOSED (recovery codes in repo; owner rebuild).
+**Live on https://tahamohamadi.ir**
 
-## Security and governance notes
+- Static: Gateway, `/fa/`, `/en/`, About (hybrid tabs + filters), About section/detail routes, CV, blog, research, projects, 404, robots, sitemap
+- CMS: Wagtail `/admin/` + TOTP; custom `/admin/profiles/`; image `taha-cms:31c6560`; migrations through `content.0006`; profile seed `en`/`fa`
+- API: published-only `/api/*` including `/api/profiles/<locale>/about`
+- Static build: CD deploy **release-f11d2fc** with live CMS profile at build time
 
-- Never commit, log or screenshot secrets; real credentials live only in the owner's password manager or approved secret store, and exposure is reported as a Risk Register entry without repeating the secret.
-- Every work item has a Task Spec (template in `docs/templates/`) and every actual action receives a `WORK_LOG.md` entry; deferred work must have an ID in `deferred-validation.md`.
-- Gate rules: no deployment without owner approval, a documented rollback path and a passing release gate; no invented endpoints, DTO fields, models, content, translations, metrics or service choices.
-- Non-negotiables: `/` is the Language Gateway with direct `/fa/` and `/en/` roots; main public content stays readable without JavaScript; public projections never expose drafts, private media, internal notes or credentials.
+**Closed risks / defers:** `RISK-0003`, `RISK-0009`, `DEFER-0017` (public `/api/`)
+
+**Still open (not blocking current About/profile slice):** `DEFER-0018` (RSS), `DEFER-0022` (local Playwright preview), contact persistence, media upload, remainder of P7 admin (ops dashboard, composition)
+
+Evidence: LOG-0150 (PR #31), owner VPS migrate/seed (2026-08-18), CD rerun (Actions run 32137604292).
 
 ## Roadmap
 
-Phased plan in [Task-list.md](Task-list.md): P0-G0 gate passed, static R1 spine and R2 first live done, P2 About/CV live, P3 CMS runtime gated (see snapshot above), then P4–P11: Blog/Writing, Research, Projects, Professional Admin, Publications/Books/Downloads/Talks, Teaching + Creative, Topics + Pagefind search, and AI/semantic/knowledge graph. Owner-filtered queue: [docs/status/BACKLOG.md](docs/status/BACKLOG.md).
+Phased plan in [Task-list.md](Task-list.md): P0–P3 and P4–P6 public routes shipped; CMS-managed About/profile live; P7–P11 queued (professional admin remainder, publications, teaching, search, AI/semantic). Owner queue: [docs/status/BACKLOG.md](docs/status/BACKLOG.md).
+
+## Security and governance
+
+- Never commit secrets; report exposure in [RISK_REGISTER.md](docs/status/RISK_REGISTER.md) without repeating the secret.
+- Every work item has a Task Spec; every action gets a [WORK_LOG.md](docs/status/WORK_LOG.md) entry.
+- Deferred/skipped validation must have an ID in [deferred-validation.md](docs/status/deferred-validation.md).
+- Non-negotiables: Language Gateway at `/`; independent `/fa/` and `/en/`; no silent locale fallback; no drafts on the public site.

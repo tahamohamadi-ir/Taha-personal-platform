@@ -49,7 +49,7 @@ Do not infer current state from a plan file. Plans describe intent.
 | Is `/api/` public? | Yes — published-only Ninja JSON for articles, research, and projects | `DEFER-0017` CLOSED; LOG-0143 |
 | Is `/media/` public? | Proxied; media *upload* is unpublished | LOG-0143 |
 | Is contact published? | No — honest "not published" copy | `DEFER-0007` CLOSED |
-| Is About CMS-managed? | Code is on `main` (PR #31). Production still needs owner `migrate` through `0005`/`0006` and `import_profile_seed`. Until then the static site uses `profile.snapshot.json`. | LOG-0150; `DEFER-0022` |
+| Is About CMS-managed? | Yes — code on `main` (PR #31); production seeded (`import_profile_seed`, image `31c6560`, migrations `0005`/`0006`, 2026-08-18) | LOG-0150; owner VPS |
 | Is there search? | No. Pagefind remains later | `PROJECT_MANIFEST.md` |
 | Is React the public shell? | No | `apps/web/package.json` |
 | Is staging alive? | No — decommissioned | `docs/adr/0025-staging-decommission.md` |

@@ -8,10 +8,11 @@
 
 **Tech Stack:** Astro + TypeScript؛ Tailwind و Design Tokens حداقلی؛ React Islands فقط در صورت نیاز؛ `motion`، `gsap` و `three` فقط به‌عنوان dependency قفل‌شده برای slice آینده و بدون استفاده در P1؛ GitHub Actions hosted؛ Docker Compose + Caddy؛ از P3 به بعد Python 3.12 + Django 5.2 LTS + Wagtail 7.4 LTS + Django Ninja + PostgreSQL.
 
-## Progress snapshot (2026-08-16)
+## Progress snapshot (2026-08-18)
 
-- **P0-G0 + P3 code-first gate (owner-authorized):** production P1 live on **release-6031441** (checksum `031943b1`) at https://tahamohamadi.ir since 2026-08-16 (LOG-0111); CI green on `main` (web + cms). A1-A5, B3-B5, C1-C3, C5, C6, C7 (no-CV scope), P1-09 (JSON-LD), D8 done. **Server upgraded** (Ubuntu 26.04 LTS, 2 vCPU / ~4 GiB RAM / 30 GB disk; owner decision: keep 4 GiB — `RISK-0007` CLOSED) and the live stack inventory-confirmed via `docker ps` 2026-08-16 (`RISK-0004` CLOSED). **Staging decommissioned** (ADR-0025, 2026-08-15): gate is now CI (web + cms) + production smoke only. **P3 `apps/cms/` code-first complete:** 70 pytest PASS, ruff clean, ADR-0020..0024, `ci-cms.yml`, NoIndexMiddleware + real JSON logging + enumeration/XSS tests, infra candidates NOT-APPLIED (LOG-0107, LOG-0110). CHANGELOG/BACKLOG updated. **KI-0001 CLOSED** (`profile.fa.ts` single-m fix; `rg tahamohammadi apps/web/src` clean — LOG-0110). **C4 DONE (md, 2026-08-16):** owner placed `Assets/Taha_Mohammadi_Master_CV_Website_Profile.md` + `Assets/Taha_Mohammadi_Industry_Resume_Software_AI.md`; published as Markdown downloads via `Downloads.astro` on `/en/cv/` + `/fa/cv/` (title/note/size; PDF replacement optional — owner). **Header logo added:** 8 KB PNG derived from `Assets/Taha Logo/Taha Logo base.png` (cropped 4000x4000 margins, transparent bg; ACCEPT-WITH-NOTES) replaces the `brand-mark` span in `Header.astro`; sitemap includes both CV routes. Local QA: overflow=0, dir ltr/rtl correct, 2 links/page, logo loads (Playwright on built dist, port 8899); `npm run check` 0 errors; `npm run build` 8 pages. **B1 DONE (inventory):** owner pasted `apt list --upgradable` (57 pkgs, Ubuntu 26.04 updates incl. docker/containerd/grub/apparmor); the upgrade itself needs an owner maintenance-window decision.
-- **Remaining (owner/server):** B2 (SSH port decision), DEFER-0009 (OG), DEFER-0013 (200% zoom), DEFER-0014 (alt-by-locale). **P3 runtime live (2026-08-16):** Compose `taha-cms`; `/admin/` + `/static/*` + TOTP (`RISK-0009` CLOSED, LOG-0129); recovery codes in repo (`DEFER-0015` CLOSED — owner rebuild); staff preview in repo (P3-07 DONE; `DEFER-0016` public token). `RISK-0003` needs CMS-postgres restore evidence. `/api/` and `/media/` unpublished (`DEFER-0017` for public blog API). **P4 Blog/Writing:** code-first `PARTIAL`/`DONE` in repo on `main` (PR #14 + security harden PR #15; LOG-0133/0134). Owner still owns prod migrate (after RISK-0003), optional `CMS_API_BASE` build, and DEFER-0018 feed.
+- **Production stack:** https://tahamohamadi.ir — static **release-f11d2fc** (CD 2026-08-18, `CMS_API_BASE=https://tahamohamadi.ir`); CMS **`ghcr.io/tahamohamadi-ir/taha-cms:31c6560`**; migrations `content.0001`–`0006`; profile seed **`en`/`fa`** (owner VPS 2026-08-18).
+- **P0–P1:** DONE (R0–R2 gate, Gateway, landing). **P2 About/CV:** DONE (tabs/filters LOG-0149; CMS profile LOG-0150). **P3 CMS:** DONE (`RISK-0003`/`DEFER-0017` CLOSED). **P4–P6:** DONE in repo + live routes. **P7:** PARTIAL (`/admin/profiles/` shipped; remainder QUEUED). **CI/CD:** `cd.yml` auto-deploy on `main`.
+- **Remaining (non-blocking):** `DEFER-0018` RSS; `DEFER-0022` local Playwright; contact persistence; media upload; P7 remainder; `P0-A-stack-inventory`; B2 SSH port; DEFER-0009/0013/0014 polish.
 
 ## Global Constraints
 
@@ -499,14 +500,14 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 ### Task P2-02 — static typed profile/resume contract
 
-- [ ] تا پیش از P3 از typed static/config content استفاده کن؛ database صرفاً برای About/Resume نساز.
+- [x] تا پیش از P3 از typed static/config content استفاده کن؛ database صرفاً برای About/Resume نساز. *(superseded by CMS Profile on `main` — LOG-0150; static snapshot remains fallback)*
 - [ ] required dates/organization/role/description/evidence و optional defensible impact validate شوند.
 - [ ] ATS/print reading order، selectable text و semantic headings طراحی شوند.
 - [ ] migration آینده به CMS از طریق adapter روشن باشد، نه rewrite data shape حدسی.
 
 ### Task P2-03 — About و Journey
 
-- [ ] canonical `/{locale}/about/` طبق IA و direct-entry context بساز.
+- [x] canonical `/{locale}/about/` طبق IA و direct-entry context بساز. *(live; hybrid tabs LOG-0149; CMS profile + section/detail routes LOG-0150)*
 - [ ] روایت Design→Interaction→Engineering→Data→AI→Human-Centered Systems را فقط با copy approved بیان کن.
 - [ ] mobile/RTL/mixed content، next action و Contact/CV paths را QA کن.
 
@@ -586,12 +587,12 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 - [x] manual rebuild/deploy fallback ابتدا کار کند. *(`apps/cms/scripts/manual-rebuild.sh` + سرو شدن artifact قبلی روی failure — مطابق DEPLOY_RUNBOOK)*
 - [x] signed automatic trigger فقط بعد از auth/replay/rate/failure design اضافه شود. *(HMAC + freshness ≤5min + disabled default; `rebuild-static.sh` deploy slice wired — ADR-0023)*
-- [ ] publish موفق CMS و build شکست‌خورده به‌صورت صریح stale state نشان دهند. *(runbook: previous release retained; owner smoke after first rebuild-static)*
+- [x] publish موفق CMS و build شکست‌خورده به‌صورت صریح stale state نشان دهند. *(CD on `main` rebuilds with live API; VPS has no Node — use CD not `rebuild-static.sh` locally on VPS)*
 - [x] previous public artifact روی build failure باقی بماند. *(`update-release.sh` only after successful build; prior release on disk — LOG-0139)*
 
 ### Task P3-09 — P3 high-risk verification/release
 
-- [ ] migrations forward/fallback، backup/import، lifecycle، permissions، XSS، upload و projection integration tests PASS. *(152 pytest PASS code-level; VPS migrate + rebuild-static owner — RISK-0003)*
+- [x] migrations forward/fallback، backup/import، lifecycle، permissions، XSS، upload و projection integration tests PASS. *(174 pytest PASS; VPS migrate `0005`/`0006` + seed + CD rebuild 2026-08-18)*
 - [ ] staging با admin کم‌دسترسی و کامل، preview، publish، archive و public build smoke شود. *(production-only per ADR-0025; owner: migrate + rebuild-static + smoke-blog)*
 - [x] production admin فقط پس از owner approval، MFA و rollback آماده exposed شود. *(Wagtail admin + TOTP live; RISK-0009 CLOSED LOG-0129)*
 
@@ -648,7 +649,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 - [x] public/restricted نمونه‌ها، no-leak projection، missing evidence، license/availability، locale routes و link validity PASS. *(140 pytest; web check/build; security review Approve)*
 - [x] confidentiality mistake = immediate unpublish/asset revoke/incident log. *(documented in Spec + INCIDENT_RUNBOOK; VPS execution owner)*
-- [ ] prod migrate + optional `CMS_API_BASE` content smoke — owner after RISK-0003. *(PARTIAL)*
+- [x] prod migrate + optional `CMS_API_BASE` content smoke — owner after RISK-0003. *(DONE 2026-08-18: CMS `31c6560`, static CD `release-f11d2fc`)*
 
 ---
 
@@ -672,6 +673,8 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 ---
 
 ## 12. P7 — Professional Admin
+
+> **Partial (2026-08-18):** `/admin/profiles/` custom bilingual Profile editor shipped (PR #31). Remaining P7-01–P7-04 stay QUEUED — see `docs/plan/P7-professional-admin-task-spec.md`.
 
 ### Task P7-01 — role/permission/revision contracts
 

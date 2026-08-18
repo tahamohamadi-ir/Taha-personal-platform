@@ -1,5 +1,14 @@
 # Work Log
 
+## LOG-0153 — 2026-08-18 — Root docs sync (AGENTS, Manifest, README, Task-list)
+
+- Outcome: Updated root-facing documentation to match production as of 2026-08-18: CMS image `31c6560`, profile migrations/seed live, CD static deploy `release-f11d2fc`, public `/api/profiles/*`, and closed `RISK-0003`/`DEFER-0017`.
+- Why: Root `AGENTS.md`, `PROJECT_MANIFEST.md`, `README.md`, and `Task-list.md` still described pre-P4/P6 and pre-profile production state.
+- Scope / files: `AGENTS.md`, `PROJECT_MANIFEST.md`, `README.md`, `Task-list.md` progress snapshot, `docs/README.md` §2 About row, this entry.
+- Verification actually performed and result: cross-checked `origin/main` at `f11d2fc`, owner VPS logs (migrate `0005`/`0006`, seed `en`/`fa`, API 200), CD run 32137604292 SUCCESS.
+- Deferred or risk IDs: `DEFER-0022`, `DEFER-0018`, contact persistence, media upload, P7 remainder unchanged.
+- Rollback / recovery: revert this PR; prior docs at `f11d2fc` remain accurate for code but not the post-VPS-sync narrative.
+
 ## LOG-0151 — 2026-08-18 — Canonical docs entry, contracts, P7 specs
 
 - Outcome: Landed local-only documentation that was sitting untracked on the stale `feat/cms-backup-risk-0003-prep` checkout: `docs/README.md`, `docs/contracts/*`, plan index, P7 specs, and the Samples transfer catalog. Added `.gitignore` rules for `Samples/` and `**/test-results/`. Aligned current-gate facts with `DEFER-0017` CLOSED, `RISK-0003` CLOSED, and PR #31. Did not reopen RISK-0003. Did not commit the merged backup branch.
