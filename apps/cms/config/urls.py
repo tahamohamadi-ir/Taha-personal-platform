@@ -5,6 +5,7 @@ from wagtail import urls as wagtail_urls
 from wagtail.admin import urls as wagtail_admin_urls
 
 from apps.api.admin_api import admin_api
+from apps.api.admin_spa import serve_admin_ui
 from apps.api.api import api
 from apps.content.admin_api import admin_profile_create_sibling, admin_profile_detail
 from apps.content.public_api import public_profile_detail, public_profile_list
@@ -14,6 +15,8 @@ from apps.rebuild.views import rebuild_trigger
 urlpatterns = [
     path("health/", health, name="health"),
     path("admin/", include(wagtail_admin_urls)),
+    path("admin-ui/", serve_admin_ui, name="admin_ui"),
+    path("admin-ui/<path:spa_path>", serve_admin_ui, name="admin_ui_path"),
     path("api/v1/admin/", admin_api.urls),
     path("api/profiles/<str:locale>", public_profile_list, name="public_profile_list"),
     path(

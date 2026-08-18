@@ -19,11 +19,7 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     title: "محتوا",
-    items: [
-      { label: "مقالات", to: "/" },
-      { label: "پژوهش‌ها", to: "/" },
-      { label: "پروژه‌ها", to: "/" },
-    ],
+    items: [{ label: "مدیریت محتوا", to: "/content" }],
   },
   {
     title: "رسانه",

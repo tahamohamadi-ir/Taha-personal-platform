@@ -28,6 +28,60 @@ export interface ApiError {
   fields?: Record<string, string[]>;
 }
 
+export type ContentEntity =
+  | "landing"
+  | "profile"
+  | "article"
+  | "research-topic"
+  | "research-statement"
+  | "project"
+  | "publication";
+
+export type ContentStatus = "draft" | "review" | "published" | "archived";
+
+export type ContentLocale = "fa" | "en";
+
+export interface ContentListItem {
+  id: number;
+  locale: ContentLocale;
+  slug: string;
+  title: string;
+  status: ContentStatus;
+  publishedAt: string | null;
+  updatedAt: string;
+}
+
+export interface ContentList {
+  items: ContentListItem[];
+  page: number;
+  pageSize: number;
+  total: number;
+}
+
+export type ContentFieldValue = string | number | null;
+
+export type ContentFields = Record<string, ContentFieldValue>;
+
+export interface ContentDetail {
+  id: number;
+  locale: string;
+  slug: string;
+  title: string;
+  status: string;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  fields: ContentFields;
+}
+
+export interface ContentListParams {
+  locale?: ContentLocale;
+  status?: ContentStatus;
+  q?: string;
+  page?: number;
+  pageSize?: number;
+}
+
 export function isApiError(value: unknown): value is ApiError {
   return (
     typeof value === "object" &&
@@ -139,4 +193,35 @@ export async function fetchMe(): Promise<AdminUser> {
 
 export async function fetchDashboardSummary(): Promise<DashboardSummary> {
   return request<DashboardSummary>("/dashboard/summary");
+}
+
+export async function fetchContentList(
+  entity: ContentEntity,
+  params: ContentListParams = {}
+): Promise<ContentList> {
+  const search = new URLSearchParams();
+  if (params.locale !== undefined) {
+    search.set("locale", params.locale);
+  }
+  if (params.status !== undefined) {
+    search.set("status", params.status);
+  }
+  if (params.q !== undefined && params.q !== "") {
+    search.set("q", params.q);
+  }
+  if (params.page !== undefined) {
+    search.set("page", String(params.page));
+  }
+  if (params.pageSize !== undefined) {
+    search.set("pageSize", String(params.pageSize));
+  }
+  const query = search.toString();
+  return request<ContentList>(`/content/${entity}${query === "" ? "" : `?${query}`}`);
+}
+
+export async function fetchContentDetail(
+  entity: ContentEntity,
+  id: number
+): Promise<ContentDetail> {
+  return request<ContentDetail>(`/content/${entity}/${id}`);
 }
