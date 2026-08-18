@@ -1685,6 +1685,20 @@ ode --check و YAML validation توسط agent.
 - Deferred or risk IDs: DEFER-0023 (cutover واگتِیل→SPA در ADM-1 نهایی)؛ RISK-0010 بدون تغییر؛ Caddy no-store هندل باید روی سرور با تأیید مالک اعمال شود.
 - Rollback / recovery: این slice additive است — حذف فایل‌ها/برنچ بدون اثر بر runtime؛ تولید هیچ‌چیز از این تغییر را استفاده نمی‌کند تا cutover.
 
+## LOG-0158 - 2026-08-18 - ADM-1 / Content write API (create/update + optimistic lock) + SPA edit pages
+
+- Outcome: مسیر **write** ادمین محتوا (ADM-1) اضافه شد تا ادمین واقعاً قابل استفاده شود (نه فقط read):
+  1. **Backend** `apps/api/admin_content.py`: `GET /content/schema` (متادیتای فیلدهای قابل‌ویرایش برای فرم‌های SPA)، `POST /content/{entity}` (create، 201؛ duplicate → 409 DUPLICATE؛ unknown field → 400)، `PUT /content/{entity}/{id}` (update با **optimistic lock** If-Match داخل `transaction.atomic` + `select_for_update`؛ stale → 409 CONFLICT با `currentUpdatedAt`؛ slug duplicate → 409). هر سه با guard staff+OTP + CSRF. coercion با نوع فیلد مدل (IntegerField/DateField/TextField…)، فیلد عددی خالی skip می‌شود، خطاها با کلید camelCase. publish فقط وقتی `published_at` تهی است set می‌شود (ویرایش‌های بعدی تاریخ انتشار را عوض نمی‌کنند).
+  2. **Frontend** `apps/cms/admin-frontend/`: `ContentEditPage` (فرم create/edit یکپارچه: locale/status/slug/title + فیلدهای schema-driven)، دکمه‌ی «+ ساخت» در لیست، route های `/content/:entity/new` و `/content/:entity/:id/edit`، مدیریت 409 با «بارگذاری نسخه جدید/لغو»، خطاهای field-level. `fetchContentSchema/createContent/updateContent` + تایپ‌ها در `api.ts`.
+  3. Review مستقل (r0-verifier) ۵ مورد داد که **همه رفع شد**: publish-reset، race در optimistic lock (select_for_update)، کلید خطای attr→camelCase، فیلد عددی خالی 400، و تناقض مستندات (این ورودی). دو تست regression اضافه شد.
+- Why: تکمیل ADM-1 تا ادمین بتواند محتوا را مدیریت کند؛ بدون حذف واگتِیل (cutover در فاز بعدی).
+- Scope / files: `apps/cms/apps/api/admin_content.py`، `apps/cms/tests/test_admin_content_write.py` (12 تست)، `apps/cms/admin-frontend/src/{lib/api.ts, pages/ContentEditPage.tsx, pages/ContentListPage.tsx, App.tsx, index.css}`، `Task-list.md`، `docs/status/BACKLOG.md`، این Work Log.
+- Commands or actions actually performed: `uv run pytest -q` = **209 passed**؛ `uv run ruff check .` = All checks passed؛ `uv run python manage.py makemigrations --check --dry-run` = No changes detected؛ `npm run build` و `npm run check` در admin-frontend = PASS.
+- Verification actually performed and result: تست‌های create (201، duplicate، locale نامعتبر، unknown field)، update (فیلدها، If-Match conflict با currentUpdatedAt، slug duplicate، publish، blank numeric، publish-once)، schema endpoint، guard های 401/403 — همگی سبز؛ کل سویییت بدون regression.
+- Decisions / assumptions: If-Match با دقت میلی‌ثانیه (همان round-trip JSON) مقایسه می‌شود؛ `select_for_update` روی sqlite تست no-op ولی روی Postgres تولید صحیح است؛ locale در update تغییرناپذیر؛ `published_at` هنگام unpublish پاک نمی‌شود.
+- Deferred or risk IDs: DEFER-0023 (cutover)؛ RISK-0010؛ Caddy no-store؛ migrate Wagtail-session admins به SPA.
+- Rollback / recovery: additive است — بدون اثر runtime تا cutover؛ revert برنچ در صورت نیاز.
+
 ## LOG-0157 - 2026-08-18 - ADM-1 / Content read API + dev preview route + SPA content pages
 
 - Outcome: read-side ادمین محتوا + مسیر پیش‌نمایش dev + صفحات فهرست/جزئیات SPA — همه additive و بدون migration جدید:
