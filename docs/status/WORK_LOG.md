@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0151 — 2026-08-18 — Canonical docs entry, contracts, P7 specs
+
+- Outcome: Landed local-only documentation that was sitting untracked on the stale `feat/cms-backup-risk-0003-prep` checkout: `docs/README.md`, `docs/contracts/*`, plan index, P7 specs, and the Samples transfer catalog. Added `.gitignore` rules for `Samples/` and `**/test-results/`. Aligned current-gate facts with `DEFER-0017` CLOSED, `RISK-0003` CLOSED, and PR #31. Did not reopen RISK-0003. Did not commit the merged backup branch.
+- Why: Source Control showed +1141 untracked lines. Those files are docs, not build artifacts. PR #11 is already merged, so they must land from `origin/main`, not from the backup branch.
+- Scope / files: `AGENTS.md`, `.gitignore`, `docs/README.md`, `docs/governance/README.md`, `docs/plan/README.md`, `docs/plan/P7-*.md`, `docs/plan/SAMPLES-TRANSFER-RECOMMENDATIONS.md`, `docs/contracts/*`, this entry.
+- Commands or actions actually performed: compared each leftover path to `origin/main`; discarded stale P2 spec and `prod-cms-reset-and-migrate.sh` copies; restored backup-doc edits that would reopen `RISK-0003`; copied unique docs onto `docs/canonical-entry-p7-specs` from `origin/main`.
+- Verification actually performed and result: leftover unique docs were absent from `git log --all`; `origin/main` P3 backup spec remains DONE; `DEFER-0017` remains CLOSED in `deferred-validation.md`.
+- Deferred or risk IDs: `DEFER-0022` unchanged. No new IDs.
+- Rollback / recovery: revert this PR; documentation entry point returns to `AGENTS.md` + `DOCUMENTATION_POLICY.md` only.
+
 ## LOG-0150 — 2026-08-18 — CMS-managed About, custom admin, detail routes
 
 - Outcome: Public About reads the typed CMS profile at build time with a committed snapshot fallback. Custom admin lives at `/admin/profiles/` inside the Wagtail session. Gated detail routes emit only when a child row has a Latin slug and a non-empty detail body. Work is on `feat/cms-managed-about-admin` from `origin/main` so P4–P6 routes stay intact.
