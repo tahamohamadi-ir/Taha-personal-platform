@@ -6,6 +6,7 @@ import DashboardPage from "./pages/DashboardPage";
 import ContentListPage from "./pages/ContentListPage";
 import ContentDetailPage from "./pages/ContentDetailPage";
 import ContentEditPage from "./pages/ContentEditPage";
+import MediaLibraryPage from "./pages/MediaLibraryPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 export default function App() {
@@ -27,6 +28,7 @@ export default function App() {
               path="/content/:entity/:id/edit"
               element={<ContentEditPage />}
             />
+            <Route path="/media" element={<MediaLibraryPage />} />
           </Route>
         </Route>
         <Route path="*" element={<NotFoundPage />} />

@@ -23,7 +23,7 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     title: "رسانه",
-    items: [{ label: "کتابخانه رسانه", to: "/" }],
+    items: [{ label: "کتابخانه رسانه", to: "/media" }],
   },
   {
     title: "تنظیمات",

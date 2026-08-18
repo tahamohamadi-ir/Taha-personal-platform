@@ -19,3 +19,14 @@ export function formatDateTime(value: string | null): string {
   }
   return dateTimeFormatter.format(date);
 }
+
+export function formatFileSize(size: number): string {
+  if (size < 1024) {
+    return `${formatNumber(size)} B`;
+  }
+  if (size < 1024 * 1024) {
+    return `${formatNumber(Math.round(size / 1024))} KB`;
+  }
+  const mb = (size / (1024 * 1024)).toFixed(1).replace(/\.0$/, "");
+  return `${formatNumber(Number(mb))} MB`;
+}
