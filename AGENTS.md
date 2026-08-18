@@ -1,20 +1,27 @@
 # Agent and Developer Contract
 
-Read this file, `PROJECT_MANIFEST.md`, `docs/governance/RELEASE_POLICY.md`, `docs/governance/DOCUMENTATION_POLICY.md`, relevant ADRs and a Task Spec before changing this repository.
+Read this file first, then **`docs/README.md`** — it is the documentation entry point
+and tells you which file owns which fact, where to record outcomes, and when to stop.
+
+Then read `PROJECT_MANIFEST.md`, the active Task Spec (`docs/plan/README.md`), and
+only the contract cards your task needs:
+`docs/contracts/IA-CONTRACT.md` for routing and URLs,
+`docs/contracts/DESIGN-CONTRACT.md` for visual and token rules.
+
+`docs/design.md` and `docs/user-journey-information-architecture.md` are deep
+reference. Do not read them end to end; the contract cards restate their binding rules.
 
 ## Current gate
 
-P0-G0 is **PASS for static-only P1** (2026-08-14). The Astro public frontend (`apps/web/`) scaffold and the static P1 release (Language Gateway + bilingual landing) are authorized with a complete Task Spec. Static-only VPS staging/production deployment of that artifact is authorized only with owner approval, a documented rollback path and a passing release gate.
+P0-G0 is **PASS for static-only P1** (2026-08-14). Staging is decommissioned (ADR-0025). Deploy requires CI green (web + cms) + production smoke. Development and deployment happen directly on `tahamohamadi.ir`.
 
-**Staging is decommissioned** per ADR-0025 (2026-08-15): `staging.tahamohamadi.ir` has no Caddy block or DNS record, and deploy now requires CI green (web + cms workflows) + production smoke only — no staging smoke step exists. Development and deployment happen directly on `tahamohamadi.ir`.
+**P3 CMS runtime (live):** Compose `taha-cms`; Wagtail `/admin/login/`; `/static/*` proxied; `/health/` CMS JSON; `/health.json` static; TOTP enrolled (`RISK-0009` CLOSED). Hashed TOTP recovery codes are in repo (`DEFER-0015` CLOSED; owner rebuild still needed to use them on production). Staff draft preview is `/admin/preview/` (`DEFER-0016` for public share tokens). **`RISK-0003` CLOSED** (2026-08-17, LOG-0140). Canonical Caddy: `infra/cms/Caddyfile.cms.snippet`.
 
-**P3 CMS runtime (2026-08-16, owner-authorized):** Compose `taha-cms` live on production; `/admin/login/` Wagtail; `/static/*` proxied; `/health/` CMS JSON; `/health.json` static; TOTP enrolled and admin password rotated (`RISK-0009` CLOSED). Hashed TOTP recovery codes + disable/re-enroll are in repo (`DEFER-0015` CLOSED); owner rebuild needed to use them on production. Staff draft preview under `/admin/preview/` is in repo (P3-07; `DEFER-0016` for public tokens). Public `/api/`, `/media/`, contact persistence and media upload remain blocked until owner applies `docs/plan/P3-public-api-caddy-task-spec.md` (`DEFER-0017`). Loopback static rebuild: `infra/deploy/rebuild-static.sh`. **`RISK-0003` CLOSED** (2026-08-17, LOG-0140): CMS-aware backup installed, systemd job SUCCESS, isolated restore of snapshot `3afdfc96` into throwaway postgres (`taha_cms`). Canonical Caddy handles: `infra/cms/Caddyfile.cms.snippet`.
+**Public `/api/` (live, 2026-08-17):** Caddy proxies published-only Ninja JSON for articles, research, and projects (`DEFER-0017` CLOSED). `/media/` is proxied; contact persistence and media *upload* stay unpublished. Loopback static rebuild: `infra/deploy/rebuild-static.sh`.
 
-**P4 Blog/Writing (code-first):** Article/Series/TopicTag models, Ninja published-only API, and Astro `/{locale}/blog/` routes ship with optional build-time `CMS_API_BASE` (honest empty lists when unset). No infra/Caddy `/api/` or `/media/` exposure. RSS/Atom deferred (`DEFER-0018`). Production schema 0002–0004 applied (image `b369885`); populated public pages still need publish + `rebuild-static.sh`.
+**P4–P6 public routes (live):** `/{locale}/blog/`, `/{locale}/research/`, `/{locale}/projects/`. Header/footer may link those destinations because they exist. Canonical IA writing URL remains `/{locale}/writing/`; the shipped public tree is `/{locale}/blog/` until a writing-canonical redirect ships. RSS/Atom is `DEFER-0018`.
 
-**P5 Research (code-first + static live):** ResearchTopic / ResearchStatement / canonical Project / minimal Publication per `docs/plan/P5-research-task-spec.md` (`PARTIAL`). Public static artifact may still show honest empty lists until `CMS_API_BASE` loopback rebuild after publish. Public edge `/api/` remains `DEFER-0017` (blog + research + projects). Statement PDF `DEFER-0019`; curated graph viz `DEFER-0020`. Do not claim populated research/blog/projects content until publish + static redeploy.
-
-**P6 Projects/Case Studies (code-first):** `ProjectCaseStudyDetails` OneToOne extension, diagrams/screenshots, featured publish gate, Astro `/{locale}/projects/*`, optional `CMS_API_BASE`. Live demo embed `DEFER-0021`. No infra/Caddy `/api/`/`/media/`. Code on `main` (PR #19); static prod not yet redeployed to include `/projects/` routes (see LOG-0137).
+**CMS-managed About + custom admin (merged 2026-08-18, PR #31):** Typed Profile aggregate, public Django views at `/api/profiles/<locale>` and `/api/profiles/<locale>/<slug>`, same-origin admin at `/admin/profiles/` inside the Wagtail session (CSRF + TOTP + `If-Match` revision). Astro About builds from that API with committed `profile.snapshot.json` fallback. Gated detail routes: `/{locale}/about/{section}/` and `/{locale}/about/{section}/{slug}/` only when a child row has a Latin slug and a non-empty detail body. **Production CMS still needs owner `migrate` through `0005`/`0006` and `import_profile_seed` before `/admin/profiles/` and live `/api/profiles/<locale>/about` return the seeded bilingual profile.** Until then the static site uses the snapshot. Local HTTP preview sign-off is `DEFER-0022`.
 
 ## Ownership
 

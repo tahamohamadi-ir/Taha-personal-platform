@@ -65,5 +65,11 @@ worktrees/
 # graphify pipeline outputs (regenerate with /graphify)
 graphify-out/
 
+# Nested sample/research copies — never commit from this repo
+Samples/
+
+# Playwright local artifacts
+**/test-results/
+
 # Local editor/agent tooling state
 .serena/
