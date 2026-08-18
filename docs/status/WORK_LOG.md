@@ -1,5 +1,16 @@
 # Work Log
 
+## LOG-0149 — 2026-08-18 — About hybrid tabs + filters (owner UX feedback)
+
+- Outcome: Restored compact CSS tab UX on About with sticky tab toolbar, **Show all sections** toggle (stacked scan/find-in-page), and per-section filter (search + facet chips where data supports it). Bilingual strings in `content.ts`. `DEBT-0002` reopened as mitigated (tabs default; show-all for full scan).
+- Why: Production P2-H stacked About caused bad vertical-scroll UX; owner preferred tabular layout plus filtering in each section.
+- Scope / files: `About.astro`, `content.ts`, `qa/about-tabs.spec.mjs`, `TECH_DEBT.md`, this entry.
+- Verification actually performed and result:
+  - `npm run check` → 0 errors (62 files)
+  - `npm run build` → 16 pages
+  - `node qa/about-tabs.spec.mjs` with `PREVIEW_URL=http://127.0.0.1:9876` → all PASS (tabs, sticky, show-all, skills filter)
+- Rollback / recovery: revert branch; previous stacked About from `e0a517d` remains deployable.
+
 ## LOG-0145 — 2026-08-17 — P2-H honesty closeout (main-aware)
 
 - Outcome: Hero CTAs → About + CV; perspective cards link to live Research/Projects/Writing; landing adds Current Focus + Selected Evidence from `profile.*`; About stacked with fragment TOC (closes `DEBT-0002`); locale 404 recovery; footer explore links; header `aria-current` + language switch labels. **Header kept Research/Projects/Writing links** because P4–P6 routes are live on `main` (not the pre-P4 fake-live case).

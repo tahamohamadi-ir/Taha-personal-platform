@@ -44,6 +44,12 @@ export interface LocaleContent {
   about: {
     label: string;
     heading: string;
+    filterLabel: string;
+    filterPlaceholder: string;
+    filterEmpty: string;
+    filterAll: string;
+    showAllLabel: string;
+    showTabsLabel: string;
   };
   blog: {
     heading: string;
@@ -219,6 +225,12 @@ export const content: Record<LocaleCode, LocaleContent> = {
     about: {
       label: "02 · Identity",
       heading: "About",
+      filterLabel: "Filter this section",
+      filterPlaceholder: "Search entries…",
+      filterEmpty: "No entries match your filter.",
+      filterAll: "All",
+      showAllLabel: "Show all sections",
+      showTabsLabel: "Use tabs",
     },
     blog: {
       heading: "Writing",
@@ -399,6 +411,12 @@ export const content: Record<LocaleCode, LocaleContent> = {
     about: {
       label: "۰۲ · هویت",
       heading: "درباره",
+      filterLabel: "فیلتر این بخش",
+      filterPlaceholder: "جستجو در موارد…",
+      filterEmpty: "موردی با این فیلتر پیدا نشد.",
+      filterAll: "همه",
+      showAllLabel: "نمایش همهٔ بخش‌ها",
+      showTabsLabel: "حالت تب",
     },
     blog: {
       heading: "نوشته‌ها",
