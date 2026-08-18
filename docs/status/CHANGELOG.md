@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-08-18 — Server sync progress + stale CMS image pin fix
+
+- `prod-cms-update-migrate.sh` پیش‌فرض قدیمی `b369885` را از دست داد؛ `CMS_IMAGE` حالا الزامی است (آخرین sha از workflow «CMS image»). پیش‌فرض قدیمی باعث میشد migrations 0005/0006 اعمال نشوند و `import_profile_seed` در دسترس نباشد.
+- سینک سرور در جریان است: backup گرفته شد؛ گام‌های باقی‌مانده = deploy تصویر `430061b` + migrate + `import_profile_seed` + بازسازی استاتیک (VPS نود ندارد → یا نصب Node 24 یا build محلی با SSH tunnel).
+
 ## 2026-08-18 — Custom admin rebuild authorized (ADR-0026)
 
 - **تصمیم مالک:** Wagtail از runtime و ادمین حذف می‌شود؛ جایگزین = ادمین اختصاصی React SPA زیر `/admin/` + Django Ninja `/api/v1/admin/*` با حفظ baseline امنیتی (session+CSRF+TOTP+audit+rate-limit). ادمین‌های Wagtail-session موجود (`/admin/profiles/` PR #31 و site content admin PR #24) در ADM-1 به SPA منتقل می‌شوند؛ فرانت عمومی Astro استاتیک با rebuild-trigger و `/api/`/`/media/` عمومی published-only بدون تغییر.
