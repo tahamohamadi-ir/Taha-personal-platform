@@ -76,24 +76,25 @@ jobs:
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
           DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
-          DEPLOY_USER: ${{ vars.DEPLOY_USER || 'deploy' }}
           RELEASE_NAME: ${{ needs.build.outputs.release_name }}
         run: |
-          install -m 600 /dev/null ~/.ssh_deploy_key
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh_deploy_key
+          DEPLOY_USER="deploy"
 
           mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/cd_key
+          chmod 600 ~/.ssh/cd_key
+
           ssh-keyscan -H "${DEPLOY_HOST}" >> ~/.ssh/known_hosts 2>/dev/null
 
           rsync -az --delete \
-            -e "ssh -i ~/.ssh_deploy_key -o StrictHostKeyChecking=accept-new" \
+            -e "ssh -i ~/.ssh/cd_key -o StrictHostKeyChecking=accept-new" \
             dist/ "${DEPLOY_USER}@${DEPLOY_HOST}:/home/${DEPLOY_USER}/taha-stage/${RELEASE_NAME}/"
 
-          ssh -i ~/.ssh_deploy_key -o StrictHostKeyChecking=accept-new \
+          ssh -i ~/.ssh/cd_key -o StrictHostKeyChecking=accept-new \
             "${DEPLOY_USER}@${DEPLOY_HOST}" \
             "sudo -n /opt/taha/bin/update-release.sh /home/${DEPLOY_USER}/taha-stage/${RELEASE_NAME}"
 
-          rm -f ~/.ssh_deploy_key
+          rm -f ~/.ssh/cd_key
 
       - name: Production smoke
         env:
