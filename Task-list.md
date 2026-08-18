@@ -4,11 +4,13 @@
 
 **Goal:** رساندن سریع‌ترین نسخهٔ عمومیِ سالم و قابل بازگشت به production، با یک P1 کاملاً static و بدون ایجاد CMS، database یا contact persistence جدید؛ سپس توسعهٔ مرحله‌ای P2 تا P11 با ثبت شفاف همهٔ ریسک‌ها و اعتبارسنجی‌های عقب‌افتاده.
 
-**Architecture:** مسیر عمومی با Astro و HTML ایستا ساخته و به‌صورت artifact نسخه‌دار از Caddy ارائه می‌شود. React فقط برای interaction اثبات‌شده به‌صورت island وارد می‌شود؛ Django/Wagtail/Ninja/PostgreSQL تا P3 یا نیاز واقعی P2 وارد runtime این پروژه نمی‌شوند. فارسی و انگلیسی مستقل ولی مرتبط‌اند و `/` فقط Language Gateway است.
+**Architecture:** مسیر عمومی با Astro و HTML ایستا ساخته و به‌صورت artifact نسخه‌دار از Caddy ارائه می‌شود. React فقط برای interaction اثبات‌شده به‌صورت island وارد می‌شود؛ Django/Ninja/PostgreSQL از P3 وارد runtime می‌شوند و Wagtail طبق ADR-0026 (2026-08-18) با ادمین اختصاصی React جایگزین می‌شود. فارسی و انگلیسی مستقل ولی مرتبط‌اند و `/` فقط Language Gateway است.
 
-**Tech Stack:** Astro + TypeScript؛ Tailwind و Design Tokens حداقلی؛ React Islands فقط در صورت نیاز؛ `motion`، `gsap` و `three` فقط به‌عنوان dependency قفل‌شده برای slice آینده و بدون استفاده در P1؛ GitHub Actions hosted؛ Docker Compose + Caddy؛ از P3 به بعد Python 3.12 + Django 5.2 LTS + Wagtail 7.4 LTS + Django Ninja + PostgreSQL.
+**Tech Stack:** Astro + TypeScript؛ Tailwind و Design Tokens حداقلی؛ React Islands فقط در صورت نیاز؛ `motion`، `gsap` و `three` فقط به‌عنوان dependency قفل‌شده برای slice آینده و بدون استفاده در P1؛ GitHub Actions hosted؛ Docker Compose + Caddy؛ از P3 به بعد Python 3.12 + Django 5.2 LTS + Django Ninja + PostgreSQL؛ ادمین اختصاصی React (SPA) زیر `/admin/` طبق ADR-0026 به‌جای Wagtail.
 
-## Progress snapshot (2026-08-16)
+## Progress snapshot (2026-08-18)
+
+- **Custom admin rebuild authorized (ADR-0026, 2026-08-18):** مالک تصمیم گرفت Wagtail از runtime و ادمین حذف شود؛ جایگزین = ادمین اختصاصی React SPA زیر `/admin/` + API های Django Ninja `/api/v1/admin/*` با حفظ baseline امنیتی (session+CSRF+TOTP+audit+rate-limit). ادمین‌های Wagtail-session موجود (`/admin/profiles/` PR #31 و site content admin PR #24) در ADM-1 به SPA منتقل می‌شوند. فرانت عمومی Astro استاتیک با rebuild-trigger می‌ماند؛ `/api/` و `/media/` عمومی published-only بدون تغییر. **حفظ محتوا الزامی است:** پایه‌ی همه‌ی کارهای ادمین `origin/main` است (seed data + مدل‌های P4–P6 آنجا هستند)، `dumpdata` + backup تازه پیش از هر migration، و فیلد/اسلاگ/locale موجود تغییر نمی‌کند. واگتِیل تا cutover فاز ADM-1 به سرویس `/admin/` ادامه می‌دهد. فازها ADM-0..ADM-6 در §17؛ هر فاز Task Spec جداگانه دارد. مرجع: `docs/plan/custom-admin-rebuild-fa.md`.
 
 - **P0-G0 + P3 code-first gate (owner-authorized):** production P1 live on **release-6031441** (checksum `031943b1`) at https://tahamohamadi.ir since 2026-08-16 (LOG-0111); CI green on `main` (web + cms). A1-A5, B3-B5, C1-C3, C5, C6, C7 (no-CV scope), P1-09 (JSON-LD), D8 done. **Server upgraded** (Ubuntu 26.04 LTS, 2 vCPU / ~4 GiB RAM / 30 GB disk; owner decision: keep 4 GiB — `RISK-0007` CLOSED) and the live stack inventory-confirmed via `docker ps` 2026-08-16 (`RISK-0004` CLOSED). **Staging decommissioned** (ADR-0025, 2026-08-15): gate is now CI (web + cms) + production smoke only. **P3 `apps/cms/` code-first complete:** 70 pytest PASS, ruff clean, ADR-0020..0024, `ci-cms.yml`, NoIndexMiddleware + real JSON logging + enumeration/XSS tests, infra candidates NOT-APPLIED (LOG-0107, LOG-0110). CHANGELOG/BACKLOG updated. **KI-0001 CLOSED** (`profile.fa.ts` single-m fix; `rg tahamohammadi apps/web/src` clean — LOG-0110). **C4 DONE (md, 2026-08-16):** owner placed `Assets/Taha_Mohammadi_Master_CV_Website_Profile.md` + `Assets/Taha_Mohammadi_Industry_Resume_Software_AI.md`; published as Markdown downloads via `Downloads.astro` on `/en/cv/` + `/fa/cv/` (title/note/size; PDF replacement optional — owner). **Header logo added:** 8 KB PNG derived from `Assets/Taha Logo/Taha Logo base.png` (cropped 4000x4000 margins, transparent bg; ACCEPT-WITH-NOTES) replaces the `brand-mark` span in `Header.astro`; sitemap includes both CV routes. Local QA: overflow=0, dir ltr/rtl correct, 2 links/page, logo loads (Playwright on built dist, port 8899); `npm run check` 0 errors; `npm run build` 8 pages. **B1 DONE (inventory):** owner pasted `apt list --upgradable` (57 pkgs, Ubuntu 26.04 updates incl. docker/containerd/grub/apparmor); the upgrade itself needs an owner maintenance-window decision.
 - **Remaining (owner/server):** B2 (SSH port decision), DEFER-0009 (OG), DEFER-0013 (200% zoom), DEFER-0014 (alt-by-locale). **P3 runtime live (2026-08-16):** Compose `taha-cms`; `/admin/` + `/static/*` + TOTP (`RISK-0009` CLOSED, LOG-0129); recovery codes in repo (`DEFER-0015` CLOSED — owner rebuild); staff preview in repo (P3-07 DONE; `DEFER-0016` public token). `RISK-0003` needs CMS-postgres restore evidence. `/api/` and `/media/` unpublished (`DEFER-0017` for public blog API). **P4 Blog/Writing:** code-first `PARTIAL`/`DONE` in repo on `main` (PR #14 + security harden PR #15; LOG-0133/0134). Owner still owns prod migrate (after RISK-0003), optional `CMS_API_BASE` build, and DEFER-0018 feed.
@@ -608,6 +610,8 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 - [x] editor fields، heading/table/code/image rules و Shiki build-time highlighting پیاده شوند. *(Wagtail snippet panels + RichTextField allowlist; Shiki not required — body HTML from Wagtail)*
 - [x] unrestricted HTML و client-heavy highlighter ممنوع. *(ARTICLE_RICHTEXT_FEATURES synced with ADR-0022 allowlist)*
+- [ ] محدودیت‌های انیمیشن کران‌دار برای islands آینده (duration 50–3000ms، delay 0–2000ms، easing/trigger allowlist). *(§14 U2)*
+- [ ] Vitest + تست‌های colocated (و property-based در صورت سوددهی) برای کامپوننت‌های وب معرفی شوند. *(§14 S3)*
 
 ### Task P4-03 — list/detail/series routes
 
@@ -623,6 +627,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 - [x] draft exclusion، XSS allowlist، invalid filter، pagination/order، redirects تست شوند. *(122 pytest PASS; ruff clean; `npm run check` + build with empty CMS)*
 - [x] staging/prod list/detail/cache invalidation smoke و rollback unpublish/invalidate ثبت شود. *(prod routes `/en|fa/blog|research/` 200 on `release-82d51c6`; lists empty until Wagtail publish + rebuild; DEFER-0017 for public `/api/` edge)*
+- [ ] Lighthouse CI budget (`.lighthouserc.json`) با حداقل threshold های مصوب در CI اضافه شود. *(§14 S5)*
 
 ---
 
@@ -668,10 +673,14 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 - [x] states public/restricted/unavailable، responsive diagram، projection ACL و canonical SEO تست شوند.
 - [x] هر featured case study acceptance کامل Product Baseline را پاس کند یا published نشود.
+- [ ] فیلترهای URL-driven برای بلاگ/پورتفولیو (تگ/دسته → URL؛ state در JS تنها نباشد). *(§14 F3)*
+- [ ] گالری lightbox پروژه‌ها با progressive enhancement (JS فقط island؛ focus/reduced-motion رعایت شود — الگوی PhotoSwipe در Phlox). *(§14 F7)*
 
 ---
 
 ## 12. P7 — Professional Admin
+
+> **Superseded (2026-08-18, ADR-0026):** این بخش با فازهای ADM در §17 جایگزین می‌شود — P7-01/P7-02/P7-04 به ترتیب در ADM-4/ADM-1/ADM-6 و P7-03 در ADM-3 ادغام می‌شوند.
 
 ### Task P7-01 — role/permission/revision contracts
 
@@ -746,6 +755,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 - [ ] Topic canonical pages و curated Collection با curator/criteria/date بساز.
 - [ ] PostgreSQL FTS فقط با نیاز dynamic و benchmark؛ dedicated search فقط پس از failure benchmark + ADR.
+- [ ] در صورت ورود FTS: فارسی با `simple` + نرمال‌سازی تعیین‌شده (الگوی نمونه) و انگلیسی با `english`. *(§14 F9)*
 
 ### Task P10-04 — index lifecycle/release
 
@@ -779,7 +789,63 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 ---
 
-## 17. Release checklist مشترک برای هر slice
+## 17. ADM — Custom Admin (ADR-0026, 2026-08-18)
+
+> **Baseline (owner-authorized):** واگتِیل از runtime و ادمین حذف می‌شود؛ جایگزین = React SPA زیر `/admin/` + Django Ninja `/api/v1/admin/*` با حفظ baseline امنیتی (session+CSRF+TOTP+audit+rate-limit). ادمین‌های Wagtail-session موجود (`/admin/profiles/` PR #31 و site content admin PR #24) در ADM-1 به SPA منتقل می‌شوند. فرانت عمومی Astro استاتیک با HMAC rebuild-trigger می‌ماند؛ `/api/` و `/media/` عمومی published-only بدون تغییر. **پایه‌ی همه‌ی کارها `origin/main` است؛ seed data و مدل‌های P4–P6 آنجا هستند.** قبل از هر migration: `dumpdata` fixture + backup تازه (`infra/backup/taha-platform-backup.sh`). فیلد/اسلاگ/locale/status موجود تغییر نمی‌کند. هر فاز Task Spec جداگانه دارد. مرجع: `docs/plan/custom-admin-rebuild-fa.md`.
+
+### Task ADM-0 — Wagtail removal prep + auth foundation (Django-level)
+
+- [ ] بازنویسی ۳ فایل وابسته به Wagtail با Django خالص: `apps/security/views_totp.py` (messages → Django), `apps/security/wagtail_hooks.py` (TOTP panel → مستقل), `apps/security/forms.py` (LoginForm → Django پایه).
+- [ ] لاگین/خروج/me/CSRF ادمین به‌صورت Django-level: session + CSRF + TOTP (با `django-otp`) بدون وابستگی به Wagtail؛ `WAGTAILADMIN_USER_LOGIN_FORM` و hook ها حذف.
+- [ ] خروجی ایمن: dumpdata fixture از app های content/media/security در repo + backup تازه + ثبت ریسک cutover (RISK-0010).
+- [ ] حذف Wagtail از INSTALLED_APPS/urls/settings و uninstall dependency پس از green CI؛ واگتِیل تا cutover ADM-1 روی production باقی می‌ماند (Caddy بدون تغییر).
+- [ ] به‌روزرسانی تست‌های متأثر (`test_security.py`) و README/infra مستندات.
+
+### Task ADM-1 — Admin foundation (real working admin)
+
+- [ ] Ninja admin auth: `/api/v1/admin/auth/csrf|login|me|logout` با session+CSRF (pattern: `tahamohamadi-ir` plans/005 + auth flow).
+- [ ] CRUD کامل Landing/Profile/Article + مدل‌های P4–P6 (projection published-only سمت عمومی دست نمی‌خورد).
+- [ ] پوسته‌ی React SPA: لاگین، سایدبار گروه‌بندی‌شده، داشبورد action-oriented (داشبورد پیشنویس‌ها/زمان‌بندی/ترجمه ناقص/رسانه بدون alt، هر کارت لینک به لیست فیلترشده), لیست/فرم هر entity با paging/filter، RTL/فارسی کامل ادمین.
+- [ ] سرویسلایه: logic در service ها (transactional)، views نازک، schema سمت سرور — الگوی conventions نمونه. *(§14 S1)*
+- [ ] خطاهای یکنواخت Problem Details: `{status, code, message, path, fields[]}` + 409/422/415. *(با پلن ۰۰۵ نمونه)*
+- [ ] OpenAPI/Swagger داخلی Ninja فقط admin-only (در معرض عمومی نباشد). *(§14 S7)*
+- [ ] feature flags (adminNewShell، mediaPickerV2 و…) برای rollback کنترل‌شده. *(§14 S4)*
+- [ ] انتقال ادمین‌های Wagtail-session موجود (site content admin PR #24 و `/admin/profiles/` PR #31) به SPA.
+- [ ] cutover: واگتِیل روی production با SPA جایگزین می‌شود (با owner approval + rollback path).
+
+### Task ADM-2 — Media management
+
+- [ ] MediaPicker واحد در همه‌ی ویرایشگرها (search/type filter/upload-in-flow/progress)، alt دو زبانه، orphan report، usage، replace/archive با تأیید اثر.
+- [ ] انتهای نیمه‌باز رسانه: DEFER-0014 (alt-by-locale) در همین فاز بسته شود.
+
+### Task ADM-3 — Page composition (Section/Block)
+
+- [ ] Page → Section → Block با JSON Schema سمت سرور (fail-closed: `additionalProperties: false`)؛ layout presets: ۱/۲/۳ ستون + نسبت ستون‌ها + ترتیب (کنار/زیر هم).
+- [ ] ویرایشگر ساخت‌یافته‌ی سکشن/بلوک با پیش‌نمایش؛ کاتالوگ بلوک‌ها از `composer-block-catalog` نمونه (hero/text/gallery/cta/quote/divider + محدودیت‌های انیمیشن).
+- [ ] کاتالوگ بلوک‌های غنی v2 (اختیاری پس از v1): accordion، tabs، timeline، counters، before/after، slider — از کاتالوگ ماژول Divi 5. *(§14 U3)*
+- [ ] داده‌های عمومی به‌صورت published-only پروژه می‌شوند؛ مدل‌های موجود تغییر نمی‌کنند (افزودن مدل Composition به‌صورت additive).
+
+### Task ADM-4 — Workflow + revisions + translation queue
+
+- [ ] Lifecycle transitions (Draft→Review→Scheduled→Published→Archived) با reason+audit، بازیابی-به-صورت-پیشنویس (هرگز overwrite live)، optimistic lock با 409، زمان‌بندی انتشار idempotent.
+- [ ] صف ترجمه fa/en: Missing/Incomplete/Complete/Outdated (بدون fallback خودکار) + content health (ترجمه ناقص، alt ناقص، orphan، شکست زمان‌بندی).
+- [ ] preview token با noindex/no-store.
+
+### Task ADM-5 — Site customization + inbox
+
+- [ ] Site settings: منو/هدر/فوتر، توکن‌های طراحی (رنگ از CMS → CSS vars هنگام build)، SEO fields (title/description/canonical/OG)، تگ‌ها و فیلترهای بلاگ/پورتفولیو، صندوق پیام‌های تماس (body فقط در detail، رعایت جهت).
+- [ ] featured spotlight با پنجره‌ی زمانی (دقیقاً یک target فعال + بازه؛ الگوی AdminFeaturedItemController نمونه). *(§14 F4)*
+- [ ] CV/Resume: سیاست «یک سند جاری» از ادمین (جای دانلودهای markdown ثابت در `Downloads.astro`). *(§14 F5)*
+
+### Task ADM-6 — Frontend wiring + verification
+
+- [ ] Astro: fetch داده‌های منتشرشده هنگام build + اجرای rebuild-trigger پس از انتشار (loopback، بدون افشای `/api/v1/admin/*`).
+- [ ] E2E: lifecycle یکپارچه (create→edit→publish→public fa/en) + anonymous published-only (الگوی `article-lifecycle.spec.ts` نمونه).
+- [ ] QA کامل: RTL/LTR، keyboard، noindex/cache policy، bulk destructive با count+confirm+audit، release checklist §18.
+
+---
+
+## 18. Release checklist مشترک برای هر slice
 
 - [ ] Task Spec کامل و risk class ثبت شده است.
 - [ ] status/diff/ownership قبل از edit بررسی شده است.
@@ -793,10 +859,12 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 - [ ] deferred/riskها ID، owner، target، mitigation و evidence دارند.
 - [ ] production deploy approval و post-deploy smoke وجود دارد.
 - [ ] Release DoD از Completion DoD جدا گزارش شده است.
+- [ ] Playwright config کامل (retries/trace/video/html reporter) به‌جای spec های خام نگهداری شود. *(§14 S2)*
+- [ ] manual-test checklists (keyboard-nav، responsive، rtl-ltr، reduced-motion، accessibility، performance) در scope اثر slice اجرا شوند. *(§14 S6)*
 
 ---
 
-## 18. Owner decision queue به ترتیب زمانی
+## 19. Owner decision queue به ترتیب زمانی
 
 1. پذیرش یا عدم پذیرش محدود `RISK-0003` برای first live static-only. **— DONE 2026-08-14: پذیرش محدود static-only (ACCEPTED).**
 2. approval content pack و asset/license/linkهای P1 در هر locale. **— PROPOSAL آماده (`docs/plan/P0-G0-content-pack-proposal.md`); تأیید نهایی strings توسط مالک PENDING.**
@@ -810,7 +878,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 ---
 
-## 19. معیار موفقیت این برنامه
+## 20. معیار موفقیت این برنامه
 
 - اولین production release فقط با R0+R1+R2 انجام می‌شود؛ P2–P11 blocker آن نیستند.
 - هیچ مورد High/Critical یا Minimum Safe Gate زیر عنوان «بعداً تست می‌کنیم» پنهان نمی‌شود.
@@ -821,7 +889,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 ---
 
-## 20. Self-review قبل از اجرای برنامه
+## 21. Self-review قبل از اجرای برنامه
 
 - [ ] هر requirement بالادستی حداقل یک task مالک دارد.
 - [ ] هیچ عبارت جای‌خالی یا endpoint/model/slug/metric/content فرضی وجود ندارد.

@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-08-18 — Custom admin rebuild authorized (ADR-0026)
+
+- **تصمیم مالک:** Wagtail از runtime و ادمین حذف می‌شود؛ جایگزین = ادمین اختصاصی React SPA زیر `/admin/` + Django Ninja `/api/v1/admin/*` با حفظ baseline امنیتی (session+CSRF+TOTP+audit+rate-limit). ادمین‌های Wagtail-session موجود (`/admin/profiles/` PR #31 و site content admin PR #24) در ADM-1 به SPA منتقل می‌شوند؛ فرانت عمومی Astro استاتیک با rebuild-trigger و `/api/`/`/media/` عمومی published-only بدون تغییر.
+- **حفظ محتوا الزامی:** پایه‌ی کارها `origin/main` است (seed data + مدل‌های P4–P6 آنجا هستند)؛ `dumpdata` + backup تازه پیش از هر migration؛ فیلد/اسلاگ/locale موجود تغییر نمی‌کند.
+- **مستندات:** ADR-0026، بخش §17 (ADM-0..ADM-6) در Task-list، `docs/plan/custom-admin-rebuild-fa.md`، به‌روزرسانی Manifest/AGENTS/ledgers؛ DEFER-0023 (انتقال admin)، DEFER-0024 (برنچ پایه)، DEFER-0025 (dark mode)، RISK-0010/RISK-0011، DEBT-0003 ثبت شدند.
+- **مکمل‌های §14** (بیرون از ادمین): reading time/JSON-LD/TOC (بخشی DONE روی main)، گالری lightbox + فیلترهای URL-driven (P6)، FTS فارسی (P10)، سرویسلایه/OpenAPI/feature flags (ADM)، Vitest + Lighthouse CI + Playwright config + manual-test checklists (QA) در Task-list/BACKLOG تثبیت شدند.
+- **وضعیت:** واگتِیل تا cutover ADM-1 به سرویس `/admin/` ادامه می‌دهد؛ کد در این slice تغییر نکرد (فقط مستندات/مراجع).
+
 ## 2026-08-18 — CMS-managed About + custom admin + detail routes
 
 - About pages load the typed bilingual profile from `/api/profiles/<locale>/about` at build time, with `profile.snapshot.json` as fallback.

@@ -23,10 +23,12 @@ P0-G0 is **PASS for static-only P1** (2026-08-14). Staging is decommissioned (AD
 
 **CMS-managed About + custom admin (merged 2026-08-18, PR #31):** Typed Profile aggregate, public Django views at `/api/profiles/<locale>` and `/api/profiles/<locale>/<slug>`, same-origin admin at `/admin/profiles/` inside the Wagtail session (CSRF + TOTP + `If-Match` revision). Astro About builds from that API with committed `profile.snapshot.json` fallback. Gated detail routes: `/{locale}/about/{section}/` and `/{locale}/about/{section}/{slug}/` only when a child row has a Latin slug and a non-empty detail body. **Production CMS still needs owner `migrate` through `0005`/`0006` and `import_profile_seed` before `/admin/profiles/` and live `/api/profiles/<locale>/about` return the seeded bilingual profile.** Until then the static site uses the snapshot. Local HTTP preview sign-off is `DEFER-0022`.
 
+**Custom admin rebuild (2026-08-18, owner-authorized, ADR-0026):** Wagtail is being removed from runtime and admin; the replacement is a dedicated React SPA under `/admin/` + Django Ninja admin APIs under `/api/v1/admin/*`, keeping the existing Django-level security baseline (session+CSRF+TOTP+audit+rate-limit). The Wagtail-session admin surfaces (`/admin/profiles/` PR #31, site content admin PR #24) are superseded and move into the React admin during ADM-1. Public frontend stays Astro static with the HMAC rebuild trigger; public published-only `/api/`/`/media/` exposure is unchanged. **Content preservation is non-negotiable:** all admin work branches from `origin/main` (seed data and P4–P6 models live there), a `dumpdata` fixture + fresh backup precede any schema migration, and existing fields/slugs/locales/statuses are unchanged. Wagtail keeps serving `/admin/` until ADM-1 cutover. Phases ADM-0..ADM-6 are defined in `Task-list.md` §17; each phase gets its own Task Spec. Master plan: `docs/plan/custom-admin-rebuild-fa.md`.
+
 ## Ownership
 
 - `apps/web/`: public frontend only.
-- `apps/cms/`: Django/Wagtail/Ninja only.
+- `apps/cms/`: Django/Ninja only (Wagtail removal authorized per ADR-0026; custom React admin SPA lives under `apps/cms/admin-frontend/` once scaffolded).
 - `infra/`: deploy, Caddy, Compose and backup only.
 - `docs/`: policies, ADRs, planning and status only.
 - `.github/`: GitHub Actions and repository automation only.

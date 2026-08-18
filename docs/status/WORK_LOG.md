@@ -1626,3 +1626,36 @@ ode --check و YAML validation توسط agent.
 - Deferred or risk IDs: owner must run seed on VPS after merge + static rebuild; blog/articles remain empty until writing slice content exists.
 - Rollback / recovery: delete seeded rows in Wagtail admin or re-run with `--force` after editing `site_content.py`; no schema migration.
 
+## LOG-0152 - 2026-08-18 - ADM / Custom admin rebuild — docs and reference-file alignment (ADR-0026)
+
+- Outcome: مالک تصمیم گرفت Wagtail کلاً از runtime و ادمین حذف شود و با ادمین اختصاصی React SPA زیر `/admin/` + Django Ninja `/api/v1/admin/*` جایگزین شود (ADR-0026). فقط مستندات/فایل‌های مرجع در این slice تغییر کردند؛ کد تغییر نکرد. تغییرات روی برنچ `docs/custom-admin-rebuild` از `origin/main` (پس از sync با وضعیت واقعی main: P4–P6 live، `/api/` و `/media/` عمومی، `RISK-0003` CLOSED، `DEFER-0015` CLOSED) اعمال شد. اسناد: ADR-0026 (جدید)، `docs/plan/custom-admin-rebuild-fa.md` (جدید)، Task-list.md (§17 ADM-0..ADM-6 + supersede P7 + snapshot + معماری/Tech Stack + آیتم‌های §14 در P4/P6/P10/release checklist)، AGENTS.md (gate + ownership)، PROJECT_MANIFEST.md (status/route/معماری/ownership/open decisions + اصلاح اطالعات قدیمی `/api/`)، docs/adr/README.md (ردیف 0026 + یادداشت 0002/0014/0020/0022)، ledgers: BACKLOG.md (ردیف‌های ADM)، deferred-validation.md (DEFER-0023/0024/0025)، RISK_REGISTER.md (RISK-0010/0011)، TECH_DEBT.md (DEBT-0003)، CHANGELOG.md، README.md.
+- Why: مالک ادمین فعلی واگتِیل را غیرقابل استفاده ارزیابی کرد؛ وابستگی کد به واگتِیل فقط ۳ فایل امنیتی است و لایه‌های ارزشمند Django خالص‌اند؛ خواسته = مدیریت کامل سایت (صفحات/چیدمان/تب‌ها/تگ‌ها/فیلترها/محتوا) با ادمین فارسی/RTL؛ محتوای seeded باید حفظ شود.
+- Scope / files: `docs/adr/0026-custom-admin-replaces-wagtail.md` (new), `docs/plan/custom-admin-rebuild-fa.md` (new), `docs/adr/README.md`, `AGENTS.md`, `PROJECT_MANIFEST.md`, `Task-list.md`, `docs/status/BACKLOG.md`, `docs/status/deferred-validation.md`, `docs/status/RISK_REGISTER.md`, `docs/status/TECH_DEBT.md`, `docs/status/CHANGELOG.md`, `README.md`, این Work Log.
+- Commands or actions actually performed: `git fetch origin --prune`؛ `git switch -c docs/custom-admin-rebuild origin/main`؛ ویرایش/ایجاد فایل (write/edit)؛ بدون کد/CI/VPS. راستی‌آزمایی read-only: `git show origin/main:docs/status/deferred-validation.md` (max DEFER-0022)، `git show origin/main:docs/status/WORK_LOG.md` (max LOG-0151)، `git show origin/main:docs/status/RISK_REGISTER.md` (max RISK-0009)، `git show origin/main:docs/status/TECH_DEBT.md` (max DEBT-0002 → DEBT-0003 استفاده شد).
+- Verification actually performed and result: `git diff --check` روی تغییرات؛ شماره‌های DEFER/LOG/RISK/DEBT نسبت به `origin/main` بدون تداخل انتخاب شدند؛ هیچ فایل کدی لمس نشد.
+- Decisions / assumptions: پایه‌ی کارهای ADM = `origin/main`؛ واگتِیل تا cutover ADM-1 به سرویس `/admin/` ادامه می‌دهد (DEFER-0023)؛ ادمین‌های Wagtail-session موجود (PR #24/#31) در ADM-1 منتقل می‌شوند؛ استک ادمین = React + Vite + Tailwind v4 + shadcn/ui؛ Composition ساختاریافته با layout presets؛ فرانت عمومی Astro استاتیک با rebuild-trigger.
+- Deferred or risk IDs: DEFER-0023/0024/0025، RISK-0010/0011، DEBT-0003.
+- Rollback / recovery: این slice صرفاً مستندات است — revert برنچ در صورت نیاز؛ بدون اثر runtime.
+
+## LOG-0153 - 2026-08-18 - ADM / Complementary improvements extracted from Samples (beyond admin)
+
+- Outcome: در پاسخ به سؤال مالک («بجز پنل ادمین از پروژه‌های قبلی چه چیزی اضافه کنیم؟»)، بخش §14 «بهره‌برداری‌های مکمل» به `docs/plan/custom-admin-rebuild-fa.md` اضافه شد: ۱۰ ویژگی (F1–F10)، ۷ الگوی ساختاری (S1–S7)، ۵ مورد UI/UX (U1–U5) — هرکدام با منبع دقیق در Samples و فاز هدف. ردیف‌های پیشنهادی به BACKLOG اضافه شدند (QA-playwright، P4-reading، P6-gallery، ADM-5-featured، QA-vitest). در تطبیق با main مشخص شد بخشی از F ها قبلاً انجام شده‌اند (reading time ~200wpm، JSON-LD BlogPosting، BreadcrumbList در P4)؛ فقط موارد انجام‌نشده در Task-list تثبیت شدند.
+- Why: مالک خواست بداند چه امکانات/ساختار/UX دیگری از پروژه‌های قبلی به پروژه‌ی نهایی منتقل شود؛ پاسخ باید مستند، منبع‌دار و فازبندی‌شده باشد.
+- Scope / files: `docs/plan/custom-admin-rebuild-fa.md` (§14)، `docs/status/BACKLOG.md`، این Work Log.
+- Commands or actions actually performed: ویرایش فایل؛ بدون کد/CI/VPS؛ منبع‌ها از گزارش‌های بازبینی Samples همان جلسه (۴ sub-agent) گرفته شدند.
+- Verification actually performed and result: `git diff --check` PASS؛ ارجاع‌های §14 با گزارش‌های اولیه هم‌خوانی دارند.
+- Decisions / assumptions: موارد §14 پیشنهادی‌اند؛ هرکدام با Task Spec و اولویت مالک اجرا می‌شوند؛ blocker فازهای ADM نیستند.
+- Deferred or risk IDs: بدون ID جدید.
+- Rollback / recovery: revert کامیت؛ بدون اثر runtime.
+
+## LOG-0154 - 2026-08-18 - Git sync: local/remote alignment + server sync prep
+
+- Outcome: برنچ محلی قدیمی (`feat/cms-backup-risk-0003-prep` با ۳ کامیت doc از این جلسه) با وضعیت جدید هم‌راستا نشد؛ تغییرات روی برنچ تازه‌ی `docs/custom-admin-rebuild` از `origin/main` بازاعمال شدند (با تطبیق به واقعیت main و شماره‌های بدون تداخل). `git fetch origin --prune` انجام شد. سینک سرور (production VPS) مستقیماً انجام نشد — طبق قرارداد (SSH/deploy نیاز به تأیید صریح و Task Spec)؛ دستورالعمل/اسکریپت برای مالک در پیام نهایی ارائه می‌شود.
+- Why: مالک خواست local، remote (main) و سرور در بهترین/آخرین وضعیت سینک شوند تا version control کامل و تمیز باشد.
+- Scope / files: برنچ‌ها/worktrees و این Work Log.
+- Commands or actions actually performed: `git fetch origin --prune`؛ `git switch -c docs/custom-admin-rebuild origin/main`؛ بررسی divergence (۶۴ behind / ۳ ahead)؛ راستی‌آزمایی شماره‌ها در main.
+- Verification actually performed and result: وضعیت divergence و شماره‌های ledger های main ثبت شد؛ تغییرات doc از برنچ قدیمی به جدید منتقل و بازنویسی شد.
+- Decisions / assumptions: main مرجع حقیقت است؛ برنچ محلی قدیمی پس از merge این PR می‌تواند حذف شود؛ سرور جداگانه با تأیید مالک سینک می‌شود (rebuild CMS image از main + migrate + seed + rebuild-static).
+- Deferred or risk IDs: DEFER-0024 (برنچ پایه) — نزدیک‌شونده؛ سینک سرور به مالک واگذار شد.
+- Rollback / recovery: revert/حذف برنچ؛ بدون اثر runtime تا اجرای دستورالعمل سرور.
+

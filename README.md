@@ -1,12 +1,12 @@
 # Taha Personal Platform
 
-Bilingual Persian/English personal research, professional and knowledge platform for Taha Mohammadi, live at https://tahamohamadi.ir. The public root is a Language Gateway (`/`) with direct locale roots `/fa/` (RTL) and `/en/` (LTR); all public content is static-first and readable without JavaScript, served as a versioned artifact by Caddy from `/opt/taha/site/current`. This repository is a monorepo: `apps/web/` is the Astro static public frontend, `apps/cms/` is the Django/Wagtail/Ninja CMS (runtime live, `/static*` Caddy proxy still outstanding), `infra/` holds deploy scripts and the CMS Compose stack, and `docs/` holds policies, ADRs, task specs and status ledgers. Source of truth for product, environments and commands: [PROJECT_MANIFEST.md](PROJECT_MANIFEST.md).
+Bilingual Persian/English personal research, professional and knowledge platform for Taha Mohammadi, live at https://tahamohamadi.ir. The public root is a Language Gateway (`/`) with direct locale roots `/fa/` (RTL) and `/en/` (LTR); all public content is static-first and readable without JavaScript, served as a versioned artifact by Caddy from `/opt/taha/site/current`. This repository is a monorepo: `apps/web/` is the Astro static public frontend, `apps/cms/` is the Django/Ninja CMS (runtime live; Wagtail admin being replaced by a custom React admin SPA per ADR-0026), `infra/` holds deploy scripts and the CMS Compose stack, and `docs/` holds policies, ADRs, task specs and status ledgers. Source of truth for product, environments and commands: [PROJECT_MANIFEST.md](PROJECT_MANIFEST.md).
 
 ## Repository layout
 
 ```text
 apps/web/       Astro 7 + TypeScript static public frontend (Language Gateway, /fa/ + /en/ landing, about, cv, 404, health, robots, sitemap)
-apps/cms/       Django 5.2.9 / Wagtail 7.4.2 / Django Ninja 1.6.2 / psycopg 3.3.4 on Python 3.12.13 — runtime on 127.0.0.1:18000
+apps/cms/       Django 5.2.9 / Django Ninja 1.6.2 / psycopg 3.3.4 on Python 3.12.13 — runtime on 127.0.0.1:18000 (Wagtail 7.4.2 pending removal per ADR-0026)
 infra/deploy/   versioned artifact switch (update-release.sh), smoke.sh, update-cms.sh, smoke-cms.sh
 infra/cms/      CMS Compose + Dockerfile + Caddy snippet (apply `/static*` before file_server)
 infra/caddy/    static-site Caddy config candidate
@@ -62,7 +62,7 @@ uv run pytest -q                        # test suite (75 passed)
 
 - [PROJECT_MANIFEST.md](PROJECT_MANIFEST.md) — product, approved baseline, environments, canonical verified commands.
 - [AGENTS.md](AGENTS.md) — agent and developer contract, ownership boundaries, current gate.
-- [docs/adr/README.md](docs/adr/README.md) — ADR index (ADR-0002..0025, including static-first Astro, versioned artifact deploy, admin security boundary, P3 auth/media/rich-text/rebuild/lifecycle, staging decommission).
+- [docs/adr/README.md](docs/adr/README.md) — ADR index (ADR-0002..0026, including static-first Astro, versioned artifact deploy, admin security boundary, P3 auth/media/rich-text/rebuild/lifecycle, staging decommission, custom admin replacing Wagtail).
 - [docs/governance/RELEASE_POLICY.md](docs/governance/RELEASE_POLICY.md) — release gate and DoD.
 - [docs/governance/DEPLOY_RUNBOOK.md](docs/governance/DEPLOY_RUNBOOK.md) — deploy, smoke and rollback procedure.
 - [docs/governance/BACKUP_POLICY.md](docs/governance/BACKUP_POLICY.md) and [docs/governance/BACKUP_RUNBOOK.md](docs/governance/BACKUP_RUNBOOK.md) — encrypted Google Drive backup policy and runbook.
@@ -75,8 +75,8 @@ uv run pytest -q                        # test suite (75 passed)
 
 ## Status snapshot
 
-- Live (2026-08-16): static site at https://tahamohamadi.ir plus CMS Compose `taha-cms`. `/admin/login/` is Wagtail; `/health/` is CMS JSON `db=ok`; `/health.json` is still the static artifact. `/static/wagtailadmin/css/core.css` currently 404s on the Astro 404 page until Caddy proxies `/static*`. Evidence: [WORK_LOG.md](docs/status/WORK_LOG.md) LOG-0126.
-- Open: `RISK-0003` (restic restore evidence for the new CMS postgres volume); `DEFER-0017` (public Caddy `/api/` for blog). `/api/` and `/media/` stay unpublished. `RISK-0009` CLOSED. `DEFER-0015` CLOSED (recovery codes in repo; owner rebuild).
+- Live (2026-08-17/18): static site at https://tahamohamadi.ir plus CMS Compose `taha-cms`; public published-only `/api/` + `/media/` live (`DEFER-0017` CLOSED); P4–P6 public routes live. `/admin/login/` is Wagtail (to be replaced by a custom React admin per ADR-0026, 2026-08-18). Evidence: [WORK_LOG.md](docs/status/WORK_LOG.md).
+- Open: `RISK-0010/RISK-0011` (admin cutover/content preservation, from ADR-0026); `DEFER-0023/0024/0025` (admin transition, branch base, dark mode). `RISK-0003` CLOSED; `DEFER-0017` CLOSED; `RISK-0009` CLOSED; `DEFER-0015` CLOSED (recovery codes in repo; owner rebuild).
 
 ## Security and governance notes
 
@@ -87,4 +87,4 @@ uv run pytest -q                        # test suite (75 passed)
 
 ## Roadmap
 
-Phased plan in [Task-list.md](Task-list.md): P0-G0 gate passed, static R1 spine and R2 first live done, P2 About/CV live, P3 CMS runtime gated (see snapshot above), then P4–P11: Blog/Writing, Research, Projects, Professional Admin, Publications/Books/Downloads/Talks, Teaching + Creative, Topics + Pagefind search, and AI/semantic/knowledge graph. Owner-filtered queue: [docs/status/BACKLOG.md](docs/status/BACKLOG.md).
+Phased plan in [Task-list.md](Task-list.md): P0-G0 gate passed, static R1 spine and R2 first live done, P2 About/CV live, P3–P6 CMS/public API live, **custom admin rebuild authorized (ADR-0026, phases ADM-0..ADM-6 in Task-list §17)**, then P8–P11: Publications/Books/Downloads/Talks, Teaching + Creative, Topics + Pagefind search, and AI/semantic/knowledge graph. Owner-filtered queue: [docs/status/BACKLOG.md](docs/status/BACKLOG.md).
