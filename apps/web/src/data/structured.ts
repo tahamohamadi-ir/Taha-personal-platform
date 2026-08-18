@@ -1,6 +1,6 @@
 import { site } from "./site";
 import { content } from "./content";
-import { profile } from "./profile";
+import { profile, type Profile } from "./profile";
 import type { LocaleCode } from "./site";
 
 export interface JsonLdBlock {
@@ -19,8 +19,8 @@ export function websiteJsonLd(): JsonLdBlock {
   };
 }
 
-export function personJsonLd(locale: LocaleCode): JsonLdBlock {
-  const p = profile[locale];
+export function personJsonLd(locale: LocaleCode, profileOverride?: Profile): JsonLdBlock {
+  const p = profileOverride ?? profile[locale];
   return {
     "@context": "https://schema.org",
     "@type": "Person",
@@ -132,17 +132,20 @@ export function creativeWorkJsonLd(input: {
 }
 
 export function breadcrumbJsonLd(
-  crumbs: Array<{ name: string; path: string }>,
+  crumbs: Array<{ name: string; path?: string; href?: string }>,
 ): JsonLdBlock {
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    itemListElement: crumbs.map((crumb, index) => ({
-      "@type": "ListItem",
-      position: index + 1,
-      name: crumb.name,
-      item: new URL(crumb.path, site.url).href,
-    })),
+    itemListElement: crumbs.map((crumb, index) => {
+      const target = crumb.href ?? crumb.path ?? "/";
+      return {
+        "@type": "ListItem",
+        position: index + 1,
+        name: crumb.name,
+        item: /^https?:\/\//.test(target) ? target : new URL(target, site.url).href,
+      };
+    }),
   };
 }
 

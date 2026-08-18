@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "taggit",
     "apps.users",
     "apps.health",
+    "apps.admin",
     "apps.content",
     "apps.media",
     "apps.security",

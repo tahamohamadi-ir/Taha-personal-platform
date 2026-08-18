@@ -33,6 +33,8 @@ apps/cms/apps/media/**/__pycache__/
 apps/cms/apps/media/**/*.py[cod]
 staticfiles/
 static/
+!apps/cms/apps/admin/static/
+!apps/cms/apps/admin/static/**
 postgres-data/
 *.sqlite3
 

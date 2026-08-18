@@ -1,0 +1,106 @@
+---
+interface Props {
+  kicker: string;
+  title: string;
+  message: string;
+  parentHref: string;
+  parentLabel: string;
+  alternateHref?: string | null;
+  alternateLabel?: string | null;
+}
+
+const {
+  kicker,
+  title,
+  message,
+  parentHref,
+  parentLabel,
+  alternateHref = null,
+  alternateLabel = null,
+} = Astro.props;
+---
+
+<section class="translation-unavailable">
+  <div class="translation-unavailable-card">
+    <p class="translation-unavailable-kicker">{kicker}</p>
+    <h1 class="translation-unavailable-title">{title}</h1>
+    <p class="translation-unavailable-message">{message}</p>
+    <div class="translation-unavailable-actions">
+      <a class="translation-unavailable-link" href={parentHref}>
+        {parentLabel}
+      </a>
+      {
+        alternateHref && alternateLabel && (
+          <a class="translation-unavailable-link translation-unavailable-link--alternate" href={alternateHref}>
+            {alternateLabel}
+          </a>
+        )
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .translation-unavailable {
+    padding-block: var(--space-section);
+    padding-inline: var(--space-gutter);
+    max-width: var(--measure-page);
+    margin-inline: auto;
+  }
+
+  .translation-unavailable-card {
+    max-width: 42rem;
+    margin-inline: auto;
+    padding: var(--space-8);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .translation-unavailable-kicker {
+    margin: 0 0 var(--space-3);
+    color: var(--color-brand);
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  .translation-unavailable-title {
+    margin: 0 0 var(--space-4);
+    font-size: var(--text-3xl);
+  }
+
+  .translation-unavailable-message {
+    margin: 0 0 var(--space-6);
+    color: var(--color-ink-secondary);
+    max-width: var(--measure-prose);
+  }
+
+  .translation-unavailable-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .translation-unavailable-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding-inline: var(--space-5);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    color: var(--color-brand);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .translation-unavailable-link:hover,
+  .translation-unavailable-link:focus-visible {
+    background-color: var(--color-brand-soft);
+    border-color: var(--color-brand);
+  }
+
+  .translation-unavailable-link--alternate {
+    color: var(--color-ink);
+  }
+</style>

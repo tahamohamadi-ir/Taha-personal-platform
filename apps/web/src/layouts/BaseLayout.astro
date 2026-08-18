@@ -4,17 +4,26 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import type { LocaleContent } from "../data/content";
 import { site } from "../data/site";
+import type { JsonLdBlock } from "../data/structured";
 import { websiteJsonLd, personJsonLd, validateStructuredData, jsonLdScriptContent } from "../data/structured";
 
 interface Props {
   content: LocaleContent;
   alternateHref?: string | null;
+  structured?: JsonLdBlock[];
+  title?: string;
+  description?: string;
 }
 
-const { content, alternateHref = null } = Astro.props;
+const {
+  content,
+  alternateHref = null,
+  structured = [websiteJsonLd(), personJsonLd(content.lang)],
+  title = content.meta.title,
+  description = content.meta.description,
+} = Astro.props;
 const canonical = new URL(Astro.url.pathname, site.url).href;
 const altLang = content.lang === "fa" ? "en" : "fa";
-const structured = [websiteJsonLd(), personJsonLd(content.lang)];
 validateStructuredData(...structured);
 ---
 
@@ -25,8 +34,8 @@ validateStructuredData(...structured);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#f7f8f5" />
     <link rel="icon" type="image/png" href="/favicon.png" />
-    <title>{content.meta.title}</title>
-    <meta name="description" content={content.meta.description} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
     <link rel="canonical" href={canonical} />
     <link rel="alternate" hreflang={content.lang} href={canonical} />
@@ -37,8 +46,8 @@ validateStructuredData(...structured);
     }
     <meta property="og:type" content="website" />
     <meta property="og:locale" content={content.lang === "fa" ? "fa_IR" : "en_US"} />
-    <meta property="og:title" content={content.meta.title} />
-    <meta property="og:description" content={content.meta.description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta name="robots" content="index,follow" />
     {

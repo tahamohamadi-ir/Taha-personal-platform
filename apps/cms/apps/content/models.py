@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import math
 import re
+import uuid
 
 from django.db import models
 from django.utils import timezone
@@ -145,6 +146,11 @@ class Profile(LocalizedContentMixin, LifecycleMixin):
     body = models.TextField(blank=True)
     seo_title = models.CharField(max_length=200, blank=True)
     seo_description = models.TextField(blank=True)
+    translation_key = models.UUIDField(default=uuid.uuid4, editable=False, db_index=True)
+    revision = models.PositiveIntegerField(default=1)
+    short_bio = models.TextField(blank=True)
+    long_bio = models.TextField(blank=True)
+    availability = models.TextField(blank=True)
 
     class Meta:
         db_table = "content_profile"
@@ -164,6 +170,137 @@ class Profile(LocalizedContentMixin, LifecycleMixin):
 
     def __str__(self) -> str:
         return f"{self.title} ({self.locale})"
+
+    def available_locales(self) -> list[str]:
+        return list(
+            Profile.objects.public()
+            .filter(translation_key=self.translation_key)
+            .order_by("locale")
+            .values_list("locale", flat=True)
+        )
+
+
+class OrderedProfileItem(models.Model):
+    """Abstract ordered child row for typed profile sections."""
+
+    ordering = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        abstract = True
+        ordering = ["ordering", "id"]
+
+
+class ProfileDetailItem(OrderedProfileItem):
+    """Child rows that may expose public About detail routes."""
+
+    slug = models.SlugField(max_length=200, blank=True)
+    translation_key = models.UUIDField(null=True, blank=True, db_index=True)
+    detail_body = models.TextField(blank=True)
+
+    class Meta(OrderedProfileItem.Meta):
+        abstract = True
+
+
+class ProfileSkill(ProfileDetailItem):
+    profile = models.ForeignKey(
+        Profile,
+        on_delete=models.CASCADE,
+        related_name="skills",
+    )
+    category = models.CharField(max_length=200)
+    name = models.CharField(max_length=200)
+    source = models.CharField(max_length=300)
+
+    class Meta(OrderedProfileItem.Meta):
+        db_table = "content_profile_skill"
+
+
+class ProfileExperience(ProfileDetailItem):
+    profile = models.ForeignKey(
+        Profile,
+        on_delete=models.CASCADE,
+        related_name="experience_entries",
+    )
+    organization = models.CharField(max_length=300)
+    role = models.CharField(max_length=300)
+    period = models.CharField(max_length=100)
+    location = models.CharField(max_length=200, blank=True)
+    website = models.URLField(blank=True)
+    bullets = models.JSONField(default=list, blank=True)
+
+    class Meta(OrderedProfileItem.Meta):
+        db_table = "content_profile_experience"
+
+
+class ProfileEducation(ProfileDetailItem):
+    profile = models.ForeignKey(
+        Profile,
+        on_delete=models.CASCADE,
+        related_name="education_entries",
+    )
+    institution = models.CharField(max_length=300)
+    degree = models.CharField(max_length=200)
+    field = models.CharField(max_length=200)
+    period = models.CharField(max_length=100)
+    gpa = models.CharField(max_length=50, blank=True)
+    thesis = models.TextField(blank=True)
+
+    class Meta(OrderedProfileItem.Meta):
+        db_table = "content_profile_education"
+
+
+class ProfilePublication(ProfileDetailItem):
+    profile = models.ForeignKey(
+        Profile,
+        on_delete=models.CASCADE,
+        related_name="publication_entries",
+    )
+    title = models.CharField(max_length=300)
+    status = models.TextField(blank=True)
+
+    class Meta(OrderedProfileItem.Meta):
+        db_table = "content_profile_publication"
+
+
+class ProfileResearchProject(ProfileDetailItem):
+    profile = models.ForeignKey(
+        Profile,
+        on_delete=models.CASCADE,
+        related_name="research_projects",
+    )
+    title = models.CharField(max_length=300)
+    summary = models.TextField(blank=True)
+    url = models.URLField(blank=True)
+    link_label = models.CharField(max_length=100, blank=True)
+
+    class Meta(OrderedProfileItem.Meta):
+        db_table = "content_profile_research_project"
+
+
+class ProfileCertificate(ProfileDetailItem):
+    profile = models.ForeignKey(
+        Profile,
+        on_delete=models.CASCADE,
+        related_name="certificate_entries",
+    )
+    name = models.CharField(max_length=300)
+    detail = models.CharField(max_length=300, blank=True)
+
+    class Meta(OrderedProfileItem.Meta):
+        db_table = "content_profile_certificate"
+
+
+class ProfileSocialLink(OrderedProfileItem):
+    profile = models.ForeignKey(
+        Profile,
+        on_delete=models.CASCADE,
+        related_name="social_links",
+    )
+    platform = models.CharField(max_length=100)
+    url = models.URLField()
+
+    class Meta(OrderedProfileItem.Meta):
+        db_table = "content_profile_social_link"
 
 
 class TopicTag(models.Model):

@@ -1,5 +1,18 @@
 # Work Log
 
+## LOG-0150 — 2026-08-18 — CMS-managed About, custom admin, detail routes
+
+- Outcome: Public About reads the typed CMS profile at build time with a committed snapshot fallback. Custom admin lives at `/admin/profiles/` inside the Wagtail session. Gated detail routes emit only when a child row has a Latin slug and a non-empty detail body. Work is on `feat/cms-managed-about-admin` from `origin/main` so P4–P6 routes stay intact.
+- Why: Owner asked to ship CMS-managed content, a custom admin app, and About detail pages without regressing live blog/research/projects.
+- Scope / files: CMS profile models + migrations `0005`/`0006`, public/admin profile APIs, `import_profile_seed`, custom admin templates/static, Astro `cmsProfile` adapter, About section/detail pages, CI `qa/cms-profile-build.spec.mjs`.
+- Verification actually performed and result:
+  - `uv run pytest -q` in `apps/cms` → 174 passed
+  - `npm run check` in `apps/web` → 0 errors (69 files)
+  - `npm run build` → 40 pages including About section/detail routes
+  - `node qa/cms-profile-build.spec.mjs` → PASS
+- Deferred or risk IDs: `DEFER-0022` (local HTTP preview bind). Production CMS still needs owner migrate + seed after merge.
+- Rollback / recovery: revert the PR; previous static artifact and CMS image remain deployable.
+
 ## LOG-0149 — 2026-08-18 — About hybrid tabs + filters (owner UX feedback)
 
 - Outcome: Restored compact CSS tab UX on About with sticky tab toolbar, **Show all sections** toggle (stacked scan/find-in-page), and per-section filter (search + facet chips where data supports it). Bilingual strings in `content.ts`. `DEBT-0002` reopened as mitigated (tabs default; show-all for full scan).
