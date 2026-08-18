@@ -18,16 +18,21 @@ Never include secrets, hashes, or request bodies.
 
 from __future__ import annotations
 
-import secrets
-
 from django.contrib.auth import authenticate, login, logout
 from django.core.cache import cache
-from django.http import JsonResponse
-from django.middleware.csrf import InvalidTokenFormat, _unmask_cipher_token, get_token
+from django.middleware.csrf import get_token
 from django_otp import DEVICE_ID_SESSION_KEY, user_has_device
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from ninja import Field, NinjaAPI, Schema
 
+from apps.api.admin_common import (
+    AdminError,
+    _api_error_handler,
+    _check_csrf,
+    _client_ip,
+    _require_admin_otp,
+    _require_staff_session,
+)
 from apps.content.models import (
     Article,
     Landing,
@@ -43,25 +48,6 @@ from apps.security.recovery import consume_recovery_code
 LOGIN_RATE_LIMIT = 5
 LOGIN_RATE_WINDOW_SECONDS = 300
 _RATE_KEY = "security:login-limit-api"
-
-
-class AdminError(Exception):
-    """Structured API error carrying status + Problem-Details-style body."""
-
-    def __init__(self, status: int, code: str, message: str, fields: dict | None = None):
-        self.status = status
-        self.code = code
-        self.message = message
-        self.fields = fields or {}
-
-
-def _api_error_handler(request, exc):
-    if isinstance(exc, AdminError):
-        payload: dict = {"code": exc.code, "message": exc.message}
-        if exc.fields:
-            payload["fields"] = exc.fields
-        return JsonResponse(payload, status=exc.status)
-    return None
 
 
 admin_api = NinjaAPI(
@@ -112,27 +98,6 @@ _CONTENT_MODELS = {
 }
 
 
-def _client_ip(request) -> str:
-    return (request.META.get("REMOTE_ADDR") or "unknown")[:45]
-
-
-def _check_csrf(request) -> None:
-    """Verify the same-origin CSRF token (ninja views are csrf_exempt at the
-    Django middleware level, so we enforce CSRF explicitly for unsafe methods).
-
-    Mirrors Django's CsrfViewMiddleware token check: unmask the header token and
-    compare it constant-time with the csrftoken cookie.
-    """
-    header = request.META.get("HTTP_X_CSRFTOKEN", "")
-    cookie = request.COOKIES.get("csrftoken", "")
-    try:
-        secret = _unmask_cipher_token(header)
-    except InvalidTokenFormat:
-        secret = ""
-    if not secret or not cookie or not secrets.compare_digest(secret, cookie):
-        raise AdminError(403, "CSRF_FAILED", "CSRF token missing or invalid.")
-
-
 def _admin_logout_audit(request, user) -> None:
     AuditLog.objects.create(
         user=user,
@@ -180,21 +145,6 @@ def _serialize_user(user, otp_verified: bool | None = None) -> AdminUserOut:
         mfaEnrolled=user_has_device(user, confirmed=True),
         otpVerified=otp_verified,
     )
-
-
-def _require_staff_session(request) -> None:
-    """Authenticated + staff guard (used by ``auth/me`` and login-less reads)."""
-    if not request.user.is_authenticated:
-        raise AdminError(401, "AUTH_REQUIRED", "Authentication is required.")
-    if not request.user.is_staff:
-        raise AdminError(403, "FORBIDDEN", "Staff access is required.")
-
-
-def _require_admin_otp(request) -> None:
-    """Authenticated + staff + verified OTP session guard for protected endpoints."""
-    _require_staff_session(request)
-    if getattr(request.user, "otp_device", None) is None:
-        raise AdminError(403, "OTP_REQUIRED", "A verified TOTP session is required.")
 
 
 @admin_api.get(
@@ -282,3 +232,8 @@ def dashboard_summary(request):
         for model in _CONTENT_MODELS.values()
     )
     return DashboardSummaryOut(contentCounts=counts, drafts=drafts, published=published)
+
+
+from apps.api.admin_content import content_router  # noqa: E402
+
+admin_api.add_router("/content", content_router)
