@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-08-18 — ADM-2: media library (upload/replace, alt-by-locale, orphans)
+
+- **Backend** `apps/cms/apps/api/admin_media.py` (new): `/api/v1/admin/media` — GET list (q / type image|pdf / active true|false / page/pageSize؛ 400 VALIDATION)، POST multipart upload (201؛ `is_active` پیش‌فرض false؛ `full_clean` → 400)، GET /orphans (usage==0)، GET /{id}، PUT /{id} (optimistic lock If-Match داخل atomic+select_for_update؛ 409 CONFLICT با currentUpdatedAt)، POST /{id}/replace (هم‌خانواده‌ی MIME؛ 400 در غیرهم‌خانواده/مفقود). `media_usage_count` + `MEDIA_REFERENCE_FIELDS` (رجیستری خالی؛ در ADM-3 وصل می‌شود). Guards: staff+OTP+CSRF.
+- **Model/migration:** `alt_text_fa`/`alt_text_en` روی `apps/cms/apps/media/models.py` (CharField blank default "" + `db_default=""`)؛ migration `0002_media_alt_text_en_media_alt_text_fa.py` (AddField با db_default — امن روی ردیف‌های موجود Postgres)؛ بستن DEFER-0014؛ makemigrations --check بدون pending.
+- **Frontend** `apps/cms/admin-frontend/`: MediaLibraryPage (فیلترها، orphan toggle، آپلود با progress، drawer ویرایش با جایگزینی فایل + تأیید بایگانی + 409 reload/discard)، MediaPicker (modal قابل reuse)، MediaThumb، `api.ts` (uploadMedia/replaceMedia با XHR+progress)، route `/media`، سایدبار «کتابخانه رسانه».
+- **اعتبارسنجی:** 229 passed (20 تست `test_admin_media_api.py` با 8 regression)، ruff clean، بدون migration جدید، SPA build/check PASS.
+- **باقی:** اتصال MediaPicker به ویرایشگرهای محتوا به ADM-3 منتقل شد (DEBT-0004)؛ Caddy no-store و deploy تصویر جدید CMS قدم‌های مالک؛ DEFER-0023 بدون تغییر؛ RISK-0010 بدون تغییر.
+
 ## 2026-08-18 — ADM-1: content write API (create/update + optimistic lock) + SPA edit pages
 
 - `/api/v1/admin/content/*` حالا write هم دارد: `POST /{entity}` (create 201، 409 DUPLICATE)، `PUT /{entity}/{id}` (optimistic lock If-Match داخل `select_for_update`؛ 409 CONFLICT/DUPLICATE)، `GET /schema` (متادیتای فیلدها). Guard: staff+OTP+CSRF؛ publish فقط وقتی `published_at` خالی است؛ فیلد عددی خالی skip؛ خطاها با کلید camelCase.

@@ -815,8 +815,9 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 ### Task ADM-2 — Media management
 
-- [ ] MediaPicker واحد در همه‌ی ویرایشگرها (search/type filter/upload-in-flow/progress)، alt دو زبانه، orphan report، usage، replace/archive با تأیید اثر.
-- [ ] انتهای نیمه‌باز رسانه: DEFER-0014 (alt-by-locale) در همین فاز بسته شود.
+- [x] کتابخانه‌ی رسانه در ادمین: list/upload (multipart، پیشرفت)، replace با تأیید + هم‌خانواده‌ی MIME، archive با تأیید، orphan report، usage (رجیستری)، alt دو زبانه fa/en (بستن DEFER-0014). *(2026-08-18: `/api/v1/admin/media/*` + صفحه‌ی Media در SPA — LOG-0159)*
+- [x] DEFER-0014 (alt-by-locale) بسته شد: فیلدهای alt_text_fa/en + migration 0002 (additive، db_default). *(LOG-0159)*
+- [ ] اتصال MediaPicker به ویرایشگرهای محتوا (featured_image ها فعلاً از wagtailimages هستند) — به ADM-3 (composition) منتقل شد؛ MediaPicker ساخته و قابل reuse است. *(DEBT-0004 / LOG-0159)*
 
 ### Task ADM-3 — Page composition (Section/Block)
 

@@ -34,6 +34,8 @@ class Media(models.Model):
     )
     title = models.CharField(max_length=255)
     alt_text = models.CharField(max_length=255, blank=True)
+    alt_text_fa = models.CharField(max_length=255, blank=True, default="", db_default="")
+    alt_text_en = models.CharField(max_length=255, blank=True, default="", db_default="")
     mime = models.CharField(max_length=100, editable=False, blank=True)
     size = models.PositiveBigIntegerField(editable=False, default=0)
     is_active = models.BooleanField(default=False)

@@ -26,6 +26,7 @@ export interface ApiError {
   code: string;
   message: string;
   fields?: Record<string, string[]>;
+  currentUpdatedAt?: string;
 }
 
 export type ContentEntity =
@@ -171,6 +172,7 @@ function toApiError(response: Response, data: unknown): ApiError {
     code: partial.code ?? "UNKNOWN_ERROR",
     message: partial.message ?? `درخواست ناموفق (کد ${response.status})`,
     fields: partial.fields,
+    currentUpdatedAt: partial.currentUpdatedAt,
   };
 }
 
@@ -288,5 +290,209 @@ export async function updateContent(
     method: "PUT",
     headers: { "If-Match": ifMatch },
     body: JSON.stringify(payload),
+  });
+}
+
+export interface MediaItem {
+  id: number;
+  title: string;
+  mime: string;
+  size: number;
+  isActive: boolean;
+  altText: string;
+  altTextFa: string;
+  altTextEn: string;
+  url: string | null;
+  usageCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MediaList {
+  items: MediaItem[];
+  page: number;
+  pageSize: number;
+  total: number;
+}
+
+export type MediaType = "image" | "pdf";
+
+export interface MediaListParams {
+  q?: string;
+  type?: MediaType;
+  active?: "true" | "false";
+  page?: number;
+  pageSize?: number;
+}
+
+export interface MediaPayload {
+  title?: string;
+  altText?: string;
+  altTextFa?: string;
+  altTextEn?: string;
+  isActive?: boolean;
+}
+
+function buildMediaSearch(params: MediaListParams): string {
+  const search = new URLSearchParams();
+  if (params.q !== undefined && params.q !== "") {
+    search.set("q", params.q);
+  }
+  if (params.type !== undefined) {
+    search.set("type", params.type);
+  }
+  if (params.active !== undefined) {
+    search.set("active", params.active);
+  }
+  if (params.page !== undefined) {
+    search.set("page", String(params.page));
+  }
+  if (params.pageSize !== undefined) {
+    search.set("pageSize", String(params.pageSize));
+  }
+  const query = search.toString();
+  return query === "" ? "" : `?${query}`;
+}
+
+export async function fetchMediaList(
+  params: MediaListParams = {}
+): Promise<MediaList> {
+  return request<MediaList>(`/media${buildMediaSearch(params)}`);
+}
+
+export async function fetchMediaOrphans(
+  params: MediaListParams = {}
+): Promise<MediaList> {
+  return request<MediaList>(`/media/orphans${buildMediaSearch(params)}`);
+}
+
+export async function fetchMediaDetail(id: number): Promise<MediaItem> {
+  return request<MediaItem>(`/media/${id}`);
+}
+
+export async function updateMedia(
+  id: number,
+  payload: MediaPayload,
+  ifMatch: string
+): Promise<MediaItem> {
+  return request<MediaItem>(`/media/${id}`, {
+    method: "PUT",
+    headers: { "If-Match": ifMatch },
+    body: JSON.stringify(payload),
+  });
+}
+
+function parseXhrError(xhr: XMLHttpRequest): ApiError {
+  let data: unknown = null;
+  if (xhr.responseText !== "") {
+    try {
+      data = JSON.parse(xhr.responseText) as unknown;
+    } catch {
+      data = null;
+    }
+  }
+  return toApiError({ status: xhr.status } as Response, data);
+}
+
+export function uploadMedia(
+  file: File,
+  title: string,
+  altTextFa: string,
+  altTextEn: string,
+  onProgress?: (percent: number) => void
+): Promise<MediaItem> {
+  return new Promise<MediaItem>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${API_BASE}/media`);
+    xhr.withCredentials = true;
+    xhr.setRequestHeader("Accept", "application/json");
+    if (csrfToken !== null) {
+      xhr.setRequestHeader("X-CSRFToken", csrfToken);
+    }
+    xhr.upload.addEventListener("progress", (event: ProgressEvent) => {
+      if (event.lengthComputable && onProgress !== undefined) {
+        onProgress(Math.round((event.loaded / event.total) * 100));
+      }
+    });
+    xhr.addEventListener("load", () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          resolve(JSON.parse(xhr.responseText) as MediaItem);
+          return;
+        } catch {
+          reject(parseXhrError(xhr));
+          return;
+        }
+      }
+      if (xhr.status === 401) {
+        onUnauthorized?.();
+      }
+      reject(parseXhrError(xhr));
+    });
+    xhr.addEventListener("error", () => {
+      reject(parseXhrError(xhr));
+    });
+    xhr.addEventListener("abort", () => {
+      reject({
+        status: 0,
+        code: "ABORTED",
+        message: "بارگذاری لغو شد.",
+      } as ApiError);
+    });
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("title", title);
+    formData.append("altTextFa", altTextFa);
+    formData.append("altTextEn", altTextEn);
+    xhr.send(formData);
+    return undefined as unknown;
+  });
+}
+
+export function replaceMedia(
+  id: number,
+  file: File,
+  onProgress?: (percent: number) => void
+): Promise<MediaItem> {
+  return new Promise<MediaItem>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${API_BASE}/media/${id}/replace`);
+    xhr.withCredentials = true;
+    xhr.setRequestHeader("Accept", "application/json");
+    if (csrfToken !== null) {
+      xhr.setRequestHeader("X-CSRFToken", csrfToken);
+    }
+    xhr.upload.addEventListener("progress", (event: ProgressEvent) => {
+      if (event.lengthComputable && onProgress !== undefined) {
+        onProgress(Math.round((event.loaded / event.total) * 100));
+      }
+    });
+    xhr.addEventListener("load", () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          resolve(JSON.parse(xhr.responseText) as MediaItem);
+          return;
+        } catch {
+          reject(parseXhrError(xhr));
+          return;
+        }
+      }
+      if (xhr.status === 401) {
+        onUnauthorized?.();
+      }
+      reject(parseXhrError(xhr));
+    });
+    xhr.addEventListener("error", () => reject(parseXhrError(xhr)));
+    xhr.addEventListener("abort", () => {
+      reject({
+        status: 0,
+        code: "ABORTED",
+        message: "جایگزینی لغو شد.",
+      } as ApiError);
+    });
+    const formData = new FormData();
+    formData.append("file", file);
+    xhr.send(formData);
+    return undefined as unknown;
   });
 }

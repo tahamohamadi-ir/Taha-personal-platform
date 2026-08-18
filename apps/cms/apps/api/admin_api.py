@@ -237,3 +237,7 @@ def dashboard_summary(request):
 from apps.api.admin_content import content_router  # noqa: E402
 
 admin_api.add_router("/content", content_router)
+
+from apps.api.admin_media import media_router  # noqa: E402
+
+admin_api.add_router("/media", media_router)
