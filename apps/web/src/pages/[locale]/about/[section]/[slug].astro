@@ -1,0 +1,251 @@
+---
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../../../components/Breadcrumbs.astro";
+import { content as allContent } from "../../../../data/content";
+import {
+  getAboutSection,
+  getDetailAlternateHref,
+  type AboutSectionId,
+} from "../../../../data/aboutSections";
+import { loadPublicProfile } from "../../../../data/cmsProfile";
+import { breadcrumbJsonLd, personJsonLd, websiteJsonLd } from "../../../../data/structured";
+import { site, type LocaleCode } from "../../../../data/site";
+
+export async function getStaticPaths() {
+  const validSections: AboutSectionId[] = [
+    "experience",
+    "education",
+    "skills",
+    "research",
+    "publications",
+    "certificates",
+  ];
+  const paths: Array<{ params: { locale: LocaleCode; section: AboutSectionId; slug: string } }> = [];
+
+  for (const locale of site.locales) {
+    const profileResult = await loadPublicProfile(locale);
+    if (profileResult.kind !== "profile") {
+      continue;
+    }
+
+    for (const sectionId of validSections) {
+      const section = getAboutSection(allContent[locale], profileResult.profile, sectionId);
+      for (const item of section?.items ?? []) {
+        if (item.detailSlug && item.detailBody) {
+          paths.push({
+            params: {
+              locale,
+              section: sectionId,
+              slug: item.detailSlug,
+            },
+          });
+        }
+      }
+    }
+  }
+
+  return paths;
+}
+
+const locale = Astro.params.locale as LocaleCode;
+const sectionId = Astro.params.section as AboutSectionId;
+const slug = Astro.params.slug ?? "";
+const content = allContent[locale];
+const alternateLocale = locale === "fa" ? "en" : "fa";
+const profileResult = await loadPublicProfile(locale);
+const alternateProfileResult = await loadPublicProfile(alternateLocale);
+
+if (!site.locales.includes(locale)) {
+  Astro.response.status = 404;
+}
+
+const section =
+  profileResult.kind === "profile"
+    ? getAboutSection(content, profileResult.profile, sectionId)
+    : undefined;
+const item = section?.items.find(
+  (candidate) => candidate.detailSlug === slug && candidate.detailBody,
+);
+const detailParagraphs = item?.detailBody?.split(/\n{2,}/) ?? [];
+
+if (!item || profileResult.kind !== "profile") {
+  Astro.response.status = 404;
+}
+
+const breadcrumbs =
+  item && section
+    ? [
+        { label: content.name, href: `/${locale}/` },
+        { label: content.about.heading, href: `/${locale}/about/` },
+        { label: section.label, href: `/${locale}/about/${sectionId}/` },
+        { label: item.title, href: `/${locale}/about/${sectionId}/${slug}/` },
+      ]
+    : [];
+const alternateHref =
+  item &&
+  alternateProfileResult.kind === "profile" &&
+  section
+    ? getDetailAlternateHref(
+        locale,
+        section.id,
+        item,
+        alternateProfileResult.profile,
+        allContent[alternateLocale],
+      )
+    : null;
+const structured =
+  item && profileResult.kind === "profile"
+    ? [
+        websiteJsonLd(),
+        personJsonLd(locale, profileResult.profile),
+        breadcrumbJsonLd(
+          breadcrumbs.map((entry) => ({
+            name: entry.label,
+            path: entry.href,
+          })),
+        ),
+      ]
+    : [websiteJsonLd()];
+const title = item ? `${item.title} · ${section?.label} · ${content.name}` : content.meta.title;
+const description = item?.body ?? content.meta.description;
+---
+
+<BaseLayout
+  content={content}
+  alternateHref={alternateHref}
+  structured={structured}
+  title={title}
+  description={description}
+>
+  {
+    item && section ? (
+      <article class="about-detail">
+        <div class="about-detail-shell">
+          <Breadcrumbs items={breadcrumbs} />
+          <header class="about-detail-header">
+            {item.eyebrow && <p class="about-detail-eyebrow">{item.eyebrow}</p>}
+            <h1 class="about-detail-title">{item.title}</h1>
+            {item.meta && <p class="about-detail-meta">{item.meta}</p>}
+            {item.body && <p class="about-detail-summary">{item.body}</p>}
+          </header>
+
+          <div class="about-detail-body">
+            {detailParagraphs.map((paragraph) => <p>{paragraph}</p>)}
+          </div>
+
+          <aside class="about-detail-next-step">
+            <h2 class="about-detail-next-step-title">
+              {locale === "fa" ? "گام بعدی" : "Next step"}
+            </h2>
+            <p class="about-detail-next-step-copy">
+              {locale === "fa"
+                ? "به فهرست این بخش برگردید یا نمای کامل پروفایل را در صفحهٔ درباره ببینید."
+                : "Return to this section index, or go back to About for the full profile context."}
+            </p>
+            <div class="about-detail-next-step-actions">
+              <a class="about-detail-next-step-link" href={`/${locale}/about/${sectionId}/`}>
+                {section.label}
+              </a>
+              <a class="about-detail-next-step-link" href={`/${locale}/about/`}>
+                {content.about.heading}
+              </a>
+            </div>
+          </aside>
+        </div>
+      </article>
+    ) : null
+  }
+</BaseLayout>
+
+<style>
+  .about-detail {
+    padding-block: var(--space-section);
+    padding-inline: var(--space-gutter);
+  }
+
+  .about-detail-shell {
+    max-width: var(--measure-page);
+    margin-inline: auto;
+  }
+
+  .about-detail-header {
+    max-width: var(--measure-prose);
+    margin-block-end: var(--space-8);
+  }
+
+  .about-detail-eyebrow,
+  .about-detail-meta {
+    margin: 0 0 var(--space-2);
+    color: var(--color-ink-secondary);
+    font-size: var(--text-sm);
+  }
+
+  .about-detail-eyebrow {
+    color: var(--color-brand);
+    font-weight: 600;
+  }
+
+  .about-detail-title {
+    margin: 0 0 var(--space-3);
+    font-size: var(--text-display);
+  }
+
+  .about-detail-summary {
+    margin: 0;
+    color: var(--color-ink-secondary);
+  }
+
+  .about-detail-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    max-width: var(--measure-prose);
+    margin-block-end: var(--space-10);
+  }
+
+  .about-detail-body p {
+    margin: 0;
+    color: var(--color-ink);
+  }
+
+  .about-detail-next-step {
+    padding: var(--space-7);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface-muted);
+  }
+
+  .about-detail-next-step-title {
+    margin: 0 0 var(--space-3);
+    font-size: var(--text-xl);
+  }
+
+  .about-detail-next-step-copy {
+    margin: 0 0 var(--space-5);
+    color: var(--color-ink-secondary);
+    max-width: var(--measure-prose);
+  }
+
+  .about-detail-next-step-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .about-detail-next-step-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding-inline: var(--space-5);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    color: var(--color-brand);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .about-detail-next-step-link:hover,
+  .about-detail-next-step-link:focus-visible {
+    background-color: var(--color-brand-soft);
+    border-color: var(--color-brand);
+  }
+</style>

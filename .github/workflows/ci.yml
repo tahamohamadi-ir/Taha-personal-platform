@@ -35,6 +35,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: CMS profile build regression
+        run: node qa/cms-profile-build.spec.mjs
+
       - name: Write build fingerprint
         run: |
           version=$(node -p "require('./package.json').version")

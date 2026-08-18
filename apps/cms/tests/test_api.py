@@ -26,6 +26,27 @@ PUBLIC_FIELDS = {
     "seo_description",
     "published_at",
 }
+PROFILE_SUMMARY_FIELDS = {
+    "locale",
+    "slug",
+    "title",
+    "seoTitle",
+    "seoDescription",
+    "shortBio",
+    "longBio",
+    "availability",
+    "publishedAt",
+    "availableLocales",
+}
+PROFILE_DETAIL_FIELDS = PROFILE_SUMMARY_FIELDS | {
+    "skills",
+    "experience",
+    "education",
+    "publications",
+    "researchProjects",
+    "certificates",
+    "socials",
+}
 FORBIDDEN_FIELDS = {"status", "created_at", "allow_comments"}
 ARTICLE_FORBIDDEN = FORBIDDEN_FIELDS
 
@@ -185,13 +206,15 @@ def test_unknown_locale_returns_empty_list(api_client, published_content):
 def test_list_profiles_returns_only_published(api_client, published_content):
     data = assert_json(api_client.get("/api/profiles/fa"), 200)
     assert [item["slug"] for item in data] == ["profile"]
-    assert all(set(item) == PUBLIC_FIELDS for item in data)
+    assert all(set(item) == PROFILE_SUMMARY_FIELDS for item in data)
+    assert all("status" not in item for item in data)
 
 
 def test_detail_profile_by_slug(api_client, published_content):
     data = assert_json(api_client.get("/api/profiles/fa/profile"), 200)
-    assert set(data) == PUBLIC_FIELDS
+    assert set(data) == PROFILE_DETAIL_FIELDS
     assert data["slug"] == "profile"
+    assert data["availableLocales"] == [Locale.FA]
     assert FORBIDDEN_FIELDS.isdisjoint(data)
 
 
@@ -199,6 +222,13 @@ def test_detail_profile_draft_404(api_client, published_content):
     response = api_client.get("/api/profiles/fa/draft-profile")
     assert response.status_code == 404
     assert "detail" in response.json()
+
+
+def test_detail_profile_translation_unavailable(api_client, published_content):
+    data = assert_json(api_client.get("/api/profiles/en/profile"), 404)
+    assert data["code"] == "TRANSLATION_UNAVAILABLE"
+    assert data["availableLocales"] == [Locale.FA]
+    assert data["slug"] == "profile"
 
 
 def _article_items(payload):

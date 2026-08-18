@@ -1,14 +1,38 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import About from "../../components/About.astro";
+import TranslationUnavailable from "../../components/TranslationUnavailable.astro";
 import { content } from "../../data/content";
-import { profile, validateProfile } from "../../data/profile";
-
-validateProfile();
+import { loadPublicProfile } from "../../data/cmsProfile";
+import { personJsonLd, websiteJsonLd } from "../../data/structured";
 
 const en = content.en;
+const profileResult = await loadPublicProfile("en");
+const alternateHref = "/fa/about/";
 ---
 
-<BaseLayout content={en} alternateHref="/fa/about/">
-  <About content={en} profile={profile.en} />
+<BaseLayout
+  content={en}
+  alternateHref={alternateHref}
+  structured={
+    profileResult.kind === "profile"
+      ? [websiteJsonLd(), personJsonLd("en", profileResult.profile)]
+      : [websiteJsonLd()]
+  }
+>
+  {
+    profileResult.kind === "profile" ? (
+      <About content={en} profile={profileResult.profile} />
+    ) : (
+      <TranslationUnavailable
+        kicker="Translation unavailable"
+        title="About"
+        message="This profile is not published in English yet. You can return to the English home page or open the published Persian version."
+        parentHref="/en/"
+        parentLabel={en.meta.title}
+        alternateHref={profileResult.kind === "translation-unavailable" ? "/fa/about/" : null}
+        alternateLabel="فارسی / About"
+      />
+    )
+  }
 </BaseLayout>

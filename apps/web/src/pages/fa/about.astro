@@ -1,14 +1,38 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import About from "../../components/About.astro";
+import TranslationUnavailable from "../../components/TranslationUnavailable.astro";
 import { content } from "../../data/content";
-import { profile, validateProfile } from "../../data/profile";
-
-validateProfile();
+import { loadPublicProfile } from "../../data/cmsProfile";
+import { personJsonLd, websiteJsonLd } from "../../data/structured";
 
 const fa = content.fa;
+const profileResult = await loadPublicProfile("fa");
+const alternateHref = "/en/about/";
 ---
 
-<BaseLayout content={fa} alternateHref="/en/about/">
-  <About content={fa} profile={profile.fa} />
+<BaseLayout
+  content={fa}
+  alternateHref={alternateHref}
+  structured={
+    profileResult.kind === "profile"
+      ? [websiteJsonLd(), personJsonLd("fa", profileResult.profile)]
+      : [websiteJsonLd()]
+  }
+>
+  {
+    profileResult.kind === "profile" ? (
+      <About content={fa} profile={profileResult.profile} />
+    ) : (
+      <TranslationUnavailable
+        kicker="ترجمه در دسترس نیست"
+        title="درباره"
+        message="این پروفایل هنوز به فارسی منتشر نشده است. می‌توانید به صفحهٔ اصلی فارسی برگردید یا نسخهٔ منتشرشدهٔ انگلیسی را ببینید."
+        parentHref="/fa/"
+        parentLabel={fa.name}
+        alternateHref={profileResult.kind === "translation-unavailable" ? "/en/about/" : null}
+        alternateLabel="English / About"
+      />
+    )
+  }
 </BaseLayout>

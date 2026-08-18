@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-08-18 — CMS-managed About + custom admin + detail routes
+
+- About pages load the typed bilingual profile from `/api/profiles/<locale>/about` at build time, with `profile.snapshot.json` as fallback.
+- Custom admin at `/admin/profiles/` edits the same aggregate under the existing Wagtail session, CSRF, and TOTP boundary.
+- Detail URLs `/{locale}/about/{section}/{slug}/` emit only when a child row has a Latin slug and a non-empty detail body.
+- Production CMS still needs migrations `0005`/`0006` plus `import_profile_seed` after merge; static CD can ship the snapshot immediately.
+
 ## 2026-08-17 — P2-H honesty closeout (landing, About, 404, footer)
 
 - Hero CTAs point to live About and CV; perspective cards link to Research, Projects, and Writing.

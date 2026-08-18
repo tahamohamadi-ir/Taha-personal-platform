@@ -6,6 +6,10 @@ export interface Skill {
   category: string;
   name: string;
   source: string;
+  slug?: string;
+  translationKey?: string;
+  detailBody?: string;
+  detail_body?: string;
 }
 
 export interface ExperienceEntry {
@@ -15,6 +19,10 @@ export interface ExperienceEntry {
   location?: string;
   website?: string;
   bullets: string[];
+  slug?: string;
+  translationKey?: string;
+  detailBody?: string;
+  detail_body?: string;
 }
 
 export interface EducationEntry {
@@ -24,11 +32,19 @@ export interface EducationEntry {
   period: string;
   gpa?: string;
   thesis?: string;
+  slug?: string;
+  translationKey?: string;
+  detailBody?: string;
+  detail_body?: string;
 }
 
 export interface PublicationEntry {
   title: string;
   status: string;
+  slug?: string;
+  translationKey?: string;
+  detailBody?: string;
+  detail_body?: string;
 }
 
 export interface ResearchProject {
@@ -36,11 +52,19 @@ export interface ResearchProject {
   summary: string;
   url?: string;
   linkLabel?: string;
+  slug?: string;
+  translationKey?: string;
+  detailBody?: string;
+  detail_body?: string;
 }
 
 export interface Certificate {
   name: string;
   detail?: string;
+  slug?: string;
+  translationKey?: string;
+  detailBody?: string;
+  detail_body?: string;
 }
 
 export interface SocialLink {
@@ -59,6 +83,13 @@ export interface Profile {
   certificates: Certificate[];
   socials: SocialLink[];
   availability: string;
+  availableLocales?: string[];
+  locale?: string;
+  slug?: string;
+  title?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  publishedAt?: string | null;
 }
 
 export const profile: Record<LocaleCode, Profile> = {
@@ -66,26 +97,34 @@ export const profile: Record<LocaleCode, Profile> = {
   fa: profileFa,
 };
 
-export function validateProfile(): void {
-  for (const [locale, p] of Object.entries(profile) as [LocaleCode, Profile][]) {
-    if (!p.shortBio.trim()) {
-      throw new Error(`Profile for "${locale}" has an empty shortBio.`);
+function assertProfile(target: Profile, locale: string): void {
+  if (!target.shortBio.trim()) {
+    throw new Error(`Profile for "${locale}" has an empty shortBio.`);
+  }
+  if (!target.availability.trim()) {
+    throw new Error(`Profile for "${locale}" has an empty availability.`);
+  }
+  if (target.skills.length === 0) {
+    throw new Error(`Profile for "${locale}" has an empty skills array.`);
+  }
+  for (const entry of target.experience) {
+    if (!entry.organization.trim() || !entry.role.trim() || !entry.period.trim()) {
+      throw new Error(`Profile "${locale}" has an incomplete experience entry.`);
     }
-    if (!p.availability.trim()) {
-      throw new Error(`Profile for "${locale}" has an empty availability.`);
+  }
+  for (const social of target.socials) {
+    if (!/^https?:\/\//.test(social.url)) {
+      throw new Error(`Profile "${locale}" social URL must be absolute: ${social.platform}`);
     }
-    if (p.skills.length === 0) {
-      throw new Error(`Profile for "${locale}" has an empty skills array.`);
-    }
-    for (const e of p.experience) {
-      if (!e.organization.trim() || !e.role.trim() || !e.period.trim()) {
-        throw new Error(`Profile "${locale}" has an incomplete experience entry.`);
-      }
-    }
-    for (const s of p.socials) {
-      if (!/^https?:\/\//.test(s.url)) {
-        throw new Error(`Profile "${locale}" social URL must be absolute: ${s.platform}`);
-      }
-    }
+  }
+}
+
+export function validateProfile(target?: Profile, locale?: string): void {
+  if (target && locale) {
+    assertProfile(target, locale);
+    return;
+  }
+  for (const [currentLocale, currentProfile] of Object.entries(profile) as [LocaleCode, Profile][]) {
+    assertProfile(currentProfile, currentLocale);
   }
 }
