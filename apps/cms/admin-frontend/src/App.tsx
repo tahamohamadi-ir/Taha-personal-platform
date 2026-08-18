@@ -7,6 +7,7 @@ import ContentListPage from "./pages/ContentListPage";
 import ContentDetailPage from "./pages/ContentDetailPage";
 import ContentEditPage from "./pages/ContentEditPage";
 import MediaLibraryPage from "./pages/MediaLibraryPage";
+import OverviewPage from "./pages/OverviewPage";
 import CompositionListPage from "./pages/CompositionListPage";
 import CompositionEditorPage from "./pages/CompositionEditorPage";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -31,6 +32,7 @@ export default function App() {
               element={<ContentEditPage />}
             />
             <Route path="/media" element={<MediaLibraryPage />} />
+            <Route path="/overview" element={<OverviewPage />} />
             <Route path="/composition" element={<CompositionListPage />} />
             <Route path="/composition/new" element={<CompositionEditorPage />} />
             <Route

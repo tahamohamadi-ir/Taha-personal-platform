@@ -1,5 +1,7 @@
 # Changelog
 
+## 2026-08-18 — ADM-4: lifecycle transitions + translation queue + content health
+
 ## 2026-08-18 — ADM-3: page composition (Section/Block, layouts, MediaPicker in blocks)
 
 - **Backend** اپ جدید `apps/cms/apps/composition/`: مدل‌های `CompositionPage` (key اسلاگ یکتا، locale fa/en، title، status draft/review/published/archived، published_at، created/updated_at)، `CompositionSection` (page FK، position، layout 1col/2col/3col، ratio، enabled؛ UniqueConstraint page+position)، `CompositionBlock` (section FK، position، block_type، settings JSONField، enabled؛ UniqueConstraint section+position)؛ migration `0001_initial.py`؛ `blocks.py` با کاتالوگ hero/heading/text/quote/cta/gallery/divider + `validate_block_settings` fail-closed + `SECTION_LAYOUT_RATIOS` + `composition_schema()`.

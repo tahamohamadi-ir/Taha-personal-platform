@@ -245,3 +245,7 @@ admin_api.add_router("/media", media_router)
 from apps.api.admin_composition import composition_router  # noqa: E402
 
 admin_api.add_router("/composition", composition_router)
+
+from apps.api.admin_health import health_router  # noqa: E402
+
+admin_api.add_router("/overview", health_router)
