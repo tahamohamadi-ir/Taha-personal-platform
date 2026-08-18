@@ -17,11 +17,28 @@ const switchLabel =
     ? other.gateway.englishLabel
     : other.gateway.persianLabel;
 const switchLang = otherLang;
+
+const currentPath = Astro.url.pathname.replace(/\/+$/, "") || "/";
+const isCurrent = (href: string) =>
+  currentPath === (href.replace(/\/+$/, "") || "/");
+const homeHref = `/${content.lang}/`;
+const navItems = [
+  { href: `/${content.lang}/about/`, label: content.about.heading },
+  { href: `/${content.lang}/research/`, label: content.research.heading },
+  { href: `/${content.lang}/projects/`, label: content.projects.heading },
+  { href: `/${content.lang}/blog/`, label: content.blog.heading },
+  { href: `/${content.lang}/cv/`, label: content.downloads.heading },
+];
 ---
 
 <header class="site-header">
   <div class="site-header-inner">
-    <a href={`/${content.lang}/`} class="brand" aria-label={content.name}>
+    <a
+      href={homeHref}
+      class="brand"
+      aria-label={content.name}
+      aria-current={isCurrent(homeHref) ? "page" : undefined}
+    >
       <img
         src={logo.src}
         alt=""
@@ -33,22 +50,18 @@ const switchLang = otherLang;
       <span class="brand-name">{content.name}</span>
     </a>
     <div class="header-nav-group">
-      <nav class="header-nav" aria-label={content.about.heading}>
-        <a href={`/${content.lang}/about/`} class="header-link">
-          {content.about.heading}
-        </a>
-        <a href={`/${content.lang}/research/`} class="header-link">
-          {content.research.heading}
-        </a>
-        <a href={`/${content.lang}/projects/`} class="header-link">
-          {content.projects.heading}
-        </a>
-        <a href={`/${content.lang}/blog/`} class="header-link">
-          {content.blog.heading}
-        </a>
-        <a href={`/${content.lang}/cv/`} class="header-link">
-          {content.downloads.heading}
-        </a>
+      <nav class="header-nav" aria-label={content.navLabel}>
+        {
+          navItems.map((item) => (
+            <a
+              href={item.href}
+              class="header-link"
+              aria-current={isCurrent(item.href) ? "page" : undefined}
+            >
+              {item.label}
+            </a>
+          ))
+        }
       </nav>
       <nav class="header-actions" aria-label={content.footer.switchLabel}>
         <a
@@ -56,6 +69,7 @@ const switchLang = otherLang;
           hreflang={switchLang}
           lang={switchLang}
           class="header-link"
+          aria-label={content.switchAria}
         >
           {switchLabel}
         </a>
@@ -146,9 +160,25 @@ const switchLang = otherLang;
       background-color 140ms cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
-  .header-link:hover {
+  .header-link:hover,
+  .header-link:focus-visible {
     color: var(--color-brand);
     background-color: var(--color-brand-soft);
+  }
+
+  .header-link[aria-current="page"] {
+    color: var(--color-ink);
+    position: relative;
+  }
+
+  .header-link[aria-current="page"]::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0.45rem;
+    inset-block-end: 0.35rem;
+    height: 2px;
+    border-radius: 999px;
+    background-color: var(--color-brand);
   }
 
   /* About + Writing + CV + language switch: wrap inside the viewport instead

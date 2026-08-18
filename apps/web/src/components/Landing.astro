@@ -7,6 +7,15 @@ interface Props {
 }
 
 const { content } = Astro.props;
+const localeProfile = profile[content.lang];
+const home = `/${content.lang}/`;
+const perspectiveHref: Record<string, string> = {
+  research: `${home}research/`,
+  engineering: `${home}projects/`,
+  writing: `${home}blog/`,
+};
+const selectedResearch = localeProfile.researchProjects.slice(0, 2);
+const selectedPublications = localeProfile.publications.slice(0, 2);
 ---
 
 <section class="hero">
@@ -17,8 +26,8 @@ const { content } = Astro.props;
       <p class="hero-positioning">{content.positioning}</p>
       <p class="hero-proposition">{content.proposition}</p>
       <div class="hero-actions">
-        <a href="#perspectives" class="cta cta--primary">{content.hero.primaryCta}</a>
-        <a href="#about" class="cta cta--ghost">{content.hero.secondaryCta}</a>
+        <a href={`${home}about/`} class="cta cta--primary">{content.hero.primaryCta}</a>
+        <a href={`${home}cv/`} class="cta cta--ghost">{content.hero.secondaryCta}</a>
       </div>
     </div>
     <div class="hero-visual" aria-hidden="true">
@@ -80,17 +89,59 @@ const { content } = Astro.props;
   </div>
   <div class="perspectives-grid">
     {
-      content.perspectives.items.map((item) => (
-        <article class={`perspective perspective--${item.id}`}>
-          <h3 class="perspective-title">{item.title}</h3>
-          <p class="perspective-audience">{item.audience}</p>
-          <p class="perspective-description">{item.description}</p>
-        </article>
-      ))
+      content.perspectives.items.map((item) => {
+        const href = perspectiveHref[item.id];
+        return (
+          <article class={`perspective perspective--${item.id}`}>
+            <h3 class="perspective-title">
+              {href ? (
+                <a class="perspective-link" href={href}>
+                  {item.title}
+                </a>
+              ) : (
+                item.title
+              )}
+            </h3>
+            <p class="perspective-audience">{item.audience}</p>
+            <p class="perspective-description">{item.description}</p>
+          </article>
+        );
+      })
     }
   </div>
   <p class="perspectives-note">{content.perspectives.note}</p>
 </section>
+
+<aside class="focus-strip" aria-labelledby="focus-heading">
+  <h2 id="focus-heading" class="focus-label">{content.hero.focusLabel}</h2>
+  <p class="focus-text">{localeProfile.availability}</p>
+</aside>
+
+{
+  (selectedResearch.length > 0 || selectedPublications.length > 0) && (
+    <section class="section" aria-labelledby="evidence-heading">
+      <div class="section-head">
+        <span class="section-label">{content.evidence.label}</span>
+        <h2 id="evidence-heading" class="section-heading">{content.evidence.heading}</h2>
+      </div>
+      <ul class="evidence-list">
+        {selectedResearch.map((project) => (
+          <li>
+            <a class="evidence-link" href={`${home}research/`}>
+              {project.title}
+            </a>
+          </li>
+        ))}
+        {selectedPublications.map((publication) => (
+          <li>
+            <span class="evidence-title">{publication.title}</span>
+            <span class="evidence-status">{publication.status}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
 
 <section id="about" class="section section--muted">
   <div class="section-head">
@@ -240,6 +291,8 @@ const { content } = Astro.props;
     max-width: 1280px;
     margin-inline: auto;
     width: 100%;
+    min-width: 0;
+    overflow-x: clip;
   }
 
   .section--muted {
@@ -329,6 +382,18 @@ const { content } = Astro.props;
     overflow-wrap: anywhere;
   }
 
+  .perspective-link {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .perspective-link:hover,
+  .perspective-link:focus-visible {
+    color: var(--color-brand);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
   .perspective-audience {
     color: var(--color-brand);
     font-size: 0.8125rem;
@@ -360,6 +425,85 @@ const { content } = Astro.props;
     max-width: 60ch;
     color: var(--color-ink);
     font-size: 1.125rem;
+    overflow-wrap: anywhere;
+  }
+
+  .focus-strip {
+    max-width: 1280px;
+    margin-inline: auto;
+    width: 100%;
+    min-width: 0;
+    padding-inline: clamp(1rem, 5vw, 2.5rem);
+    padding-block: 0 0.5rem;
+    overflow-x: clip;
+  }
+
+  .focus-label {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-brand);
+    margin: 0 0 0.5rem;
+  }
+
+  :global(html[dir="rtl"]) .focus-label {
+    font-family: var(--font-persian);
+    letter-spacing: 0.02em;
+  }
+
+  .focus-text {
+    margin: 0;
+    max-width: 60ch;
+    color: var(--color-ink);
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+
+  .evidence-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.75rem;
+    min-width: 0;
+    overflow-x: clip;
+  }
+
+  .evidence-list li {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-inline-start: 3px solid var(--color-brand);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.25rem;
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .evidence-link,
+  .evidence-title {
+    display: block;
+    font-weight: 600;
+    color: var(--color-ink);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  .evidence-link:hover,
+  .evidence-link:focus-visible {
+    color: var(--color-brand);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .evidence-status {
+    display: block;
+    margin-block-start: 0.25rem;
+    color: var(--color-ink-secondary);
+    font-size: 0.875rem;
     overflow-wrap: anywhere;
   }
 

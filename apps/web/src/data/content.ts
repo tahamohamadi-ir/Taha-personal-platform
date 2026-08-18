@@ -21,10 +21,18 @@ export interface LocaleContent {
     englishLabel: string;
     persianLabel: string;
   };
+  navLabel: string;
+  currentLanguage: string;
+  switchAria: string;
   hero: {
     eyebrow: string;
     primaryCta: string;
     secondaryCta: string;
+    focusLabel: string;
+  };
+  evidence: {
+    label: string;
+    heading: string;
   };
   perspectives: {
     label: string;
@@ -137,6 +145,8 @@ export interface LocaleContent {
     tagline: string;
     switchLabel: string;
     copyrightMark: string;
+    exploreLabel: string;
+    homeLabel: string;
   };
   gpaLabel?: string;
   meta: {
@@ -163,10 +173,18 @@ export const content: Record<LocaleCode, LocaleContent> = {
       englishLabel: "English",
       persianLabel: "فارسی",
     },
+    navLabel: "Primary",
+    currentLanguage: "English",
+    switchAria: "Switch to Persian. Current language: English.",
     hero: {
       eyebrow: "Research · Engineering · Design",
-      primaryCta: "Explore by perspective",
-      secondaryCta: "About",
+      primaryCta: "About",
+      secondaryCta: "CV",
+      focusLabel: "Current focus",
+    },
+    evidence: {
+      label: "03 · Evidence",
+      heading: "Selected evidence",
     },
     perspectives: {
       label: "01 · Paths",
@@ -196,7 +214,7 @@ export const content: Record<LocaleCode, LocaleContent> = {
             "Articles, series and learning resources, documented with reasoning.",
         },
       ],
-      note: "These paths open in a later release. For now, this landing introduces the identity and direction.",
+      note: "Each path opens a live section of this site.",
     },
     about: {
       label: "02 · Identity",
@@ -308,6 +326,8 @@ export const content: Record<LocaleCode, LocaleContent> = {
       tagline: "Human-centered intelligent systems.",
       switchLabel: "Language",
       copyrightMark: "©",
+      exploreLabel: "Explore",
+      homeLabel: "Home",
     },
     gpaLabel: "GPA",
     meta: {
@@ -333,10 +353,18 @@ export const content: Record<LocaleCode, LocaleContent> = {
       englishLabel: "English",
       persianLabel: "فارسی",
     },
+    navLabel: "اصلی",
+    currentLanguage: "فارسی",
+    switchAria: "تغییر زبان به انگلیسی. زبان فعلی: فارسی.",
     hero: {
       eyebrow: "پژوهش · مهندسی · طراحی",
-      primaryCta: "مشاهده از نگاه شما",
-      secondaryCta: "درباره",
+      primaryCta: "درباره",
+      secondaryCta: "رزومه و CV",
+      focusLabel: "تمرکز فعلی",
+    },
+    evidence: {
+      label: "۰۳ · شواهد",
+      heading: "شواهد منتخب",
     },
     perspectives: {
       label: "۰۱ · مسیرها",
@@ -366,7 +394,7 @@ export const content: Record<LocaleCode, LocaleContent> = {
             "مقاله‌ها، مجموعه‌ها و منابع یادگیری، مستندشده با استدلال.",
         },
       ],
-      note: "این مسیرها در نسخهٔ بعدی باز می‌شوند. فعلاً این صفحهٔ فرود هویت و مسیر را معرفی می‌کند.",
+      note: "هر مسیر یک بخش زنده از این سایت را باز می‌کند.",
     },
     about: {
       label: "۰۲ · هویت",
@@ -478,6 +506,8 @@ export const content: Record<LocaleCode, LocaleContent> = {
       tagline: "سیستم‌های هوشمند انسان‌محور.",
       switchLabel: "زبان",
       copyrightMark: "©",
+      exploreLabel: "کاوش",
+      homeLabel: "خانه",
     },
     gpaLabel: "معدل",
     meta: {

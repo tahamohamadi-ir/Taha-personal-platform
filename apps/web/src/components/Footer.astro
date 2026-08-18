@@ -34,12 +34,21 @@ const switchLang = otherLang;
       <p class="footer-tagline">{content.footer.tagline}</p>
     </div>
   </div>
+  <nav class="footer-explore" aria-label={content.footer.exploreLabel}>
+    <a href={`/${content.lang}/`}>{content.footer.homeLabel}</a>
+    <a href={`/${content.lang}/about/`}>{content.about.heading}</a>
+    <a href={`/${content.lang}/research/`}>{content.research.heading}</a>
+    <a href={`/${content.lang}/projects/`}>{content.projects.heading}</a>
+    <a href={`/${content.lang}/blog/`}>{content.blog.heading}</a>
+    <a href={`/${content.lang}/cv/`}>{content.downloads.heading}</a>
+  </nav>
   <div class="footer-meta">
     <a
       href={switchHref}
       hreflang={switchLang}
       lang={switchLang}
       class="footer-switch"
+      aria-label={content.switchAria}
     >
       {switchLabel}
     </a>
@@ -97,6 +106,26 @@ const switchLang = otherLang;
     color: var(--color-ink-secondary);
     font-size: 0.875rem;
     overflow-wrap: anywhere;
+  }
+
+  .footer-explore {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+  }
+
+  .footer-explore a {
+    color: var(--color-ink-secondary);
+    text-decoration: none;
+    font-weight: 600;
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .footer-explore a:hover,
+  .footer-explore a:focus-visible {
+    color: var(--color-brand);
   }
 
   .footer-meta {
