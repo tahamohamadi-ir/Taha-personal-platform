@@ -1,0 +1,110 @@
+name: CD — Deploy to production
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build static artifact
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    outputs:
+      release_name: ${{ steps.meta.outputs.release_name }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - run: npm ci
+      - run: npm run check
+      - run: npm run build
+        env:
+          CMS_API_BASE: https://tahamohamadi.ir
+
+      - name: Build fingerprint
+        run: |
+          version=$(node -p "require('./package.json').version")
+          sha="${GITHUB_SHA:0:7}"
+          date=$(date -u +%FT%TZ)
+          printf 'version=%s\nsha=%s\ndate=%s\n' "$version" "$sha" "$date" > dist/build-fingerprint.txt
+
+      - name: Smoke test (local preview)
+        shell: bash
+        run: |
+          npx astro preview --port 4321 >/tmp/preview.log 2>&1 &
+          sleep 8
+          bash "${GITHUB_WORKSPACE}/infra/deploy/smoke.sh" http://localhost:4321
+          kill %1 || true
+
+      - name: Set release metadata
+        id: meta
+        run: echo "release_name=release-${GITHUB_SHA:0:7}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v7.0.1
+        with:
+          name: web-dist-${{ github.sha }}
+          path: apps/web/dist
+          if-no-files-found: error
+          retention-days: 7
+
+  deploy:
+    name: Deploy to VPS
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/download-artifact@v7.0.1
+        with:
+          name: web-dist-${{ github.sha }}
+          path: dist
+
+      - name: Deploy via rsync + SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ vars.DEPLOY_USER || 'deploy' }}
+          RELEASE_NAME: ${{ needs.build.outputs.release_name }}
+        run: |
+          install -m 600 /dev/null ~/.ssh_deploy_key
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh_deploy_key
+
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${DEPLOY_HOST}" >> ~/.ssh/known_hosts 2>/dev/null
+
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh_deploy_key -o StrictHostKeyChecking=accept-new" \
+            dist/ "${DEPLOY_USER}@${DEPLOY_HOST}:/home/${DEPLOY_USER}/taha-stage/${RELEASE_NAME}/"
+
+          ssh -i ~/.ssh_deploy_key -o StrictHostKeyChecking=accept-new \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "sudo -n /opt/taha/bin/update-release.sh /home/${DEPLOY_USER}/taha-stage/${RELEASE_NAME}"
+
+          rm -f ~/.ssh_deploy_key
+
+      - name: Production smoke
+        env:
+          SITE_URL: https://tahamohamadi.ir
+        run: |
+          sleep 3
+          for path in / /en/ /fa/ /health.json; do
+            status=$(curl -s -o /dev/null -w '%{http_code}' "${SITE_URL}${path}")
+            if [ "$status" != "200" ]; then
+              echo "FAIL ${path} → ${status}"
+              exit 1
+            fi
+            echo "PASS ${path} → ${status}"
+          done
