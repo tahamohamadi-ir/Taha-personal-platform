@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "apps.security",
     "apps.api",
     "apps.rebuild",
+    "apps.composition",
     "django_otp",
     "django_otp.plugins.otp_totp",
 ]
