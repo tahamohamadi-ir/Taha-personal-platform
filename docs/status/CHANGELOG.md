@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-08-18 — ADM-1: content read API + dev preview route + SPA content pages
+
+- **Content read API:** `GET /content/{entity}` (فهرست با فیلترهای locale/status/q + صفحه‌بندی page/pageSize؛ خطاهای 400 VALIDATION / 404 NOT_FOUND) و `GET /content/{entity}/{id}` (جزئیات با مپ camelCase `fields`) برای ۷ موجودیت: landing, profile, article, research-topic, research-statement, project, publication — در `apps/cms/apps/api/admin_content.py` (new) و mount در `/api/v1/admin/content/`. `apps/cms/apps/api/admin_common.py` (new): AdminError، error handler، CSRF check، staff/OTP guards و client_ip مشترک شدند.
+- **Dev preview route:** `serve_admin_ui` در `/admin-ui/` — DEBUG-only، path-traversal-safe (resolve+startswith)، SPA fallback به index.html، هدرهای `X-Robots-Tag: noindex, nofollow, noarchive` + `Cache-Control: no-store` (`apps/cms/apps/api/admin_spa.py` (new)، mount در `config/urls.py`).
+- **SPA:** `apps/cms/admin-frontend/` — ContentListPage (تب‌های entity، فیلترهای locale/status/q هم‌گام با URL، جستجوی debounced، جدول RTL، صفحه‌بندی، حالت‌های loading/empty/error) و ContentDetailPage (رندر generic `fields`، اسلاگ‌های dir=ltr، حالت 404)؛ `src/lib/entities.ts` + `src/lib/format.ts` جدید؛ `src/lib/api.ts` با fetchContentList/fetchContentDetail + types؛ سایدبار «مدیریت محتوا» → /content؛ `vite.config.ts` base `/admin-ui/` و BrowserRouter basename `/admin-ui/`.
+- **اعتبارسنجی:** backend 195 passed (7 تست جدید `test_admin_content_api.py` + 14 تست auth)، ruff clean، بدون migration جدید، SPA build/check PASS، smoke پیش‌نمایش dev PASS (deep-route fallback 200؛ traversal 404؛ DEBUG=False 404؛ missing build 404 با hint).
+- **باقی:** write/update + optimistic locking؛ cutover واگتِیل→SPA زیر `/admin/` (DEFER-0023)؛ اعمال Caddy no-store snippet روی سرور (مرحله‌ی مالک)؛ RISK-0010 بدون تغییر.
+
 ## 2026-08-18 — ADM-1 foundation: custom admin auth API + React SPA scaffold
 
 - **Backend:** `/api/v1/admin/` (Django Ninja) — `auth/csrf|login|logout|me` + `dashboard/summary`؛ session+CSRF صریح + TOTP/recovery + AuditLog + rate-limit؛ خطاهای `{code,message,fields}`؛ ۱۳ تست جدید؛ کل سویییت ۱۸۷ پاس.
