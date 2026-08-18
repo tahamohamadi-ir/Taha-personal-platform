@@ -1,7 +1,7 @@
 # Project Manifest
 
-**Status:** P0-G0 — `PASS for static-only P1` (2026-08-14) **+ P3 CMS runtime live (2026-08-16)**. Wagtail `/admin/`, `/static/*`, CMS `/health/`, and TOTP are live (`RISK-0009` CLOSED). `RISK-0003` still lacks CMS-postgres restore evidence. Staging از 2026-08-15 decommission شده است (ADR-0025).  
-**Last verified:** 2026-08-16  
+**Status:** P0-G0 — `PASS for static-only P1` (2026-08-14) **+ P3..P6 live (2026-08-17/18)**. Wagtail `/admin/`, `/static/*`, CMS `/health/`, TOTP (`RISK-0009` CLOSED), public published-only `/api/` + `/media/` (`DEFER-0017` CLOSED), and P4–P6 public routes are live. `RISK-0003` CLOSED (2026-08-17, LOG-0140); `DEFER-0015` CLOSED (recovery codes in repo; owner rebuild to use on prod). **Custom admin rebuild authorized (ADR-0026, 2026-08-18):** Wagtail is being replaced by a dedicated React admin SPA + Django Ninja `/api/v1/admin/*`; content preserved (base = `origin/main`); phases ADM-0..ADM-6 in `Task-list.md` §17. Staging از 2026-08-15 decommission شده است (ADR-0025).  
+**Last verified:** 2026-08-18  
 **Source of truth for commands:** این فایل؛ دستور تأییدنشده را اجرا یا مستند نکنید.
 
 ## Product and repository
@@ -16,7 +16,7 @@
 | Staging domain | DECOMMISSIONED (ADR-0025, 2026-08-15) — `staging.tahamohamadi.ir` Caddy block and DNS removed; dev/deploy directly on production |
 | Root locale | `/` Language Gateway |
 | Locale roots | `/fa/` (RTL) and `/en/` (LTR) |
-| Admin route | `/admin/` — Wagtail live; `/static/*` proxied; TOTP enrolled (`RISK-0009` CLOSED) |
+| Admin route | `/admin/` — Wagtail live until ADM-1 cutover; replacement is a custom React admin SPA + `/api/v1/admin/*` (ADR-0026); `/static/*` proxied; TOTP enrolled (`RISK-0009` CLOSED) |
 
 ## Approved architecture
 
@@ -24,20 +24,20 @@
 |---|---|---|
 | Public frontend | Astro + TypeScript + React Islands | Scaffolded; static-only P1 built and deployed (static P1 live on tahamohamadi.ir) — Language Gateway + `/fa/` + `/en/` landing |
 | Styling/UI | Tailwind CSS + project design system + shadcn/Radix | Tailwind v4 + project design tokens applied; shadcn/Radix not used in P1 |
-| Backend/CMS/API | Python 3.12.13 + Django 5.2.9 LTS + Wagtail 7.4.2 LTS + Django Ninja 1.6.2 | Runtime live as Compose `taha-cms` on `127.0.0.1:18000`; public `/admin*` + `/health/` proxied; `/static*` not yet; `/api/` and `/media/` not public |
+| Backend/CMS/API | Python 3.12.13 + Django 5.2.9 LTS + Django Ninja 1.6.2 (Wagtail 7.4.2 pending removal per ADR-0026) | Runtime live as Compose `taha-cms` on `127.0.0.1:18000`; public `/admin*`, `/static*`, `/health/`, published-only `/api/` + `/media/` proxied |
 | Database | PostgreSQL 17 (Compose `taha-cms-db-1`) | Provisioned for CMS only; restic restore/import evidence still `RISK-0003` |
 | Public search | Pagefind at the approved phase | Not provisioned |
 | Deployment | Docker Compose + Caddy on VPS | Static artifact via `/opt/taha/site/current`; CMS Compose live; Caddy `/static*` handle still required |
 | Git/CI | GitHub + GitHub Actions hosted standard runners | Workflows `ci.yml` (web) and `ci-cms.yml` (CMS) green on hosted runners on `main` |
 | Backup | Encrypted restic repository through rclone on Google Drive | restic 0.18.1 and Ubuntu rclone 1.60.1 build installed; OAuth, repository, PostgreSQL/media/config snapshots, `restic check`, retention, enabled daily timer and isolated file-level restore verified; staging database import remains |
 
-Python 3.12 is selected for ecosystem maturity and remains security-supported through October 2028. Wagtail 7.4 LTS and Django 5.2 LTS officially support this combination. Exact patch versions are selected together in the first dependency lockfile, not guessed in this Manifest.
+Python 3.12 is selected for ecosystem maturity and remains security-supported through October 2028. Django 5.2 LTS officially supports this combination; Wagtail 7.4 LTS does too while it remains installed (removal authorized per ADR-0026). Exact patch versions are selected together in the first dependency lockfile, not guessed in this Manifest.
 
 ## Repository ownership
 
 ```text
 apps/web/               Astro public frontend
-apps/cms/               Django, Wagtail and Django Ninja
+apps/cms/               Django, Wagtail (removal authorized per ADR-0026) and Django Ninja; custom React admin SPA (admin-frontend/) once scaffolded
 infra/                  Caddy, Compose, deploy and backup infrastructure
 docs/adr/               accepted/proposed architecture decisions
 docs/governance/        durable project policies
@@ -52,7 +52,7 @@ docs/templates/         task specifications
 |---|---|---|---|
 | `dev` | Local Windows control plane; WSL only for Linux/Docker tests | Available | fake/sanitized only |
 | `staging` | DECOMMISSIONED (ADR-0025, 2026-08-15) | `staging.tahamohamadi.ir` Caddy block and DNS removed; dev/deploy directly on production | — |
-| `prod` | `tahamohamadi.ir` | Static P4+P5 routes live (2026-08-16, release-59bf91e, checksum `40472597`); CMS still pre-P4 image pending RISK-0003 | published, approved and backed-up data only |
+| `prod` | `tahamohamadi.ir` | Static P4+P5 routes live (2026-08-16, release-59bf91e, checksum `40472597`); CMS live with public `/api/` + `/media/` (DEFER-0017 CLOSED); custom admin rebuild in phases (ADR-0026) | published, approved and backed-up data only |
 
 Production host is an active Ubuntu 26.04 LTS VPS with 2 vCPU, ~3910 MB RAM (~4 GiB, owner decision 2026-08-15: keep the 4 GiB plan — `RISK-0007` CLOSED) and 30 GB disk. It co-hosts the static site and Compose `taha-cms` (cms + postgres on `127.0.0.1:18000`). The VPS is **not** approved for Gitea, a CI runner, Redis, Celery, OpenSearch, Neo4j, Kubernetes or other additional always-on services.
 
@@ -121,7 +121,8 @@ docker compose -f infra/cms/docker-compose.cms.yml exec cms python manage.py cre
 Architecture: Caddy edge + versioned static artifact + Compose only for CMS/Postgres.
 See `infra/cms/README.md`. `RISK-0009` is CLOSED (static proxy + password rotate +
 production TOTP). `DEFER-0015` is CLOSED (recovery codes in repo; owner rebuild for prod).
-`RISK-0003` remains for backup evidence. Public `/api/`/`/media/` stay unpublished (`DEFER-0017`).
+`RISK-0003` is CLOSED (2026-08-17, LOG-0140). Public `/api/`/`/media/` are live
+published-only (`DEFER-0017` CLOSED). Custom admin rebuild phases per ADR-0026 (§17).
 
 ## Agent tooling (developer workstation, verified 2026-08-15)
 
@@ -176,6 +177,7 @@ Node.js public production runtime
 ## Open decisions and gate blockers
 
 - Rotate root credential and define non-root SSH-key access (`RISK-0002`) via `docs/governance/SERVER_ACCESS_RUNBOOK.md`.
-- Set up and test encrypted Google Drive backup, retention and restore (`RISK-0003`) after secure access and audit, per `docs/governance/BACKUP_POLICY.md`.
 - Select production WSGI/ASGI server, worker count, media layout, monitoring and exact deploy mechanics in P0-A ADRs.
-- `RISK-0007` (staging capacity) is CLOSED. `RISK-0009` is CLOSED (admin/static/health + password + TOTP on production). `RISK-0003` still needs CMS-postgres restore/import evidence before contact persistence. `/api/` and `/media/` stay unpublished (`DEFER-0017`). `DEFER-0015` CLOSED (recovery codes in repo; owner rebuild).
+- `RISK-0007` (staging capacity) is CLOSED. `RISK-0009` is CLOSED (admin/static/health + password + TOTP on production). `RISK-0003` CLOSED (2026-08-17, LOG-0140). `/api/` and `/media/` are live published-only (`DEFER-0017` CLOSED). `DEFER-0015` CLOSED (recovery codes in repo; owner rebuild).
+- **Custom admin rebuild (ADR-0026, 2026-08-18):** Wagtail removal and the React admin SPA + `/api/v1/admin/*` are owner-authorized; execution is phased ADM-0..ADM-6 (see `Task-list.md` §17), each phase with its own Task Spec. All admin work branches from `origin/main`; content is preserved (seed data, dumpdata fixture, backup before migrations).
+- **Complementary improvements (proposals, `docs/plan/custom-admin-rebuild-fa.md` §14):** reading time, JSON-LD additions, URL-driven filters, lightbox gallery, FTS Persian, service layer, Playwright config, Vitest, feature flags, Lighthouse CI, manual-test checklists — integrated into `Task-list.md` (P4/P6/P10/ADM/release checklist) and BACKLOG; each accepted via its own Task Spec and owner priority.
