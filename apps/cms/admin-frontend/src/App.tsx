@@ -7,6 +7,8 @@ import ContentListPage from "./pages/ContentListPage";
 import ContentDetailPage from "./pages/ContentDetailPage";
 import ContentEditPage from "./pages/ContentEditPage";
 import MediaLibraryPage from "./pages/MediaLibraryPage";
+import CompositionListPage from "./pages/CompositionListPage";
+import CompositionEditorPage from "./pages/CompositionEditorPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 export default function App() {
@@ -29,6 +31,12 @@ export default function App() {
               element={<ContentEditPage />}
             />
             <Route path="/media" element={<MediaLibraryPage />} />
+            <Route path="/composition" element={<CompositionListPage />} />
+            <Route path="/composition/new" element={<CompositionEditorPage />} />
+            <Route
+              path="/composition/:id/edit"
+              element={<CompositionEditorPage />}
+            />
           </Route>
         </Route>
         <Route path="*" element={<NotFoundPage />} />
