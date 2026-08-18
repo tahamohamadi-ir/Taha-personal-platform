@@ -828,9 +828,9 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 ### Task ADM-4 — Workflow + revisions + translation queue
 
-- [ ] Lifecycle transitions (Draft→Review→Scheduled→Published→Archived) با reason+audit، بازیابی-به-صورت-پیشنویس (هرگز overwrite live)، optimistic lock با 409، زمان‌بندی انتشار idempotent.
-- [ ] صف ترجمه fa/en: Missing/Incomplete/Complete/Outdated (بدون fallback خودکار) + content health (ترجمه ناقص، alt ناقص، orphan، شکست زمان‌بندی).
-- [ ] preview token با noindex/no-store.
+- [x] Lifecycle transitions (Draft→Review→Published→Archived) با reason+audit اتمیک + select_for_update؛ بازیابی-به-صورت-پیشنویس (archived→draft)؛ انتشار sets published_at فقط وقتی None. *(زمان‌بندی Scheduled → DEBT-0005؛ 2026-08-18 — LOG-0161)*
+- [x] صف ترجمه fa/en (Missing/Incomplete/Complete/Partial؛ بدون fallback) + content health (ترجمه ناقص، alt ناقص، orphan، شمارش وضعیت‌ها). *(2026-08-18 — LOG-0161)*
+- [ ] preview token با noindex/no-store. *(بعدی)*
 
 ### Task ADM-5 — Site customization + inbox
 
