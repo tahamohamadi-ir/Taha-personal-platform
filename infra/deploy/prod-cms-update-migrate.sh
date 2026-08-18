@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
 # Production CMS update + migrate (P4–P6). Run on VPS as deploy (re-execs via sudo).
 # Usage:
-#   export CMS_IMAGE=ghcr.io/tahamohamadi-ir/taha-cms:b369885
-#   bash infra/deploy/prod-cms-update-migrate.sh
+#   export CMS_IMAGE=ghcr.io/tahamohamadi-ir/taha-cms:<sha>
+#   sudo bash infra/deploy/prod-cms-update-migrate.sh
+#
+# CMS_IMAGE is REQUIRED. Use the latest sha tag from the "CMS image" workflow on
+# main (GitHub → Actions → CMS image), NOT HEAD: docs-only merges do not build an
+# image. Pinning a stale tag (e.g. b369885) skips migrations 0005/0006 and the
+# `import_profile_seed` command. Known-good at 2026-08-18: 430061b (PR #31).
 #
 # Requires: one interactive sudo password on first run. Does not print secrets.
 
@@ -14,7 +19,7 @@ if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
 fi
 
 CMS_REPO_DIR="${CMS_REPO_DIR:-/home/deploy/cms-repo}"
-CMS_IMAGE="${CMS_IMAGE:-ghcr.io/tahamohamadi-ir/taha-cms:b369885}"
+: "${CMS_IMAGE:?CMS_IMAGE is required — export it to the latest GHCR sha tag from the 'CMS image' workflow on main (e.g. ghcr.io/tahamohamadi-ir/taha-cms:430061b). A stale default previously pinned b369885 and skipped migrations 0005/0006.}"
 BACKUP_ROOT="${BACKUP_ROOT:-/home/deploy/backups}"
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
 BACKUP_DIR="${BACKUP_ROOT}/pre-migrate-${TIMESTAMP}"

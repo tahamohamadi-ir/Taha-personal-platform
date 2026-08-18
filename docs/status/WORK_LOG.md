@@ -1659,3 +1659,14 @@ ode --check و YAML validation توسط agent.
 - Deferred or risk IDs: DEFER-0024 (برنچ پایه) — نزدیک‌شونده؛ سینک سرور به مالک واگذار شد.
 - Rollback / recovery: revert/حذف برنچ؛ بدون اثر runtime تا اجرای دستورالعمل سرور.
 
+## LOG-0155 - 2026-08-18 - Server sync progress + stale CMS image pin fix
+
+- Outcome: مالک سینک سرور را شروع کرد: `git pull` تا `d626ecf`، سپس `sudo bash infra/deploy/prod-cms-update-migrate.sh`. پیش‌فرض اسکریپت به `b369885` (تصویر قدیمی P4–P5) پین شده بود → `migrate` گفت «No migrations to apply» و فقط 0001–0004 در `showmigrations` دیده شد؛ **0005/0006 اعمال نشدند** و `import_profile_seed` با «Unknown command» شکست (هر دو در PR #31 یعنی تصویر `430061b` آمده‌اند). همچنین `rebuild-static.sh` روی VPS با «npm not found» شکست (VPS نود ندارد). پیش‌فرض قدیمی اسکریپت برداشته شد و `CMS_IMAGE` **الزامی** شد (با پیام راهنما) تا این خطا تکرار نشود.
+- Why: تصویر CMS فقط با تغییر `apps/cms/**`/`infra/cms/**` ساخته می‌شود؛ merge های docs-only (PR #32/#34) تصویر جدید نمی‌سازند؛ آخرین تصویر دارای 0005/0006 و `import_profile_seed` = `430061b` است.
+- Scope / files: `infra/deploy/prod-cms-update-migrate.sh`، `docs/status/WORK_LOG.md`، `docs/status/CHANGELOG.md`.
+- Commands or actions actually performed: ویرایش اسکریپت (حذف پیش‌فرض `b369885`، الزام `CMS_IMAGE`)؛ بررسی `ci-cms-image.yml` (path filters) و آخرین run های «CMS image» (آخرین = PR #31).
+- Verification actually performed and result: `git diff --check` PASS؛ اسکریپت با `bash -n` خطای نحوی ندارد؛ بدون تغییر در منطق دیگر.
+- Decisions / assumptions: به‌جای HEAD، تصویر باید از آخرین run موفق «CMS image» انتخاب شود (مثلاً `430061b`)؛ مالک پس از deploy تصویر درست، `migrate` (0005/0006) + `import_profile_seed` + در صورت نیاز `seed_site_content` + `smoke-cms.sh` را اجرا می‌کند؛ بازسازی استاتیک یا با نصب Node 24 روی VPS یا build محلی با SSH tunnel (گزینه‌ی `build-static-with-cms.sh`/`rebuild-static.sh`).
+- Deferred or risk IDs: RISK-0010 (حفظ محتوا — backup گرفته شد: `/home/deploy/backups/pre-migrate-20260818-165018/cms-postgres-all.sql`).
+- Rollback / recovery: تصویر قبلی `31c6560`/`b369885` و backup پیش از migrate موجود است؛ بازگشت = `CMS_IMAGE=<قبلی> sudo bash infra/deploy/prod-cms-update-migrate.sh`.
+
