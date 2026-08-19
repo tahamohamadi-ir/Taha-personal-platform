@@ -2,9 +2,10 @@
 #
 # Architecture:
 #   Internet → Caddy (TLS)
-#     handle /admin/*   → reverse_proxy 127.0.0.1:18000
-#     handle /static/*  → reverse_proxy 127.0.0.1:18000   (Wagtail admin assets)
-#     handle /health/*  → reverse_proxy 127.0.0.1:18000   (NOT /health* — that would steal /health.json)
+#     handle /admin/*         → reverse_proxy 127.0.0.1:18000   (React admin SPA, ADR-0026)
+#     handle /admin-wagtail/* → reverse_proxy 127.0.0.1:18000   (legacy Wagtail admin, rollback)
+#     handle /static/*        → reverse_proxy 127.0.0.1:18000   (Wagtail admin assets)
+#     handle /health/*        → reverse_proxy 127.0.0.1:18000   (NOT /health* — that would steal /health.json)
 #     import taha_application_routes / file_server
 #
 # Insert these `handle` blocks INSIDE the tahamohamadi.ir site block, BEFORE
@@ -22,6 +23,18 @@
 # file_server while loopback CMS returns 200 with X-Forwarded-Proto: https.
 
 handle /admin/* {
+	reverse_proxy 127.0.0.1:18000 {
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Forwarded-Host {host}
+		header_down X-Robots-Tag "noindex, nofollow"
+		header_down Cache-Control "no-store, no-cache, must-revalidate"
+	}
+}
+
+# Legacy Wagtail admin (ADR-0026 cutover, /admin-wagtail/): TOTP enrollment,
+# staff preview and rollback.  Matched explicitly because `/admin/*` does not
+# match `/admin-wagtail/*` and the file_server would otherwise 404 these paths.
+handle /admin-wagtail/* {
 	reverse_proxy 127.0.0.1:18000 {
 		header_up X-Forwarded-Proto {scheme}
 		header_up X-Forwarded-Host {host}

@@ -207,7 +207,7 @@ def test_admin_spa_traversal_blocked(rf):
 
     from apps.api.admin_spa import serve_admin_ui
 
-    request = rf.get("/admin-ui/")
+    request = rf.get("/admin/")
     for evil in ("../../config/settings/base.py", "index.html/../../../secrets.txt"):
         with pytest.raises(Http404):
             serve_admin_ui(request, spa_path=evil)
