@@ -1,8 +1,10 @@
-"""Wagtail-admin TOTP enrollment, recovery codes, and MFA disable views."""
+"""TOTP enrollment, recovery codes, and MFA disable views (Django-level)."""
 
 from base64 import b32encode
 from io import BytesIO
 
+from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -10,8 +12,6 @@ from django_otp import login as otp_login
 from django_otp import user_has_device
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from django_otp.qr import write_qrcode_image
-from wagtail.admin import messages
-from wagtail.admin.auth import require_admin_access
 
 from apps.security.forms import MFAConfirmForm, TOTPConfirmForm
 from apps.security.recovery import (
@@ -39,7 +39,7 @@ def _verify_second_factor(user, token: str, *, ip: str) -> bool:
     return consume_recovery_code(user, cleaned, ip=ip)
 
 
-@require_admin_access
+@staff_member_required
 def totp_setup(request):
     """Show enrollment status, QR for an unconfirmed device, or create one."""
     if user_has_device(request.user, confirmed=True):
@@ -106,7 +106,7 @@ def totp_setup(request):
     )
 
 
-@require_admin_access
+@staff_member_required
 def totp_qrcode(request):
     """SVG QR for the current user's pending (unconfirmed) TOTP device only."""
     device = (
@@ -128,7 +128,7 @@ def totp_qrcode(request):
     return HttpResponse(buf.getvalue(), content_type="image/svg+xml")
 
 
-@require_admin_access
+@staff_member_required
 def recovery_codes_reveal(request):
     """One-time display of plaintext recovery codes from the session."""
     codes = pop_recovery_codes(request.session)
@@ -145,7 +145,7 @@ def recovery_codes_reveal(request):
     )
 
 
-@require_admin_access
+@staff_member_required
 def totp_regenerate(request):
     """Replace unused recovery codes after confirming a second factor."""
     if not user_has_device(request.user, confirmed=True):
@@ -176,7 +176,7 @@ def totp_regenerate(request):
     )
 
 
-@require_admin_access
+@staff_member_required
 def totp_disable(request):
     """Remove TOTP + recovery codes so the user can re-enroll."""
     if not user_has_device(request.user, confirmed=True):

@@ -43,6 +43,9 @@ function renderFieldValue(value: ContentFieldValue): ReactNode {
   if (value === null || value === "") {
     return "—";
   }
+  if (typeof value === "boolean") {
+    return value ? "بله" : "خیر";
+  }
   const text = typeof value === "number" ? String(value) : value;
   if (isLongValue(text)) {
     return <div className="admin-field-long">{text}</div>;

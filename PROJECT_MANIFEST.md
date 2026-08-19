@@ -1,7 +1,7 @@
 # Project Manifest
 
-**Status:** P0-G0 — `PASS for static-only P1` (2026-08-14) **+ P3..P6 live (2026-08-17/18)**. Wagtail `/admin/`, `/static/*`, CMS `/health/`, TOTP (`RISK-0009` CLOSED), public published-only `/api/` + `/media/` (`DEFER-0017` CLOSED), and P4–P6 public routes are live. `RISK-0003` CLOSED (2026-08-17, LOG-0140); `DEFER-0015` CLOSED (recovery codes in repo; owner rebuild to use on prod). **Custom admin rebuild authorized (ADR-0026, 2026-08-18):** Wagtail is being replaced by a dedicated React admin SPA + Django Ninja `/api/v1/admin/*`; content preserved (base = `origin/main`); phases ADM-0..ADM-6 in `Task-list.md` §17. Staging از 2026-08-15 decommission شده است (ADR-0025).  
-**Last verified:** 2026-08-18  
+**Status:** P0-G0 — `PASS for static-only P1` (2026-08-14) **+ P3..P6 live (2026-08-17/18)**. Custom React admin SPA at `/admin/` (ADM-1 cutover LOG-0163); Wagtail fallback `/admin-wagtail/`; `/static/*`, CMS `/health/`, TOTP (`RISK-0009` CLOSED), public published-only `/api/` + `/media/` (`DEFER-0017` CLOSED), P4–P6 public routes live. `RISK-0003` CLOSED; `DEFER-0015` CLOSED; `DEFER-0023` CLOSED. **Custom admin rebuild (ADR-0026):** SPA + `/api/v1/admin/*`; Wagtail uninstall blocked by schema (`DEBT-0003`); ADM-6 wiring in `docs/plan/ADM-6-frontend-wiring-task-spec.md`. Staging decommissioned (ADR-0025).  
+**Last verified:** 2026-08-19  
 **Source of truth for commands:** این فایل؛ دستور تأییدنشده را اجرا یا مستند نکنید.
 
 ## Product and repository
@@ -16,7 +16,7 @@
 | Staging domain | DECOMMISSIONED (ADR-0025, 2026-08-15) — `staging.tahamohamadi.ir` Caddy block and DNS removed; dev/deploy directly on production |
 | Root locale | `/` Language Gateway |
 | Locale roots | `/fa/` (RTL) and `/en/` (LTR) |
-| Admin route | `/admin/` — Wagtail live until ADM-1 cutover; replacement is a custom React admin SPA + `/api/v1/admin/*` (ADR-0026); `/static/*` proxied; TOTP enrolled (`RISK-0009` CLOSED) |
+| Admin route | `/admin/` — custom React SPA (ADM-1 cutover); Wagtail fallback `/admin-wagtail/` until schema uninstall (`DEBT-0003`); `/api/v1/admin/*` (ADR-0026); `/static/*` proxied; TOTP enrolled (`RISK-0009` CLOSED) |
 
 ## Approved architecture
 

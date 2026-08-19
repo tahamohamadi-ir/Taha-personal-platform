@@ -27,6 +27,7 @@ import {
   isContentLocale,
   isContentStatus,
 } from "../lib/entities";
+import ProfileNestedEditor from "../components/ProfileNestedEditor";
 
 type LoadState = "loading" | "ready" | "error" | "invalid";
 
@@ -53,7 +54,11 @@ function toErrorMessage(error: unknown, fallback: string): string {
 function formValuesFromDetail(detail: ContentDetail): FormValues {
   const fields: Record<string, string> = {};
   for (const [key, value] of Object.entries(detail.fields)) {
-    fields[key] = value === null ? "" : String(value);
+    if (typeof value === "boolean") {
+      fields[key] = value ? "true" : "false";
+    } else {
+      fields[key] = value === null ? "" : String(value);
+    }
   }
   return {
     locale: isContentLocale(detail.locale) ? detail.locale : "fa",
@@ -67,7 +72,10 @@ function formValuesFromDetail(detail: ContentDetail): FormValues {
 function fieldValueToPayload(
   spec: ContentFieldSpec,
   value: string
-): string | number {
+): string | number | boolean {
+  if (spec.type === "boolean") {
+    return value === "true";
+  }
   if (spec.type === "number" && value !== "") {
     const parsed = Number(value);
     if (Number.isFinite(parsed)) {
@@ -123,6 +131,20 @@ function renderFieldControl(
   ): void => {
     onValueChange(event.target.value);
   };
+  if (spec.type === "boolean") {
+    return (
+      <input
+        id={id}
+        name={spec.key}
+        type="checkbox"
+        className="h-4 w-4"
+        checked={value === "true"}
+        onChange={(event) => onValueChange(event.target.checked ? "true" : "false")}
+        aria-invalid={errorId !== undefined}
+        aria-describedby={errorId}
+      />
+    );
+  }
   if (spec.type === "textarea") {
     return (
       <textarea
@@ -242,12 +264,18 @@ export default function ContentEditPage(): ReactElement {
           setUpdatedAt(detail.updatedAt);
         } else if (!cancelled) {
           setSchema(entitySchema);
+          const booleanDefaults: Record<string, string> = {};
+          for (const spec of entitySchema.fields) {
+            if (spec.type === "boolean") {
+              booleanDefaults[spec.key] = "true";
+            }
+          }
           setForm({
             locale: "fa",
             slug: "",
             title: "",
             status: "draft",
-            fields: {},
+            fields: booleanDefaults,
           });
         }
         if (!cancelled) {
@@ -299,7 +327,7 @@ export default function ContentEditPage(): ReactElement {
     setConflictError(null);
     try {
       const schemaKeys = new Set(schema.fields.map((spec) => spec.key));
-      const fields: Record<string, string | number> = {};
+      const fields: Record<string, string | number | boolean> = {};
       for (const spec of schema.fields) {
         fields[spec.key] = fieldValueToPayload(
           spec,
@@ -609,6 +637,9 @@ export default function ContentEditPage(): ReactElement {
           </Link>
         </div>
       </form>
+      {isEditing && entity === "profile" && form !== null ? (
+        <ProfileNestedEditor locale={form.locale} slug={form.slug} />
+      ) : null}
     </div>
   );
 }

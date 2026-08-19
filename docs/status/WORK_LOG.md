@@ -1792,3 +1792,37 @@ ode --check و YAML validation توسط agent.
 - Deferred or risk IDs: DEFER-0023 (cutover) CLOSED؛ DEFER-0022 (local HTTP preview) بدون تغییر؛ RISK-0010 بدون تغییر.
 - Rollback / recovery: بازگشت با re-point کردن `/admin/` به `include(wagtail_admin_urls)` و حذف SPA serving route؛ واگتِیل هنوز نصب و functional است. تصویر CMS قبلی (بدون multi-stage) قابل برگشت است.
 
+## LOG-0164 - 2026-08-19 - Docs ledger sync after ADM-1 cutover
+
+- Outcome: Entry-point docs match the live admin: SPA `/admin/`, Wagtail `/admin-wagtail/`. `DEFER-0023` and `DEFER-0014` CLOSED. `DEBT-0003` now describes the remaining Wagtail schema surface. Active spec is `docs/plan/ADM-6-frontend-wiring-task-spec.md`. Recorded `DEFER-0026` (Playwright lifecycle), `DEFER-0027` (HMAC enable), `DEFER-0028` (composition/CV projection).
+- Why: AGENTS/README/plan index still said Wagtail served `/admin/` after LOG-0163.
+- Scope / files: `AGENTS.md`, `docs/README.md`, `PROJECT_MANIFEST.md`, `docs/plan/README.md`, `docs/plan/ADM-6-frontend-wiring-task-spec.md`, ledgers, `Task-list.md` §17, this entry.
+- Commands or actions actually performed: documentation-only; implementation follows in LOG-0165+.
+- Verification actually performed and result: ledger IDs unique; no production claim beyond LOG-0163 cutover.
+- Deferred or risk IDs: DEFER-0026/0027/0028 OPEN; DEBT-0003 OPEN; RISK-0010 OPEN.
+- Rollback / recovery: revert this commit.
+
+## LOG-0165 - 2026-08-19 - Projects listing, nested skills, SPA TOTP, rebuild hook
+
+- Outcome: Public projects list no longer requires a case-study extension. Additive `show_on_projects` (default True, migration `0007`). `/{locale}/projects/` uses a card catalog and copy that does not mention `CMS_API_BASE`. SPA profile edit can change skills through the existing nested `PUT /api/admin/profiles/<locale>/<slug>` without wiping sibling arrays. ADM-0 TOTP enroll/recovery/disable is available at `/api/v1/admin/auth/mfa/*` and `/admin/security`; Wagtail HTML at `/admin-wagtail/` remains fallback and Wagtail stays installed. Signed `/rebuild-trigger/` starts `infra/deploy/rebuild-static.sh` when enabled; default remains False. Local JSON lifecycle create→edit→publish→public fa/en is tested.
+- Why: Empty public projects page was a list-filter/seed mismatch; skills were nested rows the scalar content API could not edit; enrollment still depended on Wagtail HTML; HMAC endpoint did not run the rebuild script.
+- Scope / files: `apps/cms/apps/content/models.py` + `migrations/0007_project_show_on_projects.py`, public `api.py`, `admin_content.py`, seed, `apps/rebuild/services.py`+`views.py`, `admin_mfa.py`, `admin-frontend` Security + ProfileNestedEditor, `apps/web` ProjectsCatalog + `content.ts` + QA spec, production env wiring for rebuild flags, ledgers, this entry.
+- Commands or actions actually performed: `uv run ruff check .` (clean); `uv run pytest -q` (303 passed); `manage.py check` + `makemigrations --check --dry-run` (no pending); `npm run check`/`build` in `apps/web` and `apps/cms/admin-frontend`; `node qa/projects-catalog.spec.mjs` PASS. No VPS SSH, migrate, or HMAC enable.
+- Verification actually performed and result: 303 pytest PASS; ruff clean; web 0 errors / 40 pages; admin SPA typecheck+build PASS; projects catalog QA PASS.
+- Decisions / assumptions: `LOGIN_URL` stays `/admin-wagtail/login/` so HTML TOTP and staff preview keep working until SPA enrollment is proven on a new image. Rebuild Popen is backgrounded and fail-open; CMS container does not ship the host script (`REBUILD_SCRIPT_PATH`). Default script path is resolved lazily so importing `apps.rebuild.services` cannot `IndexError` when `apps/cms` is copied to `/app`.
+- Deferred or risk IDs: DEFER-0026 Playwright lifecycle OPEN; DEFER-0027 HMAC enable OPEN; DEFER-0028 composition/CV OPEN; DEBT-0003 Wagtail schema OPEN; DEBT-0006 CV/inbox OPEN; RISK-0010 dumpdata+backup before production `0007`.
+- Rollback / recovery: revert the PR; previous CMS image; boolean default True is compatible with existing rows.
+
+## LOG-0166 - 2026-08-19 - Unstick web CI Playwright preview
+
+- Outcome: PR #45 web job hung on “Mobile overflow check (Playwright)” well past the 3–5 minute successful baseline. First fix still failed: Astro preview is a singleton (`Another astro preview server is already running` on 4321). CI now reuses the smoke preview on 4321, times out `playwright install`, uses `waitUntil: load`, and stops preview with `astro preview stop`.
+- Why: Silent install, `kill %1` across a surviving smoke preview on 4321, and `networkidle` can stall goto for 30s per viewport.
+- Scope / files: `.github/workflows/ci.yml`, `apps/web/qa/mobile-overflow.spec.mjs`, `apps/web/qa/about-tabs.spec.mjs`, CHANGELOG, this entry.
+- Commands or actions actually performed: inspected GitHub job 96047606466 (step 11 in_progress from 11:11:52Z); compared with successful `ci.yml` runs (~3–5 min total).
+- Verification actually performed and result: CMS/admin CI already PASS on PR #45; web CI re-run after this commit.
+- Deferred or risk IDs: DEFER-0026 unchanged.
+- Rollback / recovery: revert this commit.
+
+
+
+

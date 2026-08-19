@@ -253,3 +253,7 @@ admin_api.add_router("/overview", health_router)
 from apps.api.admin_siteconfig import siteconfig_router  # noqa: E402
 
 admin_api.add_router("", siteconfig_router)
+
+from apps.api.admin_mfa import mfa_router  # noqa: E402
+
+admin_api.add_router("/auth/mfa", mfa_router)

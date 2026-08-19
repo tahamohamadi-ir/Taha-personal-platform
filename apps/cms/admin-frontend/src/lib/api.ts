@@ -59,7 +59,7 @@ export interface ContentList {
   total: number;
 }
 
-export type ContentFieldValue = string | number | null;
+export type ContentFieldValue = string | number | boolean | null;
 
 export type ContentFields = Record<string, ContentFieldValue>;
 
@@ -86,7 +86,7 @@ export interface ContentListParams {
 export interface ContentFieldSpec {
   key: string;
   label: string;
-  type: "text" | "textarea" | "number" | "date";
+  type: "text" | "textarea" | "number" | "date" | "boolean";
 }
 
 export interface ContentEntitySchema {
@@ -103,14 +103,14 @@ export interface ContentPayload {
   slug: string;
   title: string;
   status?: ContentStatus;
-  fields: Record<string, string | number>;
+  fields: Record<string, string | number | boolean>;
 }
 
 export interface ContentUpdatePayload {
   title?: string;
   slug?: string;
   status?: ContentStatus;
-  fields?: Record<string, string | number>;
+  fields?: Record<string, string | number | boolean>;
 }
 
 export interface TransitionPayload {
@@ -897,4 +897,129 @@ export async function updateFeatured(
 
 export async function deleteFeatured(id: number): Promise<{ ok: boolean }> {
   return request<{ ok: boolean }>(`/featured/${id}`, { method: "DELETE" });
+}
+
+export interface ProfileSkillRow {
+  category: string;
+  name: string;
+  source: string;
+}
+
+export interface ProfileExperienceRow {
+  organization: string;
+  role: string;
+  period: string;
+  location?: string;
+  website?: string;
+  bullets: string[];
+}
+
+export interface AdminProfileDocument {
+  locale: string;
+  slug: string;
+  title: string;
+  seoTitle: string;
+  seoDescription: string;
+  shortBio: string;
+  longBio: string;
+  availability: string;
+  skills: ProfileSkillRow[];
+  experience: ProfileExperienceRow[];
+  education: Record<string, unknown>[];
+  publications: Record<string, unknown>[];
+  researchProjects: Record<string, unknown>[];
+  certificates: Record<string, unknown>[];
+  socials: Record<string, unknown>[];
+  revision: number;
+  status?: string;
+  translationStatus?: unknown;
+}
+
+async function requestOrigin<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const headers = new Headers(init.headers);
+  headers.set("Accept", "application/json");
+  if (init.body !== undefined) {
+    headers.set("Content-Type", "application/json");
+  }
+  if (csrfToken !== null) {
+    headers.set("X-CSRFToken", csrfToken);
+  }
+  const response = await fetch(path, {
+    ...init,
+    headers,
+    credentials: "include",
+  });
+  const data = await parseJson(response);
+  if (response.status === 401) {
+    onUnauthorized?.();
+  }
+  if (!response.ok) {
+    throw toApiError(response, data);
+  }
+  return data as T;
+}
+
+export async function fetchAdminProfile(
+  locale: string,
+  slug: string
+): Promise<AdminProfileDocument> {
+  return requestOrigin<AdminProfileDocument>(
+    `/api/admin/profiles/${locale}/${slug}`
+  );
+}
+
+export async function updateAdminProfile(
+  locale: string,
+  slug: string,
+  payload: AdminProfileDocument,
+  revision: number
+): Promise<AdminProfileDocument> {
+  const { revision: _revision, translationStatus: _translationStatus, ...body } =
+    payload;
+  return requestOrigin<AdminProfileDocument>(
+    `/api/admin/profiles/${locale}/${slug}`,
+    {
+      method: "PUT",
+      headers: { "If-Match": String(revision) },
+      body: JSON.stringify(body),
+    }
+  );
+}
+
+export interface MfaStatus {
+  enrolled: boolean;
+  otpVerified: boolean;
+  unusedRecoveryCodes: number;
+  configUrl: string | null;
+  manualSecret: string | null;
+}
+
+export async function fetchMfaStatus(): Promise<MfaStatus> {
+  return request<MfaStatus>("/auth/mfa/status");
+}
+
+export async function confirmMfa(otpToken: string): Promise<{
+  ok: boolean;
+  codes: string[];
+}> {
+  return request<{ ok: boolean; codes: string[] }>("/auth/mfa/confirm", {
+    method: "POST",
+    body: JSON.stringify({ otpToken }),
+  });
+}
+
+export async function regenerateMfaCodes(
+  otpToken: string
+): Promise<{ codes: string[] }> {
+  return request<{ codes: string[] }>("/auth/mfa/regenerate", {
+    method: "POST",
+    body: JSON.stringify({ otpToken }),
+  });
+}
+
+export async function disableMfa(otpToken: string): Promise<{ ok: boolean }> {
+  return request<{ ok: boolean }>("/auth/mfa/disable", {
+    method: "POST",
+    body: JSON.stringify({ otpToken }),
+  });
 }

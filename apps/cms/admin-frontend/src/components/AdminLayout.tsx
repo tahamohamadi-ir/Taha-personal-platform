@@ -38,6 +38,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "تنظیمات سایت", to: "/settings" },
       { label: "تگ‌ها", to: "/tags" },
       { label: "برگزیده‌ها", to: "/featured" },
+      { label: "امنیت / TOTP", to: "/security" },
     ],
   },
 ];

@@ -220,6 +220,9 @@ def test_schema_endpoint(admin_api_client):
     assert "revision" not in profile_keys
     assert "seoTitle" in profile_keys
 
+    project_specs = {spec["key"]: spec for spec in entities["project"]["fields"]}
+    assert project_specs["showOnProjects"]["type"] == "boolean"
+
 
 def test_write_requires_otp(csrf_client, admin_user):
     csrf_client.force_login(admin_user)  # staff but NO otp session

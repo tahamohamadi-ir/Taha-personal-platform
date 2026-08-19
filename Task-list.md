@@ -795,11 +795,11 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 ### Task ADM-0 — Wagtail removal prep + auth foundation (Django-level)
 
-- [ ] بازنویسی ۳ فایل وابسته به Wagtail با Django خالص: `apps/security/views_totp.py` (messages → Django), `apps/security/wagtail_hooks.py` (TOTP panel → مستقل), `apps/security/forms.py` (LoginForm → Django پایه).
-- [ ] لاگین/خروج/me/CSRF ادمین به‌صورت Django-level: session + CSRF + TOTP (با `django-otp`) بدون وابستگی به Wagtail؛ `WAGTAILADMIN_USER_LOGIN_FORM` و hook ها حذف.
-- [ ] خروجی ایمن: dumpdata fixture از app های content/media/security در repo + backup تازه + ثبت ریسک cutover (RISK-0010).
-- [ ] حذف Wagtail از INSTALLED_APPS/urls/settings و uninstall dependency پس از green CI؛ واگتِیل تا cutover ADM-1 روی production باقی می‌ماند (Caddy بدون تغییر).
-- [ ] به‌روزرسانی تست‌های متأثر (`test_security.py`) و README/infra مستندات.
+- [x] بازنویسی فایل‌های امنیتی بدون import واگتِیل: `apps/security/views_totp.py`, `apps/security/forms.py`؛ hook های واگتِیل فقط fallback `/admin-wagtail/` می‌مانند. *(LOG-0165 — SPA `/admin/security` + `/api/v1/admin/auth/mfa/*`; Wagtail HTML هنوز fallback است)*
+- [x] لاگین/خروج/me/CSRF ادمین Django-level در Ninja (`/api/v1/admin/auth/*`) — LOG-0156. واگتِیل login هنوز برای fallback است.
+- [ ] خروجی ایمن: dumpdata روی VPS قبل از migrate (`RISK-0010`) — در این چرخه fixture تولیدی از DB زنده commit نمی‌شود.
+- [ ] حذف Wagtail از INSTALLED_APPS/uninstall — **مسدود** تا جایگزینی `RichTextField` و `wagtailimages.Image` (`DEBT-0003`).
+- [x] به‌روزرسانی تست‌های MFA برای enrollment از SPA/Ninja در کنار مسیر `/admin-wagtail/`. *(LOG-0165 — `test_admin_mfa_api.py`)*
 
 ### Task ADM-1 — Admin foundation (real working admin)
 
@@ -810,8 +810,8 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 - [x] خطاهای یکنواخت Problem Details: `{status, code, message, fields[]}` + کدهای AUTH_REQUIRED/FORBIDDEN/OTP_REQUIRED/AUTH_FAILED/CSRF_FAILED/RATE_LIMITED. *(بخش auth — LOG-0156)*
 - [ ] OpenAPI/Swagger داخلی Ninja فقط admin-only (در معرض عمومی نباشد). *(§14 S7 — فعلاً docs/OpenAPI غیرفعال است)*
 - [ ] feature flags (adminNewShell، mediaPickerV2 و…) برای rollback کنترل‌شده. *(§14 S4)*
-- [ ] انتقال ادمین‌های Wagtail-session موجود (site content admin PR #24 و `/admin/profiles/` PR #31) به SPA.
-- [x] Cutover: SPA جایگزین Wagtail در /admin/. Wagtail به /admin-wagtail/ منتقل شد (TOTP enrollment + preview + rollback). *(2026-08-18 — LOG-0163)*
+- [x] انتقال nested profile editor (مهارت‌ها + آرایه‌های هم‌سطح) به SPA از مسیر موجود `GET/PUT /api/admin/profiles/<locale>/<slug>`. *(LOG-0165)* Site-content Wagtail-session PR #24 قبلاً در SPA است.
+- [x] Cutover: SPA جایگزین Wagtail در /admin/. Wagtail به /admin-wagtail/ منتقل شد (TOTP enrollment + preview + rollback). *(2026-08-18 — LOG-0163; DEFER-0023 CLOSED)*
 
 ### Task ADM-2 — Media management
 
@@ -840,9 +840,9 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 ### Task ADM-6 — Frontend wiring + verification
 
-- [ ] Astro: fetch داده‌های منتشرشده هنگام build + اجرای rebuild-trigger پس از انتشار (loopback، بدون افشای `/api/v1/admin/*`).
-- [ ] E2E: lifecycle یکپارچه (create→edit→publish→public fa/en) + anonymous published-only (الگوی `article-lifecycle.spec.ts` نمونه).
-- [ ] QA کامل: RTL/LTR، keyboard، noindex/cache policy، bulk destructive با count+confirm+audit، release checklist §18.
+- [x] Astro: fetch داده‌های منتشرشده هنگام build + اجرای rebuild-trigger پس از انتشار (loopback، بدون افشای `/api/v1/admin/*`). *(LOG-0165 — HMAC default off; `invoke_static_rebuild` mocked in tests; production enable `DEFER-0027`)*
+- [x] E2E: lifecycle JSON (create→edit→publish→public fa/en) + anonymous published-only. *(LOG-0165 — `test_content_lifecycle_e2e.py`)* Playwright browser matrix → `DEFER-0026`.
+- [ ] QA کامل: RTL/LTR، keyboard، noindex/cache policy، bulk destructive با count+confirm+audit، release checklist §18. *(DEFER-0026)*
 
 ---
 

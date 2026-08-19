@@ -42,14 +42,15 @@ You can name the one file that owns the fact you are about to change.
 
 Do not infer current state from a plan file. Plans describe intent.
 
-| Question | Answer as of 2026-08-18 | Source of truth |
+| Question | Answer as of 2026-08-19 | Source of truth |
 |---|---|---|
 | What is live publicly? | Language Gateway `/`, `/fa/`, `/en/`, About, CV, blog, research, projects, 404, robots, sitemap | `apps/web/src/pages/`; LOG-0143; LOG-0150 |
-| Is the CMS live? | Yes — Wagtail `/admin/` with TOTP, `/static/*`, `/health/` | `infra/cms/Caddyfile.cms.snippet` |
+| Is the CMS live? | Yes — React SPA `/admin/`, Wagtail fallback `/admin-wagtail/`, `/static/*`, `/health/` | `infra/cms/Caddyfile.cms.snippet`; LOG-0163 |
 | Is `/api/` public? | Yes — published-only Ninja JSON for articles, research, and projects | `DEFER-0017` CLOSED; LOG-0143 |
 | Is `/media/` public? | Proxied; media *upload* is unpublished | LOG-0143 |
 | Is contact published? | No — honest "not published" copy | `DEFER-0007` CLOSED |
-| Is About CMS-managed? | Code is on `main` (PR #31). Production still needs owner `migrate` through `0005`/`0006` and `import_profile_seed`. Until then the static site uses `profile.snapshot.json`. | LOG-0150; `DEFER-0022` |
+| Is About CMS-managed? | Yes on `main` (PR #31). Public About uses CMS when the build has `CMS_API_BASE`; otherwise `profile.snapshot.json`. | LOG-0150; `DEFER-0022` |
+| Where is the custom admin? | SPA at `/admin/` (cutover done). Wagtail at `/admin-wagtail/` until uninstall (`DEBT-0003`). | LOG-0163; `DEFER-0023` CLOSED |
 | Is there search? | No. Pagefind remains later | `PROJECT_MANIFEST.md` |
 | Is React the public shell? | No | `apps/web/package.json` |
 | Is staging alive? | No — decommissioned | `docs/adr/0025-staging-decommission.md` |

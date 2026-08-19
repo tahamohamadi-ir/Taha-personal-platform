@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-08-19 — CI: Playwright preview hang on PR #45
+
+- Web CI stuck on “Mobile overflow check”: silent `playwright install --with-deps`, shared port 4321 after smoke, and `waitUntil: networkidle`.
+- Fix: reuse the smoke `astro preview` on 4321 (Astro allows only one preview), time-box `playwright install`, `waitUntil: load` instead of `networkidle`.
+
+## 2026-08-19 — Projects listing, nested skills, SPA TOTP, rebuild hook
+
+- Public `GET /api/projects/{locale}` lists published projects with `show_on_projects=True`; `has_case_study` is optional (default false). Additive `Project.show_on_projects` (`0007`).
+- `/{locale}/projects/` renders card catalog copy without `CMS_API_BASE`.
+- SPA profile edit includes nested skills via `PUT /api/admin/profiles/<locale>/<slug>` (full nested replace, sibling arrays preserved).
+- ADM-0: TOTP enroll/regenerate/disable on `/api/v1/admin/auth/mfa/*` + `/admin/security`; Wagtail HTML remains fallback. Wagtail stays installed (`DEBT-0003`).
+- ADM-6 slice: signed `/rebuild-trigger/` starts `rebuild-static.sh` when enabled (default still False, `DEFER-0027`). Pytest create→edit→publish→public JSON fa/en.
+- **Blocked on owner VPS:** dumpdata + backup (`RISK-0010`), migrate `0007`, static rebuild, HMAC enable.
+
+## 2026-08-19 — Docs ledger sync to ADM-1 cutover + ADM-6 spec
+
+- AGENTS/README/Manifest/plan index now describe SPA `/admin/` and Wagtail `/admin-wagtail/`.
+- `DEFER-0023` and `DEFER-0014` CLOSED; `DEBT-0003` records remaining Wagtail schema surface.
+- Active spec: `docs/plan/ADM-6-frontend-wiring-task-spec.md`. New deferrals: `DEFER-0026` Playwright lifecycle, `DEFER-0027` HMAC enable, `DEFER-0028` composition/CV projection.
+
 ## 2026-08-18 — ADM-1: Admin SPA cutover (/admin/ → SPA, /admin-wagtail/ → Wagtail)
 
 ## 2026-08-18 — ADM-5: site settings + tags + featured spotlight
