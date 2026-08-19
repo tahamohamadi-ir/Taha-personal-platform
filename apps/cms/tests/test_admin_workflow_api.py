@@ -6,11 +6,12 @@ transitions, validation, guards, audit log) and the read-only
 """
 
 import json
+from unittest.mock import patch
 
 import pytest
 from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import Client
+from django.test import Client, override_settings
 from django.utils import timezone
 
 from apps.content.models import (
@@ -112,6 +113,19 @@ def test_transition_draft_to_review_then_published(admin_api_client):
     landing.refresh_from_db()
     assert landing.status == "published"
     assert landing.published_at is not None
+
+
+@override_settings(REBUILD_TRIGGER_ENABLED=True)
+def test_publish_invokes_rebuild_hook(admin_api_client):
+    landing = _make_landing(locale="en", slug="rebuild-hook", title="Rebuild")
+    with patch("apps.api.admin_content.invoke_static_rebuild") as mocked:
+        published = _post_json(
+            admin_api_client,
+            f"/api/v1/admin/content/landing/{landing.pk}/transition",
+            {"to": "published"},
+        )
+        assert published.status_code == 200
+        mocked.assert_called_once()
 
 
 def test_transition_published_to_archived_to_draft(admin_api_client):
