@@ -1,13 +1,43 @@
 # Work Log
 
-## LOG-0153 — 2026-08-18 — Root docs sync (AGENTS, Manifest, README, Task-list)
+## LOG-0170 — 2026-08-19 — Slice 0+1: /admin 308 fix, old stack decommissioned, Caddyfile automated, web nginx container + CI/CD
 
-- Outcome: Updated root-facing documentation to match production as of 2026-08-18: CMS image `31c6560`, profile migrations/seed live, CD static deploy `release-f11d2fc`, public `/api/profiles/*`, and closed `RISK-0003`/`DEFER-0017`.
-- Why: Root `AGENTS.md`, `PROJECT_MANIFEST.md`, `README.md`, and `Task-list.md` still described pre-P4/P6 and pre-profile production state.
-- Scope / files: `AGENTS.md`, `PROJECT_MANIFEST.md`, `README.md`, `Task-list.md` progress snapshot, `docs/README.md` §2 About row, this entry.
-- Verification actually performed and result: cross-checked `origin/main` at `f11d2fc`, owner VPS logs (migrate `0005`/`0006`, seed `en`/`fa`, API 200), CD run 32137604292 SUCCESS.
-- Deferred or risk IDs: `DEFER-0022`, `DEFER-0018`, contact persistence, media upload, P7 remainder unchanged.
-- Rollback / recovery: revert this PR; prior docs at `f11d2fc` remain accurate for code but not the post-VPS-sync narrative.
+- Outcome: `/admin` 404 fixed with `redir /admin /admin/ 308` in live Caddy (owner applied). Old `taha-prod` Java/Vue stack decommissioned (containers down, volumes removed, 1 GB reclaimed). Full production Caddyfile committed to repo (`infra/caddy/Caddyfile`) with `caddy-sync.sh` auto-deploy in CD. Slice 1: `web` nginx container (`infra/web/Dockerfile.web`, `infra/web/nginx.conf`), added to compose, CI builds `taha-web` image, CD pulls and restarts.
+- Why: Owner requested automated Caddyfile management and unified Compose stack per ADR-0027.
+- Scope / files: `infra/caddy/Caddyfile`, `infra/deploy/caddy-sync.sh`, `infra/web/Dockerfile.web`, `infra/web/nginx.conf`, `infra/cms/docker-compose.cms.yml`, `.github/workflows/ci-web-image.yml`, `.github/workflows/cd.yml`, `infra/cms/Caddyfile.cms.snippet`, `infra/deploy/caddy-apply.sh`, `infra/deploy/smoke-cms.sh`.
+- Commands or actions actually performed: owner applied `redir /admin /admin/ 308` to live Caddyfile, `docker compose stop/down` on `/opt/taha/repository`, `docker volume rm` old volumes, `docker image prune`.
+- Verification actually performed and result: `curl -sSI /admin` → `308 Location: /admin/`; `curl /admin/` → `200`; site → `200` after old stack removal; `docker compose config` exits 0.
+- Deferred or risk IDs: `DEFER-0031` Caddy-in-compose unchanged. VPS prereq: install `caddy-sync.sh` at `/opt/taha/bin/`, sudoers for deploy.
+- Rollback / recovery: revert Caddyfile from timestamped backup; revert compose `web` service; CMS unchanged.
+
+## LOG-0169 — 2026-08-19 — ADR-0027 unified Compose; production CMS b6bea6a; smoke login path
+
+- Outcome: Accepted ADR-0027 (Compose: db/cms/web nginx, later caddy; no public Node/React). Owner migrate to `taha-cms:b6bea6a` applied `content.0008` and `composition.0002`. `smoke-cms.sh` checks `/admin-wagtail/login/`. Spec is slice-executable. `RISK-0012` OPEN. `DEFER-0031` Caddy-in-compose.
+- Why: Owner asked to amend the host-static contract so each part is a container without a public SPA or SSR on 4 GiB.
+- Scope / files: `docs/adr/0027-unified-compose-stack.md`, spec, `AGENTS.md`, `infra/cms/README.md`, `infra/deploy/smoke-cms.sh`, ledgers.
+- Commands or actions actually performed: none on VPS. No `web` image (Slice 1 next).
+- Verification actually performed and result: owner pasted `showmigrations` with 0008/0002 `[X]`.
+- Deferred or risk IDs: RISK-0012 OPEN; DEFER-0031 OPEN; DEFER-0027 unchanged.
+- Rollback / recovery: revert this PR for docs/smoke; CMS on VPS stays `b6bea6a` until the operator changes it.
+
+## LOG-0168 — 2026-08-19 — CMS-origin + full-stack CD queued (no implement)
+
+- Outcome: Queued `docs/plan/cms-origin-and-full-stack-cd-task-spec.md`. Public site staying no-JS; dynamic means CMS as origin + CD that can update CMS, not a public React SPA. Slice A (owner migrate `b6bea6a`) is operational, not this spec.
+- Why: Owner asked to leave hardcoded static fallbacks, Dockerize the whole stack, and auto-deploy. That is three programs (content origin, Compose shape, CD migrate). Implementing together would fight ADR-0017/0026 and VPS capacity.
+- Scope / files: that Task Spec; plan index; this log; CHANGELOG.
+- Commands or actions actually performed: read `prod-cms-update-migrate.sh`, `cd.yml`, `infra/cms/README.md`. No VPS SSH. No Compose/CD code change.
+- Deferred or risk IDs: `DEFER-0027` HMAC still owner; `DEFER-0030` after migrate; auto-migrate from GitHub needs a new risk if Slice B is approved.
+- Rollback / recovery: delete the spec if the owner rejects the sequence.
+
+## LOG-0167 - 2026-08-19 - Blog story composition (slice 1)
+
+- Outcome: Composition is a story **body** engine, not a URL owner. `CompositionPage.kind` is `landing` (bilingual catalog unchanged) or `story` (single-locale figure/video/audio/math). Articles may attach an optional story document. Public article JSON exposes published-only `story`; Astro `StoryBody` renders it and falls back to sanitized `article.body`. Listing cards are unchanged. Typed footer shows license/accessibility notes only when filled. Media allowlist adds video/audio/SVG with magic-byte checks, 50MB AV cap, and anonymous `/media/` only for `is_active`. Wagtail stays installed. No invented content. HMAC not enabled.
+- Why: `DEFER-0028` mixed landing composition, CV, and tokens; the approved plan required blog as the reference story projection first.
+- Scope / files: CMS composition models/blocks/projection + migrations `0002`/`0008`; public article API; media sniff/validators/views; admin SPA article story editor; Astro `StoryBody` + `ArticleDetail`; plan/ledger docs; this entry.
+- Commands or actions actually performed: isolated worktree `.worktrees/blog-story-composition` on `feat/blog-story-composition` from `feat/continue-admin-public-sync` HEAD. Targeted pytest (110 passed), `ruff check .` (clean), `makemigrations --check --dry-run` (no pending). `npm run check` in `apps/web` (0 errors, 72 files) and `apps/cms/admin-frontend` (`tsc` PASS). No commit, no push, no VPS migrate.
+- Verification actually performed and result: 110 targeted pytest PASS; CMS ruff clean; no pending migrations; web check 0 errors; admin SPA check PASS.
+- Deferred or risk IDs: `DEFER-0028` CLOSED (blog story→Astro); `DEFER-0029` OPEN (primaryColor + CV); `DEFER-0030` OPEN (project/research/experience stories); `DEFER-0026`/`DEFER-0027` unchanged; `DEBT-0003` unchanged; `RISK-0010` dumpdata+backup before production migrate.
+- Rollback / recovery: revert the branch; nullable `Article.story` and default `kind=landing` are compatible with existing rows.
 
 ## LOG-0151 — 2026-08-18 — Canonical docs entry, contracts, P7 specs
 
@@ -1634,4 +1664,204 @@ ode --check و YAML validation توسط agent.
 - Decisions / assumptions: prose copied verbatim from static sources; empty `role` and no case-study extensions until owner-authored P6 depth content exists; articles intentionally omitted.
 - Deferred or risk IDs: owner must run seed on VPS after merge + static rebuild; blog/articles remain empty until writing slice content exists.
 - Rollback / recovery: delete seeded rows in Wagtail admin or re-run with `--force` after editing `site_content.py`; no schema migration.
+
+## LOG-0152 - 2026-08-18 - ADM / Custom admin rebuild — docs and reference-file alignment (ADR-0026)
+
+- Outcome: مالک تصمیم گرفت Wagtail کلاً از runtime و ادمین حذف شود و با ادمین اختصاصی React SPA زیر `/admin/` + Django Ninja `/api/v1/admin/*` جایگزین شود (ADR-0026). فقط مستندات/فایل‌های مرجع در این slice تغییر کردند؛ کد تغییر نکرد. تغییرات روی برنچ `docs/custom-admin-rebuild` از `origin/main` (پس از sync با وضعیت واقعی main: P4–P6 live، `/api/` و `/media/` عمومی، `RISK-0003` CLOSED، `DEFER-0015` CLOSED) اعمال شد. اسناد: ADR-0026 (جدید)، `docs/plan/custom-admin-rebuild-fa.md` (جدید)، Task-list.md (§17 ADM-0..ADM-6 + supersede P7 + snapshot + معماری/Tech Stack + آیتم‌های §14 در P4/P6/P10/release checklist)، AGENTS.md (gate + ownership)، PROJECT_MANIFEST.md (status/route/معماری/ownership/open decisions + اصلاح اطالعات قدیمی `/api/`)، docs/adr/README.md (ردیف 0026 + یادداشت 0002/0014/0020/0022)، ledgers: BACKLOG.md (ردیف‌های ADM)، deferred-validation.md (DEFER-0023/0024/0025)، RISK_REGISTER.md (RISK-0010/0011)، TECH_DEBT.md (DEBT-0003)، CHANGELOG.md، README.md.
+- Why: مالک ادمین فعلی واگتِیل را غیرقابل استفاده ارزیابی کرد؛ وابستگی کد به واگتِیل فقط ۳ فایل امنیتی است و لایه‌های ارزشمند Django خالص‌اند؛ خواسته = مدیریت کامل سایت (صفحات/چیدمان/تب‌ها/تگ‌ها/فیلترها/محتوا) با ادمین فارسی/RTL؛ محتوای seeded باید حفظ شود.
+- Scope / files: `docs/adr/0026-custom-admin-replaces-wagtail.md` (new), `docs/plan/custom-admin-rebuild-fa.md` (new), `docs/adr/README.md`, `AGENTS.md`, `PROJECT_MANIFEST.md`, `Task-list.md`, `docs/status/BACKLOG.md`, `docs/status/deferred-validation.md`, `docs/status/RISK_REGISTER.md`, `docs/status/TECH_DEBT.md`, `docs/status/CHANGELOG.md`, `README.md`, این Work Log.
+- Commands or actions actually performed: `git fetch origin --prune`؛ `git switch -c docs/custom-admin-rebuild origin/main`؛ ویرایش/ایجاد فایل (write/edit)؛ بدون کد/CI/VPS. راستی‌آزمایی read-only: `git show origin/main:docs/status/deferred-validation.md` (max DEFER-0022)، `git show origin/main:docs/status/WORK_LOG.md` (max LOG-0151)، `git show origin/main:docs/status/RISK_REGISTER.md` (max RISK-0009)، `git show origin/main:docs/status/TECH_DEBT.md` (max DEBT-0002 → DEBT-0003 استفاده شد).
+- Verification actually performed and result: `git diff --check` روی تغییرات؛ شماره‌های DEFER/LOG/RISK/DEBT نسبت به `origin/main` بدون تداخل انتخاب شدند؛ هیچ فایل کدی لمس نشد.
+- Decisions / assumptions: پایه‌ی کارهای ADM = `origin/main`؛ واگتِیل تا cutover ADM-1 به سرویس `/admin/` ادامه می‌دهد (DEFER-0023)؛ ادمین‌های Wagtail-session موجود (PR #24/#31) در ADM-1 منتقل می‌شوند؛ استک ادمین = React + Vite + Tailwind v4 + shadcn/ui؛ Composition ساختاریافته با layout presets؛ فرانت عمومی Astro استاتیک با rebuild-trigger.
+- Deferred or risk IDs: DEFER-0023/0024/0025، RISK-0010/0011، DEBT-0003.
+- Rollback / recovery: این slice صرفاً مستندات است — revert برنچ در صورت نیاز؛ بدون اثر runtime.
+
+## LOG-0153 - 2026-08-18 - ADM / Complementary improvements extracted from Samples (beyond admin)
+
+- Outcome: در پاسخ به سؤال مالک («بجز پنل ادمین از پروژه‌های قبلی چه چیزی اضافه کنیم؟»)، بخش §14 «بهره‌برداری‌های مکمل» به `docs/plan/custom-admin-rebuild-fa.md` اضافه شد: ۱۰ ویژگی (F1–F10)، ۷ الگوی ساختاری (S1–S7)، ۵ مورد UI/UX (U1–U5) — هرکدام با منبع دقیق در Samples و فاز هدف. ردیف‌های پیشنهادی به BACKLOG اضافه شدند (QA-playwright، P4-reading، P6-gallery، ADM-5-featured، QA-vitest). در تطبیق با main مشخص شد بخشی از F ها قبلاً انجام شده‌اند (reading time ~200wpm، JSON-LD BlogPosting، BreadcrumbList در P4)؛ فقط موارد انجام‌نشده در Task-list تثبیت شدند.
+- Why: مالک خواست بداند چه امکانات/ساختار/UX دیگری از پروژه‌های قبلی به پروژه‌ی نهایی منتقل شود؛ پاسخ باید مستند، منبع‌دار و فازبندی‌شده باشد.
+- Scope / files: `docs/plan/custom-admin-rebuild-fa.md` (§14)، `docs/status/BACKLOG.md`، این Work Log.
+- Commands or actions actually performed: ویرایش فایل؛ بدون کد/CI/VPS؛ منبع‌ها از گزارش‌های بازبینی Samples همان جلسه (۴ sub-agent) گرفته شدند.
+- Verification actually performed and result: `git diff --check` PASS؛ ارجاع‌های §14 با گزارش‌های اولیه هم‌خوانی دارند.
+- Decisions / assumptions: موارد §14 پیشنهادی‌اند؛ هرکدام با Task Spec و اولویت مالک اجرا می‌شوند؛ blocker فازهای ADM نیستند.
+- Deferred or risk IDs: بدون ID جدید.
+- Rollback / recovery: revert کامیت؛ بدون اثر runtime.
+
+## LOG-0154 - 2026-08-18 - Git sync: local/remote alignment + server sync prep
+
+- Outcome: برنچ محلی قدیمی (`feat/cms-backup-risk-0003-prep` با ۳ کامیت doc از این جلسه) با وضعیت جدید هم‌راستا نشد؛ تغییرات روی برنچ تازه‌ی `docs/custom-admin-rebuild` از `origin/main` بازاعمال شدند (با تطبیق به واقعیت main و شماره‌های بدون تداخل). `git fetch origin --prune` انجام شد. سینک سرور (production VPS) مستقیماً انجام نشد — طبق قرارداد (SSH/deploy نیاز به تأیید صریح و Task Spec)؛ دستورالعمل/اسکریپت برای مالک در پیام نهایی ارائه می‌شود.
+- Why: مالک خواست local، remote (main) و سرور در بهترین/آخرین وضعیت سینک شوند تا version control کامل و تمیز باشد.
+- Scope / files: برنچ‌ها/worktrees و این Work Log.
+- Commands or actions actually performed: `git fetch origin --prune`؛ `git switch -c docs/custom-admin-rebuild origin/main`؛ بررسی divergence (۶۴ behind / ۳ ahead)؛ راستی‌آزمایی شماره‌ها در main.
+- Verification actually performed and result: وضعیت divergence و شماره‌های ledger های main ثبت شد؛ تغییرات doc از برنچ قدیمی به جدید منتقل و بازنویسی شد.
+- Decisions / assumptions: main مرجع حقیقت است؛ برنچ محلی قدیمی پس از merge این PR می‌تواند حذف شود؛ سرور جداگانه با تأیید مالک سینک می‌شود (rebuild CMS image از main + migrate + seed + rebuild-static).
+- Deferred or risk IDs: DEFER-0024 (برنچ پایه) — نزدیک‌شونده؛ سینک سرور به مالک واگذار شد.
+- Rollback / recovery: revert/حذف برنچ؛ بدون اثر runtime تا اجرای دستورالعمل سرور.
+
+## LOG-0155 - 2026-08-18 - Server sync progress + stale CMS image pin fix
+
+- Outcome: مالک سینک سرور را شروع کرد: `git pull` تا `d626ecf`، سپس `sudo bash infra/deploy/prod-cms-update-migrate.sh`. پیش‌فرض اسکریپت به `b369885` (تصویر قدیمی P4–P5) پین شده بود → `migrate` گفت «No migrations to apply» و فقط 0001–0004 در `showmigrations` دیده شد؛ **0005/0006 اعمال نشدند** و `import_profile_seed` با «Unknown command» شکست (هر دو در PR #31 یعنی تصویر `430061b` آمده‌اند). همچنین `rebuild-static.sh` روی VPS با «npm not found» شکست (VPS نود ندارد). پیش‌فرض قدیمی اسکریپت برداشته شد و `CMS_IMAGE` **الزامی** شد (با پیام راهنما) تا این خطا تکرار نشود.
+- Why: تصویر CMS فقط با تغییر `apps/cms/**`/`infra/cms/**` ساخته می‌شود؛ merge های docs-only (PR #32/#34) تصویر جدید نمی‌سازند؛ آخرین تصویر دارای 0005/0006 و `import_profile_seed` = `430061b` است.
+- Scope / files: `infra/deploy/prod-cms-update-migrate.sh`، `docs/status/WORK_LOG.md`، `docs/status/CHANGELOG.md`.
+- Commands or actions actually performed: ویرایش اسکریپت (حذف پیش‌فرض `b369885`، الزام `CMS_IMAGE`)؛ بررسی `ci-cms-image.yml` (path filters) و آخرین run های «CMS image» (آخرین = PR #31).
+- Verification actually performed and result: `git diff --check` PASS؛ اسکریپت با `bash -n` خطای نحوی ندارد؛ بدون تغییر در منطق دیگر.
+- Decisions / assumptions: به‌جای HEAD، تصویر باید از آخرین run موفق «CMS image» انتخاب شود (مثلاً `430061b`)؛ مالک پس از deploy تصویر درست، `migrate` (0005/0006) + `import_profile_seed` + در صورت نیاز `seed_site_content` + `smoke-cms.sh` را اجرا می‌کند؛ بازسازی استاتیک یا با نصب Node 24 روی VPS یا build محلی با SSH tunnel (گزینه‌ی `build-static-with-cms.sh`/`rebuild-static.sh`).
+- Deferred or risk IDs: RISK-0010 (حفظ محتوا — backup گرفته شد: `/home/deploy/backups/pre-migrate-20260818-165018/cms-postgres-all.sql`).
+- Rollback / recovery: تصویر قبلی `31c6560`/`b369885` و backup پیش از migrate موجود است؛ بازگشت = `CMS_IMAGE=<قبلی> sudo bash infra/deploy/prod-cms-update-migrate.sh`.
+
+## LOG-0156 - 2026-08-18 - ADM-1 / Custom admin auth API + React SPA scaffold (foundation)
+
+- Outcome: بنیان ادمین اختصاصی (ADR-0026) به‌صورت **additive و غیرشکننده** ساخته شد — واگتِیل و `/admin/` فعلی تا cutover دست نخوردند:
+  1. **Backend** `apps/api/admin_api.py`: NinjaAPI مستقل در `/api/v1/admin/` — `auth/csrf`، `auth/login` (email+password+TOTP/recovery)، `auth/logout`، `auth/me`، `dashboard/summary` (شمارش محتوا، draft/published). Security: session+CSRF صریح (چون ninja همه‌ی views را csrf_exempt می‌کند)، دوباره‌استفاده از `AuditLog` + `django-otp` (`DEVICE_ID_SESSION_KEY`) + rate-limit cache (5/5min) + `_require_admin_otp` برای endpoint های محافظت‌شده. خطاها به شکل `{code, message, fields}`.
+  2. **Frontend** `apps/cms/admin-frontend/` (React 18 + Vite + TS + Tailwind v4 + Vazirmatn، RTL): صفحه‌ی ورود، AuthProvider/AuthGuard (csrf→login→me)، پوسته‌ی ادمین با سایدبار، داشبورد با کارت‌های `dashboard/summary`. `npm run build` و `npm run check` پاس.
+  3. **CI**: workflow جدید `ci-admin-frontend.yml` (npm ci → check → build روی تغییرات `apps/cms/admin-frontend/**`)؛ secret-scan سی‌ام‌اس node_modules را استثنا کرد.
+  4. **Caddy**: هندل `no-store` برای `/api/v1/admin/*` و `/api/admin/*` در `Caddyfile.cms.api.snippet` (اعمال روی سرور = مرحله‌ی جدا با تأیید مالک).
+- Why: اولین فاز اجرایی ADM-0/ADM-1؛ بدون حذف واگتِیل و بدون ریسک production؛ هر دو بخش (auth API و SPA) به‌صورت مستقل با تست/CI قابل تأییدند.
+- Scope / files: `apps/cms/apps/api/admin_api.py` (new)، `apps/cms/config/urls.py`، `apps/cms/tests/test_admin_api_auth.py` (new)، `apps/cms/admin-frontend/` (new، scaffold کامل)، `.github/workflows/ci-admin-frontend.yml` (new)، `.github/workflows/ci-cms.yml`، `infra/cms/Caddyfile.cms.api.snippet`، `Task-list.md` (§17 ADM-1)، این Work Log.
+- Commands or actions actually performed: `uv run pytest` (187 passed — کل سویییت)؛ `uv run ruff check .` (All checks passed)؛ `uv run python manage.py check` (فقط ۲ warning از قبل‌موجود treebeard)؛ `makemigrations --check --dry-run` (No changes detected)؛ `npm run build` در admin-frontend (PASS).
+- Verification actually performed and result: ۱۳ تست جدید admin auth (CSRF، login بدون OTP/با OTP/با OTP غلط/رمز غلط/non-staff، logout، me، dashboard guard، CSRF enforcement، rate-limit+audit) — 13 passed؛ کل سویییت CMS بدون regression (187 passed)؛ SPA build/type-check در CI گیت.
+- Decisions / assumptions: auth ادمین با همان قرارداد امنیتی موجود (session+CSRF+TOTP+audit+rate-limit)؛ `otpVerified` در پاسخ login منعکس‌کننده‌ی تأیید همان درخواست است؛ کاربر staff بدون دستگاه TOTP می‌تواند لاگین کند ولی endpoint های محافظت‌شده تا زمان enrollment در دسترس نیستند (همان policy واگتِیل فعلی)؛ docs/OpenAPI نینجا برای API ادمین فعلاً غیرفعال (عمومی نباشد).
+- Deferred or risk IDs: DEFER-0023 (cutover واگتِیل→SPA در ADM-1 نهایی)؛ RISK-0010 بدون تغییر؛ Caddy no-store هندل باید روی سرور با تأیید مالک اعمال شود.
+- Rollback / recovery: این slice additive است — حذف فایل‌ها/برنچ بدون اثر بر runtime؛ تولید هیچ‌چیز از این تغییر را استفاده نمی‌کند تا cutover.
+
+## LOG-0158 - 2026-08-18 - ADM-1 / Content write API (create/update + optimistic lock) + SPA edit pages
+
+- Outcome: مسیر **write** ادمین محتوا (ADM-1) اضافه شد تا ادمین واقعاً قابل استفاده شود (نه فقط read):
+  1. **Backend** `apps/api/admin_content.py`: `GET /content/schema` (متادیتای فیلدهای قابل‌ویرایش برای فرم‌های SPA)، `POST /content/{entity}` (create، 201؛ duplicate → 409 DUPLICATE؛ unknown field → 400)، `PUT /content/{entity}/{id}` (update با **optimistic lock** If-Match داخل `transaction.atomic` + `select_for_update`؛ stale → 409 CONFLICT با `currentUpdatedAt`؛ slug duplicate → 409). هر سه با guard staff+OTP + CSRF. coercion با نوع فیلد مدل (IntegerField/DateField/TextField…)، فیلد عددی خالی skip می‌شود، خطاها با کلید camelCase. publish فقط وقتی `published_at` تهی است set می‌شود (ویرایش‌های بعدی تاریخ انتشار را عوض نمی‌کنند).
+  2. **Frontend** `apps/cms/admin-frontend/`: `ContentEditPage` (فرم create/edit یکپارچه: locale/status/slug/title + فیلدهای schema-driven)، دکمه‌ی «+ ساخت» در لیست، route های `/content/:entity/new` و `/content/:entity/:id/edit`، مدیریت 409 با «بارگذاری نسخه جدید/لغو»، خطاهای field-level. `fetchContentSchema/createContent/updateContent` + تایپ‌ها در `api.ts`.
+  3. Review مستقل (r0-verifier) ۵ مورد داد که **همه رفع شد**: publish-reset، race در optimistic lock (select_for_update)، کلید خطای attr→camelCase، فیلد عددی خالی 400، و تناقض مستندات (این ورودی). دو تست regression اضافه شد.
+- Why: تکمیل ADM-1 تا ادمین بتواند محتوا را مدیریت کند؛ بدون حذف واگتِیل (cutover در فاز بعدی).
+- Scope / files: `apps/cms/apps/api/admin_content.py`، `apps/cms/tests/test_admin_content_write.py` (12 تست)، `apps/cms/admin-frontend/src/{lib/api.ts, pages/ContentEditPage.tsx, pages/ContentListPage.tsx, App.tsx, index.css}`، `Task-list.md`، `docs/status/BACKLOG.md`، این Work Log.
+- Commands or actions actually performed: `uv run pytest -q` = **209 passed**؛ `uv run ruff check .` = All checks passed؛ `uv run python manage.py makemigrations --check --dry-run` = No changes detected؛ `npm run build` و `npm run check` در admin-frontend = PASS.
+- Verification actually performed and result: تست‌های create (201، duplicate، locale نامعتبر، unknown field)، update (فیلدها، If-Match conflict با currentUpdatedAt، slug duplicate، publish، blank numeric، publish-once)، schema endpoint، guard های 401/403 — همگی سبز؛ کل سویییت بدون regression.
+- Decisions / assumptions: If-Match با دقت میلی‌ثانیه (همان round-trip JSON) مقایسه می‌شود؛ `select_for_update` روی sqlite تست no-op ولی روی Postgres تولید صحیح است؛ locale در update تغییرناپذیر؛ `published_at` هنگام unpublish پاک نمی‌شود.
+- Deferred or risk IDs: DEFER-0023 (cutover)؛ RISK-0010؛ Caddy no-store؛ migrate Wagtail-session admins به SPA.
+- Rollback / recovery: additive است — بدون اثر runtime تا cutover؛ revert برنچ در صورت نیاز.
+
+## LOG-0157 - 2026-08-18 - ADM-1 / Content read API + dev preview route + SPA content pages
+
+- Outcome: read-side ادمین محتوا + مسیر پیش‌نمایش dev + صفحات فهرست/جزئیات SPA — همه additive و بدون migration جدید:
+  1. **Content read API** `apps/cms/apps/api/admin_content.py` (new): `GET /content/{entity}` — فهرست با فیلترهای locale/status/q و صفحه‌بندی page/pageSize (خطاهای 400 VALIDATION / 404 NOT_FOUND) و `GET /content/{entity}/{id}` — جزئیات با مپ camelCase `fields` به‌ازای هر entity. موجودیت‌ها: landing, profile, article, research-topic, research-statement, project, publication. با `admin_api.add_router("/content", content_router)` در `apps/cms/apps/api/admin_api.py` mount شد.
+  2. **Refactor** `apps/cms/apps/api/admin_common.py` (new): AdminError، error handler، CSRF check، staff/OTP guards و client_ip بین admin_api و admin_content مشترک شدند.
+  3. **Dev preview route** `apps/cms/apps/api/admin_spa.py` (new) — `serve_admin_ui` در `/admin-ui/`: DEBUG-only (Http404 وقتی DEBUG=False)، path-traversal-safe (resolve+startswith)، SPA fallback به index.html، هدرهای `X-Robots-Tag: noindex, nofollow, noarchive` + `Cache-Control: no-store`. در `apps/cms/config/urls.py` mount شد.
+  4. **SPA** `apps/cms/admin-frontend/`: ContentListPage (تب‌های entity، فیلترهای locale/status/q هم‌گام با URL، جستجوی debounced، جدول RTL، صفحه‌بندی، حالت‌های loading/empty/error) و ContentDetailPage (رندر generic `fields`، اسلاگ‌های dir=ltr، حالت 404)؛ `src/lib/entities.ts` و `src/lib/format.ts` جدید؛ `src/lib/api.ts` با fetchContentList/fetchContentDetail + types؛ سایدبار «مدیریت محتوا» → /content؛ `vite.config.ts` base `/admin-ui/` و `src/main.tsx` BrowserRouter basename `/admin-ui/` تا build زیر همان مسیر سرو شود.
+- Why: ADM-1 به فهرست/جزئیات واقعی محتوا برای هر لیست و form بعدی نیاز دارد؛ مسیر پیش‌نمایش dev به مالک اجازه می‌دهد SPA واقعی را پیش از cutover لوکال ببیند و تأیید کند؛ این گام بدون schema migration و بدون لمس واگتِیل قابل انجام بود.
+- Scope / files: `apps/cms/apps/api/admin_content.py` (new)، `apps/cms/apps/api/admin_common.py` (new)، `apps/cms/apps/api/admin_spa.py` (new)، `apps/cms/apps/api/admin_api.py`، `apps/cms/config/urls.py`، `apps/cms/tests/test_admin_content_api.py` (new)، `apps/cms/admin-frontend/` (ContentListPage/ContentDetailPage، `src/lib/entities.ts`، `src/lib/format.ts`، `src/lib/api.ts`، `vite.config.ts`، `src/main.tsx`، سایدبار)، `Task-list.md` (§17 ADM-1)، این Work Log.
+- Commands or actions actually performed: `uv run pytest -q` (195 passed — شامل 7 تست جدید `tests/test_admin_content_api.py` + 14 تست auth)؛ `uv run ruff check .` (clean)؛ `uv run python manage.py check` (فقط warning های از‌پیش‌موجود treebeard)؛ بدون migration جدید؛ `npm run build` + `npm run check` در admin-frontend (PASS). smoke دستی preview route: dev 200 (شامل deep-route fallback)، traversal 404، DEBUG=False → 404، missing build → 404 با hint. setup لوکال (کامیت‌نشده، dev-only): `apps/cms/dev.sqlite3` با migrate (development settings)؛ کاربر staff `preview@tahamohamadi.ir` و دستگاه TOTP تأییدشده لوکال ساخته شد تا مالک در `http://127.0.0.1:8000/admin-ui/` لاگین کند.
+- Verification actually performed and result: backend 195 passed؛ ruff clean؛ `manage.py check` بدون خطای جدید؛ بدون migration جدید؛ SPA build/type-check PASS؛ smoke preview route PASS: dev 200 (شامل deep-route fallback)، traversal → 404، DEBUG=False → 404، missing build → 404 با hint.
+- Decisions / assumptions: read-side جدای از write ساخته می‌شود (write/update + optimistic locking در گام بعد)؛ پاسخ‌ها با قرارداد camelCase `fields`؛ `/admin-ui/` صرفاً مسیر پیش‌نمایش dev است و در production سرو نمی‌شود؛ ساختار entity ها مطابق مدل‌های موجود و بدون تغییر schema.
+- Deferred or risk IDs: DEFER-0023 (cutover واگتِیل→SPA زیر `/admin/`)؛ write/update endpoint ها + optimistic locking؛ اعمال Caddy no-store snippet روی سرور (مرحله‌ی مالک)؛ RISK-0010 بدون تغییر.
+- Rollback / recovery: این slice additive است — حذف فایل‌ها/برنچ بدون اثر بر runtime؛ `/admin-ui/` فقط در DEBUG فعال است؛ production تا cutover هیچ تغییری دریافت نمی‌کند.
+
+## LOG-0159 - 2026-08-18 - ADM-2 / Media library admin API + SPA (upload, replace, alt-by-locale)
+
+- Outcome: کتابخانه‌ی رسانه در ادمین (ADM-2) ساخته شد — additive و بدون حذف واگتِیل؛ مدل‌های موجود فقط با افزودن alt دو زبانه تغییر کردند:
+  1. **Backend** `apps/cms/apps/api/admin_media.py` (new): media_router در `/api/v1/admin/media` — `GET` فهرست با فیلترهای q / type (image|pdf) / active (true|false) / page/pageSize (خطای 400 VALIDATION)، `POST` آپلود multipart (201؛ `is_active` پیش‌فرض false؛ `full_clean` → 400)، `GET /orphans` (usage==0)، `GET /{id}`، `PUT /{id}` (optimistic lock If-Match داخل `atomic` + `select_for_update`؛ 409 CONFLICT با `currentUpdatedAt`؛ `full_clean`)، `POST /{id}/replace` (هم‌خانواده‌ی MIME؛ 400 در غیرهم‌خانواده/مفقود). `media_usage_count` + `MEDIA_REFERENCE_FIELDS` (رجیستری خالی؛ در ADM-3 وصل می‌شود). Guards: staff+OTP+CSRF.
+  2. **Model/migration** `apps/cms/apps/media/models.py`: `alt_text_fa`/`alt_text_en` (CharField blank default "" + `db_default=""`)؛ migration `0002_media_alt_text_en_media_alt_text_fa.py` (AddField با `db_default` تا روی ردیف‌های موجود Postgres امن باشد). `makemigrations --check` clean (no pending).
+  3. **Frontend** `apps/cms/admin-frontend/`: `src/pages/MediaLibraryPage.tsx` (فیلترها، orphan toggle، آپلود با progress، drawer ویرایش با جایگزینی فایل + تأیید بایگانی + 409 reload/discard)، `src/components/MediaPicker.tsx` (modal قابل reuse)، `src/components/MediaThumb.tsx`، `src/lib/api.ts` (fetchMediaList/Orphans/Detail، updateMedia، uploadMedia و replaceMedia با XHR+progress)، route `/media`، سایدبار «کتابخانه رسانه».
+- Why: تکمیل ADM-2 تا رسانه از ادمین جدید قابل مدیریت باشد (فهرست/آپلود/جایگزینی/بایگانی) و DEFER-0014 (alt-by-locale) در همین فاز بسته شود؛ زیرساخت پیش از اتصال MediaPicker به ویرایشگرهای محتوا در ADM-3.
+- Scope / files: `apps/cms/apps/api/admin_media.py` (new)، `apps/cms/apps/media/models.py`، `apps/cms/apps/media/migrations/0002_media_alt_text_en_media_alt_text_fa.py` (new)، `apps/cms/tests/test_admin_media_api.py` (new)، `apps/cms/admin-frontend/src/{pages/MediaLibraryPage.tsx, components/MediaPicker.tsx, components/MediaThumb.tsx, lib/api.ts, App.tsx}`، `Task-list.md`، `docs/status/BACKLOG.md`، این Work Log.
+- Commands or actions actually performed: `uv run pytest -q` = **229 passed** (شامل 20 تست در `tests/test_admin_media_api.py` با 8 regression: type نامعتبر، pageSize 101، آپلود بزرگ‌تر از حد، ناهماهنگی extension/content، replace سازگار/ناسازگار/بدون فایل، orphan pagination)؛ `uv run ruff check .` = clean؛ `makemigrations --check` بدون pending؛ `npm run build` + `npm run check` در admin-frontend = PASS.
+- Verification actually performed and result: کل سویییت backend 229 passed؛ ruff clean؛ بدون migration جدید؛ SPA build/type-check PASS.
+- Decisions / assumptions: `db_default=""` برای افزودن امن فیلدهای alt روی ردیف‌های موجود Postgres؛ رجیستری usage (`MEDIA_REFERENCE_FIELDS`) عمداً خالی است تا در ADM-3 هنگام اتصال به ویرایشگرها پر شود؛ `is_active` در آپلود پیش‌فرض false (فعال‌سازی صریح).
+- Deferred or risk IDs: اتصال MediaPicker به ویرایشگرهای محتوا به ADM-3 منتقل شد (محتوای فعلی از `wagtailimages.Image` استفاده می‌کند — rewire خارج از scope این فاز؛ DEBT-0004)؛ Caddy no-store و deploy تصویر جدید CMS قدم‌های مالک هستند؛ DEFER-0023 (cutover) بدون تغییر؛ RISK-0010 بدون تغییر.
+- Rollback / recovery: این slice additive است — بدون اثر runtime تا cutover؛ migration صرفاً افزودن فیلدهای alt با `db_default` است (قابل برگشت)؛ revert برنچ در صورت نیاز.
+
+## LOG-0160 - 2026-08-18 - ADM-3 / Page composition (Section/Block + layouts) API + SPA editor
+
+- Outcome: صفحه‌سازی مرکب در ادمین (ADM-3) ساخته شد — additive و بدون حذف واگتِیل؛ MediaPicker به بلوک‌ها وصل شد:
+  1. **Backend** اپ جدید `apps/cms/apps/composition/`: مدل‌های `CompositionPage` (key اسلاگ یکتا، locale fa/en، title، status draft/review/published/archived، published_at، created/updated_at)، `CompositionSection` (FK صفحه، position، layout 1col/2col/3col، ratio، enabled؛ UniqueConstraint صفحه+position) و `CompositionBlock` (FK سکشن، position، block_type، settings JSONField، enabled؛ UniqueConstraint سکشن+position)؛ migration `0001_initial.py`؛ `blocks.py` با کاتالوگ بلوک hero/heading/text/quote/cta/gallery/divider + `validate_block_settings` (fail-closed) + `SECTION_LAYOUT_RATIOS` + `composition_schema()`.
+  2. **API** `apps/api/admin_composition.py` mount در `/api/v1/admin/composition`: GET فهرست (q/locale/status/page/pageSize؛ 400 VALIDATION)، POST create (201؛ key با regex `^[a-z0-9-]+$`؛ 409 DUPLICATE)، GET /schema، GET /{id}، PUT /{id} جایگزینی full-document (If-Match + `select_for_update` + atomic؛ 409 CONFLICT با currentUpdatedAt؛ fail-closed با field paths مثل `sections[0].blocks[1].settings`). Guards: staff+OTP+CSRF. ارجاع‌های رسانه strict int (float/bool رد می‌شوند).
+  3. **Frontend** `apps/cms/admin-frontend/`: `src/lib/api.ts` (Composition types + fetchCompositionPages/Schema/Detail + createComposition/updateComposition)، `src/lib/composition.ts` (labels، ratioOptionsFor، REQUIRED_BLOCK_FIELDS)، `src/pages/CompositionListPage.tsx`، `src/pages/CompositionEditorPage.tsx` (ویرایشگر schema-driven: layout/ratio سکشن‌ها، بلوک‌ها با فیلدهای text/textarea/select/media/mediaList از طریق MediaPicker، پیش‌نمایش grid، اعتبارسنجی client برای فیلدهای الزامی، مدیریت 409 reload/discard، dirty-guard)، route های `/composition`، سایدبار «صفحات».
+- Why: تکمیل ADM-3 تا صفحات مرکب (سکشن/بلوک + چیدمان) از ادمین جدید قابل مدیریت باشند و MediaPicker به ویرایشگرها وصل شود (DEBT-0004)؛ زیرساخت پیش از projection عمومی در ADM-6.
+- Scope / files: `apps/cms/apps/composition/` (new)، `apps/cms/apps/api/admin_composition.py` (new)، `apps/cms/tests/test_admin_composition_api.py` (new)، `apps/cms/admin-frontend/src/{lib/api.ts, lib/composition.ts, pages/CompositionListPage.tsx, pages/CompositionEditorPage.tsx, App.tsx}`، `Task-list.md`، `docs/status/BACKLOG.md`، این Work Log.
+- Commands or actions actually performed: `uv run pytest -q` = **249 passed** (شامل 20 تست در `tests/test_admin_composition_api.py` با regression ارجاع رسانه float/bool)؛ `uv run ruff check .` = clean؛ `makemigrations --check --dry-run` = No changes detected؛ `npm run build` + `npm run check` در admin-frontend = PASS.
+- Verification actually performed and result: کل سویییت backend 249 passed؛ ruff clean؛ بدون migration جدید؛ SPA build/type-check PASS.
+- Decisions / assumptions: validation بلوک‌ها fail-closed است (settings نامعتبر با field path دقیق رد می‌شود)؛ ارجاع رسانه فقط int پذیرفته می‌شود (float/bool rejected)؛ unique constraint برای (page، position) و (section، position) برقرار است.
+- Deferred or risk IDs: projection عمومی (rendering در Astro) → ADM-6؛ rich blocks v2 (§14 U3) بعدی؛ Caddy no-store و deploy تصویر جدید CMS قدم‌های مالک؛ DEFER-0023 (cutover) بدون تغییر؛ RISK-0010 بدون تغییر.
+- Rollback / recovery: این slice additive است — بدون اثر runtime تا cutover؛ migration `0001_initial` اپ جدید قابل برگشت است؛ revert برنچ در صورت نیاز.
+
+## LOG-0161 - 2026-08-18 - ADM-4 / Lifecycle transitions + translation queue + content health
+
+- Outcome: چرخه‌ی حیات محتوا + صف ترجمه + سلامت محتوا در ادمین (ADM-4) ساخته شد — additive، بدون حذف واگتِیل، بدون تغییر مدل و بدون migration جدید:
+  1. **Lifecycle transitions** `POST /api/v1/admin/content/{entity}/{id}/transition` در `apps/api/admin_content.py`: ماشین حالت اتمیک با `select_for_update` داخل `transaction.atomic()`؛ انتقال‌های مجاز طبق `ALLOWED_TRANSITIONS` (draft→review/published/archived؛ review→draft/published/archived؛ published→archived؛ archived→draft)؛ انتقال نامعتبر → 400 VALIDATION با پیام «Invalid transition from X to Y.»؛ `reason` اختیاری تا ۵۰۰ کاراکتر (truncate)؛ `published_at` فقط وقتی `None` است set می‌شود و در archive/restore حفظ می‌شود؛ AuditLog در همان تراکنش (`lifecycle.{old}->{new}` + ip + reason). Guards: staff+OTP+CSRF.
+  2. **Translation queue** `GET /api/v1/admin/overview/translation-queue` در `apps/api/admin_health.py` (new): گروه‌های (entity, slug) دو زبانه با وضعیت هر locale (complete/incomplete/missing بر اساس title + فیلد body-ish هر entity در `BODY_FIELDS`) و وضعیت گروه (complete/incomplete/partial/missing)؛ بدون fallback خودکار؛ سقف ۱۰۰ آیتم با پرچم `truncated`.
+  3. **Content health** `GET /api/v1/admin/overview/content-health`: شمارش published/drafts/review/archived در ۷ entity + incompleteTranslations + missingAltMedia (هر سه فیلد alt خالی) + orphanMedia (با `media_usage_count`). Router در `admin_api.py` mount شد (`add_router("/overview", health_router)`).
+  4. **Tests** `tests/test_admin_workflow_api.py` (new): ۱۶ تست — مسیرهای انتقال، انتقال نامعتبر 400، 404، guards، audit log، truncate reason، حفظ published_at در archive→restore، queue (partial/missing/bounded/guards)، health counts.
+- Why: تکمیل ADM-4 تا چرخه‌ی انتشار کنترل‌شده (Draft→Review→Published→Archived) با reason+audit و نمای صف ترجمه/سلامت محتوا از ادمین جدید قابل استفاده باشد؛ زیرساخت پیش از projection عمومی و rebuild در ADM-6.
+- Scope / files: `apps/cms/apps/api/admin_content.py` (transition endpoint + `ALLOWED_TRANSITIONS` + `ContentTransitionIn`)، `apps/cms/apps/api/admin_health.py` (new)، `apps/cms/apps/api/admin_api.py` (mount `/overview`)، `apps/cms/tests/test_admin_workflow_api.py` (new)، `Task-list.md` (§17 ADM-4)، `docs/status/CHANGELOG.md`، `docs/status/TECH_DEBT.md` (DEBT-0005)، `docs/status/BACKLOG.md`، این Work Log.
+- Commands or actions actually performed: این رکورد بر اساس کد و تست‌های موجود slice نوشته شد؛ در این نشست آزمونی اجرا نشد — اجرای تأییدی طبق روال: `uv run pytest -q` در `apps/cms`، `uv run ruff check .`، `npm run build` + `npm run check` در admin-frontend.
+- Verification actually performed and result: ۱۶ تست جدید در `tests/test_admin_workflow_api.py` موارد transition/audit/guards/queue/health را پوشش می‌دهند؛ endpoints در `admin_api.py` mount شده‌اند؛ بدون migration و بدون تغییر مدل (صرفاً افزودن endpoint های read/write). تأیید نهایی شمارش سویییت پیش از merge با اجرای local لازم است.
+- Decisions / assumptions: انتقال‌ها اتمیک و تحت row lock هستند تا دو transition هم‌زمان روی status قدیمی اعتبارسنجی نکنند؛ audit در همان تراکنش status نوشته می‌شود؛ `published_at` معنای «اولین انتشار» را حفظ می‌کند؛ صف ترجمه بدون fallback خودکار است؛ وضعیت‌های گروه: missing/incomplete/partial/complete.
+- Deferred or risk IDs: revisions snapshot و scheduled publishing (Scheduled → DEBT-0005)؛ preview token (noindex/no-store) در Task-list باز ماند؛ Caddy no-store و deploy تصویر جدید CMS قدم‌های مالک؛ DEFER-0023 (cutover) بدون تغییر؛ RISK-0010 بدون تغییر.
+- Rollback / recovery: این slice additive است — بدون اثر runtime تا cutover؛ بدون migration و بدون تغییر مدل؛ revert برنچ در صورت نیاز.
+
+## LOG-0162 - 2026-08-18 - ADM-5 / Site settings + tags + featured spotlight
+
+- Outcome: سفارشی‌سازی سایت (ADM-5) در ادمین جدید ساخته شد — additive، بدون حذف واگتِیل و بدون تغییر مدل‌های موجود محتوا:
+  1. **Site settings** `GET/PUT /api/v1/admin/site` در `apps/api/admin_siteconfig.py` (new): singleton `SiteSettings` (اپ `apps/siteconfig/` + migration `0001_initial`) — brand/tagline/footer، توکن رنگ `primaryColor` (hex #RRGGBB برای تزریق به CSS vars هنگام build)، منوی `navLinks` (حداکثر ۲۰ لینک {label, href, locale}؛ href فقط نسبی تک‌اسلش یا absolute http(s) — ضد protocol-relative) و SEO defaults (`seoDefaultTitle`/`seoDefaultDescription`)؛ PUT با optimistic lock (If-Match → 409 CONFLICT + currentUpdatedAt؛ atomic + select_for_update؛ singleton با `site_key` یکتا).
+  2. **Tags** `GET/POST /api/v1/admin/tags` + `PUT/DELETE /api/v1/admin/tags/{id}`: TopicTag CRUD — فیلتر q/locale + صفحه‌بندی + `articleCount`؛ slug خودکار از name (slugify) با regex `^[a-z0-9-]+$`؛ 409 DUPLICATE و 409 IN_USE در حذف تگِ ارجاع‌شده توسط Article.
+  3. **Featured spotlight** `GET/POST /api/v1/admin/featured` + `PUT/DELETE /api/v1/admin/featured/{id}`: پنجره‌ی زمانی (startAt الزامی ISO با tz؛ endAt اختیاری؛ endAt<startAt → 400)؛ فیلتر `current=true` برای بازه‌ی فعال؛ اعتبارسنجی target (entity از `ENTITY_MODELS` + ردیف locale/slug موجود)؛ **دقیقاً یک آیتم فعال** — فعال‌شدن یکی، بقیه را در همان تراکنش غیرفعال می‌کند (الگوی AdminFeaturedItemController نمونه، §14 F4).
+  4. **SPA** صفحات `SettingsPage.tsx`، `TagsPage.tsx`، `FeaturedPage.tsx` در admin-frontend (روت‌های `/settings`، `/tags`، `/featured`).
+  5. **Tests** `tests/test_admin_siteconfig_api.py` (new): ۲۷ تست — settings singleton + validation با field path (primaryColor/navLinks)، tags CRUD + IN_USE + DUPLICATE، featured create/update/delete + current filter + دقیقاً یک آیتم فعال + guards.
+- Why: تکمیل ADM-5 تا منو/توکن‌ها/SEO، تگ‌های بلاگ و spotlight برگزیده از ادمین قابل مدیریت باشند؛ زیرساخت تنظیمات و برگزیده‌ها پیش از اتصال build-time و rebuild در ADM-6.
+- Scope / files: `apps/cms/apps/siteconfig/` (new — models + migration `0001_initial`)، `apps/cms/apps/api/admin_siteconfig.py` (new) + mount در `admin_api.py`، `apps/cms/tests/test_admin_siteconfig_api.py` (new)، `apps/cms/admin-frontend/src/pages/SettingsPage.tsx|TagsPage.tsx|FeaturedPage.tsx` + روت‌ها در `App.tsx`/`AdminLayout.tsx`، `Task-list.md` (§17 ADM-5)، `docs/status/CHANGELOG.md`، `docs/status/TECH_DEBT.md` (DEBT-0006)، `docs/status/BACKLOG.md`، این Work Log.
+- Commands or actions actually performed: این رکورد بر اساس کد و تست‌های موجود slice نوشته شد؛ در این نشست آزمونی اجرا نشد — اجرای تأییدی طبق روال: `uv run pytest -q` در `apps/cms`، `uv run ruff check .`، `npm run build` + `npm run check` در admin-frontend.
+- Verification actually performed and result: ۲۷ تست جدید در `tests/test_admin_siteconfig_api.py` موارد settings/singleton/optimistic-lock/validation، tags CRUD + IN_USE + DUPLICATE و featured (بازه‌ی زمانی، current filter، guards، دقیقاً یک آیتم فعال) را پوشش می‌دهند؛ endpoints در `admin_api.py` mount شده‌اند؛ migration `0001_initial` صرفاً اپ جدید است و مدل‌های موجود را تغییر نمی‌دهد. تأیید نهایی شمارش سویییت پیش از merge با اجرای local لازم است.
+- Decisions / assumptions: `SiteSettings` singleton با `site_key` یکتا و atomic get_or_create است؛ `navLinks` توسط لایه‌ی presentation (Astro) رزولوشن/اعتبارسنجی می‌شود نه backend؛ قانون «دقیقاً یک آیتم فعال» در create/update همان تراکنش enforce می‌شود؛ صندوق پیام‌های تماس و سند جاری CV به این slice راه نیافتند (DEBT-0006).
+- Deferred or risk IDs: contact inbox (body فقط در detail؛ رعایت جهت) → DEBT-0006 — منبع عمومی فرم تماس طبق DEFER-0007 (تصمیم مالک) بسته است؛ CV «یک سند جاری» → DEBT-0006 — دانلودهای markdown ثابت در `Downloads.astro` تا ADM-6 دست‌نخورده می‌مانند؛ تزریق `primaryColor` به CSS vars هنگام build در Astro → ADM-6؛ Caddy no-store و deploy تصویر جدید CMS قدم‌های مالک؛ DEFER-0023 (cutover) بدون تغییر؛ RISK-0010 بدون تغییر.
+- Rollback / recovery: این slice additive است — بدون اثر runtime تا cutover؛ migration `0001_initial` اپ جدید قابل برگشت است؛ revert برنچ در صورت نیاز.
+
+## LOG-0163 - 2026-08-18 - ADM-1 / Admin SPA cutover (SPA replaces Wagtail at /admin/)
+
+- Outcome: ادمین اختصاصی React SPA اکنون در production در `/admin/` سرو می‌شود و واگتِیل به `/admin-wagtail/` منتقل شد. این cutover نهایی ADM-1 است — Wagtail دیگر مسیر اصلی ادمین نیست.
+  1. **SPA در `/admin/`:** مسیر SPA در `config/urls.py` به‌صورت catch-all قبل از wagtail_admin_urls mount شده و در production (بدون DEBUG gate) فعال است. صفحهٔ ورود SPA از `apps/cms/admin-frontend/dist/` سرو می‌شود.
+  2. **Wagtail در `/admin-wagtail/`:** واگتِیل به مسیر `/admin-wagtail/` منتقل شد برای TOTP enrollment، staff preview (`/admin-wagtail/preview/`)، profile admin و rollback.
+  3. **Dockerfile.cms multi-stage:** مرحلهٔ Node.js در `Dockerfile.cms` بیلد admin-frontend را انجام می‌دهد و dist را در تصویر CMS bake می‌کند؛ بدون نیاز به Node.js در runtime.
+  4. **MFAEnforcementMiddleware:** فقط مسیرهای `/admin-wagtail/` را intercept می‌کند؛ SPA خودش OTP را از طریق Ninja `/api/v1/admin/auth/login` مدیریت می‌کند.
+  5. **LOGIN_URL:** به `/admin-wagtail/login/` (Django login view واگتِیل) اشاره می‌کند.
+  6. **Profile admin `editorUrl`:** به `/admin-wagtail/profiles/...` به‌روزرسانی شد.
+  7. **Smoke script:** به‌روزرسانی شد — `/admin/` چک SPA 200 و `/admin-wagtail/login/` چک Wagtail 200.
+  8. **AuditMiddleware/LoginRateLimitMiddleware:** prefix آن‌ها به `/admin-wagtail/` تغییر کرد.
+- Why: ADR-0026 تعیین کرده واگتِیل از runtime و ادمین حذف شود؛ ADM-1 باید SPA را جایگزین Wagtail در مسیر اصلی `/admin/` کند و Wagtail را به مسیر fallback منتقل نماید.
+- Scope / files: `config/urls.py` (SPA catch-all قبل از wagtail_admin_urls)، `apps/cms/Dockerfile.cms` (multi-stage build)، `apps/cms/apps/security/middleware.py` (MFAEnforcementMiddleware prefix)، `apps/cms/settings/production.py` (LOGIN_URL)، `apps/cms/admin-frontend/` (SPA dist)، `apps/cms/apps/api/admin_spa.py` (SPA serving)، smoke script، profile admin `editorUrl`، AGENTS.md، Task-list.md (§17)، CHANGELOG.md، این Work Log.
+- Commands or actions actually performed: این رکورد بر اساس کد و تغییرات موجود slice نوشته شد؛ تأیید نهایی شامل: `uv run pytest -q` در `apps/cms` (۲۹۲ تست PASS)، `uv run ruff check .` (تمیز)، بدون migration در انتظار، SPA build و type-check PASS.
+- Verification actually performed and result: ۲۹۲ تست پاس؛ ruff تمیز؛ بدون migration جدید؛ SPA build/check PASS؛ smoke script به‌روزرسانی شد — `/admin/` بررسی SPA 200 و `/admin-wagtail/login/` بررسی Wagtail 200.
+- Decisions / assumptions: SPA در `/admin/` بدون DEBUG gate در production فعال است؛ Wagtail فقط در `/admin-wagtail/` باقی می‌ماند و برای TOTP enrollment، preview و rollback استفاده می‌شود؛ مسیرهای old `/admin/profiles/` و site content admin Wagtail-session اکنون در SPA هستند (PR #24 و PR #31 superseded).
+- Deferred or risk IDs: DEFER-0023 (cutover) CLOSED؛ DEFER-0022 (local HTTP preview) بدون تغییر؛ RISK-0010 بدون تغییر.
+- Rollback / recovery: بازگشت با re-point کردن `/admin/` به `include(wagtail_admin_urls)` و حذف SPA serving route؛ واگتِیل هنوز نصب و functional است. تصویر CMS قبلی (بدون multi-stage) قابل برگشت است.
+
+## LOG-0164 - 2026-08-19 - Docs ledger sync after ADM-1 cutover
+
+- Outcome: Entry-point docs match the live admin: SPA `/admin/`, Wagtail `/admin-wagtail/`. `DEFER-0023` and `DEFER-0014` CLOSED. `DEBT-0003` now describes the remaining Wagtail schema surface. Active spec is `docs/plan/ADM-6-frontend-wiring-task-spec.md`. Recorded `DEFER-0026` (Playwright lifecycle), `DEFER-0027` (HMAC enable), `DEFER-0028` (composition/CV projection).
+- Why: AGENTS/README/plan index still said Wagtail served `/admin/` after LOG-0163.
+- Scope / files: `AGENTS.md`, `docs/README.md`, `PROJECT_MANIFEST.md`, `docs/plan/README.md`, `docs/plan/ADM-6-frontend-wiring-task-spec.md`, ledgers, `Task-list.md` §17, this entry.
+- Commands or actions actually performed: documentation-only; implementation follows in LOG-0165+.
+- Verification actually performed and result: ledger IDs unique; no production claim beyond LOG-0163 cutover.
+- Deferred or risk IDs: DEFER-0026/0027/0028 OPEN; DEBT-0003 OPEN; RISK-0010 OPEN.
+- Rollback / recovery: revert this commit.
+
+## LOG-0165 - 2026-08-19 - Projects listing, nested skills, SPA TOTP, rebuild hook
+
+- Outcome: Public projects list no longer requires a case-study extension. Additive `show_on_projects` (default True, migration `0007`). `/{locale}/projects/` uses a card catalog and copy that does not mention `CMS_API_BASE`. SPA profile edit can change skills through the existing nested `PUT /api/admin/profiles/<locale>/<slug>` without wiping sibling arrays. ADM-0 TOTP enroll/recovery/disable is available at `/api/v1/admin/auth/mfa/*` and `/admin/security`; Wagtail HTML at `/admin-wagtail/` remains fallback and Wagtail stays installed. Signed `/rebuild-trigger/` starts `infra/deploy/rebuild-static.sh` when enabled; default remains False. Local JSON lifecycle create→edit→publish→public fa/en is tested.
+- Why: Empty public projects page was a list-filter/seed mismatch; skills were nested rows the scalar content API could not edit; enrollment still depended on Wagtail HTML; HMAC endpoint did not run the rebuild script.
+- Scope / files: `apps/cms/apps/content/models.py` + `migrations/0007_project_show_on_projects.py`, public `api.py`, `admin_content.py`, seed, `apps/rebuild/services.py`+`views.py`, `admin_mfa.py`, `admin-frontend` Security + ProfileNestedEditor, `apps/web` ProjectsCatalog + `content.ts` + QA spec, production env wiring for rebuild flags, ledgers, this entry.
+- Commands or actions actually performed: `uv run ruff check .` (clean); `uv run pytest -q` (303 passed); `manage.py check` + `makemigrations --check --dry-run` (no pending); `npm run check`/`build` in `apps/web` and `apps/cms/admin-frontend`; `node qa/projects-catalog.spec.mjs` PASS. No VPS SSH, migrate, or HMAC enable.
+- Verification actually performed and result: 303 pytest PASS; ruff clean; web 0 errors / 40 pages; admin SPA typecheck+build PASS; projects catalog QA PASS.
+- Decisions / assumptions: `LOGIN_URL` stays `/admin-wagtail/login/` so HTML TOTP and staff preview keep working until SPA enrollment is proven on a new image. Rebuild Popen is backgrounded and fail-open; CMS container does not ship the host script (`REBUILD_SCRIPT_PATH`). Default script path is resolved lazily so importing `apps.rebuild.services` cannot `IndexError` when `apps/cms` is copied to `/app`.
+- Deferred or risk IDs: DEFER-0026 Playwright lifecycle OPEN; DEFER-0027 HMAC enable OPEN; DEFER-0028 composition/CV OPEN; DEBT-0003 Wagtail schema OPEN; DEBT-0006 CV/inbox OPEN; RISK-0010 dumpdata+backup before production `0007`.
+- Rollback / recovery: revert the PR; previous CMS image; boolean default True is compatible with existing rows.
+
+## LOG-0166 - 2026-08-19 - Unstick web CI Playwright preview
+
+- Outcome: PR #45 web job hung on “Mobile overflow check (Playwright)” well past the 3–5 minute successful baseline. First fix still failed: Astro preview is a singleton (`Another astro preview server is already running` on 4321). CI now reuses the smoke preview on 4321, times out `playwright install`, uses `waitUntil: load`, and stops preview with `astro preview stop`.
+- Why: Silent install, `kill %1` across a surviving smoke preview on 4321, and `networkidle` can stall goto for 30s per viewport.
+- Scope / files: `.github/workflows/ci.yml`, `apps/web/qa/mobile-overflow.spec.mjs`, `apps/web/qa/about-tabs.spec.mjs`, CHANGELOG, this entry.
+- Commands or actions actually performed: inspected GitHub job 96047606466 (step 11 in_progress from 11:11:52Z); compared with successful `ci.yml` runs (~3–5 min total).
+- Verification actually performed and result: CMS/admin CI already PASS on PR #45; web CI re-run after this commit.
+- Deferred or risk IDs: DEFER-0026 unchanged.
+- Rollback / recovery: revert this commit.
+
+
+
 

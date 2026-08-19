@@ -125,12 +125,37 @@ def _items(payload):
     return payload
 
 
-def test_list_projects_has_case_study_only(api_client, case_study_content):
+def test_list_projects_includes_published_without_case_study(
+    api_client, case_study_content
+):
     data = assert_json(api_client.get("/api/projects/en"), 200)
     items = _items(data)
+    assert {i["slug"] for i in items} == {"edge-pipeline", "no-case-study"}
+    by_slug = {i["slug"]: i for i in items}
+    assert by_slug["edge-pipeline"]["has_case_study"] is True
+    assert by_slug["edge-pipeline"]["case_study_depth"] == CaseStudyDepth.FEATURED
+    assert by_slug["no-case-study"]["has_case_study"] is False
+
+
+def test_list_projects_has_case_study_filter(api_client, case_study_content):
+    data = assert_json(api_client.get("/api/projects/en?has_case_study=true"), 200)
+    items = _items(data)
     assert [i["slug"] for i in items] == ["edge-pipeline"]
-    assert items[0]["has_case_study"] is True
-    assert items[0]["case_study_depth"] == CaseStudyDepth.FEATURED
+
+
+def test_list_projects_hides_unlisted(api_client, case_study_content):
+    Project.objects.filter(slug="no-case-study").update(show_on_projects=False)
+    data = assert_json(api_client.get("/api/projects/en"), 200)
+    assert [i["slug"] for i in _items(data)] == ["edge-pipeline"]
+    hidden = api_client.get("/api/projects/en/no-case-study")
+    assert hidden.status_code == 404
+
+
+def test_project_without_case_study_returns_detail(api_client, case_study_content):
+    data = assert_json(api_client.get("/api/projects/en/no-case-study"), 200)
+    assert data["slug"] == "no-case-study"
+    assert data["has_case_study"] is False
+    assert data["case_study"] is None
 
 
 def test_project_detail_includes_case_study_and_redacts_media(
@@ -146,11 +171,6 @@ def test_project_detail_includes_case_study_and_redacts_media(
     assert "screenshot_image" not in str(data)
     assert CASE_STUDY_FORBIDDEN.isdisjoint(data)
     assert CASE_STUDY_FORBIDDEN.isdisjoint(data["case_study"])
-
-
-def test_project_without_case_study_404(api_client, case_study_content):
-    response = api_client.get("/api/projects/en/no-case-study")
-    assert response.status_code == 404
 
 
 def test_draft_project_404(api_client, case_study_content):

@@ -1,6 +1,6 @@
 # ADR-0008: Deployment baseline — Docker Compose and Caddy
 
-**Status:** Accepted for P0-A implementation; existing live Caddy and Compose stack audited on 2026-08-14, project-specific Compose/Caddy configuration not yet provisioned.  
+**Status:** Accepted for P0-A; public serving amended by ADR-0027 (2026-08-19) — `web` nginx container, still no public Node.  
 **Date:** 2026-08-14
 
 ## Context
@@ -11,7 +11,7 @@ Production is a 1 vCPU / 2 GB RAM Ubuntu VPS. The public site must remain static
 
 - Use Caddy for HTTPS, HTTP-to-HTTPS redirect, static artifact serving and reverse proxying `/api/` and `/admin/` when the CMS exists.
 - Use Docker Compose as the deployment orchestrator in P0-A.
-- Serve public Astro artifacts directly from Caddy; do not require a Node.js public runtime.
+- Serve public Astro artifacts without a Node.js public runtime (host Caddy today; nginx `web` container per ADR-0027).
 - Keep staging at `staging.tahamohamadi.ir` and production at `tahamohamadi.ir`.
 - Provision only Caddy initially; add Django and PostgreSQL only when the approved phase requires them.
 

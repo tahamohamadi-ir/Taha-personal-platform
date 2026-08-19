@@ -33,6 +33,18 @@ export interface ArticleListDto {
 export interface ArticleDetailDto extends ArticleListDto {
   body: string;
   accessibility_notes: string;
+  story?: {
+    locale: string;
+    title: string;
+    sections: Array<{
+      layout: string;
+      ratio: string;
+      blocks: Array<{
+        blockType: string;
+        settings: Record<string, unknown>;
+      }>;
+    }>;
+  } | null;
 }
 
 export interface ArticleSlugRedirectDto {

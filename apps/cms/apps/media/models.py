@@ -4,9 +4,9 @@ A record is NOT public until ``is_active`` is set by an editor; ``is_active``
 IS the public flag. Internal/archived records are simply ``is_active=False``.
 """
 
-import filetype
 from django.db import models
 
+from apps.media.sniff import sniff_mime
 from apps.media.storage import media_upload_path
 from apps.media.validators import validate_file_size, validate_file_type
 
@@ -34,6 +34,8 @@ class Media(models.Model):
     )
     title = models.CharField(max_length=255)
     alt_text = models.CharField(max_length=255, blank=True)
+    alt_text_fa = models.CharField(max_length=255, blank=True, default="", db_default="")
+    alt_text_en = models.CharField(max_length=255, blank=True, default="", db_default="")
     mime = models.CharField(max_length=100, editable=False, blank=True)
     size = models.PositiveBigIntegerField(editable=False, default=0)
     is_active = models.BooleanField(default=False)
@@ -54,8 +56,7 @@ class Media(models.Model):
         """Record mime/size from the actual file content, never from client metadata."""
         if self.file and self.file.name:
             self.file.seek(0)
-            kind = filetype.guess(self.file.read(2048))
+            self.mime = sniff_mime(self.file) or ""
             self.file.seek(0)
-            self.mime = getattr(kind, "mime", "") or ""
             self.size = self.file.size
         super().save(*args, **kwargs)

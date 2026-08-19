@@ -8,9 +8,9 @@ import re
 import secrets
 from pathlib import Path
 
-import filetype
 from django.core.exceptions import ValidationError
 
+from apps.media.sniff import sniff_mime
 from apps.media.validators import ALLOWED_MIMES, MIME_TO_EXTENSIONS
 
 _SAFE_BASENAME_RE = re.compile(r"[^A-Za-z0-9_-]+")
@@ -23,11 +23,11 @@ def _sniff_mime(instance):
         return None
     try:
         file_field.seek(0)
-        kind = filetype.guess(file_field.read(2048))
+        mime = sniff_mime(file_field)
         file_field.seek(0)
     except (ValueError, OSError):  # unreadable/absent file
         return None
-    return getattr(kind, "mime", None)
+    return mime
 
 
 def media_upload_path(instance, filename):

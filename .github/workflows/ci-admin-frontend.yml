@@ -1,0 +1,47 @@
+name: Admin frontend CI
+
+# Builds the custom admin SPA (ADR-0026, apps/cms/admin-frontend/) whenever it
+# changes. The SPA is not yet served by Django; this job keeps it buildable and
+# type-safe until the ADM-1 cutover wires it under /admin/.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/cms/admin-frontend/**"
+  pull_request:
+    paths:
+      - "apps/cms/admin-frontend/**"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build admin SPA
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/cms/admin-frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Set up Node
+        uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/cms/admin-frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run check
+
+      - name: Build
+        run: npm run build
+
+      - name: Whitespace check
+        run: git diff --check HEAD

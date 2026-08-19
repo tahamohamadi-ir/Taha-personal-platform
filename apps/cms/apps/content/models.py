@@ -366,6 +366,13 @@ class Article(LocalizedContentMixin, LifecycleMixin):
     accessibility_notes = models.TextField(blank=True)
     reading_time_minutes = models.PositiveIntegerField(default=0)
     allow_comments = models.BooleanField(default=False)
+    story = models.ForeignKey(
+        "composition.CompositionPage",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="attached_articles",
+    )
 
     class Meta:
         db_table = "content_article"
@@ -605,6 +612,11 @@ class Project(LocalizedContentMixin, LifecycleMixin):
     code_url = models.URLField(blank=True)
     data_url = models.URLField(blank=True)
     demo_url = models.URLField(blank=True)
+    show_on_projects = models.BooleanField(
+        default=True,
+        db_default=True,
+        help_text="When false, a published project is omitted from the public /projects/ list.",
+    )
     topics = models.ManyToManyField(
         ResearchTopic,
         blank=True,

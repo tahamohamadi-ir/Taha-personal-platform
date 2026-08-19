@@ -38,6 +38,11 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 if not SECRET_KEY:
     raise ImproperlyConfigured("DJANGO_SECRET_KEY environment variable is required")
 
+_rebuild_enabled = os.environ.get("REBUILD_TRIGGER_ENABLED", "false").strip().lower()
+REBUILD_TRIGGER_ENABLED = _rebuild_enabled in {"1", "true", "yes"}
+REBUILD_TRIGGER_SECRET = os.environ.get("REBUILD_TRIGGER_SECRET", "")
+REBUILD_SCRIPT_PATH = os.environ.get("REBUILD_SCRIPT_PATH", "").strip()
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",

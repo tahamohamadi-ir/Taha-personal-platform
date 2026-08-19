@@ -1,4 +1,8 @@
-"""Rebuild trigger endpoint (P3-08) — POST only, signed, gated, no side effects yet."""
+"""Rebuild trigger endpoint (P3-08) — POST only, signed, gated.
+
+When HMAC validation succeeds, starts ``rebuild-static.sh`` in the background.
+The endpoint stays off the public Caddy surface; loopback callers only.
+"""
 
 import time
 
@@ -7,7 +11,11 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from apps.rebuild.services import MAX_TRIGGER_AGE_SECONDS, validate_rebuild_token
+from apps.rebuild.services import (
+    MAX_TRIGGER_AGE_SECONDS,
+    invoke_static_rebuild,
+    validate_rebuild_token,
+)
 
 _GENERIC_DENIAL = {"status": "denied"}
 
@@ -37,6 +45,5 @@ def rebuild_trigger(request):
     if not validate_rebuild_token(token, secret, timestamp):
         return JsonResponse(_GENERIC_DENIAL, status=403)
 
-    # The actual build hook (repo pull + web build + artifact publish) is wired
-    # in the deploy slice (RISK-0007 capacity decision); this slice only validates.
+    invoke_static_rebuild(enabled=True)
     return JsonResponse({"status": "ok", "triggered": True})

@@ -1,7 +1,7 @@
 # Project Manifest
 
-**Status:** P0-G0 `PASS for static-only P1` (2026-08-14) **+ P3 CMS runtime live** (2026-08-16) **+ P4–P6 public routes live** (2026-08-17) **+ CMS-managed About/profile live** (2026-08-18). Staging decommissioned (ADR-0025, 2026-08-15).  
-**Last verified:** 2026-08-18 (production CMS migrate/seed + CD redeploy; LOG-0150, owner VPS 2026-08-18)  
+**Status:** P0-G0 — `PASS for static-only P1` (2026-08-14) **+ P3..P6 live (2026-08-17/18)**. Custom React admin SPA at `/admin/` (ADM-1 cutover LOG-0163); Wagtail fallback `/admin-wagtail/`; `/static/*`, CMS `/health/`, TOTP (`RISK-0009` CLOSED), public published-only `/api/` + `/media/` (`DEFER-0017` CLOSED), P4–P6 public routes live. `RISK-0003` CLOSED; `DEFER-0015` CLOSED; `DEFER-0023` CLOSED. **Custom admin rebuild (ADR-0026):** SPA + `/api/v1/admin/*`; Wagtail uninstall blocked by schema (`DEBT-0003`); ADM-6 wiring in `docs/plan/ADM-6-frontend-wiring-task-spec.md`. Staging decommissioned (ADR-0025).  
+**Last verified:** 2026-08-19  
 **Source of truth for commands:** این فایل؛ دستور تأییدنشده را اجرا یا مستند نکنید.
 
 ## Product and repository
@@ -13,61 +13,56 @@
 | Repository visibility | Public |
 | Default branch | `main` |
 | Public production domain | `tahamohamadi.ir` |
-| Staging domain | DECOMMISSIONED (ADR-0025, 2026-08-15) — dev/deploy directly on production |
+| Staging domain | DECOMMISSIONED (ADR-0025, 2026-08-15) — `staging.tahamohamadi.ir` Caddy block and DNS removed; dev/deploy directly on production |
 | Root locale | `/` Language Gateway |
 | Locale roots | `/fa/` (RTL) and `/en/` (LTR) |
-| Admin routes | `/admin/` Wagtail + TOTP; `/admin/profiles/` custom Profile editor (same-origin session) |
-| Public CMS API | `/api/*` published-only Ninja JSON (`DEFER-0017` CLOSED); profile at `/api/profiles/<locale>/about` |
+| Admin route | `/admin/` — custom React SPA (ADM-1 cutover); Wagtail fallback `/admin-wagtail/` until schema uninstall (`DEBT-0003`); `/api/v1/admin/*` (ADR-0026); `/static/*` proxied; TOTP enrolled (`RISK-0009` CLOSED) |
 
 ## Approved architecture
 
-| Layer | Approved baseline | Current state (2026-08-18) |
+| Layer | Approved baseline | Current state |
 |---|---|---|
-| Public frontend | Astro + TypeScript + React Islands | Static artifact live: Gateway, landing, About (CMS-backed + snapshot fallback), About section/detail routes, CV, blog, research, projects, 404, health, robots, sitemap |
-| Styling/UI | Tailwind CSS + project design system + shadcn/Radix | Tailwind v4 + design tokens; shadcn/Radix not used |
-| Backend/CMS/API | Python 3.12.13 + Django 5.2.9 LTS + Wagtail 7.4.2 LTS + Django Ninja 1.6.2 | Compose `taha-cms` on `127.0.0.1:18000`; image `ghcr.io/tahamohamadi-ir/taha-cms:31c6560`; `/admin*`, `/static*`, `/health/`, `/api/*` proxied; `/media/` proxied; upload/contact persistence unpublished |
-| Database | PostgreSQL 17 (`taha-cms-db-1`) | CMS postgres live; migrations through `content.0006`; Profile seed imported (`en`, `fa`); isolated restore evidence `RISK-0003` CLOSED |
+| Public frontend | Astro + TypeScript + React Islands | Scaffolded; static-only P1 built and deployed (static P1 live on tahamohamadi.ir) — Language Gateway + `/fa/` + `/en/` landing |
+| Styling/UI | Tailwind CSS + project design system + shadcn/Radix | Tailwind v4 + project design tokens applied; shadcn/Radix not used in P1 |
+| Backend/CMS/API | Python 3.12.13 + Django 5.2.9 LTS + Django Ninja 1.6.2 (Wagtail 7.4.2 pending removal per ADR-0026) | Runtime live as Compose `taha-cms` on `127.0.0.1:18000`; public `/admin*`, `/static*`, `/health/`, published-only `/api/` + `/media/` proxied |
+| Database | PostgreSQL 17 (Compose `taha-cms-db-1`) | Provisioned for CMS only; restic restore/import evidence still `RISK-0003` |
 | Public search | Pagefind at the approved phase | Not provisioned |
-| Deployment | Docker Compose + Caddy on VPS | Static via `/opt/taha/site/current` (CD on `main` push); CMS via `update-cms.sh`; VPS has no Node — use CD or off-box build for static |
-| Git/CI | GitHub Actions hosted runners | `ci.yml`, `ci-cms.yml`, `ci-cms-image.yml`, `cd.yml` green on `main` |
-| Backup | Encrypted restic via rclone on Google Drive | Daily job includes CMS postgres dump; isolated restore rehearsal CLOSED (`RISK-0003`, LOG-0140) |
+| Deployment | Docker Compose + Caddy on VPS | Static artifact via `/opt/taha/site/current`; CMS Compose live; Caddy `/static*` handle still required |
+| Git/CI | GitHub + GitHub Actions hosted standard runners | Workflows `ci.yml` (web) and `ci-cms.yml` (CMS) green on hosted runners on `main` |
+| Backup | Encrypted restic repository through rclone on Google Drive | restic 0.18.1 and Ubuntu rclone 1.60.1 build installed; OAuth, repository, PostgreSQL/media/config snapshots, `restic check`, retention, enabled daily timer and isolated file-level restore verified; staging database import remains |
 
-Python 3.12 is selected for ecosystem maturity and remains security-supported through October 2028. Wagtail 7.4 LTS and Django 5.2 LTS officially support this combination. Exact patch versions are pinned in lockfiles.
+Python 3.12 is selected for ecosystem maturity and remains security-supported through October 2028. Django 5.2 LTS officially supports this combination; Wagtail 7.4 LTS does too while it remains installed (removal authorized per ADR-0026). Exact patch versions are selected together in the first dependency lockfile, not guessed in this Manifest.
 
 ## Repository ownership
 
 ```text
 apps/web/               Astro public frontend
-apps/cms/               Django, Wagtail and Django Ninja
+apps/cms/               Django, Wagtail (removal authorized per ADR-0026) and Django Ninja; custom React admin SPA (admin-frontend/) once scaffolded
 infra/                  Caddy, Compose, deploy and backup infrastructure
-docs/                   policies, ADRs, contracts, planning, status ledgers
 docs/adr/               accepted/proposed architecture decisions
-docs/contracts/         binding IA and design contract cards
-docs/governance/        durable project policies and runbooks
-docs/plan/              task specs and plan index (docs/plan/README.md)
+docs/governance/        durable project policies
 docs/status/            work, risk, deferred and debt ledgers
 docs/templates/         task specifications
 .github/                GitHub Actions workflows and repository automation
 ```
 
-Read order for agents: `AGENTS.md` → `docs/README.md` → this file → active Task Spec.
-
 ## Environments and infrastructure
 
 | Environment | Purpose | State | Data rule |
 |---|---|---|---|
-| `dev` | Local Windows control plane; WSL for Linux/Docker tests | Available | fake/sanitized only |
-| `staging` | DECOMMISSIONED (ADR-0025) | — | — |
-| `prod` | `tahamohamadi.ir` | Static **release-f11d2fc** (CD 2026-08-18, built with `CMS_API_BASE=https://tahamohamadi.ir`); CMS image **31c6560** with profile seed | published, approved and backed-up data only |
+| `dev` | Local Windows control plane; WSL only for Linux/Docker tests | Available | fake/sanitized only |
+| `staging` | DECOMMISSIONED (ADR-0025, 2026-08-15) | `staging.tahamohamadi.ir` Caddy block and DNS removed; dev/deploy directly on production | — |
+| `prod` | `tahamohamadi.ir` | Static P4+P5 routes live (2026-08-16, release-59bf91e, checksum `40472597`); CMS live with public `/api/` + `/media/` (DEFER-0017 CLOSED); custom admin rebuild in phases (ADR-0026) | published, approved and backed-up data only |
 
-Production host: Ubuntu 26.04 LTS VPS, 2 vCPU, ~4 GiB RAM (`RISK-0007` CLOSED), 30 GB disk. Co-hosts static site and Compose `taha-cms`. The VPS is **not** approved for Gitea, a CI runner, Redis, Celery, OpenSearch, Neo4j, Kubernetes or other additional always-on services. **Node/npm are not installed on the VPS** — static builds run in GitHub Actions (`cd.yml`) or on a developer machine.
+Production host is an active Ubuntu 26.04 LTS VPS with 2 vCPU, ~3910 MB RAM (~4 GiB, owner decision 2026-08-15: keep the 4 GiB plan — `RISK-0007` CLOSED) and 30 GB disk. It co-hosts the static site and Compose `taha-cms` (cms + postgres on `127.0.0.1:18000`). The VPS is **not** approved for Gitea, a CI runner, Redis, Celery, OpenSearch, Neo4j, Kubernetes or other additional always-on services.
 
 ## Security and operations constraints
 
-- Codex SSH or deployment requires explicit owner approval and a completed Task Spec. `RISK-0002` CLOSED (key-only operator path).
-- Backup OAuth/restic credentials live outside Git in an approved secret store.
-- GitHub Actions artifacts are CI outputs, not the backup system of record.
-- Browser locale preference may be suggested; it must never force redirect or hide the language switcher.
+- Any Codex SSH connection or deployment requires explicit owner approval and a completed Task Spec. `RISK-0002` is closed on the owner's attestation that the exposed root credential was independently rotated; the key-only named non-root operator path is verified.
+- SSH VPN is additional access protection, not a replacement for SSH key authentication, firewall policy, patching or least privilege.
+- The backup destination is Google Drive, but its OAuth credential, restic password and rclone configuration must live outside Git in a password manager/approved secret store.
+- GitHub Actions artifacts and caches are CI outputs, never the backup system of record.
+- Browser locale preference may be suggested or remembered; it must never force a redirect or hide the visible language switcher.
 
 ## Canonical commands verified at P0-G0
 
@@ -83,107 +78,106 @@ docker --version
 docker compose version
 ```
 
-## Canonical commands — `apps/web/` (verified 2026-08-18)
+No application install, test, lint, build, run, migration, deployment or backup command is approved yet. Those commands are added only after the corresponding app/infrastructure exists and is verified on a clean checkout.
+
+## Canonical commands — `apps/web/` (P1 static frontend, verified 2026-08-14)
 
 ```powershell
 # working directory: apps/web/
-npm install
-npm run check      # astro check — verified: 0 errors (69 files)
-npm run build      # astro build — verified: 40 pages with CMS_API_BASE set
-npm run preview
-npm audit
-
-# optional CMS-backed local build
-$env:CMS_API_BASE = "http://127.0.0.1:18000"
-npm run build
-
-# dist-only About/profile regression (no HTTP server)
-node qa/cms-profile-build.spec.mjs
+npm install        # reproducible install with package-lock.json
+npm run check      # astro check (typecheck) — verified: 0 errors / 0 warnings
+npm run build      # astro build — verified: static output in dist/
+npm run preview    # serve built artifact locally — verified with curl (routes 200)
+npm audit          # dependency security scan — verified: 0 vulnerabilities
 ```
 
-## Canonical commands — `apps/cms/` (verified 2026-08-18)
+CMS runtime operator commands are in the image block below (`update-cms.sh`, `smoke-cms.sh`). Code-verification commands in the `apps/cms/` block remain the local CI baseline.
+
+## Canonical commands — `apps/cms/` (P3 code-first, verified 2026-08-15)
 
 ```powershell
-# working directory: apps/cms/ (Python 3.12.13 via uv)
-uv sync --python 3.12
+# working directory: apps/cms/ (Python 3.12.13 via uv; Hermes interpreter forbidden)
+uv sync --python 3.12          # reproducible install from pyproject.toml + uv.lock
 $env:DJANGO_SETTINGS_MODULE = "config.settings.test"
-uv run ruff check .
-uv run python manage.py check
-uv run python manage.py makemigrations --check --dry-run
-uv run pytest -q               # verified: 174 passed
+uv run ruff check .            # verified: All checks passed
+uv run python manage.py check  # verified: no issues (only upstream treebeard E001 advisory warnings)
+uv run python manage.py makemigrations --check --dry-run   # verified: No changes detected
+uv run pytest -q               # verified locally; count grows with suite
 ```
 
-### Canonical commands — CMS runtime (operator, VPS `/home/deploy/cms-repo`)
+### Canonical commands — CMS runtime image (P3, operator)
 
 ```bash
-export CMS_IMAGE=ghcr.io/tahamohamadi-ir/taha-cms:31c6560   # pin immutable sha
-./infra/deploy/update-cms.sh    # pull, up, migrate --noinput, loopback health
+# pin immutable tag from GHCR (CI: ci-cms-image.yml)
+export CMS_IMAGE=ghcr.io/tahamohamadi-ir/taha-cms:<git-sha>
+./infra/deploy/update-cms.sh
 ./infra/deploy/smoke-cms.sh https://tahamohamadi.ir
 
-# one-time or after deploy when schema/seed changed
-docker compose -f infra/cms/docker-compose.cms.yml exec -T cms python manage.py showmigrations content
-docker compose -f infra/cms/docker-compose.cms.yml exec -T cms python manage.py import_profile_seed
-
-# static site after CMS content changes (VPS has no Node — prefer CD rerun on main)
-# bash infra/deploy/rebuild-static.sh   # requires Node 24 on host
+# inside container — venv is on PATH
+docker compose -f infra/cms/docker-compose.cms.yml exec cms python manage.py migrate --noinput
+docker compose -f infra/cms/docker-compose.cms.yml exec cms python manage.py createsuperuser
 ```
 
-Architecture: Caddy edge + versioned static artifact + Compose for CMS/Postgres only.  
-See `infra/cms/README.md` and `docs/governance/DEPLOY_RUNBOOK.md`.  
-`RISK-0009` CLOSED. `RISK-0003` CLOSED. `DEFER-0017` CLOSED (public `/api/`).  
-Contact persistence and media *upload* remain unpublished. `DEFER-0015` CLOSED in repo; owner rebuild for prod recovery codes if needed.
+Architecture: Caddy edge + versioned static artifact + Compose only for CMS/Postgres.
+See `infra/cms/README.md`. `RISK-0009` is CLOSED (static proxy + password rotate +
+production TOTP). `DEFER-0015` is CLOSED (recovery codes in repo; owner rebuild for prod).
+`RISK-0003` is CLOSED (2026-08-17, LOG-0140). Public `/api/`/`/media/` are live
+published-only (`DEFER-0017` CLOSED). Custom admin rebuild phases per ADR-0026 (§17).
 
 ## Agent tooling (developer workstation, verified 2026-08-15)
 
 | Tool | Verified state | Boundary |
 |---|---|---|
-| OpenCode | `1.18.18`; project config under `.opencode/` | Developer tooling only |
-| RTK | `rtk-ai/rtk` `0.45.0` at `C:\Users\Taha\.local\bin\rtk.exe` | OpenCode output compaction only |
+| OpenCode | `1.18.18`; project config remains under `.opencode/` | Developer tooling only; it does not enter the application artifact |
+| RTK | Official Windows `rtk-ai/rtk` `0.45.0` binary at `C:\Users\Taha\.local\bin\rtk.exe`; official OpenCode plugin installed at `C:\Users\Taha\.config\opencode\plugins\rtk.ts` | Global OpenCode shell-output compaction only; no Claude shell-wide hook, project dependency, provider/model change, CI change or production effect |
+
+RTK's token figures are local estimates of compacted command output, not a
+billing guarantee. Fresh OpenCode main-agent and delegated general sub-agent
+sessions both demonstrated automatic rewriting; already-running sessions must
+be restarted to load the plugin. Operational rules and rollback are in
+`docs/plan/SMALL-MODEL-EXECUTION-PLAN.md` and
+`docs/plan/R0-rtk-opencode-task-spec.md`.
 
 ## P1 first-live technical decisions (G0-04 freeze)
 
-> Decisions for R2 static-only release. Items not required for R2 are `NOT USED IN R2`.
+> Exact patch versions are fixed in the first dependency lockfile at scaffold time, not here. This table freezes the *decisions* needed for the R2 static-only release; anything not required for R2 is explicitly `NOT USED IN R2`.
 
 | Decision | Value | Status |
 |---|---|---|
-| Package manager | npm 11.18.0 | VERIFIED |
-| Node runtime | Node.js 24.16.0 | VERIFIED |
-| Frontend framework | Astro 7.2.2 (pinned in lockfile) | VERIFIED |
-| TypeScript | Astro-supported, pinned in lockfile | VERIFIED |
-| Styling | Tailwind CSS v4 + design tokens | VERIFIED |
-| React islands | Not used in public shell | NOT USED IN R2 |
-| shadcn/Radix | Not added until justified | NOT USED IN R2 |
-| Motion / GSAP / Three.js | Locked, unused in public build | AVAILABLE, NOT USED IN R2 |
-| Search (Pagefind) | Later phase | NOT USED IN R2 |
-| Analytics | Not in R2 | NOT USED IN R2 |
-| Dark mode | Deferred | NOT USED IN R2 |
-| Fonts | Vazirmatn Variable (fa) + Inter Variable (en), self-hosted | VERIFIED |
-| Logo | PNG in `apps/web/public/logo.png` | VERIFIED (2026-08-16) |
-| Health/SEO skeleton | Static health, locale 404, robots, sitemap | VERIFIED |
+| Package manager | npm (npm/npx 11.18.0) | VERIFIED |
+| Node runtime | Node.js 24.16.0 (active LTS line, present in environment) | VERIFIED |
+| Frontend framework | Astro static-first; latest stable `7.2.2` observed via `npm view astro version`; exact patch pinned in first lockfile | VERIFIED for decision |
+| TypeScript | Project source is typed; version pinned in first lockfile (Astro-supported) | VERIFIED for decision |
+| Styling | Tailwind CSS v4 + project design tokens from `docs/design.md` | VERIFIED for decision |
+| React islands | Not installed in R2 (no single approved, tested, valuable interaction) | NOT USED IN R2 |
+| shadcn/Radix | Not added until a concrete P1 interaction justifies it | NOT USED IN R2 |
+| Motion / GSAP / Three.js | Locked in `apps/web/` for a future, explicitly approved island; `motion` 13.1.0, `gsap` 3.15.0 and `three` 0.185.1 are installed but have no import, client bundle or R2 behavior | AVAILABLE, NOT USED IN R2 |
+| D3 / React Three Fiber | Not installed; evaluate only for a documented visualization requirement | NOT USED IN R2 |
+| Design DNA / external UI resources | Design DNA is a local Codex skill, not a production dependency; Beautiful UI and UI8 DNA have no approved local artifact or verified use-right | TOOLING ONLY; `DEFER-0012` |
+| Search (Pagefind) | Not used in R2 | NOT USED IN R2 |
+| Analytics | Not used in R2 (no provider/consent/retention approved) | NOT USED IN R2 |
+| Dark mode | Not in R2; full dark mode deferred with ID | NOT USED IN R2 |
+| Fonts | Self-hosted `Vazirmatn Variable` for `fa`/Arabic script + `Inter Variable` for `en`/Latin script; both OFL-1.1 and locked in `apps/web/` | VERIFIED |
+| Logo | Approved asset or a text mark only; no invented geometry | OPEN (owner) |
+| Media | Static curated assets only (portrait/OG optional) | OPEN (owner) |
+| Health/SEO skeleton | Static `/health`, locale-aware 404, robots + sitemap skeleton | VERIFIED for decision |
+
+Remaining owner/release decisions: final logo asset, approved contact path, OG image and production deploy authorization for the upcoming release from HEAD. The P1 font decision is recorded in ADR-0019. Staging and its Cloudflare robots edge behavior are resolved by ADR-0025 (DEFER-0011 CLOSED).
 
 ## Explicitly not used initially
 
 ```text
-Gitea / self-hosted CI runner on VPS
+Gitea / Gitea Actions / self-hosted CI runner
 Redis / Celery / dedicated queue
-Elasticsearch / OpenSearch / Neo4j
+Elasticsearch / OpenSearch / Neo4j / dedicated vector database
 Kubernetes / microservices
-Node.js on production VPS
+Node.js public production runtime
 ```
 
-## Open decisions and remaining work
+## Open decisions and gate blockers
 
-| ID / area | Status | Notes |
-|---|---|---|
-| `RISK-0002` SSH access | CLOSED | Key-only `deploy` operator |
-| `RISK-0003` backup/restore | CLOSED | CMS postgres in daily restic; isolated import evidence LOG-0140 |
-| `RISK-0007` capacity | CLOSED | 4 GiB plan retained |
-| `RISK-0009` CMS runtime | CLOSED | Admin, static proxy, TOTP |
-| `DEFER-0017` public `/api/` | CLOSED | LOG-0143 |
-| `DEFER-0015` TOTP recovery | CLOSED in repo | Owner rebuild on prod if not yet deployed |
-| `DEFER-0018` RSS/Atom | OPEN | Blog feed |
-| `DEFER-0022` local Playwright preview | OPEN | Dist-only `qa/cms-profile-build.spec.mjs` + CI cover build |
-| Contact form persistence | BLOCKED | Honest unpublished copy; no backend until Task Spec |
-| Media upload (public) | BLOCKED | `/media/` proxied; no published uploads yet |
-| P7 professional admin (remainder) | QUEUED | `/admin/profiles/` shipped; ops dashboard, composition, advanced preview remain |
-| `P0-A-stack-inventory` | BLOCKED (owner) | Read-only VPS inventory |
+- Rotate root credential and define non-root SSH-key access (`RISK-0002`) via `docs/governance/SERVER_ACCESS_RUNBOOK.md`.
+- Select production WSGI/ASGI server, worker count, media layout, monitoring and exact deploy mechanics in P0-A ADRs.
+- `RISK-0007` (staging capacity) is CLOSED. `RISK-0009` is CLOSED (admin/static/health + password + TOTP on production). `RISK-0003` CLOSED (2026-08-17, LOG-0140). `/api/` and `/media/` are live published-only (`DEFER-0017` CLOSED). `DEFER-0015` CLOSED (recovery codes in repo; owner rebuild).
+- **Custom admin rebuild (ADR-0026, 2026-08-18):** Wagtail removal and the React admin SPA + `/api/v1/admin/*` are owner-authorized; execution is phased ADM-0..ADM-6 (see `Task-list.md` §17), each phase with its own Task Spec. All admin work branches from `origin/main`; content is preserved (seed data, dumpdata fixture, backup before migrations).
+- **Complementary improvements (proposals, `docs/plan/custom-admin-rebuild-fa.md` §14):** reading time, JSON-LD additions, URL-driven filters, lightbox gallery, FTS Persian, service layer, Playwright config, Vitest, feature flags, Lighthouse CI, manual-test checklists — integrated into `Task-list.md` (P4/P6/P10/ADM/release checklist) and BACKLOG; each accepted via its own Task Spec and owner priority.

@@ -1,23 +1,26 @@
-"""MFA enforcement middleware for Wagtail admin (TOTP enrollment + session).
+"""MFA enforcement middleware for legacy Wagtail admin (TOTP enrollment + session).
 
-Policy for authenticated staff on ``/admin/`` paths:
+Policy for authenticated staff on ``/admin-wagtail/`` paths:
 
-- No confirmed TOTP device: allow login/logout, ``/admin/account/`` (password),
+- No confirmed TOTP device: allow login/logout, ``/admin-wagtail/account/`` (password),
   and TOTP enrollment; redirect all other admin paths to setup.
 - Confirmed device but session not OTP-verified: allow only login/logout;
   enrollment/QR paths are NOT exempt (prevents secret leakage via stale sessions).
 - Confirmed device and ``request.user.otp_device`` set: allow.
-- Non-``/admin/`` paths are never affected.
+- Non-``/admin-wagtail/`` paths are never affected.
+
+The custom React admin SPA at ``/admin/`` handles its own OTP via the Ninja
+``/api/v1/admin/auth/login`` endpoint and is NOT intercepted by this middleware.
 """
 
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 
-ADMIN_PREFIX = "/admin/"
-LOGIN_PATH = "/admin/login/"
-LOGOUT_PATH = "/admin/logout/"
-ACCOUNT_PREFIX = "/admin/account/"
-MFA_SETUP_PATH = "/admin/account/two-factor/"
+ADMIN_PREFIX = "/admin-wagtail/"
+LOGIN_PATH = "/admin-wagtail/login/"
+LOGOUT_PATH = "/admin-wagtail/logout/"
+ACCOUNT_PREFIX = "/admin-wagtail/account/"
+MFA_SETUP_PATH = "/admin-wagtail/account/two-factor/"
 
 
 def _mfa_setup_url() -> str:

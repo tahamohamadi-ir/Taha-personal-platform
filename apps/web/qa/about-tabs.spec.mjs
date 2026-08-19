@@ -27,7 +27,10 @@ try {
     for (const target of pages) {
       const page = await browser.newPage({ viewport });
       try {
-        await page.goto(`${baseUrl}${target.path}`, { waitUntil: "networkidle" });
+        await page.goto(`${baseUrl}${target.path}`, {
+          waitUntil: "load",
+          timeout: 15000,
+        });
 
         const overflow = await page.evaluate(
           () => document.documentElement.scrollWidth - window.innerWidth,

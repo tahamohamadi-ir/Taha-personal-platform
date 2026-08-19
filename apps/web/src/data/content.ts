@@ -119,6 +119,12 @@ export interface LocaleContent {
     dataLabel: string;
     demoLabel: string;
     missingTranslation: string;
+    filterLabel: string;
+    sortLabel: string;
+    filterAll: string;
+    sortTitle: string;
+    sortNewest: string;
+    viewLabel: string;
   };
   downloads: {
     heading: string;
@@ -278,8 +284,8 @@ export const content: Record<LocaleCode, LocaleContent> = {
     projects: {
       heading: "Projects",
       intro:
-        "Engineering case studies from the CMS. When CMS_API_BASE is not set for this build, this list stays empty.",
-      empty: "No published case studies are available in this build.",
+        "Published engineering, research, and design projects. Open a card for the full page.",
+      empty: "No published projects are listed in this build.",
       depthLabel: "Depth",
       problemHeading: "Problem",
       constraintsHeading: "Constraints",
@@ -303,7 +309,13 @@ export const content: Record<LocaleCode, LocaleContent> = {
       codeLabel: "Code",
       dataLabel: "Data",
       demoLabel: "Demo",
-      missingTranslation: "This case study is not yet translated into Persian.",
+      missingTranslation: "This project is not yet translated into Persian.",
+      filterLabel: "Filter",
+      sortLabel: "Sort",
+      filterAll: "All types",
+      sortTitle: "Title",
+      sortNewest: "Newest",
+      viewLabel: "View",
     },
     downloads: {
       heading: "CV & Resume",
@@ -464,8 +476,8 @@ export const content: Record<LocaleCode, LocaleContent> = {
     projects: {
       heading: "پروژه‌ها",
       intro:
-        "مطالعات موردی مهندسی از CMS. اگر CMS_API_BASE برای این build تنظیم نشده باشد، فهرست خالی می‌ماند.",
-      empty: "در این build هیچ مطالعهٔ موردی منتشرشده‌ای در دسترس نیست.",
+        "پروژه‌های منتشرشدهٔ مهندسی، پژوهش و طراحی. برای صفحهٔ کامل، کارت را باز کنید.",
+      empty: "در این build هیچ پروژهٔ منتشرشده‌ای در فهرست نیست.",
       depthLabel: "عمق",
       problemHeading: "مسئله",
       constraintsHeading: "محدودیت‌ها",
@@ -489,7 +501,13 @@ export const content: Record<LocaleCode, LocaleContent> = {
       codeLabel: "کد",
       dataLabel: "داده",
       demoLabel: "دمو",
-      missingTranslation: "این مطالعهٔ موردی هنوز به انگلیسی ترجمه نشده است.",
+      missingTranslation: "این پروژه هنوز به انگلیسی ترجمه نشده است.",
+      filterLabel: "فیلتر",
+      sortLabel: "مرتب‌سازی",
+      filterAll: "همهٔ انواع",
+      sortTitle: "عنوان",
+      sortNewest: "جدیدترین",
+      viewLabel: "مشاهده",
     },
     downloads: {
       heading: "رزومه و CV",

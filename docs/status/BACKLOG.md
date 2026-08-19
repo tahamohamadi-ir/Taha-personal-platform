@@ -4,6 +4,19 @@
 
 | ID | Phase | Item | Blocked by / prerequisite | Owner | Evidence |
 |---|---|---|---|---|---|
+| ADR-0027 | OPS | Unified Compose db/cms/web(+caddy later); Slice 1 web image next | Slice 0 docs+smoke; owner CMS migrate done | Project owner | LOG-0169 |
+| QA-playwright | QA | Playwright config کامل (retries/trace/video/html reporter) به‌جای spec های خام (الگوی نمونه‌ها S2) | `DEFER-0026` | Project owner | custom-admin-rebuild-fa.md §14.2 |
+| ADM-0 | ADM | Wagtail schema uninstall remainder (`DEBT-0003`); SPA TOTP shipped | dumpdata + backup before migrate; prove SPA enrollment on new image | Project owner | Task-list §17; LOG-0165 |
+| ADM-1 | ADM | Custom admin foundation + cutover | DONE (LOG-0156..0158, LOG-0163); `DEFER-0023` CLOSED | Project owner | Task-list §17 |
+| ADM-2 | ADM | Media library + alt-by-locale | DONE (LOG-0159); `DEFER-0014` CLOSED | Project owner | Task-list §17 |
+| ADM-6 | ADM | Astro wiring + rebuild trigger + E2E JSON | PARTIAL — HMAC enable `DEFER-0027`; Playwright `DEFER-0026`; primaryColor/CV `DEFER-0029`; owner VPS migrate | Project owner | Task-list §17; LOG-0165 |
+| P4-reading | P4 | Reading time real + TOC + JSON-LD additions as needed (F1/F6/F2 — partially DONE on main) | P4 follow-up | Project owner | custom-admin-rebuild-fa.md §14.1 |
+| P6-gallery | P6 | گالری lightbox پروژه‌ها (F7) + فیلترهای URL-driven (F3) | P6 start | Project owner | custom-admin-rebuild-fa.md §14.1 |
+| ADM-5-featured | ADM | Featured spotlight با پنجره‌ی زمانی (F4) + CV «یک سند جاری» از ادمین (F5) | ADM-5 | Project owner | custom-admin-rebuild-fa.md §14.1 |
+| QA-vitest | QA | Vitest + تست‌های colocated برای کامپوننت‌های وب (S3) + Lighthouse budget (S5) | — | Project owner | custom-admin-rebuild-fa.md §14.2 |
+| ADM-3 | ADM | Page composition Section/Block + layout presets (1/2/3 columns, ratios) + preview | ADM-1 — **DONE (LOG-0160): composition API + editor؛ projection عمومی → ADM-6** | Project owner | Task-list §17 |
+| ADM-4 | ADM | Workflow transitions + translation queue + content health | ADM-2/ADM-3 — **DONE (LOG-0161): lifecycle transitions (reason+audit اتمیک + select_for_update)؛ صف ترجمه fa/en + content health؛ revisions + scheduled publish → DEBT-0005** | Project owner | Task-list §17 |
+| ADM-5 | ADM | Site settings (nav/header/footer/tokens/SEO) + tags/filters + contact inbox | ADM-4 — **DONE (LOG-0162): site settings (`/api/v1/admin/site`) + تگ‌ها (TopicTag CRUD) + featured spotlight (بازه‌ی زمانی، دقیقاً یک آیتم فعال)؛ contact inbox + CV → DEBT-0006** | Project owner | Task-list §17 |
 | P4+P5 CMS prod | P4–P5 | Publish CMS content + `rebuild-static.sh` (loopback `CMS_API_BASE`) | RISK-0003 CLOSED; migrate 0002–0004 already on `b369885` | Project owner | LOG-0131, LOG-0140 |
 | P3 versioned CI/CD | P3 | GHCR sha-tagged CMS image + proxy/health fixes + update-cms.sh | merge branch; VPS pull + Caddy snippet + smoke-cms.sh | Project owner | P3-cms-versioned-cicd-task-spec.md, LOG-0120 |
 | P3-07 preview | P3 | Staff draft preview + noindex/no-store | DONE in repo — optional CMS rebuild | Project owner | LOG-0132 |
@@ -28,7 +41,7 @@
 | P4 | P4 | Blog/Writing (Article/Series, list/detail, feed) | DONE in repo (PR #14/#15); prod migrate blocked on RISK-0003; feed DEFER-0018; public `/api/` DEFER-0017 | Project owner | Task-list §9, LOG-0133, LOG-0134 |
 | P5 | P5 | Research (Topic/Statement/Project/Publication minimal) | DONE in repo (code-first); prod migrate blocked on RISK-0003; DEFER-0017/0019/0020 | Project owner | P5-research-task-spec.md, Task-list §10, LOG-0136 |
 | P6 | P6 | Projects + case studies | DONE in repo (code-first); prod migrate blocked on RISK-0003; DEFER-0017/0021 | P5 on main | P6-case-studies-task-spec.md, Task-list §11, LOG-0137 |
-| P7 | P7 | Professional admin (roles/revisions/dashboard/composition) | P3 runtime + P5 | Project owner | Task-list §12 |
+| P7 | P7 | Professional admin — **superseded by ADM (§17, ADR-0026)** | — | Project owner | Task-list §12 note |
 | P8 | P8 | Publications/Books/Downloads/Talks | P6/P7 | Project owner | Task-list §13 |
 | P9 | P9 | Teaching + Creative | P8 | Project owner | Task-list §14 |
 | P10 | P10 | Topics + Pagefind search + collections | P4-P9 content | Project owner | Task-list §15 |

@@ -269,6 +269,7 @@ class Command(BaseCommand):
                     "data_availability": payload["data_availability"],
                     "demo_availability": payload["demo_availability"],
                     "code_url": payload["code_url"],
+                    "show_on_projects": payload.get("show_on_projects", True),
                 }
 
                 if dry_run:

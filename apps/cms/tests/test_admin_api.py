@@ -199,6 +199,40 @@ def test_admin_profile_put_replaces_typed_content_and_logs(
 
 
 @pytest.mark.django_db
+def test_admin_profile_put_skills_preserves_other_children(
+    admin_api_client,
+    seeded_profile,
+):
+    created = admin_api_client.put(
+        "/api/admin/profiles/en/about",
+        data=json.dumps(_payload()),
+        content_type="application/json",
+        HTTP_IF_MATCH="1",
+    )
+    assert created.status_code == 200
+    document = admin_api_client.get("/api/admin/profiles/en/about").json()
+    document["skills"] = [
+        {"category": "Design", "name": "Figma", "source": "Work"},
+    ]
+    revision = document["revision"]
+    response = admin_api_client.put(
+        "/api/admin/profiles/en/about",
+        data=json.dumps(document),
+        content_type="application/json",
+        HTTP_IF_MATCH=str(revision),
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["skills"] == [
+        {"category": "Design", "name": "Figma", "source": "Work"},
+    ]
+    assert data["experience"][0]["organization"] == "Org"
+    seeded_profile.refresh_from_db()
+    assert seeded_profile.skills.get().name == "Figma"
+    assert seeded_profile.experience_entries.count() == 1
+
+
+@pytest.mark.django_db
 def test_admin_profile_create_sibling_requires_verified_session(seeded_profile):
     response = Client().post("/api/admin/profiles/en/about/siblings/fa")
     assert response.status_code == 401
@@ -219,7 +253,7 @@ def test_admin_profile_create_sibling_creates_missing_locale(
     )
     assert response.status_code == 201
     data = response.json()
-    assert data["editorUrl"] == "/admin/profiles/fa/about/"
+    assert data["editorUrl"] == "/admin-wagtail/profiles/fa/about/"
     assert data["profile"]["locale"] == "fa"
     assert data["profile"]["slug"] == "about"
     assert data["profile"]["status"] == "draft"

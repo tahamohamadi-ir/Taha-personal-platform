@@ -1,5 +1,6 @@
 ---
 import type { ArticleDetailDto } from "../../lib/cms/articles";
+import StoryBody from "../StoryBody.astro";
 import TagList from "./TagList.astro";
 
 interface Props {
@@ -17,6 +18,12 @@ const dateLabel = article.published_at
       day: "numeric",
     })
   : null;
+const hasStory =
+  article.story !== null &&
+  article.story !== undefined &&
+  article.story.sections.length > 0;
+const license = article.license?.trim() ?? "";
+const notes = article.accessibility_notes?.trim() ?? "";
 ---
 
 <article class="article-detail">
@@ -35,18 +42,32 @@ const dateLabel = article.published_at
           </span>
         )
       }
-      <span>
-        {licenseLabel}: {article.license}
-      </span>
     </p>
     <TagList locale={locale} tags={article.topic_tags} />
   </header>
-  <div class="article-detail-body" set:html={article.body} />
   {
-    article.accessibility_notes && (
-      <aside class="article-a11y">
-        <p>{article.accessibility_notes}</p>
-      </aside>
+    hasStory && article.story ? (
+      <div class="article-detail-body">
+        <StoryBody locale={locale} story={article.story} />
+      </div>
+    ) : (
+      <div class="article-detail-body" set:html={article.body} />
+    )
+  }
+  {
+    (license || notes) && (
+      <footer class="article-typed-footer">
+        {license && (
+          <p>
+            {licenseLabel}: {license}
+          </p>
+        )}
+        {notes && (
+          <aside class="article-a11y">
+            <p>{notes}</p>
+          </aside>
+        )}
+      </footer>
     )
   }
 </article>
@@ -90,11 +111,15 @@ const dateLabel = article.published_at
     color: var(--color-ink-muted);
   }
 
-  .article-a11y {
+  .article-typed-footer {
     margin-top: 2rem;
-    padding: 1rem;
-    border: 1px solid var(--color-border-subtle);
     color: var(--color-ink-muted);
     font-size: 0.95rem;
+  }
+
+  .article-a11y {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--color-border-subtle);
   }
 </style>

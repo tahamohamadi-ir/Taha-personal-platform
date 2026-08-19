@@ -1,0 +1,113 @@
+# Production Caddyfile — tahamohamadi.ir
+#
+# Single source of truth. Deployed automatically by CD via caddy-sync.sh.
+# Do NOT edit /etc/caddy/Caddyfile on the VPS directly; change this file
+# and push to main.
+
+(taha_security_headers) {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+}
+
+(taha_application_routes) {
+	root * /opt/taha/site/current
+	file_server
+	handle_errors {
+		rewrite * /404.html
+		file_server
+	}
+}
+
+tahamohamadi.ir {
+	# Legacy static assets served directly from /var/www/html
+	handle /fonts/* {
+		root * /var/www/html
+		file_server
+		header Access-Control-Allow-Origin *
+		header Access-Control-Allow-Methods "GET, OPTIONS"
+	}
+
+	handle /presentation* {
+		root * /var/www/html
+		file_server
+	}
+
+	import taha_security_headers
+
+	# --- CMS reverse proxy routes (Django/Ninja on 127.0.0.1:18000) ---
+
+	redir /admin /admin/ 308
+
+	handle /admin/* {
+		reverse_proxy 127.0.0.1:18000 {
+			header_down X-Robots-Tag "noindex, nofollow"
+			header_down Cache-Control "no-store, no-cache, must-revalidate"
+		}
+	}
+
+	handle /health/* {
+		reverse_proxy 127.0.0.1:18000
+	}
+
+	handle /static/* {
+		reverse_proxy 127.0.0.1:18000 {
+			header_down X-Robots-Tag "noindex, nofollow"
+			header_down Cache-Control "public, max-age=3600"
+		}
+	}
+
+	handle /api/* {
+		reverse_proxy 127.0.0.1:18000 {
+			header_down Cache-Control "public, max-age=60"
+		}
+	}
+
+	handle /media/* {
+		reverse_proxy 127.0.0.1:18000 {
+			header_down Cache-Control "public, max-age=86400"
+		}
+	}
+
+	redir /admin-wagtail /admin-wagtail/ 308
+
+	handle /admin-wagtail/* {
+		reverse_proxy 127.0.0.1:18000 {
+			header_down X-Robots-Tag "noindex, nofollow"
+			header_down Cache-Control "no-store, no-cache, must-revalidate"
+		}
+	}
+
+	# Catch-all: Astro static site
+	import taha_application_routes
+}
+
+www.tahamohamadi.ir {
+	redir https://tahamohamadi.ir{uri} permanent
+}
+
+http://85.192.29.196 {
+	redir https://tahamohamadi.ir{uri} permanent
+}
+
+https://85.192.29.196 {
+	tls internal
+
+	handle /fonts/* {
+		root * /var/www/html
+		file_server
+		header Access-Control-Allow-Origin *
+		header Access-Control-Allow-Methods "GET, OPTIONS"
+	}
+
+	handle /presentation* {
+		root * /var/www/html
+		file_server
+	}
+
+	import taha_security_headers
+	import taha_application_routes
+}

@@ -14,6 +14,7 @@ from ninja.errors import HttpError
 from ninja.pagination import PageNumberPagination, paginate
 from wagtail.whitelist import Whitelister
 
+from apps.composition.projection import public_story_document
 from apps.content.models import (
     Article,
     ArticleSlugRedirect,
@@ -102,15 +103,37 @@ class ArticleListOut(Schema):
         return list(obj.series.public().order_by("ordering", "slug"))
 
 
+class StoryBlockOut(Schema):
+    blockType: str
+    settings: dict = Field(default_factory=dict)
+
+
+class StorySectionOut(Schema):
+    layout: str
+    ratio: str
+    blocks: list[StoryBlockOut] = Field(default_factory=list)
+
+
+class StoryDocumentOut(Schema):
+    locale: str
+    title: str
+    sections: list[StorySectionOut] = Field(default_factory=list)
+
+
 class ArticleDetailOut(ArticleListOut):
-    """Public article detail including sanitized rich-text body."""
+    """Public article detail including sanitized rich-text body and optional story."""
 
     body: str
     accessibility_notes: str
+    story: StoryDocumentOut | None = None
 
     @staticmethod
     def resolve_body(obj: Article) -> str:
         return sanitize_public_richtext(str(obj.body or ""))
+
+    @staticmethod
+    def resolve_story(obj: Article) -> dict | None:
+        return public_story_document(getattr(obj, "story", None), obj.locale)
 
 
 class ArticleSlugRedirectOut(Schema):
@@ -198,7 +221,8 @@ def get_article(request, locale: str, slug: str) -> Article:
     article = (
         Article.objects.public()
         .filter(locale=locale, slug=slug)
-        .prefetch_related("topic_tags", "series")
+        .select_related("story")
+        .prefetch_related("topic_tags", "series", "story__sections__blocks")
         .first()
     )
     if article is None:
@@ -604,11 +628,15 @@ def get_research_statement(request, locale: str, slug: str) -> ResearchStatement
 @api.get(
     "/projects/{locale}",
     response=list[ProjectListOut],
-    summary="List published projects with case study extension (paginated)",
+    summary="List published projects shown on /projects/ (paginated)",
 )
 @paginate(PageNumberPagination, page_size=10)
-def list_projects(request, locale: str, has_case_study: bool = True):
-    qs = Project.objects.public().filter(locale=locale).order_by("-published_at", "slug")
+def list_projects(request, locale: str, has_case_study: bool = False):
+    qs = (
+        Project.objects.public()
+        .filter(locale=locale, show_on_projects=True)
+        .order_by("-published_at", "slug")
+    )
     if has_case_study:
         qs = qs.filter(case_study__isnull=False).select_related("case_study")
     return qs
@@ -617,11 +645,11 @@ def list_projects(request, locale: str, has_case_study: bool = True):
 @api.get(
     "/projects/{locale}/{slug}",
     response=ProjectDetailOut,
-    summary="Get one published project case study by slug",
+    summary="Get one published project listed on /projects/ by slug",
 )
 def get_project(request, locale: str, slug: str) -> Project:
     project = _get_public_project(locale, slug)
-    if not project.has_case_study:
+    if not project.show_on_projects:
         raise HttpError(404, "project not found")
     return project
 

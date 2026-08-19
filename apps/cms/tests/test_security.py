@@ -20,7 +20,7 @@ def admin_client(admin_user):
 
 
 def _request_for(user):
-    request = RequestFactory().get("/admin/security/auditlog/")
+    request = RequestFactory().get("/admin-wagtail/security/auditlog/")
     request.user = user
     return request
 
@@ -43,7 +43,7 @@ class TestAuditMiddleware:
     def test_login_success_recorded(self, db, admin_user):
         client = Client(REMOTE_ADDR="203.0.113.10")
         response = client.post(
-            "/admin/login/",
+            "/admin-wagtail/login/",
             {"username": admin_user.email, "password": "test-pass-123"},
         )
         assert response.status_code == 302
@@ -55,7 +55,7 @@ class TestAuditMiddleware:
     def test_login_failure_recorded(self, db, user):
         client = Client(REMOTE_ADDR="203.0.113.11")
         response = client.post(
-            "/admin/login/",
+            "/admin-wagtail/login/",
             {"username": user.email, "password": "wrong-password"},
         )
         assert response.status_code == 200
@@ -73,13 +73,13 @@ class TestAuditMiddleware:
         session = admin_client.session
         session["otp_device_id"] = device.persistent_id
         session.save()
-        response = admin_client.post("/admin/pages/1234/edit/")
+        response = admin_client.post("/admin-wagtail/pages/1234/edit/")
         assert response.status_code == 404
         row = AuditLog.objects.get(action="admin.mutation")
         assert row.user == admin_user
         assert row.model_name == "pages"
         assert row.object_id == "1234"
-        assert row.detail.startswith("POST /admin/pages/1234/edit/")
+        assert row.detail.startswith("POST /admin-wagtail/pages/1234/edit/")
 
     def test_health_and_static_never_audited(self, db, client):
         client.get("/health/")
@@ -89,13 +89,13 @@ class TestAuditMiddleware:
 
     def test_anonymous_admin_post_not_audited(self, db):
         client = Client()
-        client.post("/admin/pages/1234/edit/")
+        client.post("/admin-wagtail/pages/1234/edit/")
         assert AuditLog.objects.count() == 0
 
     def test_password_never_stored_in_audit(self, db, user):
         client = Client(REMOTE_ADDR="203.0.113.12")
         client.post(
-            "/admin/login/",
+            "/admin-wagtail/login/",
             {"username": user.email, "password": SECRET_PASSWORD},
         )
         assert AuditLog.objects.count() == 1
@@ -108,12 +108,12 @@ class TestLoginRateLimit:
         client = Client(REMOTE_ADDR="198.51.100.20")
         for _ in range(LOGIN_RATE_LIMIT):
             response = client.post(
-                "/admin/login/",
+                "/admin-wagtail/login/",
                 {"username": user.email, "password": "wrong-password"},
             )
             assert response.status_code != 429
         blocked = client.post(
-            "/admin/login/",
+            "/admin-wagtail/login/",
             {"username": user.email, "password": "wrong-password"},
         )
         assert blocked.status_code == 429
@@ -124,24 +124,24 @@ class TestLoginRateLimit:
         client = Client(REMOTE_ADDR="198.51.100.21")
         for _ in range(LOGIN_RATE_LIMIT - 1):
             client.post(
-                "/admin/login/",
+                "/admin-wagtail/login/",
                 {"username": user.email, "password": "wrong-password"},
             )
         ok = client.post(
-            "/admin/login/",
+            "/admin-wagtail/login/",
             {"username": user.email, "password": "test-pass-123"},
         )
         assert ok.status_code == 302
         fresh = Client(REMOTE_ADDR="198.51.100.21")
         for _ in range(LOGIN_RATE_LIMIT):
             response = fresh.post(
-                "/admin/login/",
+                "/admin-wagtail/login/",
                 {"username": user.email, "password": "wrong-password"},
             )
             assert response.status_code != 429
         assert (
             fresh.post(
-                "/admin/login/",
+                "/admin-wagtail/login/",
                 {"username": user.email, "password": "wrong-password"},
             ).status_code
             == 429
@@ -173,23 +173,23 @@ class TestAuditLogAdminReadOnly:
 
 class TestWagtailAdminAccess:
     def test_anonymous_redirected_to_login(self, db):
-        response = Client().get("/admin/")
+        response = Client().get("/admin-wagtail/")
         assert response.status_code in (301, 302)
-        assert response.url.startswith("/admin/login/")
+        assert response.url.startswith("/admin-wagtail/login/")
 
     def test_non_staff_user_denied(self, db, user):
         client = Client()
         client.force_login(user)
-        response = client.get("/admin/")
+        response = client.get("/admin-wagtail/")
         assert response.status_code in (301, 302, 403)
 
     def test_superuser_reaches_admin(self, db, admin_client, admin_user):
         from django_otp.plugins.otp_totp.models import TOTPDevice
 
         # Without TOTP, MFA middleware sends staff to enrollment.
-        response = admin_client.get("/admin/")
+        response = admin_client.get("/admin-wagtail/")
         assert response.status_code == 302
-        assert "/admin/account/two-factor/" in response.url
+        assert "/admin-wagtail/account/two-factor/" in response.url
 
         device = TOTPDevice.objects.create(
             user=admin_user, name="default", confirmed=True
@@ -197,18 +197,18 @@ class TestWagtailAdminAccess:
         session = admin_client.session
         session["otp_device_id"] = device.persistent_id
         session.save()
-        response = admin_client.get("/admin/")
+        response = admin_client.get("/admin-wagtail/")
         assert response.status_code == 200
 
 
 class TestNoIndexMiddleware:
     def test_admin_login_page_is_noindexed(self, db):
-        response = Client().get("/admin/login/")
+        response = Client().get("/admin-wagtail/login/")
         assert response.status_code == 200
         assert response.headers["X-Robots-Tag"] == "noindex, nofollow"
 
     def test_admin_paths_do_not_get_preview_cache_control(self, db):
-        response = Client().get("/admin/login/")
+        response = Client().get("/admin-wagtail/login/")
         assert response.headers.get("Cache-Control") != "no-store"
 
     def test_api_is_noindexed(self, db):
@@ -246,7 +246,7 @@ class TestNoIndexMiddleware:
         session = client.session
         session["otp_device_id"] = device.persistent_id
         session.save()
-        response = client.get(f"/admin/preview/landing/{landing.pk}/")
+        response = client.get(f"/admin-wagtail/preview/landing/{landing.pk}/")
         assert response.status_code == 200
         assert response.headers["X-Robots-Tag"] == "noindex, nofollow, noarchive"
         assert response.headers["Cache-Control"] == "no-store"

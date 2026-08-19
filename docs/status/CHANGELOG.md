@@ -1,5 +1,107 @@
 # Changelog
 
+## 2026-08-19 — Slice 0+1: Caddyfile automated, web nginx container, old stack removed
+
+- `/admin` 404 fixed (308 redirect). Old Java/Vue `taha-prod` stack decommissioned.
+- Full Caddyfile in repo (`infra/caddy/Caddyfile`) with CD auto-sync via `caddy-sync.sh`.
+- Slice 1: `taha-web` nginx image (Dockerfile + CI + CD). Compose now has `db` + `cms` + `web`.
+- VPS prereq: install `caddy-sync.sh` at `/opt/taha/bin/caddy-sync.sh`.
+
+## 2026-08-19 — Blog story composition (slice 1)
+
+- Composition pages have `kind=landing|story`. Landing bilingual catalog is unchanged; story uses single-locale blocks including figure/video/audio/math.
+- Optional `Article.story` FK. Owner edits the story on the article form (`/admin/content/article/:id/edit`), not only under Pages.
+- Public `GET /api/articles/{locale}/{slug}` may include a published-only `story` tree; Astro `StoryBody` renders it, otherwise sanitized `body`.
+- Media library accepts video/audio and SVG (magic-byte + SVG script reject); AV cap 50MB; anonymous `/media/` only `is_active`.
+- `DEFER-0028` CLOSED for blog story→Astro. `DEFER-0029` (primaryColor + CV) and `DEFER-0030` (other entity stories) remain OPEN.
+- **Owner VPS:** dumpdata + backup, migrate composition `0002` + content `0008`, rebuild CMS image and static site.
+
+## 2026-08-19 — ADR-0027 unified Compose; CMS b6bea6a live; smoke Wagtail URL
+
+- Owner production: `ghcr.io/tahamohamadi-ir/taha-cms:b6bea6a`; migrations `0008`/`0002` applied.
+- Contract: public `web` will be nginx serving Astro HTML; host Caddy until `DEFER-0031`.
+- `smoke-cms.sh` uses `/admin-wagtail/login/`. `RISK-0012` for auto-migrate.
+
+## 2026-08-19 — CMS origin spec queued then accepted as ADR-0027
+
+- Spec first queued as TODO; superseded the same day by ADR-0027 and IN_PROGRESS slices.
+
+## 2026-08-19 — CI: Playwright preview hang on PR #45
+
+- Web CI stuck on “Mobile overflow check”: silent `playwright install --with-deps`, shared port 4321 after smoke, and `waitUntil: networkidle`.
+- Fix: reuse the smoke `astro preview` on 4321 (Astro allows only one preview), time-box `playwright install`, `waitUntil: load` instead of `networkidle`.
+
+## 2026-08-19 — Projects listing, nested skills, SPA TOTP, rebuild hook
+
+- Public `GET /api/projects/{locale}` lists published projects with `show_on_projects=True`; `has_case_study` is optional (default false). Additive `Project.show_on_projects` (`0007`).
+- `/{locale}/projects/` renders card catalog copy without `CMS_API_BASE`.
+- SPA profile edit includes nested skills via `PUT /api/admin/profiles/<locale>/<slug>` (full nested replace, sibling arrays preserved).
+- ADM-0: TOTP enroll/regenerate/disable on `/api/v1/admin/auth/mfa/*` + `/admin/security`; Wagtail HTML remains fallback. Wagtail stays installed (`DEBT-0003`).
+- ADM-6 slice: signed `/rebuild-trigger/` starts `rebuild-static.sh` when enabled (default still False, `DEFER-0027`). Pytest create→edit→publish→public JSON fa/en.
+- **Blocked on owner VPS:** dumpdata + backup (`RISK-0010`), migrate `0007`, static rebuild, HMAC enable.
+
+## 2026-08-19 — Docs ledger sync to ADM-1 cutover + ADM-6 spec
+
+- AGENTS/README/Manifest/plan index now describe SPA `/admin/` and Wagtail `/admin-wagtail/`.
+- `DEFER-0023` and `DEFER-0014` CLOSED; `DEBT-0003` records remaining Wagtail schema surface.
+- Active spec: `docs/plan/ADM-6-frontend-wiring-task-spec.md`. New deferrals: `DEFER-0026` Playwright lifecycle, `DEFER-0027` HMAC enable, `DEFER-0028` composition/CV projection.
+
+## 2026-08-18 — ADM-1: Admin SPA cutover (/admin/ → SPA, /admin-wagtail/ → Wagtail)
+
+## 2026-08-18 — ADM-5: site settings + tags + featured spotlight
+
+## 2026-08-18 — ADM-4: lifecycle transitions + translation queue + content health
+
+## 2026-08-18 — ADM-3: page composition (Section/Block, layouts, MediaPicker in blocks)
+
+- **Backend** اپ جدید `apps/cms/apps/composition/`: مدل‌های `CompositionPage` (key اسلاگ یکتا، locale fa/en، title، status draft/review/published/archived، published_at، created/updated_at)، `CompositionSection` (page FK، position، layout 1col/2col/3col، ratio، enabled؛ UniqueConstraint page+position)، `CompositionBlock` (section FK، position، block_type، settings JSONField، enabled؛ UniqueConstraint section+position)؛ migration `0001_initial.py`؛ `blocks.py` با کاتالوگ hero/heading/text/quote/cta/gallery/divider + `validate_block_settings` fail-closed + `SECTION_LAYOUT_RATIOS` + `composition_schema()`.
+- **API** `apps/api/admin_composition.py` mount در `/api/v1/admin/composition`: GET فهرست (q/locale/status/page/pageSize؛ 400 VALIDATION)، POST create (201؛ key regex `^[a-z0-9-]+$`؛ 409 DUPLICATE)، GET /schema، GET /{id}، PUT /{id} جایگزینی full-document (If-Match + select_for_update + atomic؛ 409 CONFLICT با currentUpdatedAt؛ fail-closed با field paths مثل `sections[0].blocks[1].settings`). Guards: staff+OTP+CSRF؛ ارجاع رسانه strict int (float/bool رد).
+- **Frontend** `apps/cms/admin-frontend/`: `src/lib/api.ts` (Composition types + fetchCompositionPages/Schema/Detail + createComposition/updateComposition)، `src/lib/composition.ts` (labels، ratioOptionsFor، REQUIRED_BLOCK_FIELDS)، `src/pages/CompositionListPage.tsx`، `src/pages/CompositionEditorPage.tsx` (schema-driven: layout/ratio سکشن‌ها، بلوک‌ها با فیلدهای text/textarea/select/media/mediaList از طریق MediaPicker، پیش‌نمایش grid، اعتبارسنجی client برای فیلدهای الزامی، 409 reload/discard، dirty-guard)، routes /composition، سایدبار «صفحات».
+- **اعتبارسنجی:** 249 passed (20 تست `test_admin_composition_api.py` با regression ارجاع رسانه float/bool)، ruff clean، بدون migration جدید، SPA build/check PASS.
+- **باقی:** projection عمومی (rendering در Astro) → ADM-6؛ rich blocks v2 (§14 U3) بعدی؛ Caddy no-store و deploy تصویر جدید CMS قدم‌های مالک؛ DEFER-0023 بدون تغییر؛ RISK-0010 بدون تغییر.
+
+## 2026-08-18 — ADM-2: media library (upload/replace, alt-by-locale, orphans)
+
+- **Backend** `apps/cms/apps/api/admin_media.py` (new): `/api/v1/admin/media` — GET list (q / type image|pdf / active true|false / page/pageSize؛ 400 VALIDATION)، POST multipart upload (201؛ `is_active` پیش‌فرض false؛ `full_clean` → 400)، GET /orphans (usage==0)، GET /{id}، PUT /{id} (optimistic lock If-Match داخل atomic+select_for_update؛ 409 CONFLICT با currentUpdatedAt)، POST /{id}/replace (هم‌خانواده‌ی MIME؛ 400 در غیرهم‌خانواده/مفقود). `media_usage_count` + `MEDIA_REFERENCE_FIELDS` (رجیستری خالی؛ در ADM-3 وصل می‌شود). Guards: staff+OTP+CSRF.
+- **Model/migration:** `alt_text_fa`/`alt_text_en` روی `apps/cms/apps/media/models.py` (CharField blank default "" + `db_default=""`)؛ migration `0002_media_alt_text_en_media_alt_text_fa.py` (AddField با db_default — امن روی ردیف‌های موجود Postgres)؛ بستن DEFER-0014؛ makemigrations --check بدون pending.
+- **Frontend** `apps/cms/admin-frontend/`: MediaLibraryPage (فیلترها، orphan toggle، آپلود با progress، drawer ویرایش با جایگزینی فایل + تأیید بایگانی + 409 reload/discard)، MediaPicker (modal قابل reuse)، MediaThumb، `api.ts` (uploadMedia/replaceMedia با XHR+progress)، route `/media`، سایدبار «کتابخانه رسانه».
+- **اعتبارسنجی:** 229 passed (20 تست `test_admin_media_api.py` با 8 regression)، ruff clean، بدون migration جدید، SPA build/check PASS.
+- **باقی:** اتصال MediaPicker به ویرایشگرهای محتوا به ADM-3 منتقل شد (DEBT-0004)؛ Caddy no-store و deploy تصویر جدید CMS قدم‌های مالک؛ DEFER-0023 بدون تغییر؛ RISK-0010 بدون تغییر.
+
+## 2026-08-18 — ADM-1: content write API (create/update + optimistic lock) + SPA edit pages
+
+- `/api/v1/admin/content/*` حالا write هم دارد: `POST /{entity}` (create 201، 409 DUPLICATE)، `PUT /{entity}/{id}` (optimistic lock If-Match داخل `select_for_update`؛ 409 CONFLICT/DUPLICATE)، `GET /schema` (متادیتای فیلدها). Guard: staff+OTP+CSRF؛ publish فقط وقتی `published_at` خالی است؛ فیلد عددی خالی skip؛ خطاها با کلید camelCase.
+- SPA: صفحه‌ی ویرایش/ساخت (`/content/:entity/new` و `/:id/edit`) با فرم schema-driven، دکمه‌ی «+ ساخت»، مدیریت 409 با reload/discard.
+- ۲۰۹ تست پاس (۱۲ تست write + ۲ regression)، ruff تمیز، بدون migration؛ review مستقل با ۵ رفع.
+
+## 2026-08-18 — ADM-1: content read API + dev preview route + SPA content pages
+
+- **Content read API:** `GET /content/{entity}` (فهرست با فیلترهای locale/status/q + صفحه‌بندی page/pageSize؛ خطاهای 400 VALIDATION / 404 NOT_FOUND) و `GET /content/{entity}/{id}` (جزئیات با مپ camelCase `fields`) برای ۷ موجودیت: landing, profile, article, research-topic, research-statement, project, publication — در `apps/cms/apps/api/admin_content.py` (new) و mount در `/api/v1/admin/content/`. `apps/cms/apps/api/admin_common.py` (new): AdminError، error handler، CSRF check، staff/OTP guards و client_ip مشترک شدند.
+- **Dev preview route:** `serve_admin_ui` در `/admin-ui/` — DEBUG-only، path-traversal-safe (resolve+startswith)، SPA fallback به index.html، هدرهای `X-Robots-Tag: noindex, nofollow, noarchive` + `Cache-Control: no-store` (`apps/cms/apps/api/admin_spa.py` (new)، mount در `config/urls.py`).
+- **SPA:** `apps/cms/admin-frontend/` — ContentListPage (تب‌های entity، فیلترهای locale/status/q هم‌گام با URL، جستجوی debounced، جدول RTL، صفحه‌بندی، حالت‌های loading/empty/error) و ContentDetailPage (رندر generic `fields`، اسلاگ‌های dir=ltr، حالت 404)؛ `src/lib/entities.ts` + `src/lib/format.ts` جدید؛ `src/lib/api.ts` با fetchContentList/fetchContentDetail + types؛ سایدبار «مدیریت محتوا» → /content؛ `vite.config.ts` base `/admin-ui/` و BrowserRouter basename `/admin-ui/`.
+- **اعتبارسنجی:** backend 195 passed (7 تست جدید `test_admin_content_api.py` + 14 تست auth)، ruff clean، بدون migration جدید، SPA build/check PASS، smoke پیش‌نمایش dev PASS (deep-route fallback 200؛ traversal 404؛ DEBUG=False 404؛ missing build 404 با hint).
+- **باقی:** write/update + optimistic locking؛ cutover واگتِیل→SPA زیر `/admin/` (DEFER-0023)؛ اعمال Caddy no-store snippet روی سرور (مرحله‌ی مالک)؛ RISK-0010 بدون تغییر.
+
+## 2026-08-18 — ADM-1 foundation: custom admin auth API + React SPA scaffold
+
+- **Backend:** `/api/v1/admin/` (Django Ninja) — `auth/csrf|login|logout|me` + `dashboard/summary`؛ session+CSRF صریح + TOTP/recovery + AuditLog + rate-limit؛ خطاهای `{code,message,fields}`؛ ۱۳ تست جدید؛ کل سویییت ۱۸۷ پاس.
+- **Frontend:** `apps/cms/admin-frontend/` — React 18 + Vite + TS + Tailwind v4 + Vazirmatn (RTL فارسی)؛ ورود، AuthGuard، پوسته و داشبورد؛ build/type-check در CI جدید `ci-admin-frontend.yml`.
+- **Caddy:** هندل `no-store` برای `/api/v1/admin/*` و `/api/admin/*` در snippet (اعمال روی سرور جدا).
+- **Additive:** واگتِیل و `/admin/` فعلی تا cutover (ADM-1 نهایی) دست‌نخورده‌اند.
+
+## 2026-08-18 — Server sync progress + stale CMS image pin fix
+
+- `prod-cms-update-migrate.sh` پیش‌فرض قدیمی `b369885` را از دست داد؛ `CMS_IMAGE` حالا الزامی است (آخرین sha از workflow «CMS image»). پیش‌فرض قدیمی باعث میشد migrations 0005/0006 اعمال نشوند و `import_profile_seed` در دسترس نباشد.
+- سینک سرور در جریان است: backup گرفته شد؛ گام‌های باقی‌مانده = deploy تصویر `430061b` + migrate + `import_profile_seed` + بازسازی استاتیک (VPS نود ندارد → یا نصب Node 24 یا build محلی با SSH tunnel).
+
+## 2026-08-18 — Custom admin rebuild authorized (ADR-0026)
+
+- **تصمیم مالک:** Wagtail از runtime و ادمین حذف می‌شود؛ جایگزین = ادمین اختصاصی React SPA زیر `/admin/` + Django Ninja `/api/v1/admin/*` با حفظ baseline امنیتی (session+CSRF+TOTP+audit+rate-limit). ادمین‌های Wagtail-session موجود (`/admin/profiles/` PR #31 و site content admin PR #24) در ADM-1 به SPA منتقل می‌شوند؛ فرانت عمومی Astro استاتیک با rebuild-trigger و `/api/`/`/media/` عمومی published-only بدون تغییر.
+- **حفظ محتوا الزامی:** پایه‌ی کارها `origin/main` است (seed data + مدل‌های P4–P6 آنجا هستند)؛ `dumpdata` + backup تازه پیش از هر migration؛ فیلد/اسلاگ/locale موجود تغییر نمی‌کند.
+- **مستندات:** ADR-0026، بخش §17 (ADM-0..ADM-6) در Task-list، `docs/plan/custom-admin-rebuild-fa.md`، به‌روزرسانی Manifest/AGENTS/ledgers؛ DEFER-0023 (انتقال admin)، DEFER-0024 (برنچ پایه)، DEFER-0025 (dark mode)، RISK-0010/RISK-0011، DEBT-0003 ثبت شدند.
+- **مکمل‌های §14** (بیرون از ادمین): reading time/JSON-LD/TOC (بخشی DONE روی main)، گالری lightbox + فیلترهای URL-driven (P6)، FTS فارسی (P10)، سرویسلایه/OpenAPI/feature flags (ADM)، Vitest + Lighthouse CI + Playwright config + manual-test checklists (QA) در Task-list/BACKLOG تثبیت شدند.
+- **وضعیت:** واگتِیل تا cutover ADM-1 به سرویس `/admin/` ادامه می‌دهد؛ کد در این slice تغییر نکرد (فقط مستندات/مراجع).
+
 ## 2026-08-18 — CMS-managed About + custom admin + detail routes
 
 - About pages load the typed bilingual profile from `/api/profiles/<locale>/about` at build time, with `profile.snapshot.json` as fallback.

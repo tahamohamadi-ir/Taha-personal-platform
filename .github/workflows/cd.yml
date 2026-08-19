@@ -95,6 +95,47 @@ jobs:
 
           rm -f ~/.ssh_deploy_key
 
+      - uses: actions/checkout@v7.0.1
+        with:
+          sparse-checkout: infra/caddy
+          path: repo
+
+      - name: Sync Caddyfile
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ vars.DEPLOY_USER || 'deploy' }}
+        run: |
+          install -m 600 /dev/null ~/.ssh_deploy_key
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh_deploy_key
+          SSH_OPTS="-i ~/.ssh_deploy_key -o StrictHostKeyChecking=accept-new"
+
+          scp -o StrictHostKeyChecking=accept-new -i ~/.ssh_deploy_key \
+            repo/infra/caddy/Caddyfile \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:/tmp/Caddyfile.deploy"
+
+          ssh $SSH_OPTS "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "sudo -n /opt/taha/bin/caddy-sync.sh /tmp/Caddyfile.deploy"
+
+          rm -f ~/.ssh_deploy_key
+
+      - name: Pull and restart web container
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ vars.DEPLOY_USER || 'deploy' }}
+        run: |
+          install -m 600 /dev/null ~/.ssh_deploy_key
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh_deploy_key
+          SHORT_SHA="${GITHUB_SHA:0:7}"
+          ssh -i ~/.ssh_deploy_key -o StrictHostKeyChecking=accept-new \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "export WEB_IMAGE=ghcr.io/tahamohamadi-ir/taha-web:${SHORT_SHA} && \
+             cd /home/deploy/cms-repo && \
+             docker compose -f infra/cms/docker-compose.cms.yml pull web && \
+             docker compose -f infra/cms/docker-compose.cms.yml up -d web"
+          rm -f ~/.ssh_deploy_key
+
       - name: Production smoke
         env:
           SITE_URL: https://tahamohamadi.ir

@@ -38,6 +38,9 @@ jobs:
       - name: CMS profile build regression
         run: node qa/cms-profile-build.spec.mjs
 
+      - name: Projects catalog copy
+        run: node qa/projects-catalog.spec.mjs
+
       - name: Write build fingerprint
         run: |
           version=$(node -p "require('./package.json').version")
@@ -49,29 +52,46 @@ jobs:
         shell: bash
         run: |
           cd "${GITHUB_WORKSPACE}/apps/web"
-          npx astro preview --port 4321 >/tmp/preview.log 2>&1 &
-          sleep 8
-          bash "${GITHUB_WORKSPACE}/infra/deploy/smoke.sh" http://localhost:4321
-          kill %1 || true
+          npx astro preview --host 127.0.0.1 --port 4321 >/tmp/preview.log 2>&1 &
+          for _ in $(seq 1 20); do
+            curl -fsS http://127.0.0.1:4321/health.json >/dev/null && break
+            sleep 1
+          done
+          bash "${GITHUB_WORKSPACE}/infra/deploy/smoke.sh" http://127.0.0.1:4321
 
       - name: Mobile overflow check (Playwright)
         shell: bash
+        env:
+          PREVIEW_URL: http://127.0.0.1:4321
         run: |
           cd "${GITHUB_WORKSPACE}/apps/web"
-          npx playwright install chromium --with-deps >/tmp/pw-install.log 2>&1 || npx playwright install chromium
-          (npx astro preview --port 4321 >/tmp/preview2.log 2>&1 &)
-          sleep 8
+          timeout 180 npx playwright install chromium --with-deps
+          if ! curl -fsS http://127.0.0.1:4321/health.json >/dev/null; then
+            npx astro preview --force --host 127.0.0.1 --port 4321 >/tmp/preview2.log 2>&1 &
+            for _ in $(seq 1 20); do
+              curl -fsS http://127.0.0.1:4321/health.json >/dev/null && break
+              sleep 1
+            done
+          fi
+          curl -fsS http://127.0.0.1:4321/health.json
           node qa/mobile-overflow.spec.mjs
-          kill %1 || true
 
       - name: About tabs regression (Playwright)
         shell: bash
+        env:
+          PREVIEW_URL: http://127.0.0.1:4321
         run: |
           cd "${GITHUB_WORKSPACE}/apps/web"
-          (npx astro preview --port 4321 >/tmp/preview3.log 2>&1 &)
-          sleep 8
+          if ! curl -fsS http://127.0.0.1:4321/health.json >/dev/null; then
+            npx astro preview --force --host 127.0.0.1 --port 4321 >/tmp/preview3.log 2>&1 &
+            for _ in $(seq 1 20); do
+              curl -fsS http://127.0.0.1:4321/health.json >/dev/null && break
+              sleep 1
+            done
+          fi
+          curl -fsS http://127.0.0.1:4321/health.json
           node qa/about-tabs.spec.mjs
-          kill %1 || true
+          npx astro preview stop || true
 
       - name: Dependency audit
         run: npm audit --audit-level=high
