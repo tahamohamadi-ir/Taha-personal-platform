@@ -1,4 +1,4 @@
-"""URL configuration — /admin/ (Wagtail) same-origin, /health/ public contract."""
+"""URL configuration — /admin/ React SPA, /admin-wagtail/ legacy Wagtail, /health/."""
 
 from django.urls import include, path
 from wagtail import urls as wagtail_urls
@@ -14,9 +14,12 @@ from apps.rebuild.views import rebuild_trigger
 
 urlpatterns = [
     path("health/", health, name="health"),
-    path("admin/", include(wagtail_admin_urls)),
-    path("admin-ui/", serve_admin_ui, name="admin_ui"),
-    path("admin-ui/<path:spa_path>", serve_admin_ui, name="admin_ui_path"),
+    # Custom React admin SPA (ADR-0026, ADM-1 cutover).
+    path("admin/", serve_admin_ui, name="admin_spa"),
+    path("admin/<path:spa_path>", serve_admin_ui, name="admin_spa_path"),
+    # Legacy Wagtail admin preserved at /admin-wagtail/ for TOTP enrollment,
+    # staff preview, profile admin, and rollback.  Will be removed in ADM-0.
+    path("admin-wagtail/", include(wagtail_admin_urls)),
     path("api/v1/admin/", admin_api.urls),
     path("api/profiles/<str:locale>", public_profile_list, name="public_profile_list"),
     path(

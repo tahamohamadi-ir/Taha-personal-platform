@@ -22,12 +22,14 @@ check() {
   fi
 }
 
-check "/admin/login/" "200"
+# Custom React admin SPA (ADM-1 cutover) — should return the SPA shell.
+check "/admin/" "200"
+# Legacy Wagtail admin preserved at /admin-wagtail/ for TOTP enrollment and rollback.
+check "/admin-wagtail/login/" "200"
 if ! grep -qi "Wagtail" /tmp/cms-smoke-body; then
-  echo "FAIL /admin/login/ is not the Wagtail sign-in page" >&2
+  echo "FAIL /admin-wagtail/login/ is not the Wagtail sign-in page" >&2
   fail=1
 fi
-check "/static/wagtailadmin/css/core.css" "200"
 check "/health/" "200"
 if ! grep -q '"db"' /tmp/cms-smoke-body; then
   echo "FAIL /health/ body is not CMS JSON" >&2

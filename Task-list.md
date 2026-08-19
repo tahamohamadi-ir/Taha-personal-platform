@@ -811,7 +811,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 - [ ] OpenAPI/Swagger داخلی Ninja فقط admin-only (در معرض عمومی نباشد). *(§14 S7 — فعلاً docs/OpenAPI غیرفعال است)*
 - [ ] feature flags (adminNewShell، mediaPickerV2 و…) برای rollback کنترل‌شده. *(§14 S4)*
 - [ ] انتقال ادمین‌های Wagtail-session موجود (site content admin PR #24 و `/admin/profiles/` PR #31) به SPA.
-- [ ] cutover: واگتِیل روی production با SPA جایگزین می‌شود (با owner approval + rollback path).
+- [x] Cutover: SPA جایگزین Wagtail در /admin/. Wagtail به /admin-wagtail/ منتقل شد (TOTP enrollment + preview + rollback). *(2026-08-18 — LOG-0163)*
 
 ### Task ADM-2 — Media management
 

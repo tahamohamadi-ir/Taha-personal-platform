@@ -79,7 +79,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 AUTH_USER_MODEL = "users.User"
-LOGIN_URL = "/admin/login/"
+LOGIN_URL = "/admin-wagtail/login/"
 LOGIN_REDIRECT_URL = "/admin/"
 
 REBUILD_TRIGGER_ENABLED = False

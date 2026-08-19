@@ -219,7 +219,7 @@ def test_admin_profile_create_sibling_creates_missing_locale(
     )
     assert response.status_code == 201
     data = response.json()
-    assert data["editorUrl"] == "/admin/profiles/fa/about/"
+    assert data["editorUrl"] == "/admin-wagtail/profiles/fa/about/"
     assert data["profile"]["locale"] == "fa"
     assert data["profile"]["slug"] == "about"
     assert data["profile"]["status"] == "draft"

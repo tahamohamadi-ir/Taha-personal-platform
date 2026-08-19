@@ -75,3 +75,18 @@ site — pages, layouts, tabs, tags, filters and content:
   migrated between systems — the database remains the single source of truth.
 - Estimated effort is 2–4 months of phased work; value starts from ADM-1
   (a real, Persian/RTL, content-managing admin).
+
+## Cutover (2026-08-18)
+
+The custom React admin SPA is now served at `/admin/` in production.  Wagtail admin
+has been moved to `/admin-wagtail/` as a fallback path for TOTP enrollment, staff
+preview (`/admin-wagtail/preview/`), profile admin, and rollback.
+
+- `Dockerfile.cms` multi-stage build includes a Node.js stage that builds the admin
+  frontend and bakes the dist into the CMS image.
+- `MFAEnforcementMiddleware` intercepts `/admin-wagtail/` paths only; the SPA handles
+  its own OTP via the Ninja `/api/v1/admin/auth/login` endpoint.
+- `LOGIN_URL` points to `/admin-wagtail/login/` (Wagtail's Django login view).
+- Smoke script checks both `/admin/` (SPA 200) and `/admin-wagtail/login/` (Wagtail 200).
+- Rollback: re-point `/admin/` to `include(wagtail_admin_urls)` and remove the SPA
+  serving route; Wagtail is still installed and functional.

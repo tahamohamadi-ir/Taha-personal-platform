@@ -1773,3 +1773,22 @@ ode --check و YAML validation توسط agent.
 - Deferred or risk IDs: contact inbox (body فقط در detail؛ رعایت جهت) → DEBT-0006 — منبع عمومی فرم تماس طبق DEFER-0007 (تصمیم مالک) بسته است؛ CV «یک سند جاری» → DEBT-0006 — دانلودهای markdown ثابت در `Downloads.astro` تا ADM-6 دست‌نخورده می‌مانند؛ تزریق `primaryColor` به CSS vars هنگام build در Astro → ADM-6؛ Caddy no-store و deploy تصویر جدید CMS قدم‌های مالک؛ DEFER-0023 (cutover) بدون تغییر؛ RISK-0010 بدون تغییر.
 - Rollback / recovery: این slice additive است — بدون اثر runtime تا cutover؛ migration `0001_initial` اپ جدید قابل برگشت است؛ revert برنچ در صورت نیاز.
 
+## LOG-0163 - 2026-08-18 - ADM-1 / Admin SPA cutover (SPA replaces Wagtail at /admin/)
+
+- Outcome: ادمین اختصاصی React SPA اکنون در production در `/admin/` سرو می‌شود و واگتِیل به `/admin-wagtail/` منتقل شد. این cutover نهایی ADM-1 است — Wagtail دیگر مسیر اصلی ادمین نیست.
+  1. **SPA در `/admin/`:** مسیر SPA در `config/urls.py` به‌صورت catch-all قبل از wagtail_admin_urls mount شده و در production (بدون DEBUG gate) فعال است. صفحهٔ ورود SPA از `apps/cms/admin-frontend/dist/` سرو می‌شود.
+  2. **Wagtail در `/admin-wagtail/`:** واگتِیل به مسیر `/admin-wagtail/` منتقل شد برای TOTP enrollment، staff preview (`/admin-wagtail/preview/`)، profile admin و rollback.
+  3. **Dockerfile.cms multi-stage:** مرحلهٔ Node.js در `Dockerfile.cms` بیلد admin-frontend را انجام می‌دهد و dist را در تصویر CMS bake می‌کند؛ بدون نیاز به Node.js در runtime.
+  4. **MFAEnforcementMiddleware:** فقط مسیرهای `/admin-wagtail/` را intercept می‌کند؛ SPA خودش OTP را از طریق Ninja `/api/v1/admin/auth/login` مدیریت می‌کند.
+  5. **LOGIN_URL:** به `/admin-wagtail/login/` (Django login view واگتِیل) اشاره می‌کند.
+  6. **Profile admin `editorUrl`:** به `/admin-wagtail/profiles/...` به‌روزرسانی شد.
+  7. **Smoke script:** به‌روزرسانی شد — `/admin/` چک SPA 200 و `/admin-wagtail/login/` چک Wagtail 200.
+  8. **AuditMiddleware/LoginRateLimitMiddleware:** prefix آن‌ها به `/admin-wagtail/` تغییر کرد.
+- Why: ADR-0026 تعیین کرده واگتِیل از runtime و ادمین حذف شود؛ ADM-1 باید SPA را جایگزین Wagtail در مسیر اصلی `/admin/` کند و Wagtail را به مسیر fallback منتقل نماید.
+- Scope / files: `config/urls.py` (SPA catch-all قبل از wagtail_admin_urls)، `apps/cms/Dockerfile.cms` (multi-stage build)، `apps/cms/apps/security/middleware.py` (MFAEnforcementMiddleware prefix)، `apps/cms/settings/production.py` (LOGIN_URL)، `apps/cms/admin-frontend/` (SPA dist)، `apps/cms/apps/api/admin_spa.py` (SPA serving)، smoke script، profile admin `editorUrl`، AGENTS.md، Task-list.md (§17)، CHANGELOG.md، این Work Log.
+- Commands or actions actually performed: این رکورد بر اساس کد و تغییرات موجود slice نوشته شد؛ تأیید نهایی شامل: `uv run pytest -q` در `apps/cms` (۲۹۲ تست PASS)، `uv run ruff check .` (تمیز)، بدون migration در انتظار، SPA build و type-check PASS.
+- Verification actually performed and result: ۲۹۲ تست پاس؛ ruff تمیز؛ بدون migration جدید؛ SPA build/check PASS؛ smoke script به‌روزرسانی شد — `/admin/` بررسی SPA 200 و `/admin-wagtail/login/` بررسی Wagtail 200.
+- Decisions / assumptions: SPA در `/admin/` بدون DEBUG gate در production فعال است؛ Wagtail فقط در `/admin-wagtail/` باقی می‌ماند و برای TOTP enrollment، preview و rollback استفاده می‌شود؛ مسیرهای old `/admin/profiles/` و site content admin Wagtail-session اکنون در SPA هستند (PR #24 و PR #31 superseded).
+- Deferred or risk IDs: DEFER-0023 (cutover) CLOSED؛ DEFER-0022 (local HTTP preview) بدون تغییر؛ RISK-0010 بدون تغییر.
+- Rollback / recovery: بازگشت با re-point کردن `/admin/` به `include(wagtail_admin_urls)` و حذف SPA serving route؛ واگتِیل هنوز نصب و functional است. تصویر CMS قبلی (بدون multi-stage) قابل برگشت است.
+

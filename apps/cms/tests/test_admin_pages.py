@@ -1,4 +1,4 @@
-"""Custom admin page tests — same-origin shell mounted under /admin/."""
+"""Legacy Wagtail profile admin page tests — now under /admin-wagtail/."""
 
 from datetime import timedelta
 
@@ -101,25 +101,25 @@ def single_locale_profile(db):
 
 @pytest.mark.django_db
 def test_profile_index_requires_admin_session():
-    response = Client().get("/admin/profiles/")
+    response = Client().get("/admin-wagtail/profiles/")
     assert response.status_code == 302
-    assert "/admin/login/" in response["Location"]
+    assert "/admin-wagtail/login/" in response["Location"]
 
 
 @pytest.mark.django_db
 def test_profile_index_lists_bilingual_records(admin_page_client, bilingual_profiles):
-    response = admin_page_client.get("/admin/profiles/")
+    response = admin_page_client.get("/admin-wagtail/profiles/")
     assert response.status_code == 200
     content = response.content.decode("utf-8")
     assert "Professional admin" in content
-    assert "/admin/profiles/en/about/" in content
-    assert "/admin/profiles/fa/about/" in content
+    assert "/admin-wagtail/profiles/en/about/" in content
+    assert "/admin-wagtail/profiles/fa/about/" in content
     assert "Same-origin records editable inside the Wagtail session." in content
 
 
 @pytest.mark.django_db
 def test_profile_detail_bootstraps_editor_with_locale_tabs(admin_page_client, bilingual_profiles):
-    response = admin_page_client.get("/admin/profiles/fa/about/")
+    response = admin_page_client.get("/admin-wagtail/profiles/fa/about/")
     assert response.status_code == 200
     content = response.content.decode("utf-8")
     assert 'data-profile-editor-root' in content
@@ -127,7 +127,7 @@ def test_profile_detail_bootstraps_editor_with_locale_tabs(admin_page_client, bi
     assert '"apiUrl": "/api/admin/profiles/fa/about"' in content
     assert '"pageDir": "rtl"' in content
     assert '"locale": "en"' in content
-    assert "/admin/profiles/en/about/" in content
+    assert "/admin-wagtail/profiles/en/about/" in content
 
 
 @pytest.mark.django_db
@@ -135,7 +135,7 @@ def test_profile_detail_bootstraps_create_url_for_missing_locale(
     admin_page_client,
     single_locale_profile,
 ):
-    response = admin_page_client.get("/admin/profiles/en/about/")
+    response = admin_page_client.get("/admin-wagtail/profiles/en/about/")
     assert response.status_code == 200
     content = response.content.decode("utf-8")
     assert '"createUrl": "/api/admin/profiles/en/about/siblings/fa"' in content
@@ -143,5 +143,5 @@ def test_profile_detail_bootstraps_create_url_for_missing_locale(
 
 @pytest.mark.django_db
 def test_profile_detail_returns_404_for_unknown_profile(admin_page_client):
-    response = admin_page_client.get("/admin/profiles/en/missing/")
+    response = admin_page_client.get("/admin-wagtail/profiles/en/missing/")
     assert response.status_code == 404

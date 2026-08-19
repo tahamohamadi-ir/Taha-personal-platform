@@ -1,5 +1,7 @@
 # Changelog
 
+## 2026-08-18 — ADM-1: Admin SPA cutover (/admin/ → SPA, /admin-wagtail/ → Wagtail)
+
 ## 2026-08-18 — ADM-5: site settings + tags + featured spotlight
 
 ## 2026-08-18 — ADM-4: lifecycle transitions + translation queue + content health

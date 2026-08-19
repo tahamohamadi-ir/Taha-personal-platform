@@ -5,13 +5,13 @@ from django.http import HttpResponse
 
 from apps.security.models import AuditLog
 
-LOGIN_PATH = "/admin/login/"
-ADMIN_PREFIX = "/admin/"
+LOGIN_PATH = "/admin-wagtail/login/"
+ADMIN_PREFIX = "/admin-wagtail/"
 SKIP_PREFIXES = ("/health/", "/static/", "/media/")
 LOGIN_RATE_LIMIT = 5
 LOGIN_RATE_WINDOW_SECONDS = 300
-NOINDEX_PREFIXES = ("/admin/", "/api/", "/rebuild-trigger/")
-PREVIEW_PREFIX = "/admin/preview/"
+NOINDEX_PREFIXES = ("/admin/", "/admin-wagtail/", "/api/", "/rebuild-trigger/")
+PREVIEW_PREFIX = "/admin-wagtail/preview/"
 PREVIEW_ROBOTS = "noindex, nofollow, noarchive"
 DEFAULT_ROBOTS = "noindex, nofollow"
 PREVIEW_CACHE_CONTROL = "no-store"
