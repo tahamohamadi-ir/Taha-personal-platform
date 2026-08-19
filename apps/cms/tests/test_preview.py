@@ -42,7 +42,7 @@ class TestStaffContentPreview:
         )
         response = Client().get(url)
         assert response.status_code in (301, 302)
-        assert "/admin/login/" in response.url
+        assert "/admin-wagtail/login/" in response.url
         assert b"Draft Home" not in response.content
 
     def test_non_staff_cannot_read_draft(self, draft_landing, user):
@@ -67,7 +67,7 @@ class TestStaffContentPreview:
         )
         response = client.get(url)
         assert response.status_code == 302
-        assert "/admin/login/" in response.url
+        assert "/admin-wagtail/login/" in response.url
         assert b"Draft Home" not in response.content
 
     def test_staff_otp_sees_draft_with_headers(self, admin_with_otp_client, draft_landing):

@@ -47,32 +47,32 @@ def _current_token(device: TOTPDevice) -> str:
 
 class TestMFAEnforcement:
     def test_unauthenticated_admin_redirects_to_login(self, db):
-        response = Client().get("/admin/")
+        response = Client().get("/admin-wagtail/")
         assert response.status_code in (301, 302)
-        assert "/admin/login/" in response.url
+        assert "/admin-wagtail/login/" in response.url
 
     def test_admin_without_device_redirected_to_setup(self, db, admin_client):
-        response = admin_client.get("/admin/")
+        response = admin_client.get("/admin-wagtail/")
         assert response.status_code == 302
-        assert "/admin/account/two-factor/" in response.url
+        assert "/admin-wagtail/account/two-factor/" in response.url
 
     def test_admin_without_device_can_open_account(self, db, admin_client):
-        response = admin_client.get("/admin/account/")
+        response = admin_client.get("/admin-wagtail/account/")
         assert response.status_code == 200
         assert b"Two-factor authentication" in response.content
 
     def test_admin_without_device_can_open_setup(self, db, admin_client):
-        response = admin_client.get("/admin/account/two-factor/")
+        response = admin_client.get("/admin-wagtail/account/two-factor/")
         assert response.status_code == 200
         assert b"Confirm and enable" in response.content or b"otp_token" in response.content
 
     def test_admin_with_device_no_otp_blocked(self, db, admin_no_otp_client):
-        response = admin_no_otp_client.get("/admin/")
+        response = admin_no_otp_client.get("/admin-wagtail/")
         assert response.status_code == 302
-        assert "/admin/login/" in response.url
+        assert "/admin-wagtail/login/" in response.url
 
     def test_admin_with_verified_otp_can_access_admin(self, db, admin_with_otp_client):
-        response = admin_with_otp_client.get("/admin/")
+        response = admin_with_otp_client.get("/admin-wagtail/")
         assert response.status_code == 200
 
     def test_non_admin_path_not_affected_by_mfa_guard(self, db, admin_no_otp_client):
@@ -123,10 +123,10 @@ class TestTOTPEnrollment:
         """Confirmed device + password-only session must not read QR secret."""
         response = admin_no_otp_client.get(reverse("security_totp_qrcode"))
         assert response.status_code == 302
-        assert "/admin/login/" in response.url
+        assert "/admin-wagtail/login/" in response.url
         response = admin_no_otp_client.get(reverse("security_totp_setup"))
         assert response.status_code == 302
-        assert "/admin/login/" in response.url
+        assert "/admin-wagtail/login/" in response.url
 
 
 class TestOTPLoginForm:
@@ -135,18 +135,18 @@ class TestOTPLoginForm:
         admin_user.save()
         client = Client()
         response = client.post(
-            "/admin/login/",
+            "/admin-wagtail/login/",
             {
                 "username": admin_user.get_username(),
                 "password": "CorrectHorseBattery!",
-                "next": "/admin/",
+                "next": "/admin-wagtail/",
             },
         )
         assert response.status_code == 302
         # Land on MFA setup, not full admin, until enrolled.
-        follow = client.get("/admin/")
+        follow = client.get("/admin-wagtail/")
         assert follow.status_code == 302
-        assert "/admin/account/two-factor/" in follow.url
+        assert "/admin-wagtail/account/two-factor/" in follow.url
 
     def test_login_with_device_requires_otp(self, db, admin_with_device):
         admin_with_device.set_password("CorrectHorseBattery!")
@@ -155,23 +155,23 @@ class TestOTPLoginForm:
         client = Client()
         # Password only — must fail OTP clean
         response = client.post(
-            "/admin/login/",
+            "/admin-wagtail/login/",
             {
                 "username": admin_with_device.get_username(),
                 "password": "CorrectHorseBattery!",
-                "next": "/admin/",
+                "next": "/admin-wagtail/",
             },
         )
         assert response.status_code == 200
         assert response.context["form"].errors
 
         response = client.post(
-            "/admin/login/",
+            "/admin-wagtail/login/",
             {
                 "username": admin_with_device.get_username(),
                 "password": "CorrectHorseBattery!",
                 "otp_token": _current_token(device),
-                "next": "/admin/",
+                "next": "/admin-wagtail/",
             },
         )
         assert response.status_code == 302
@@ -186,12 +186,12 @@ class TestRecoveryCodes:
         code = plains[0]
         client = Client()
         response = client.post(
-            "/admin/login/",
+            "/admin-wagtail/login/",
             {
                 "username": admin_with_device.get_username(),
                 "password": "CorrectHorseBattery!",
                 "otp_token": code,
-                "next": "/admin/",
+                "next": "/admin-wagtail/",
             },
         )
         assert response.status_code == 302
@@ -203,12 +203,12 @@ class TestRecoveryCodes:
         # Reuse must fail
         client2 = Client()
         response = client2.post(
-            "/admin/login/",
+            "/admin-wagtail/login/",
             {
                 "username": admin_with_device.get_username(),
                 "password": "CorrectHorseBattery!",
                 "otp_token": code,
-                "next": "/admin/",
+                "next": "/admin-wagtail/",
             },
         )
         assert response.status_code == 200
@@ -221,12 +221,12 @@ class TestRecoveryCodes:
         raw = normalize_recovery_code(plains[0]).lower()
         client = Client()
         response = client.post(
-            "/admin/login/",
+            "/admin-wagtail/login/",
             {
                 "username": admin_with_device.get_username(),
                 "password": "CorrectHorseBattery!",
                 "otp_token": raw,
-                "next": "/admin/",
+                "next": "/admin-wagtail/",
             },
         )
         assert response.status_code == 302

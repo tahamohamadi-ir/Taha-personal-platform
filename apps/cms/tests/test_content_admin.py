@@ -21,5 +21,5 @@ def test_articles_admin_list_requires_staff(client, admin_user):
     session = client.session
     session["otp_device_id"] = TOTPDevice.objects.get(user=admin_user).persistent_id
     session.save()
-    response = client.get("/admin/articles/")
+    response = client.get("/admin-wagtail/articles/")
     assert response.status_code == 200
