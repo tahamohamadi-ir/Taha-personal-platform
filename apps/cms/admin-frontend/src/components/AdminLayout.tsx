@@ -34,7 +34,11 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     title: "تنظیمات",
-    items: [{ label: "تنظیمات عمومی", to: "/" }],
+    items: [
+      { label: "تنظیمات سایت", to: "/settings" },
+      { label: "تگ‌ها", to: "/tags" },
+      { label: "برگزیده‌ها", to: "/featured" },
+    ],
   },
 ];
 

@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "apps.api",
     "apps.rebuild",
     "apps.composition",
+    "apps.siteconfig",
     "django_otp",
     "django_otp.plugins.otp_totp",
 ]
