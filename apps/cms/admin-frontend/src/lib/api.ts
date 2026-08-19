@@ -688,3 +688,213 @@ export async function updateComposition(
     body: JSON.stringify(payload),
   });
 }
+
+// ---------- Site settings / Tags / Featured (ADM-5) ----------
+
+export interface NavLink {
+  label: string;
+  href: string;
+  locale: ContentLocale;
+}
+
+export interface SiteSettings {
+  brandName: string;
+  tagline: string;
+  footerText: string;
+  primaryColor: string;
+  navLinks: NavLink[];
+  seoDefaultTitle: string;
+  seoDefaultDescription: string;
+  updatedAt: string;
+}
+
+export interface SiteSettingsUpdatePayload {
+  brandName?: string;
+  tagline?: string;
+  footerText?: string;
+  primaryColor?: string;
+  navLinks?: NavLink[];
+  seoDefaultTitle?: string;
+  seoDefaultDescription?: string;
+}
+
+export interface TagItem {
+  id: number;
+  name: string;
+  slug: string;
+  locale: ContentLocale;
+  articleCount: number;
+}
+
+export interface TagList {
+  items: TagItem[];
+  page: number;
+  pageSize: number;
+  total: number;
+}
+
+export interface TagListParams {
+  q?: string;
+  locale?: ContentLocale | "";
+  page?: number;
+  pageSize?: number;
+}
+
+export interface TagPayload {
+  name: string;
+  slug?: string;
+  locale: ContentLocale;
+}
+
+export interface TagUpdatePayload {
+  name?: string;
+  slug?: string;
+  locale?: ContentLocale;
+}
+
+export interface FeaturedItem {
+  id: number;
+  title: string;
+  targetEntity: string;
+  targetSlug: string;
+  locale: ContentLocale;
+  startAt: string;
+  endAt: string | null;
+  isActive: boolean;
+  updatedAt: string;
+}
+
+export interface FeaturedList {
+  items: FeaturedItem[];
+  page: number;
+  pageSize: number;
+  total: number;
+}
+
+export interface FeaturedListParams {
+  active?: "true" | "false";
+  current?: "true";
+  page?: number;
+  pageSize?: number;
+}
+
+export interface FeaturedPayload {
+  title: string;
+  targetEntity: string;
+  targetSlug: string;
+  locale: ContentLocale;
+  startAt: string;
+  endAt?: string | null;
+  isActive?: boolean;
+}
+
+export type FeaturedUpdatePayload = Partial<FeaturedPayload>;
+
+function buildTagsSearch(params: TagListParams): string {
+  const search = new URLSearchParams();
+  if (params.q !== undefined && params.q !== "") {
+    search.set("q", params.q);
+  }
+  if (params.locale !== undefined && params.locale !== "") {
+    search.set("locale", params.locale);
+  }
+  if (params.page !== undefined) {
+    search.set("page", String(params.page));
+  }
+  if (params.pageSize !== undefined) {
+    search.set("pageSize", String(params.pageSize));
+  }
+  const query = search.toString();
+  return query === "" ? "" : `?${query}`;
+}
+
+function buildFeaturedSearch(params: FeaturedListParams): string {
+  const search = new URLSearchParams();
+  if (params.active !== undefined) {
+    search.set("active", params.active);
+  }
+  if (params.current !== undefined) {
+    search.set("current", params.current);
+  }
+  if (params.page !== undefined) {
+    search.set("page", String(params.page));
+  }
+  if (params.pageSize !== undefined) {
+    search.set("pageSize", String(params.pageSize));
+  }
+  const query = search.toString();
+  return query === "" ? "" : `?${query}`;
+}
+
+export async function fetchSiteSettings(): Promise<SiteSettings> {
+  return request<SiteSettings>("/site");
+}
+
+export async function updateSiteSettings(
+  payload: SiteSettingsUpdatePayload,
+  ifMatch: string
+): Promise<SiteSettings> {
+  return request<SiteSettings>("/site", {
+    method: "PUT",
+    headers: { "If-Match": ifMatch },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchTags(params: TagListParams = {}): Promise<TagList> {
+  return request<TagList>(`/tags${buildTagsSearch(params)}`);
+}
+
+export async function createTag(payload: TagPayload): Promise<TagItem> {
+  return request<TagItem>("/tags", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateTag(
+  id: number,
+  payload: TagUpdatePayload,
+  ifMatch: string
+): Promise<TagItem> {
+  return request<TagItem>(`/tags/${id}`, {
+    method: "PUT",
+    headers: { "If-Match": ifMatch },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deleteTag(id: number): Promise<{ ok: boolean }> {
+  return request<{ ok: boolean }>(`/tags/${id}`, { method: "DELETE" });
+}
+
+export async function fetchFeatured(
+  params: FeaturedListParams = {}
+): Promise<FeaturedList> {
+  return request<FeaturedList>(`/featured${buildFeaturedSearch(params)}`);
+}
+
+export async function createFeatured(
+  payload: FeaturedPayload
+): Promise<FeaturedItem> {
+  return request<FeaturedItem>("/featured", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateFeatured(
+  id: number,
+  payload: FeaturedUpdatePayload,
+  ifMatch: string
+): Promise<FeaturedItem> {
+  return request<FeaturedItem>(`/featured/${id}`, {
+    method: "PUT",
+    headers: { "If-Match": ifMatch },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deleteFeatured(id: number): Promise<{ ok: boolean }> {
+  return request<{ ok: boolean }>(`/featured/${id}`, { method: "DELETE" });
+}

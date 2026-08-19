@@ -10,6 +10,9 @@ import MediaLibraryPage from "./pages/MediaLibraryPage";
 import OverviewPage from "./pages/OverviewPage";
 import CompositionListPage from "./pages/CompositionListPage";
 import CompositionEditorPage from "./pages/CompositionEditorPage";
+import SettingsPage from "./pages/SettingsPage";
+import TagsPage from "./pages/TagsPage";
+import FeaturedPage from "./pages/FeaturedPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 export default function App() {
@@ -39,6 +42,9 @@ export default function App() {
               path="/composition/:id/edit"
               element={<CompositionEditorPage />}
             />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/tags" element={<TagsPage />} />
+            <Route path="/featured" element={<FeaturedPage />} />
           </Route>
         </Route>
         <Route path="*" element={<NotFoundPage />} />
