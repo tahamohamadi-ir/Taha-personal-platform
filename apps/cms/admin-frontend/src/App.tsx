@@ -13,6 +13,7 @@ import CompositionEditorPage from "./pages/CompositionEditorPage";
 import SettingsPage from "./pages/SettingsPage";
 import TagsPage from "./pages/TagsPage";
 import FeaturedPage from "./pages/FeaturedPage";
+import SecurityPage from "./pages/SecurityPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 export default function App() {
@@ -45,6 +46,7 @@ export default function App() {
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/tags" element={<TagsPage />} />
             <Route path="/featured" element={<FeaturedPage />} />
+            <Route path="/security" element={<SecurityPage />} />
           </Route>
         </Route>
         <Route path="*" element={<NotFoundPage />} />

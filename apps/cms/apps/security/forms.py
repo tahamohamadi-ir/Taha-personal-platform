@@ -1,16 +1,16 @@
-"""Wagtail login form with optional TOTP / recovery-code second factor."""
+"""Admin login form with optional TOTP / recovery-code second factor."""
 
 from django import forms
+from django.contrib.auth.forms import AuthenticationForm
 from django.utils.translation import gettext_lazy as _
 from django_otp import user_has_device
 from django_otp.forms import OTPAuthenticationFormMixin
 from django_otp.plugins.otp_totp.models import TOTPDevice
-from wagtail.admin.forms.auth import LoginForm
 
 from apps.security.recovery import consume_recovery_code
 
 
-class OTPLoginForm(OTPAuthenticationFormMixin, LoginForm):
+class OTPLoginForm(OTPAuthenticationFormMixin, AuthenticationForm):
     """Password login; require OTP or recovery code when a TOTP device exists."""
 
     otp_device = forms.CharField(required=False, widget=forms.Select)
