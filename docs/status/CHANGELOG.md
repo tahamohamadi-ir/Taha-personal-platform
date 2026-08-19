@@ -3,7 +3,7 @@
 ## 2026-08-19 — CI: Playwright preview hang on PR #45
 
 - Web CI stuck on “Mobile overflow check”: silent `playwright install --with-deps`, shared port 4321 after smoke, and `waitUntil: networkidle`.
-- Fix: timeout the browser install, unique preview ports + health wait, `load` instead of `networkidle`.
+- Fix: reuse the smoke `astro preview` on 4321 (Astro allows only one preview), time-box `playwright install`, `waitUntil: load` instead of `networkidle`.
 
 ## 2026-08-19 — Projects listing, nested skills, SPA TOTP, rebuild hook
 

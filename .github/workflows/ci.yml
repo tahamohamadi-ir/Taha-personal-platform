@@ -53,57 +53,45 @@ jobs:
         run: |
           cd "${GITHUB_WORKSPACE}/apps/web"
           npx astro preview --host 127.0.0.1 --port 4321 >/tmp/preview.log 2>&1 &
-          preview_pid=$!
           for _ in $(seq 1 20); do
             curl -fsS http://127.0.0.1:4321/health.json >/dev/null && break
             sleep 1
           done
           bash "${GITHUB_WORKSPACE}/infra/deploy/smoke.sh" http://127.0.0.1:4321
-          kill "$preview_pid" 2>/dev/null || true
-          wait "$preview_pid" 2>/dev/null || true
 
       - name: Mobile overflow check (Playwright)
         shell: bash
         env:
-          PREVIEW_URL: http://127.0.0.1:4322
+          PREVIEW_URL: http://127.0.0.1:4321
         run: |
           cd "${GITHUB_WORKSPACE}/apps/web"
           timeout 180 npx playwright install chromium --with-deps
-          npx astro preview --host 127.0.0.1 --port 4322 >/tmp/preview2.log 2>&1 &
-          preview_pid=$!
-          for _ in $(seq 1 20); do
-            curl -fsS http://127.0.0.1:4322/health.json >/dev/null && break
-            sleep 1
-          done
-          if ! curl -fsS http://127.0.0.1:4322/health.json >/dev/null; then
-            echo "preview failed to start on 4322" >&2
-            cat /tmp/preview2.log >&2 || true
-            exit 1
+          if ! curl -fsS http://127.0.0.1:4321/health.json >/dev/null; then
+            npx astro preview --force --host 127.0.0.1 --port 4321 >/tmp/preview2.log 2>&1 &
+            for _ in $(seq 1 20); do
+              curl -fsS http://127.0.0.1:4321/health.json >/dev/null && break
+              sleep 1
+            done
           fi
+          curl -fsS http://127.0.0.1:4321/health.json
           node qa/mobile-overflow.spec.mjs
-          kill "$preview_pid" 2>/dev/null || true
-          wait "$preview_pid" 2>/dev/null || true
 
       - name: About tabs regression (Playwright)
         shell: bash
         env:
-          PREVIEW_URL: http://127.0.0.1:4323
+          PREVIEW_URL: http://127.0.0.1:4321
         run: |
           cd "${GITHUB_WORKSPACE}/apps/web"
-          npx astro preview --host 127.0.0.1 --port 4323 >/tmp/preview3.log 2>&1 &
-          preview_pid=$!
-          for _ in $(seq 1 20); do
-            curl -fsS http://127.0.0.1:4323/health.json >/dev/null && break
-            sleep 1
-          done
-          if ! curl -fsS http://127.0.0.1:4323/health.json >/dev/null; then
-            echo "preview failed to start on 4323" >&2
-            cat /tmp/preview3.log >&2 || true
-            exit 1
+          if ! curl -fsS http://127.0.0.1:4321/health.json >/dev/null; then
+            npx astro preview --force --host 127.0.0.1 --port 4321 >/tmp/preview3.log 2>&1 &
+            for _ in $(seq 1 20); do
+              curl -fsS http://127.0.0.1:4321/health.json >/dev/null && break
+              sleep 1
+            done
           fi
+          curl -fsS http://127.0.0.1:4321/health.json
           node qa/about-tabs.spec.mjs
-          kill "$preview_pid" 2>/dev/null || true
-          wait "$preview_pid" 2>/dev/null || true
+          npx astro preview stop || true
 
       - name: Dependency audit
         run: npm audit --audit-level=high
