@@ -1,14 +1,17 @@
 # Deployment Runbook — Static P1 (Language Gateway + bilingual landing)
 
 > Status: Active for production. Staging is decommissioned (ADR-0025, 2026-08-15); the
-> mechanics below implement ADR-0017. Production deploys require owner approval, a
-> documented rollback path and a passing release gate (CI web + cms workflows +
-> production smoke; see `RELEASE_POLICY.md`). No deploy is performed by this file.
+> mechanics below implement ADR-0017 as amended by **ADR-0027** (`web` nginx image
+> is the target artifact; host Caddy until `DEFER-0031`). Production deploys
+> require owner approval, a documented rollback path and a passing release gate
+> (CI web + cms workflows + production smoke; see `RELEASE_POLICY.md`). No deploy
+> is performed by this file.
 
 ## Principles
 
-- The public site is a plain static artifact served by Caddy; there is no
-  Node.js runtime, no database, no container restart and no migration in P1.
+- There is no Node.js public runtime. HTML is built in CI and served by nginx
+  (`web`) or, until Slice 1 cutover, by Caddy `file_server` from `current`.
+- CMS migrate follows `prod-cms-update-migrate.sh` (not a P1 no-container rule).
 - The existing live Compose stack (frontend/backend/PostgreSQL) is never reused,
   restarted or reverse-proxied by this project.
 - A failed build or deploy never removes the currently served artifact; rollback

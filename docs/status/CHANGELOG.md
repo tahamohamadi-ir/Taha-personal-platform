@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-08-19 — Slice 0+1: Caddyfile automated, web nginx container, old stack removed
+
+- `/admin` 404 fixed (308 redirect). Old Java/Vue `taha-prod` stack decommissioned.
+- Full Caddyfile in repo (`infra/caddy/Caddyfile`) with CD auto-sync via `caddy-sync.sh`.
+- Slice 1: `taha-web` nginx image (Dockerfile + CI + CD). Compose now has `db` + `cms` + `web`.
+- VPS prereq: install `caddy-sync.sh` at `/opt/taha/bin/caddy-sync.sh`.
+
+## 2026-08-19 — ADR-0027 unified Compose; CMS b6bea6a live; smoke Wagtail URL
+
+- Owner production: `ghcr.io/tahamohamadi-ir/taha-cms:b6bea6a`; migrations `0008`/`0002` applied.
+- Contract: public `web` will be nginx serving Astro HTML; host Caddy until `DEFER-0031`.
+- `smoke-cms.sh` uses `/admin-wagtail/login/`. `RISK-0012` for auto-migrate.
+
+## 2026-08-19 — CMS origin spec queued then accepted as ADR-0027
+
+- Spec first queued as TODO; superseded the same day by ADR-0027 and IN_PROGRESS slices.
+
 ## 2026-08-19 — CI: Playwright preview hang on PR #45
 
 - Web CI stuck on “Mobile overflow check”: silent `playwright install --with-deps`, shared port 4321 after smoke, and `waitUntil: networkidle`.

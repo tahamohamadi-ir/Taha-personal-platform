@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# SUPERSEDED — replaced by caddy-sync.sh which deploys the full repo-managed
+# Caddyfile (infra/caddy/Caddyfile). Kept for reference only.
+#
 # Root-only (installed at /opt/taha/bin/caddy-apply.sh, root:root 0755):
 # applies the documented 404 handle_errors fix to /etc/caddy/Caddyfile with
 # backup -> validate -> reload; restores the backup if validation fails.

@@ -15,10 +15,11 @@ Last reconciled: 2026-08-19.
 
 | Spec | State | Who runs it | Notes |
 |---|---|---|---|
-| `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | Public project listing + cards, nested profile skills in SPA, TOTP-in-SPA (ADM-0 partial), rebuild hook + lifecycle pytest. Production migrate/HMAC enable is owner. |
+| `cms-origin-and-full-stack-cd-task-spec.md` | IN_PROGRESS | agent | ADR-0027. Slice 0 = smoke + contracts. Next: Slice 1 nginx `web`. |
+| `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | HMAC `DEFER-0027`; Playwright `DEFER-0026`; story projection shipped on `b6bea6a`. |
 | `P0-A-stack-inventory-task-spec.md` | BLOCKED (owner) | owner | Read-only VPS inventory. Not an agent task. |
 
-Owner remaining work that is **not** a new spec: production `migrate` for additive schema (`show_on_projects` and any pending 0005/0006), `rebuild-static.sh`, and HMAC enable (`DEFER-0027`).
+Owner remaining work that is **not** a new spec: HMAC enable (`DEFER-0027`); apt/SSH (`RISK-0005`/`0006`). CMS migrate through `0008` is **done** on production (`b6bea6a`).
 
 ## 2. Queued — do not start yet
 

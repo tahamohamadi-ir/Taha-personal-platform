@@ -1,5 +1,34 @@
 # Work Log
 
+## LOG-0170 — 2026-08-19 — Slice 0+1: /admin 308 fix, old stack decommissioned, Caddyfile automated, web nginx container + CI/CD
+
+- Outcome: `/admin` 404 fixed with `redir /admin /admin/ 308` in live Caddy (owner applied). Old `taha-prod` Java/Vue stack decommissioned (containers down, volumes removed, 1 GB reclaimed). Full production Caddyfile committed to repo (`infra/caddy/Caddyfile`) with `caddy-sync.sh` auto-deploy in CD. Slice 1: `web` nginx container (`infra/web/Dockerfile.web`, `infra/web/nginx.conf`), added to compose, CI builds `taha-web` image, CD pulls and restarts.
+- Why: Owner requested automated Caddyfile management and unified Compose stack per ADR-0027.
+- Scope / files: `infra/caddy/Caddyfile`, `infra/deploy/caddy-sync.sh`, `infra/web/Dockerfile.web`, `infra/web/nginx.conf`, `infra/cms/docker-compose.cms.yml`, `.github/workflows/ci-web-image.yml`, `.github/workflows/cd.yml`, `infra/cms/Caddyfile.cms.snippet`, `infra/deploy/caddy-apply.sh`, `infra/deploy/smoke-cms.sh`.
+- Commands or actions actually performed: owner applied `redir /admin /admin/ 308` to live Caddyfile, `docker compose stop/down` on `/opt/taha/repository`, `docker volume rm` old volumes, `docker image prune`.
+- Verification actually performed and result: `curl -sSI /admin` → `308 Location: /admin/`; `curl /admin/` → `200`; site → `200` after old stack removal; `docker compose config` exits 0.
+- Deferred or risk IDs: `DEFER-0031` Caddy-in-compose unchanged. VPS prereq: install `caddy-sync.sh` at `/opt/taha/bin/`, sudoers for deploy.
+- Rollback / recovery: revert Caddyfile from timestamped backup; revert compose `web` service; CMS unchanged.
+
+## LOG-0169 — 2026-08-19 — ADR-0027 unified Compose; production CMS b6bea6a; smoke login path
+
+- Outcome: Accepted ADR-0027 (Compose: db/cms/web nginx, later caddy; no public Node/React). Owner migrate to `taha-cms:b6bea6a` applied `content.0008` and `composition.0002`. `smoke-cms.sh` checks `/admin-wagtail/login/`. Spec is slice-executable. `RISK-0012` OPEN. `DEFER-0031` Caddy-in-compose.
+- Why: Owner asked to amend the host-static contract so each part is a container without a public SPA or SSR on 4 GiB.
+- Scope / files: `docs/adr/0027-unified-compose-stack.md`, spec, `AGENTS.md`, `infra/cms/README.md`, `infra/deploy/smoke-cms.sh`, ledgers.
+- Commands or actions actually performed: none on VPS. No `web` image (Slice 1 next).
+- Verification actually performed and result: owner pasted `showmigrations` with 0008/0002 `[X]`.
+- Deferred or risk IDs: RISK-0012 OPEN; DEFER-0031 OPEN; DEFER-0027 unchanged.
+- Rollback / recovery: revert this PR for docs/smoke; CMS on VPS stays `b6bea6a` until the operator changes it.
+
+## LOG-0168 — 2026-08-19 — CMS-origin + full-stack CD queued (no implement)
+
+- Outcome: Queued `docs/plan/cms-origin-and-full-stack-cd-task-spec.md`. Public site staying no-JS; dynamic means CMS as origin + CD that can update CMS, not a public React SPA. Slice A (owner migrate `b6bea6a`) is operational, not this spec.
+- Why: Owner asked to leave hardcoded static fallbacks, Dockerize the whole stack, and auto-deploy. That is three programs (content origin, Compose shape, CD migrate). Implementing together would fight ADR-0017/0026 and VPS capacity.
+- Scope / files: that Task Spec; plan index; this log; CHANGELOG.
+- Commands or actions actually performed: read `prod-cms-update-migrate.sh`, `cd.yml`, `infra/cms/README.md`. No VPS SSH. No Compose/CD code change.
+- Deferred or risk IDs: `DEFER-0027` HMAC still owner; `DEFER-0030` after migrate; auto-migrate from GitHub needs a new risk if Slice B is approved.
+- Rollback / recovery: delete the spec if the owner rejects the sequence.
+
 ## LOG-0151 — 2026-08-18 — Canonical docs entry, contracts, P7 specs
 
 - Outcome: Landed local-only documentation that was sitting untracked on the stale `feat/cms-backup-risk-0003-prep` checkout: `docs/README.md`, `docs/contracts/*`, plan index, P7 specs, and the Samples transfer catalog. Added `.gitignore` rules for `Samples/` and `**/test-results/`. Aligned current-gate facts with `DEFER-0017` CLOSED, `RISK-0003` CLOSED, and PR #31. Did not reopen RISK-0003. Did not commit the merged backup branch.
