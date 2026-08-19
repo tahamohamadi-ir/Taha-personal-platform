@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Breadcrumbs from "../../../components/blog/Breadcrumbs.astro";
+import ProjectsCatalog from "../../../components/ProjectsCatalog.astro";
 import { content } from "../../../data/content";
 import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../data/structured";
 import { getProjects } from "../../../lib/cms/projects";
@@ -39,23 +40,7 @@ validateStructuredData(...structured);
     />
     <h1>{projectsCopy.heading}</h1>
     <p class="lead">{projectsCopy.intro}</p>
-    {
-      projects.length === 0 ? (
-        <p class="empty">{projectsCopy.empty}</p>
-      ) : (
-        <ul class="project-list">
-          {projects.map((project) => (
-            <li>
-              <a href={`/${locale}/projects/${project.slug}/`}>{project.title}</a>
-              {project.objective ? <p>{project.objective}</p> : null}
-              {project.case_study_depth ? (
-                <p class="depth">{projectsCopy.depthLabel}: {project.case_study_depth}</p>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      )
-    }
+    <ProjectsCatalog locale={locale} content={pageContent} projects={projects} />
   </section>
 </BaseLayout>
 
@@ -70,18 +55,7 @@ validateStructuredData(...structured);
     font-size: clamp(1.75rem, 4vw, 2.4rem);
     margin: 0 0 0.5rem;
   }
-  .lead, .empty, .depth {
+  .lead {
     color: var(--color-ink-muted);
-  }
-  .project-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  .project-list li {
-    margin-bottom: 1.25rem;
-  }
-  .project-list a {
-    font-weight: 600;
   }
 </style>

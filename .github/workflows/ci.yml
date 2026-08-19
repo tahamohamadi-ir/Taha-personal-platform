@@ -38,6 +38,9 @@ jobs:
       - name: CMS profile build regression
         run: node qa/cms-profile-build.spec.mjs
 
+      - name: Projects catalog copy
+        run: node qa/projects-catalog.spec.mjs
+
       - name: Write build fingerprint
         run: |
           version=$(node -p "require('./package.json').version")
