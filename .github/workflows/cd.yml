@@ -128,12 +128,18 @@ jobs:
           install -m 600 /dev/null ~/.ssh_deploy_key
           echo "$SSH_PRIVATE_KEY" > ~/.ssh_deploy_key
           SHORT_SHA="${GITHUB_SHA:0:7}"
+          WEB_IMAGE="ghcr.io/tahamohamadi-ir/taha-web:${SHORT_SHA}"
           ssh -i ~/.ssh_deploy_key -o StrictHostKeyChecking=accept-new \
             "${DEPLOY_USER}@${DEPLOY_HOST}" \
-            "export WEB_IMAGE=ghcr.io/tahamohamadi-ir/taha-web:${SHORT_SHA} && \
-             cd /home/deploy/cms-repo && \
-             docker compose -f infra/cms/docker-compose.cms.yml pull web && \
-             docker compose -f infra/cms/docker-compose.cms.yml up -d web"
+            "set -euo pipefail
+             cd /home/deploy/cms-repo
+             if docker pull \"${WEB_IMAGE}\" 2>/dev/null; then
+               export WEB_IMAGE=\"${WEB_IMAGE}\"
+               docker compose -f infra/cms/docker-compose.cms.yml up -d web
+               echo \"web container updated to ${WEB_IMAGE}\"
+             else
+               echo \"::warning::No web image for ${SHORT_SHA}; skipping web container update\"
+             fi"
           rm -f ~/.ssh_deploy_key
 
       - name: Production smoke
