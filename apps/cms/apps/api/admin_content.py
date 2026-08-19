@@ -33,6 +33,7 @@ from apps.content.models import (
     ResearchStatement,
     ResearchTopic,
 )
+from apps.rebuild.services import invoke_static_rebuild
 from apps.security.models import AuditLog
 
 content_router = Router()
@@ -123,6 +124,7 @@ DETAIL_FIELD_MAPS: dict[str, dict[str, str]] = {
         "code_url": "codeUrl",
         "data_url": "dataUrl",
         "demo_url": "demoUrl",
+        "show_on_projects": "showOnProjects",
     },
     "publication": {
         "authors": "authors",
@@ -161,6 +163,8 @@ def _label_for_key(key: str) -> str:
 
 def _field_type(field) -> str:
     """Generic form widget type for a Django model field."""
+    if isinstance(field, models.BooleanField):
+        return "boolean"
     if isinstance(field, models.DateField):
         return "date"
     if isinstance(field, models.IntegerField):
@@ -177,6 +181,21 @@ def _coerce_field_value(field, attr: str, key: str, value) -> object:
     field errors by schema key). Returns ``_SKIP`` for blank numeric values so
     callers can leave the field unchanged instead of failing on an empty string.
     """
+    if isinstance(field, models.BooleanField):
+        if value in (None, ""):
+            return _SKIP
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str) and value.lower() in {"true", "1", "yes", "on"}:
+            return True
+        if isinstance(value, str) and value.lower() in {"false", "0", "no", "off"}:
+            return False
+        raise AdminError(
+            400,
+            "VALIDATION",
+            f"Invalid boolean for '{key}'.",
+            fields={"fields": [key]},
+        )
     if isinstance(field, models.IntegerField):
         if value in (None, ""):
             return _SKIP
@@ -647,6 +666,8 @@ def content_transition(request, entity: str, id: int, payload: ContentTransition
             )
     except model.DoesNotExist:
         raise AdminError(404, "NOT_FOUND", "Content not found.") from None
+    if payload.to == "published":
+        invoke_static_rebuild()
     return _detail_response(item, model, entity)
 
 
