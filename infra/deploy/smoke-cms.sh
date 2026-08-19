@@ -9,6 +9,21 @@ BASE_URL="${BASE_URL%/}"
 
 fail=0
 
+WEB_LOOPBACK="${WEB_LOOPBACK:-http://127.0.0.1:13080}"
+
+check_loopback() {
+  local path="$1"
+  local expect="$2"
+  local code
+  code="$(curl -sS -o /tmp/cms-smoke-loopback-body -w "%{http_code}" "${WEB_LOOPBACK}${path}")"
+  if [[ "$code" != "$expect" ]]; then
+    echo "FAIL loopback ${path} expected ${expect} got ${code}" >&2
+    fail=1
+  else
+    echo "PASS loopback ${path} ${code}"
+  fi
+}
+
 check() {
   local path="$1"
   local expect="$2"
@@ -21,6 +36,14 @@ check() {
     echo "PASS ${path} ${code}"
   fi
 }
+
+# ADR-0027 Slice 1: nginx web container on loopback (before public edge checks).
+check_loopback "/" "200"
+check_loopback "/health.json" "200"
+if ! grep -q '"service":"static"' /tmp/cms-smoke-loopback-body && ! grep -q '"service": "static"' /tmp/cms-smoke-loopback-body; then
+  echo "FAIL loopback /health.json is not the static-site payload" >&2
+  fail=1
+fi
 
 # Custom React admin SPA (ADM-1 cutover) — should return the SPA shell.
 check "/admin/" "200"

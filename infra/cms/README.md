@@ -102,8 +102,9 @@ After login at `/admin/`, open **Site content** in the sidebar:
 | Landing / Profiles | CMS copies of hero/about (static rebuild required) |
 | Case studies | P6 project depth pages |
 
-Set **Status = Published** and **Published at** in the past, then rebuild static
-(`rebuild-static.sh` or local build with `CMS_API_BASE` tunnel).
+Set **Status = Published** and **Published at** in the past, then rebuild public HTML:
+`rebuild-web.sh` after Caddy web cutover (ADR-0027 Slice 1+), or `rebuild-static.sh`
+until cutover / during transition.
 
 Upload images via **Images** (Wagtail library) and attach to articles as needed.
 
@@ -131,9 +132,20 @@ See `docs/plan/P3-public-api-caddy-task-spec.md` for rollback and smoke steps.
 # (or https://tahamohamadi.ir/admin/account/two-factor/) — scan QR, confirm code.
 ```
 
-## Static rebuild with CMS content (P3-08 / P4+)
+## Public HTML rebuild with CMS content (P3-08 / ADR-0027)
 
-Loopback build on the VPS (no public `/api/` required):
+**After Caddy web cutover** (public routes proxy to `127.0.0.1:13080`):
+
+```bash
+cd /home/deploy/cms-repo
+git pull --ff-only origin main
+bash infra/deploy/rebuild-web.sh
+```
+
+Builds the Compose `web` nginx image with loopback `CMS_API_BASE`, restarts `web`, and
+smokes `http://127.0.0.1:13080/health.json`. See `docs/governance/DEPLOY_RUNBOOK.md`.
+
+**Until cutover / transition** (Caddy still serves `/opt/taha/site/current`):
 
 ```bash
 cd /home/deploy/cms-repo

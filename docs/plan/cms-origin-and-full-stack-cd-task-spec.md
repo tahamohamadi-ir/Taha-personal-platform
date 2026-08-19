@@ -1,6 +1,6 @@
 # Task Specification — Unified Compose + CMS origin + CD
 
-**Status:** `IN_PROGRESS` (ADR-0027 accepted). Slice 0 in this change: contract + smoke URL. Later slices are separate PRs.
+**Status:** `IN_PROGRESS` (ADR-0027 accepted). Slice 0 done; Slice 1 cutover implemented in repo (pending merge; owner applies via CD or manual `caddy-sync`). Later slices are separate PRs.
 
 ## Task: One Compose network; CMS origin; CD updates cms and web
 
@@ -34,12 +34,14 @@ False smoke: `smoke-cms.sh` probed `/admin-wagtail/accounts/login/` (302). Real 
 - Fix `infra/deploy/smoke-cms.sh` to `/admin-wagtail/login/` and match Wagtail/sign-in HTML.
 - Record owner migrate in WORK_LOG. No Compose layout change yet.
 
-### Slice 1 — `web` container (next implementation)
+### Slice 1 — `web` container + Caddy cutover (**done in repo**; owner applies Caddy)
 
-- `infra/cms/Dockerfile.web` (or `infra/web/`): copy `apps/web/dist` into nginx:alpine; listen 8080.
-- Extend `docker-compose.cms.yml` (or `infra/compose/docker-compose.yml` that includes cms file) with service `web`, `127.0.0.1:13080:8080`, mem limit ≤256m.
+- `infra/web/Dockerfile.web`: copy `apps/web/dist` into nginx:alpine; listen 8080.
+- `docker-compose.cms.yml`: service `web`, `127.0.0.1:13080:8080`, mem limit ≤256m.
 - CI: build/push `taha-web:<sha>` after `npm run build` with `CMS_API_BASE`.
-- CD: pull `web` image and `up -d web` **or** keep rsync until Caddy `reverse_proxy 127.0.0.1:13080` is owner-applied. Dual-serve during cutover is allowed; document which origin is canonical.
+- CD: pull `web` image and `up -d web`; `infra/caddy/Caddyfile` `(taha_application_routes)` now `reverse_proxy 127.0.0.1:13080` (auto-sync via `caddy-sync.sh` on deploy).
+- Rollback path until rsync removal: restore `file_server` on `/opt/taha/site/current` in the snippet.
+- `smoke-cms.sh` checks loopback `/` and `/health.json` on 13080.
 - Targeted check: `npm run check` + image build locally. No Playwright matrix.
 
 ### Slice 2 — CD updates CMS image (owner-attended first)
@@ -72,7 +74,7 @@ False smoke: `smoke-cms.sh` probed `/admin-wagtail/accounts/login/` (302). Real 
 ## Verification
 
 - Slice 0: script grep for `/admin-wagtail/login/`; no live VPS required.
-- Slice 1: docker build web; compose config valid.
+- Slice 1: docker build web; compose config valid; loopback smoke `/` + `/health.json` 200; owner `caddy-sync` after pull.
 - Skip full pytest/Playwright unless the slice touches CMS Python.
 
 ## Rollback
@@ -83,5 +85,6 @@ False smoke: `smoke-cms.sh` probed `/admin-wagtail/accounts/login/` (302). Real 
 
 ## Handoff
 
-- Slice 0 lands with this commit/PR. Next agent starts Slice 1 from this spec.
-- Owner: use article story editor; ignore smoke FAIL on old `accounts/login` after they pull this smoke fix.
+- Slice 1 Caddy cutover is in repo; owner applies with `git pull` + `sudo /opt/taha/bin/caddy-sync.sh` (or wait for CD).
+- Next agent starts Slice 2 (CD CMS image migrate) from this spec.
+- Owner: confirm `curl -sS http://127.0.0.1:13080/health.json` and `bash infra/deploy/smoke-cms.sh` after cutover.

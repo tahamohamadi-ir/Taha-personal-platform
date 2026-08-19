@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-08-19 — rebuild-web.sh: CMS publish → web nginx container
+
+- New `infra/deploy/rebuild-web.sh` builds `taha-web:local` with loopback `CMS_API_BASE`, restarts Compose `web`, smokes `127.0.0.1:13080/health.json`.
+- Use after admin publish when Caddy proxies to `127.0.0.1:13080`; `rebuild-static.sh` header notes disk-path transition.
+- **Owner VPS after admin publish:** `cd /home/deploy/cms-repo && git pull --ff-only origin main && bash infra/deploy/rebuild-web.sh`
+
+## 2026-08-19 — ADR-0027 Slice 1: Caddy → nginx web loopback
+
+- `(taha_application_routes)` now `reverse_proxy 127.0.0.1:13080` instead of disk `file_server`.
+- Rollback: restore `root * /opt/taha/site/current` + `file_server` in the snippet.
+- `smoke-cms.sh` checks loopback `/` and `/health.json` on 13080.
+- **Owner VPS:** `git pull` then `sudo /opt/taha/bin/caddy-sync.sh /path/to/infra/caddy/Caddyfile` (or wait for CD auto-sync).
+
 ## 2026-08-19 — Admin SPA: content detail/edit merged
 
 - List click opens edit page directly; article story + profile skills visible without `/edit` URL.

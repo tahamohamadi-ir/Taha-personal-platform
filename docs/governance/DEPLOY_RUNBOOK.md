@@ -35,6 +35,10 @@ $SITE_ROOT/                      # project-owned, e.g. /opt/taha/site (finalize 
 ## Artifact
 
 - Built by `npm run build` in `apps/web/` (CI produces the same `dist/`).
+- **Container path (ADR-0027 Slice 1+):** the `web` nginx image bakes `dist/` at build
+  time (`infra/web/Dockerfile.web`, `CMS_API_BASE` build-arg). Caddy serves public
+  HTML from `127.0.0.1:13080` after web cutover; until then, `file_server` on
+  `/opt/taha/site/current` remains the live path.
 - Version marker: `apps/web/src/data/site.ts` `version` field; `dist/health.json`
   exposes `{status, service, version}` without secrets or internal paths.
 - A checksum (`sha256sum`) of the artifact is recorded in `deploy.log` at deploy
@@ -119,7 +123,7 @@ Canonical topology:
 
 ```text
 Caddy (TLS)
-  ├── static Astro artifact  → /opt/taha/site/current
+  ├── public HTML (Slice 1+) → 127.0.0.1:13080 (nginx `web`; rollback: file_server on /opt/taha/site/current)
   ├── /admin* + /static*     → 127.0.0.1:18000
   └── /health/               → 127.0.0.1:18000   (NOT /health* — that steals /health.json)
 ```
@@ -136,9 +140,26 @@ Caddy (TLS)
 - TOTP (after image with LOG-0128): open `/admin/account/` → **Two-factor authentication**
   or `/admin/account/two-factor/`; scan QR; confirm code. Subsequent logins need the
   authenticator code. Rotate any password that bypassed validators.
-- Static site deploy/rollback remains `update-release.sh` / `current` symlink;
-  CMS rollback is a previous `CMS_IMAGE` tag. Volumes are preserved on
-  `compose down` without `-v`.
+- Static site deploy/rollback remains `update-release.sh` / `current` symlink until
+  Caddy web cutover; after cutover, public HTML rollback is a previous `WEB_IMAGE`
+  tag or `rebuild-web.sh` with a pinned git ref. CMS rollback is a previous
+  `CMS_IMAGE` tag. Volumes are preserved on `compose down` without `-v`.
+- **After publishing in admin (story, profile, article, etc.):** when Caddy proxies
+  public routes to `127.0.0.1:13080`, rebuild the web container so Astro picks up
+  live CMS content:
+
+  ```bash
+  cd /home/deploy/cms-repo
+  git pull --ff-only origin main
+  bash infra/deploy/rebuild-web.sh
+  ```
+
+  Uses loopback `CMS_API_BASE=http://127.0.0.1:18000` by default (no public edge
+  `/api/` required). Optional override: `CMS_API_BASE=https://tahamohamadi.ir`.
+  Loopback smoke: `curl -fsS http://127.0.0.1:13080/health.json`. Public smoke
+  runs automatically when `https://tahamohamadi.ir` is reachable from the VPS.
+  While Caddy still uses `file_server`, also run `rebuild-static.sh` or rely on
+  CD until cutover is complete.
 - After CMS profile schema or seed changes, run `update-cms.sh` with a pinned image,
   verify `content.0005`/`0006` applied, run `import_profile_seed`, then rerun CD on
   `main` (or trigger `cd.yml`) so static About builds from live `/api/profiles/*`.

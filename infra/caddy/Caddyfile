@@ -13,12 +13,13 @@
 	}
 }
 
+# Rollback until rsync /opt/taha/site/current is removed: restore
+# root * /opt/taha/site/current + file_server (see static-site.caddy).
 (taha_application_routes) {
-	root * /opt/taha/site/current
-	file_server
+	reverse_proxy 127.0.0.1:13080
 	handle_errors {
 		rewrite * /404.html
-		file_server
+		reverse_proxy 127.0.0.1:13080
 	}
 }
 
@@ -81,7 +82,7 @@ tahamohamadi.ir {
 		}
 	}
 
-	# Catch-all: Astro static site
+	# Catch-all: nginx web container (Astro dist on loopback 13080)
 	import taha_application_routes
 }
 
