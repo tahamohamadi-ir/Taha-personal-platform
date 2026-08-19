@@ -605,6 +605,11 @@ class Project(LocalizedContentMixin, LifecycleMixin):
     code_url = models.URLField(blank=True)
     data_url = models.URLField(blank=True)
     demo_url = models.URLField(blank=True)
+    show_on_projects = models.BooleanField(
+        default=True,
+        db_default=True,
+        help_text="When false, a published project is omitted from the public /projects/ list.",
+    )
     topics = models.ManyToManyField(
         ResearchTopic,
         blank=True,

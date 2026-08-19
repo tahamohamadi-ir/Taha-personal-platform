@@ -604,11 +604,15 @@ def get_research_statement(request, locale: str, slug: str) -> ResearchStatement
 @api.get(
     "/projects/{locale}",
     response=list[ProjectListOut],
-    summary="List published projects with case study extension (paginated)",
+    summary="List published projects shown on /projects/ (paginated)",
 )
 @paginate(PageNumberPagination, page_size=10)
-def list_projects(request, locale: str, has_case_study: bool = True):
-    qs = Project.objects.public().filter(locale=locale).order_by("-published_at", "slug")
+def list_projects(request, locale: str, has_case_study: bool = False):
+    qs = (
+        Project.objects.public()
+        .filter(locale=locale, show_on_projects=True)
+        .order_by("-published_at", "slug")
+    )
     if has_case_study:
         qs = qs.filter(case_study__isnull=False).select_related("case_study")
     return qs
@@ -617,11 +621,11 @@ def list_projects(request, locale: str, has_case_study: bool = True):
 @api.get(
     "/projects/{locale}/{slug}",
     response=ProjectDetailOut,
-    summary="Get one published project case study by slug",
+    summary="Get one published project listed on /projects/ by slug",
 )
 def get_project(request, locale: str, slug: str) -> Project:
     project = _get_public_project(locale, slug)
-    if not project.has_case_study:
+    if not project.show_on_projects:
         raise HttpError(404, "project not found")
     return project
 
