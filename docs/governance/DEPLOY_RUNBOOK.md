@@ -139,9 +139,9 @@ Caddy (TLS)
 - Static site deploy/rollback remains `update-release.sh` / `current` symlink;
   CMS rollback is a previous `CMS_IMAGE` tag. Volumes are preserved on
   `compose down` without `-v`.
-- After merging the CMS-managed About work, production CMS still needs owner
-  `migrate` through `0005`/`0006` and `import_profile_seed` before `/admin/profiles/`
-  and live `/api/profiles/<locale>/about` return the typed bilingual profile.
-  The static site can ship on the committed snapshot even if that CMS step is
-  not done yet.
+- After CMS profile schema or seed changes, run `update-cms.sh` with a pinned image,
+  verify `content.0005`/`0006` applied, run `import_profile_seed`, then rerun CD on
+  `main` (or trigger `cd.yml`) so static About builds from live `/api/profiles/*`.
+  The VPS has no Node — use CD, not `rebuild-static.sh`, on the server.
+  Committed `profile.snapshot.json` remains the build fallback when the API is down.
 - Details: `infra/cms/README.md`, `docs/plan/P3-cms-versioned-cicd-task-spec.md`.
