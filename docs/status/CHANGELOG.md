@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-08-19 — CI: Playwright preview hang on PR #45
+
+- Web CI stuck on “Mobile overflow check”: silent `playwright install --with-deps`, shared port 4321 after smoke, and `waitUntil: networkidle`.
+- Fix: timeout the browser install, unique preview ports + health wait, `load` instead of `networkidle`.
+
 ## 2026-08-19 — Projects listing, nested skills, SPA TOTP, rebuild hook
 
 - Public `GET /api/projects/{locale}` lists published projects with `show_on_projects=True`; `has_case_study` is optional (default false). Additive `Project.show_on_projects` (`0007`).

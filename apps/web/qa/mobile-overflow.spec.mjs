@@ -35,7 +35,7 @@ try {
       const label = `${entry.path}@${vp.width}x${vp.height}`;
       try {
         await page.setViewportSize({ width: vp.width, height: vp.height });
-        await page.goto(target, { waitUntil: 'networkidle', timeout: GOTO_TIMEOUT });
+        await page.goto(target, { waitUntil: 'load', timeout: GOTO_TIMEOUT });
       const checks = await page.evaluate(
         ([expectedDir]) => {
           const htmlDir = document.documentElement.getAttribute('dir');

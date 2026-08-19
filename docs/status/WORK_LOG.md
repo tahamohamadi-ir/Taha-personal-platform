@@ -1813,5 +1813,16 @@ ode --check و YAML validation توسط agent.
 - Deferred or risk IDs: DEFER-0026 Playwright lifecycle OPEN; DEFER-0027 HMAC enable OPEN; DEFER-0028 composition/CV OPEN; DEBT-0003 Wagtail schema OPEN; DEBT-0006 CV/inbox OPEN; RISK-0010 dumpdata+backup before production `0007`.
 - Rollback / recovery: revert the PR; previous CMS image; boolean default True is compatible with existing rows.
 
+## LOG-0166 - 2026-08-19 - Unstick web CI Playwright preview
+
+- Outcome: PR #45 web job hung on “Mobile overflow check (Playwright)” well past the 3–5 minute successful baseline. Workflow now times out `playwright install`, uses ports 4322/4323 with `/health.json` wait, and QA specs use `waitUntil: load`.
+- Why: Silent install, `kill %1` across a surviving smoke preview on 4321, and `networkidle` can stall goto for 30s per viewport.
+- Scope / files: `.github/workflows/ci.yml`, `apps/web/qa/mobile-overflow.spec.mjs`, `apps/web/qa/about-tabs.spec.mjs`, CHANGELOG, this entry.
+- Commands or actions actually performed: inspected GitHub job 96047606466 (step 11 in_progress from 11:11:52Z); compared with successful `ci.yml` runs (~3–5 min total).
+- Verification actually performed and result: CMS/admin CI already PASS on PR #45; web CI re-run after this commit.
+- Deferred or risk IDs: DEFER-0026 unchanged.
+- Rollback / recovery: revert this commit.
+
+
 
 
