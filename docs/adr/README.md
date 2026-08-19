@@ -5,7 +5,7 @@ ADRها immutable هستند: تغییر تصمیم با ADR جدید انجام
 | ADR | Decision | Status |
 |---|---|---|
 | 0002 | Python 3.12 + Django 5.2 LTS + Wagtail 7.4 LTS baseline | Accepted; Wagtail part superseded by ADR-0026 (2026-08-18) |
-| 0008 | Docker Compose + Caddy deployment | Accepted for P0-A; existing live Caddy/Compose stack audited, project-specific config not provisioned |
+| 0008 | Docker Compose + Caddy deployment | Accepted; public serving amended by ADR-0027 (nginx `web`, still no public Node) |
 | 0009 | GitHub Actions hosted CI | Accepted |
 | 0010 | Encrypted Google Drive backup | Accepted target; provisioned and file-level restore-tested on 2026-08-14; staging DB import remains |
 | 0011 | Bilingual URL behavior | Accepted |
@@ -22,5 +22,6 @@ ADRها immutable هستند: تغییر تصمیم با ADR جدید انجام
 | 0024 | P3 content lifecycle and edit-concurrency (draft/review/published/archived, public() only) | Accepted 2026-08-15 (P3 code-first) |
 | 0025 | Staging decommissioning (staging.tahamohamadi.ir removed; gate = CI + production smoke) | Accepted 2026-08-15 (owner) |
 | 0026 | Custom admin panel replaces the Wagtail admin (React SPA + Django Ninja `/api/v1/admin/*`; Wagtail removed; content preserved) | Accepted 2026-08-18 (owner) |
+| 0027 | Unified Compose: `db` + `cms` + `web` (nginx/Astro dist) + later `caddy`; CMS origin; no public React/SSR in v1 | Accepted 2026-08-19 (owner) |
 
 The technology baseline still governs the remaining architecture decisions. Create a new ADR only when a decision is non-obvious, expensive to reverse, security/operations relevant, or changes a frozen contract.

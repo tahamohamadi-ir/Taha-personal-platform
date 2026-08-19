@@ -1,9 +1,9 @@
-# CMS runtime — Docker Compose for stateful CMS + PostgreSQL only.
+# Unified Compose stack (ADR-0027): db + cms + web.
 #
 # Architecture (canonical):
 #   Caddy (edge TLS + routing)
-#     ├── static Astro artifact  → /opt/taha/site/current  (NOT containerized)
-#     └── CMS                    → 127.0.0.1:18000 (this compose stack)
+#     ├── web (nginx, Astro dist) → 127.0.0.1:13080 (this stack)
+#     └── cms (Django/Gunicorn)   → 127.0.0.1:18000 (this stack)
 #
 # Versioned image (preferred production path):
 #   export CMS_IMAGE=ghcr.io/tahamohamadi-ir/taha-cms:<git-sha>
@@ -77,6 +77,27 @@ services:
       timeout: 5s
       start_period: 40s
       retries: 5
+
+  web:
+    image: ${WEB_IMAGE:-ghcr.io/tahamohamadi-ir/taha-web:main}
+    build:
+      context: ../..
+      dockerfile: infra/web/Dockerfile.web
+    pull_policy: ${WEB_PULL_POLICY:-missing}
+    ports:
+      - "127.0.0.1:13080:8080"
+    mem_limit: 128m
+    cpus: "0.25"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:8080/health.json"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      cms_internal:
+        aliases:
+          - web
 
 volumes:
   postgres_data:

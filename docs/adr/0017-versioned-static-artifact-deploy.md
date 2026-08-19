@@ -1,6 +1,6 @@
 # ADR-0017: Versioned static artifact deploy with atomic switch and rollback
 
-**Status:** Proposed.  
+**Status:** Proposed; public artifact form amended by ADR-0027 (nginx `web` image is an allowed immutable artifact, not only a host directory).  
 **Date:** 2026-08-14
 
 ## Context

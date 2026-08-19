@@ -1,3 +1,7 @@
+# SUPERSEDED — this file is replaced by infra/caddy/Caddyfile which is the
+# single source of truth for the full production Caddyfile. Kept as a
+# documentation reference only. Do not use for deployment.
+#
 # Caddy reverse-proxy snippet for the CMS runtime (same origin as the static site).
 #
 # Architecture:
@@ -22,6 +26,8 @@
 # Evidence 2026-08-16: without handle /static/*, public CSS 404s on the Astro
 # file_server while loopback CMS returns 200 with X-Forwarded-Proto: https.
 
+redir /admin /admin/ 308
+
 handle /admin/* {
 	reverse_proxy 127.0.0.1:18000 {
 		header_up X-Forwarded-Proto {scheme}
@@ -34,6 +40,8 @@ handle /admin/* {
 # Legacy Wagtail admin (ADR-0026 cutover, /admin-wagtail/): TOTP enrollment,
 # staff preview and rollback.  Matched explicitly because `/admin/*` does not
 # match `/admin-wagtail/*` and the file_server would otherwise 404 these paths.
+redir /admin-wagtail /admin-wagtail/ 308
+
 handle /admin-wagtail/* {
 	reverse_proxy 127.0.0.1:18000 {
 		header_up X-Forwarded-Proto {scheme}

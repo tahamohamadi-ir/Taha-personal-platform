@@ -23,8 +23,10 @@ Docker Compose (this directory)
 - **Versioned artifact (CMS)** = immutable container image tags on GHCR (git sha).
 - **Compose** = only the CMS + PostgreSQL stateful stack.
 
-Do **not** containerize the public Astro site: it has no Node runtime and is
-served directly from disk by Caddy (lower cost, simpler rollback).
+Do **not** run a Node.js public runtime in production (ADR-0027). The public
+`web` service is nginx serving a prebuilt Astro `dist`. Host Caddy remains the
+TLS edge until Compose `caddy` (`DEFER-0031`). The sentence “do not containerize
+Astro” is superseded: the **artifact** is containerized; the **runtime** is not Node.
 
 ## Files
 
