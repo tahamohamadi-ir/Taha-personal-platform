@@ -10,10 +10,12 @@ from apps.api.api import api
 from apps.content.admin_api import admin_profile_create_sibling, admin_profile_detail
 from apps.content.public_api import public_profile_detail, public_profile_list
 from apps.health.views import health
+from apps.media.views import serve_public_media
 from apps.rebuild.views import rebuild_trigger
 
 urlpatterns = [
     path("health/", health, name="health"),
+    path("media/<path:name>", serve_public_media, name="public_media"),
     # Custom React admin SPA (ADR-0026, ADM-1 cutover).
     path("admin/", serve_admin_ui, name="admin_spa"),
     path("admin/<path:spa_path>", serve_admin_ui, name="admin_spa_path"),

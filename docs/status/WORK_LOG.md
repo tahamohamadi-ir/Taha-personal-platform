@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0167 - 2026-08-19 - Blog story composition (slice 1)
+
+- Outcome: Composition is a story **body** engine, not a URL owner. `CompositionPage.kind` is `landing` (bilingual catalog unchanged) or `story` (single-locale figure/video/audio/math). Articles may attach an optional story document. Public article JSON exposes published-only `story`; Astro `StoryBody` renders it and falls back to sanitized `article.body`. Listing cards are unchanged. Typed footer shows license/accessibility notes only when filled. Media allowlist adds video/audio/SVG with magic-byte checks, 50MB AV cap, and anonymous `/media/` only for `is_active`. Wagtail stays installed. No invented content. HMAC not enabled.
+- Why: `DEFER-0028` mixed landing composition, CV, and tokens; the approved plan required blog as the reference story projection first.
+- Scope / files: CMS composition models/blocks/projection + migrations `0002`/`0008`; public article API; media sniff/validators/views; admin SPA article story editor; Astro `StoryBody` + `ArticleDetail`; plan/ledger docs; this entry.
+- Commands or actions actually performed: isolated worktree `.worktrees/blog-story-composition` on `feat/blog-story-composition` from `feat/continue-admin-public-sync` HEAD. Targeted pytest (110 passed), `ruff check .` (clean), `makemigrations --check --dry-run` (no pending). `npm run check` in `apps/web` (0 errors, 72 files) and `apps/cms/admin-frontend` (`tsc` PASS). No commit, no push, no VPS migrate.
+- Verification actually performed and result: 110 targeted pytest PASS; CMS ruff clean; no pending migrations; web check 0 errors; admin SPA check PASS.
+- Deferred or risk IDs: `DEFER-0028` CLOSED (blog story→Astro); `DEFER-0029` OPEN (primaryColor + CV); `DEFER-0030` OPEN (project/research/experience stories); `DEFER-0026`/`DEFER-0027` unchanged; `DEBT-0003` unchanged; `RISK-0010` dumpdata+backup before production migrate.
+- Rollback / recovery: revert the branch; nullable `Article.story` and default `kind=landing` are compatible with existing rows.
+
 ## LOG-0151 — 2026-08-18 — Canonical docs entry, contracts, P7 specs
 
 - Outcome: Landed local-only documentation that was sitting untracked on the stale `feat/cms-backup-risk-0003-prep` checkout: `docs/README.md`, `docs/contracts/*`, plan index, P7 specs, and the Samples transfer catalog. Added `.gitignore` rules for `Samples/` and `**/test-results/`. Aligned current-gate facts with `DEFER-0017` CLOSED, `RISK-0003` CLOSED, and PR #31. Did not reopen RISK-0003. Did not commit the merged backup branch.

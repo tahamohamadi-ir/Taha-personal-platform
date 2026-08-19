@@ -1,0 +1,209 @@
+---
+export interface StoryMedia {
+  id: number;
+  url: string;
+  mime: string;
+  alt: string;
+  altFa: string;
+  altEn: string;
+  title: string;
+}
+
+export interface StoryBlock {
+  blockType: string;
+  settings: Record<string, unknown>;
+}
+
+export interface StorySection {
+  layout: string;
+  ratio: string;
+  blocks: StoryBlock[];
+}
+
+export interface StoryDocument {
+  locale: string;
+  title: string;
+  sections: StorySection[];
+}
+
+interface Props {
+  locale: "fa" | "en";
+  story: StoryDocument;
+}
+
+function mediaOf(settings: Record<string, unknown>): StoryMedia | StoryMedia[] | null {
+  const media = settings.media;
+  if (Array.isArray(media)) {
+    return media as StoryMedia[];
+  }
+  if (media && typeof media === "object" && "url" in media) {
+    return media as StoryMedia;
+  }
+  return null;
+}
+
+function altFor(locale: "fa" | "en", item: StoryMedia): string {
+  if (locale === "fa" && item.altFa) return item.altFa;
+  if (locale === "en" && item.altEn) return item.altEn;
+  return item.alt || item.title;
+}
+
+function columnStyle(layout: string, ratio: string): string {
+  if (layout === "2col") {
+    if (ratio === "1:2") return "1fr 2fr";
+    if (ratio === "2:1") return "2fr 1fr";
+    return "1fr 1fr";
+  }
+  if (layout === "3col") {
+    return "1fr 1fr 1fr";
+  }
+  return "1fr";
+}
+
+const { locale, story } = Astro.props;
+---
+
+{
+  story.sections.map((section: StorySection) => (
+    <section
+      class="story-section"
+      style={`display:grid;gap:1rem;grid-template-columns:${columnStyle(section.layout, section.ratio)}`}
+    >
+      {
+        section.blocks.map((block: StoryBlock) => {
+          const s = block.settings;
+          const media = mediaOf(s);
+          const caption = typeof s.caption === "string" ? s.caption : "";
+          if (block.blockType === "heading") {
+            const text = typeof s.text === "string" ? s.text : "";
+            if (s.level === "h3") {
+              return <h3 class="story-heading">{text}</h3>;
+            }
+            if (s.level === "h4") {
+              return <h4 class="story-heading">{text}</h4>;
+            }
+            return <h2 class="story-heading">{text}</h2>;
+          }
+          if (block.blockType === "text") {
+            return (
+              <div class="story-text" set:html={typeof s.body === "string" ? s.body : ""} />
+            );
+          }
+          if (block.blockType === "quote") {
+            return (
+              <blockquote class="story-quote">
+                <div set:html={typeof s.body === "string" ? s.body : ""} />
+                {typeof s.source === "string" && s.source && <footer>{s.source}</footer>}
+              </blockquote>
+            );
+          }
+          if (block.blockType === "cta") {
+            const href = typeof s.url === "string" ? s.url : "";
+            const label = typeof s.label === "string" ? s.label : href;
+            return href ? (
+              <p>
+                <a href={href}>{label}</a>
+              </p>
+            ) : (
+              <p>{label}</p>
+            );
+          }
+          if (block.blockType === "figure" && media && !Array.isArray(media)) {
+            return (
+              <figure>
+                <img src={media.url} alt={altFor(locale, media)} />
+                {caption && <figcaption>{caption}</figcaption>}
+              </figure>
+            );
+          }
+          if (block.blockType === "gallery" && Array.isArray(media)) {
+            return (
+              <div class="story-gallery">
+                {media.map((item: StoryMedia) => (
+                  <figure>
+                    <img src={item.url} alt={altFor(locale, item)} />
+                  </figure>
+                ))}
+              </div>
+            );
+          }
+          if (block.blockType === "video" && media && !Array.isArray(media)) {
+            return (
+              <figure>
+                <video controls src={media.url} preload="metadata">
+                  <a href={media.url}>{media.title}</a>
+                </video>
+                {caption && <figcaption>{caption}</figcaption>}
+              </figure>
+            );
+          }
+          if (block.blockType === "audio" && media && !Array.isArray(media)) {
+            return (
+              <figure>
+                <audio controls src={media.url} preload="metadata">
+                  <a href={media.url}>{media.title}</a>
+                </audio>
+                {caption && <figcaption>{caption}</figcaption>}
+              </figure>
+            );
+          }
+          if (block.blockType === "math") {
+            return (
+              <div
+                class="story-math"
+                set:html={typeof s.html === "string" ? s.html : ""}
+              />
+            );
+          }
+          if (block.blockType === "divider") {
+            return <hr />;
+          }
+          return null;
+        })
+      }
+    </section>
+  ))
+}
+
+<style>
+  .story-section {
+    margin-block: 1.25rem;
+  }
+
+  .story-heading {
+    font-family: var(--font-display);
+    margin: 0;
+  }
+
+  .story-text :global(p),
+  .story-quote {
+    line-height: 1.7;
+  }
+
+  .story-quote {
+    margin-inline: 0;
+    padding-inline-start: 1rem;
+    border-inline-start: 3px solid var(--color-border-subtle);
+    color: var(--color-ink-muted);
+  }
+
+  .story-gallery {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  }
+
+  .story-section :global(img),
+  .story-section :global(video) {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .story-section :global(audio) {
+    width: 100%;
+  }
+
+  .story-math {
+    overflow-x: auto;
+  }
+</style>

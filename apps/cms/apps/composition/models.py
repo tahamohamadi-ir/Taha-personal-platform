@@ -4,13 +4,29 @@ A ``CompositionPage`` is a locale-specific page composed of ordered
 ``CompositionSection`` rows, each carrying an ordered list of
 ``CompositionBlock`` rows. Block payloads are validated against the typed
 catalog in ``blocks.py`` (fail-closed) before they are persisted.
+
+``kind=landing`` is the bilingual homepage/landing catalog. ``kind=story`` is
+a single-locale document attached to a content entity (blog first).
 """
 
 from django.db import models
 
 
 class CompositionPage(models.Model):
+    KIND_LANDING = "landing"
+    KIND_STORY = "story"
+    KIND_CHOICES = [
+        (KIND_LANDING, "Landing"),
+        (KIND_STORY, "Story"),
+    ]
+
     key = models.SlugField(max_length=120, unique=True)
+    kind = models.CharField(
+        max_length=16,
+        choices=KIND_CHOICES,
+        default=KIND_LANDING,
+        db_index=True,
+    )
     locale = models.CharField(
         max_length=2,
         choices=[("fa", "Persian"), ("en", "English")],

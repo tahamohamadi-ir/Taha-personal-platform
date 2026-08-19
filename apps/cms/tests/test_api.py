@@ -62,7 +62,7 @@ ARTICLE_LIST_FIELDS = {
     "topic_tags",
     "series",
 }
-ARTICLE_DETAIL_FIELDS = ARTICLE_LIST_FIELDS | {"body", "accessibility_notes"}
+ARTICLE_DETAIL_FIELDS = ARTICLE_LIST_FIELDS | {"body", "accessibility_notes", "story"}
 
 
 @pytest.fixture
@@ -269,6 +269,7 @@ def test_detail_article_by_slug(api_client, published_content):
     data = assert_json(api_client.get("/api/articles/en/first-post"), 200)
     assert set(data) == ARTICLE_DETAIL_FIELDS
     assert data["body"] == "<p>Hello published</p>"
+    assert data["story"] is None
     assert FORBIDDEN_FIELDS.isdisjoint(data)
 
 
