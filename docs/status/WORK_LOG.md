@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0171 — 2026-08-19 — Admin SPA: merge content detail + edit (story/skills reachable)
+
+- Outcome: Content list links now open the unified edit page (`/content/:entity/:id`). Removed read-only `ContentDetailPage`. Article story editor and profile skills editor are visible immediately from list click. `/content/:entity/:id/edit` redirects to canonical URL. Workflow transitions and published/updated metadata ported to edit page.
+- Why: Owner reported story and skills features missing; they existed only on `/edit` route with no navigation path from list/detail.
+- Scope / files: `apps/cms/admin-frontend/src/App.tsx`, `ContentEditPage.tsx`, deleted `ContentDetailPage.tsx`, ledgers.
+- Commands or actions actually performed: `npm run check` in admin-frontend — PASS.
+- Verification actually performed and result: tsc clean; manual path: list → article/profile shows story/skills sections.
+- Deferred or risk IDs: none new. CMS image rebuild required for production (`SPA` baked in Docker).
+- Rollback / recovery: revert PR; restore detail route in App.tsx.
+
 ## LOG-0170 — 2026-08-19 — Slice 0+1: /admin 308 fix, old stack decommissioned, Caddyfile automated, web nginx container + CI/CD
 
 - Outcome: `/admin` 404 fixed with `redir /admin /admin/ 308` in live Caddy (owner applied). Old `taha-prod` Java/Vue stack decommissioned (containers down, volumes removed, 1 GB reclaimed). Full production Caddyfile committed to repo (`infra/caddy/Caddyfile`) with `caddy-sync.sh` auto-deploy in CD. Slice 1: `web` nginx container (`infra/web/Dockerfile.web`, `infra/web/nginx.conf`), added to compose, CI builds `taha-web` image, CD pulls and restarts.

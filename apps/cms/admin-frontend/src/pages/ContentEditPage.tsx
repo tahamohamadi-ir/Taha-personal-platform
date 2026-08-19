@@ -12,6 +12,7 @@ import {
   fetchContentSchema,
   isApiError,
   isConflict,
+  transitionContent,
   updateContent,
   type ApiError,
   type ContentDetail,
@@ -23,14 +24,21 @@ import {
 import {
   CONTENT_STATUSES,
   contentEntityLabel,
+  contentStatusMeta,
   isContentEntity,
   isContentLocale,
   isContentStatus,
 } from "../lib/entities";
+import {
+  TRANSITION_TARGETS,
+  transitionConfirm,
+  transitionLabel,
+} from "../lib/workflow";
+import { formatDateTime } from "../lib/format";
 import ProfileNestedEditor from "../components/ProfileNestedEditor";
 import ArticleStoryEditor from "../components/ArticleStoryEditor";
 
-type LoadState = "loading" | "ready" | "error" | "invalid";
+type LoadState = "loading" | "ready" | "error" | "invalid" | "not-found";
 
 interface FormValues {
   locale: ContentLocale;
@@ -223,12 +231,20 @@ export default function ContentEditPage(): ReactElement {
   const [schema, setSchema] = useState<ContentEntitySchema | null>(null);
   const [form, setForm] = useState<FormValues | null>(null);
   const [updatedAt, setUpdatedAt] = useState("");
+  const [publishedAt, setPublishedAt] = useState<string | null>(null);
   const [storyId, setStoryId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [conflictError, setConflictError] = useState<ApiError | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const [transitioningTo, setTransitioningTo] = useState<ContentStatus | null>(
+    null
+  );
+  const [transitionError, setTransitionError] = useState<unknown>(null);
+  const [transitionSuccess, setTransitionSuccess] = useState<string | null>(
+    null
+  );
 
   const listUrl = entity === null ? "/content" : `/content/${entity}`;
 
@@ -267,6 +283,7 @@ export default function ContentEditPage(): ReactElement {
           setSchema(entitySchema);
           setForm(formValuesFromDetail(detail));
           setUpdatedAt(detail.updatedAt);
+          setPublishedAt(detail.publishedAt);
           const rawStory = detail.fields.storyId;
           setStoryId(
             typeof rawStory === "number"
@@ -296,8 +313,12 @@ export default function ContentEditPage(): ReactElement {
         }
       } catch (err) {
         if (!cancelled) {
-          setError(err);
-          setState("error");
+          if (isApiError(err) && err.status === 404 && isEditing) {
+            setState("not-found");
+          } else {
+            setError(err);
+            setState("error");
+          }
         }
       }
     };
@@ -320,10 +341,48 @@ export default function ContentEditPage(): ReactElement {
       const detail = await fetchContentDetail(entity, id);
       setForm(formValuesFromDetail(detail));
       setUpdatedAt(detail.updatedAt);
+      setPublishedAt(detail.publishedAt);
       setState("ready");
     } catch (err) {
       setError(err);
       setState("error");
+    }
+  }
+
+  function applyDetail(detail: ContentDetail): void {
+    setForm(formValuesFromDetail(detail));
+    setUpdatedAt(detail.updatedAt);
+    setPublishedAt(detail.publishedAt);
+    const rawStory = detail.fields.storyId;
+    setStoryId(
+      typeof rawStory === "number"
+        ? rawStory
+        : typeof rawStory === "string" && rawStory !== ""
+          ? Number.parseInt(rawStory, 10)
+          : null
+    );
+  }
+
+  async function handleTransition(to: ContentStatus): Promise<void> {
+    if (entity === null || !isEditing || transitioningTo !== null) {
+      return;
+    }
+    if (!window.confirm(transitionConfirm(to))) {
+      return;
+    }
+    setTransitioningTo(to);
+    setTransitionError(null);
+    setTransitionSuccess(null);
+    try {
+      const updated = await transitionContent(entity, id, { to });
+      applyDetail(updated);
+      setTransitionSuccess(
+        `وضعیت به «${contentStatusMeta(updated.status).labelFa}» تغییر کرد.`
+      );
+    } catch (err) {
+      setTransitionError(err);
+    } finally {
+      setTransitioningTo(null);
     }
   }
 
@@ -435,6 +494,20 @@ export default function ContentEditPage(): ReactElement {
     );
   }
 
+  if (state === "not-found") {
+    return (
+      <div className="admin-card max-w-md" role="alert">
+        <h1 className="mb-1 text-lg font-bold">یافت نشد</h1>
+        <p className="admin-muted mb-4 text-sm">
+          این محتوا وجود ندارد یا حذف شده است.
+        </p>
+        <Link to={listUrl} className="admin-btn">
+          به فهرست
+        </Link>
+      </div>
+    );
+  }
+
   if (state === "error") {
     return (
       <div className="admin-card max-w-md" role="alert">
@@ -472,15 +545,26 @@ export default function ContentEditPage(): ReactElement {
   const slugErr = fieldErrorInfo(fieldErrors, "slug");
   const localeErr = fieldErrorInfo(fieldErrors, "locale");
   const statusErr = fieldErrorInfo(fieldErrors, "status");
+  const statusMeta = contentStatusMeta(form.status);
+  const transitionTargets = isEditing
+    ? TRANSITION_TARGETS[form.status]
+    : [];
 
   return (
     <div className="max-w-3xl">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h1 className="text-xl font-bold">
-            {isEditing ? "ویرایش" : "ایجاد"}{" "}
-            {contentEntityLabel(entity)}
-          </h1>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-xl font-bold">
+              {isEditing ? "ویرایش" : "ایجاد"}{" "}
+              {contentEntityLabel(entity)}
+            </h1>
+            {isEditing ? (
+              <span className={`admin-status-badge ${statusMeta.className}`}>
+                {statusMeta.labelFa}
+              </span>
+            ) : null}
+          </div>
           <p className="admin-muted text-sm">
             {isEditing ? "اصلاح محتوای موجود" : "ثبت محتوای جدید"}
           </p>
@@ -489,6 +573,68 @@ export default function ContentEditPage(): ReactElement {
           بازگشت
         </Link>
       </div>
+
+      {isEditing ? (
+        <dl className="admin-card mb-4 flex flex-wrap gap-x-8 gap-y-2 text-sm">
+          <div className="flex items-center gap-2">
+            <dt className="admin-muted">تاریخ انتشار:</dt>
+            <dd>{formatDateTime(publishedAt)}</dd>
+          </div>
+          <div className="flex items-center gap-2">
+            <dt className="admin-muted">آخرین به‌روزرسانی:</dt>
+            <dd>{formatDateTime(updatedAt)}</dd>
+          </div>
+        </dl>
+      ) : null}
+
+      {isEditing && transitionTargets.length > 0 ? (
+        <div className="admin-card mb-4">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-base font-bold">زندگی چرخه</h2>
+            <span className={`admin-status-badge ${statusMeta.className}`}>
+              {statusMeta.labelFa}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {transitionTargets.map((to) => (
+              <button
+                key={to}
+                type="button"
+                className="admin-btn"
+                disabled={transitioningTo !== null || saving}
+                onClick={() => void handleTransition(to)}
+              >
+                {transitioningTo === to
+                  ? "در حال انجام…"
+                  : transitionLabel(to)}
+              </button>
+            ))}
+          </div>
+          {transitionError !== null && (
+            <div
+              className="admin-banner-error mt-3"
+              role="alert"
+              aria-live="polite"
+            >
+              <p>
+                {toErrorMessage(
+                  transitionError,
+                  "تغییر وضعیت با خطا مواجه شد."
+                )}
+              </p>
+            </div>
+          )}
+          {transitionSuccess !== null && (
+            <div
+              className="admin-banner-success mt-3"
+              role="status"
+              aria-live="polite"
+            >
+              <p>{transitionSuccess}</p>
+            </div>
+          )}
+        </div>
+      ) : null}
 
       {error !== null && (
         <div
