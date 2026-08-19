@@ -1,10 +1,10 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useParams } from "react-router-dom";
+import type { ReactElement } from "react";
 import { AuthGuard, AuthProvider } from "./lib/AuthContext";
 import AdminLayout from "./components/AdminLayout";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import ContentListPage from "./pages/ContentListPage";
-import ContentDetailPage from "./pages/ContentDetailPage";
 import ContentEditPage from "./pages/ContentEditPage";
 import MediaLibraryPage from "./pages/MediaLibraryPage";
 import OverviewPage from "./pages/OverviewPage";
@@ -15,6 +15,11 @@ import TagsPage from "./pages/TagsPage";
 import FeaturedPage from "./pages/FeaturedPage";
 import SecurityPage from "./pages/SecurityPage";
 import NotFoundPage from "./pages/NotFoundPage";
+
+function ContentEditRedirect(): ReactElement {
+  const { entity, id } = useParams();
+  return <Navigate to={`/content/${entity}/${id}`} replace />;
+}
 
 export default function App() {
   return (
@@ -27,13 +32,10 @@ export default function App() {
             <Route path="/content" element={<ContentListPage />} />
             <Route path="/content/:entity" element={<ContentListPage />} />
             <Route path="/content/:entity/new" element={<ContentEditPage />} />
-            <Route
-              path="/content/:entity/:id"
-              element={<ContentDetailPage />}
-            />
+            <Route path="/content/:entity/:id" element={<ContentEditPage />} />
             <Route
               path="/content/:entity/:id/edit"
-              element={<ContentEditPage />}
+              element={<ContentEditRedirect />}
             />
             <Route path="/media" element={<MediaLibraryPage />} />
             <Route path="/overview" element={<OverviewPage />} />

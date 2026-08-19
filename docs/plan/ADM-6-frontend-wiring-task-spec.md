@@ -5,7 +5,7 @@
 ## Task: ADM-6 — Astro published fetch, rebuild trigger, lifecycle E2E
 
 - Goal: Public Astro pages list published CMS rows at build time; after a successful publish the loopback rebuild hook can run `infra/deploy/rebuild-static.sh` when enabled; a local create→edit→publish→public JSON path is tested. HMAC enablement on production stays owner-gated.
-- User/actor and journey: Owner publishes in the React admin; visitors see published fa/en pages after a static rebuild. Anonymous callers never see drafts or `/api/v1/admin/*`.
+- User/actor and journey: Owner publishes in the React admin; visitors see published fa/en pages after a static rebuild. Anonymous callers never see drafts or `/api/v1/admin/*`. Content list opens the unified edit page (story + nested profile skills); legacy `/edit` URL redirects to canonical `/content/:entity/:id`.
 - Release type: `STANDARD`
 - Risk level: Medium (rebuild side effect; production enable is owner-only)
 - Owner and handoff recipient: agent implements → CI → owner VPS migrate/rebuild/enable
