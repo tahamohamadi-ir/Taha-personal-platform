@@ -28,6 +28,7 @@ from apps.api.admin_common import (
 )
 from apps.api.admin_content import _parse_positive_int
 from apps.media.models import Media
+from apps.media.sniff import mime_family, sniff_mime
 
 media_router = Router()
 
@@ -47,14 +48,15 @@ def media_usage_count(media) -> int:
     return total
 
 
+class _SniffedMime:
+    def __init__(self, mime: str):
+        self.mime = mime
+
+
 def _sniff_upload(upload: UploadedFile):
     """Detect the MIME of an uploaded file from its content (magic bytes)."""
-    import filetype
-
-    upload.seek(0)
-    kind = filetype.guess(upload.read(2048))
-    upload.seek(0)
-    return kind
+    mime = sniff_mime(upload)
+    return _SniffedMime(mime) if mime else None
 
 
 def _parse_if_match(header: str | None) -> datetime | None:
@@ -213,9 +215,16 @@ def _apply_filters(request, q, type, active, page, pageSize):
     if q is not None:
         qs = qs.filter(title__icontains=q)
     if type is not None:
-        if type not in ("image", "pdf"):
-            raise AdminError(400, "VALIDATION", "Invalid type. Expected image or pdf.")
-        qs = qs.filter(mime__startswith=type)
+        if type not in ("image", "pdf", "video", "audio"):
+            raise AdminError(
+                400,
+                "VALIDATION",
+                "Invalid type. Expected image, pdf, video, or audio.",
+            )
+        if type == "pdf":
+            qs = qs.filter(mime="application/pdf")
+        else:
+            qs = qs.filter(mime__startswith=f"{type}/")
     if active is not None:
         if active == "true":
             qs = qs.filter(is_active=True)
@@ -384,11 +393,11 @@ def media_replace(
             if kind is None:
                 raise AdminError(400, "VALIDATION", "Unsupported file type.")
             new_mime = kind.mime
-            if bool(previous_mime.startswith("image/")) != bool(new_mime.startswith("image/")):
+            if mime_family(previous_mime) != mime_family(new_mime):
                 raise AdminError(
                     400,
                     "VALIDATION",
-                    "Replacement must be the same MIME family (image vs pdf).",
+                    "Replacement must be the same MIME family (image, pdf, video, or audio).",
                 )
             media.file = file
             try:

@@ -15,7 +15,8 @@ Last reconciled: 2026-08-19.
 
 | Spec | State | Who runs it | Notes |
 |---|---|---|---|
-| `cms-origin-and-full-stack-cd-task-spec.md` | IN_PROGRESS | agent | ADR-0027. Slice 0 = smoke + contracts. Next: Slice 1 nginx `web`. |
+| `cms-origin-and-full-stack-cd-task-spec.md` | IN_PROGRESS | agent | ADR-0027. Slice 0+1 done. Next: Slice 2 CD auto-migrate. |
+| `blog-story-composition-task-spec.md` | PARTIAL | agent | Blog story body via composition; owner migrate + static rebuild. |
 | `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | HMAC `DEFER-0027`; Playwright `DEFER-0026`; story projection shipped on `b6bea6a`. |
 | `P0-A-stack-inventory-task-spec.md` | BLOCKED (owner) | owner | Read-only VPS inventory. Not an agent task. |
 

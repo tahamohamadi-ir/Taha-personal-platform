@@ -7,6 +7,15 @@
 - Slice 1: `taha-web` nginx image (Dockerfile + CI + CD). Compose now has `db` + `cms` + `web`.
 - VPS prereq: install `caddy-sync.sh` at `/opt/taha/bin/caddy-sync.sh`.
 
+## 2026-08-19 — Blog story composition (slice 1)
+
+- Composition pages have `kind=landing|story`. Landing bilingual catalog is unchanged; story uses single-locale blocks including figure/video/audio/math.
+- Optional `Article.story` FK. Owner edits the story on the article form (`/admin/content/article/:id/edit`), not only under Pages.
+- Public `GET /api/articles/{locale}/{slug}` may include a published-only `story` tree; Astro `StoryBody` renders it, otherwise sanitized `body`.
+- Media library accepts video/audio and SVG (magic-byte + SVG script reject); AV cap 50MB; anonymous `/media/` only `is_active`.
+- `DEFER-0028` CLOSED for blog story→Astro. `DEFER-0029` (primaryColor + CV) and `DEFER-0030` (other entity stories) remain OPEN.
+- **Owner VPS:** dumpdata + backup, migrate composition `0002` + content `0008`, rebuild CMS image and static site.
+
 ## 2026-08-19 — ADR-0027 unified Compose; CMS b6bea6a live; smoke Wagtail URL
 
 - Owner production: `ghcr.io/tahamohamadi-ir/taha-cms:b6bea6a`; migrations `0008`/`0002` applied.

@@ -25,9 +25,11 @@ from apps.api.admin_common import (
 )
 from apps.api.admin_content import _parse_positive_int
 from apps.composition.blocks import (
-    BLOCK_TYPES,
+    KIND_LANDING,
     SECTION_LAYOUT_RATIOS,
+    VALID_KINDS,
     BlockValidationError,
+    allowed_block_types,
     composition_schema,
     validate_block_settings,
 )
@@ -122,6 +124,7 @@ class BlockFieldSpecOut(Schema):
 class BlockTypeOut(Schema):
     type: str
     labelFa: str
+    required: list[str] = Field(default_factory=list)
     fields: list[BlockFieldSpecOut] = Field(default_factory=list)
 
 
@@ -132,6 +135,7 @@ class SectionLayoutOut(Schema):
 
 
 class CompositionSchemaOut(Schema):
+    kind: str = KIND_LANDING
     blockTypes: list[BlockTypeOut] = Field(default_factory=list)
     sectionLayouts: list[SectionLayoutOut] = Field(default_factory=list)
 
@@ -141,6 +145,7 @@ class CompositionListItemOut(Schema):
 
     id: int
     key: str
+    kind: str
     locale: str
     title: str
     status: str
@@ -177,6 +182,7 @@ class CompositionSectionOut(Schema):
 class CompositionDetailOut(Schema):
     id: int
     key: str
+    kind: str
     locale: str
     title: str
     status: str
@@ -191,6 +197,7 @@ class CompositionCreateIn(Schema):
     locale: str
     title: str
     status: str = "draft"
+    kind: str = KIND_LANDING
 
 
 class CompositionBlockUpdateIn(Schema):
@@ -217,6 +224,7 @@ def _serialize_page(page) -> CompositionDetailOut:
     return CompositionDetailOut(
         id=page.pk,
         key=page.key,
+        kind=page.kind,
         locale=page.locale,
         title=page.title,
         status=page.status,
@@ -246,7 +254,9 @@ def _serialize_page(page) -> CompositionDetailOut:
     )
 
 
-def _validate_sections(sections: list[CompositionSectionUpdateIn]) -> None:
+def _validate_sections(
+    sections: list[CompositionSectionUpdateIn], kind: str = KIND_LANDING
+) -> None:
     """Validate the full section/block document (semantic, not ninja-parsed)."""
     if len(sections) > MAX_SECTIONS:
         raise AdminError(
@@ -284,8 +294,9 @@ def _validate_sections(sections: list[CompositionSectionUpdateIn]) -> None:
                     f"sections[{i}]": [f"At most {MAX_BLOCKS_PER_SECTION} blocks are allowed."]
                 },
             )
+        allowed = set(allowed_block_types(kind))
         for j, block in enumerate(section.blocks):
-            if block.blockType not in BLOCK_TYPES:
+            if block.blockType not in allowed:
                 raise AdminError(
                     400,
                     "VALIDATION",
@@ -297,7 +308,7 @@ def _validate_sections(sections: list[CompositionSectionUpdateIn]) -> None:
                     },
                 )
             try:
-                validate_block_settings(block.blockType, block.settings)
+                validate_block_settings(block.blockType, block.settings, kind=kind)
             except BlockValidationError as exc:
                 raise AdminError(
                     400,
@@ -312,9 +323,15 @@ def _validate_sections(sections: list[CompositionSectionUpdateIn]) -> None:
     response=CompositionSchemaOut,
     summary="Composition schema metadata.",
 )
-def composition_schema_view(request):
+def composition_schema_view(request, kind: str = KIND_LANDING):
     _require_admin_otp(request)
-    return composition_schema()
+    if kind not in VALID_KINDS:
+        raise AdminError(
+            400,
+            "VALIDATION",
+            f"Invalid kind. Expected one of: {', '.join(VALID_KINDS)}.",
+        )
+    return composition_schema(kind)
 
 
 @composition_router.get("", response=CompositionListOut, summary="List composition pages.")
@@ -357,6 +374,7 @@ def composition_list(
             CompositionListItemOut(
                 id=item.pk,
                 key=item.key,
+                kind=item.kind,
                 locale=item.locale,
                 title=item.title,
                 status=item.status,
@@ -391,6 +409,12 @@ def composition_create(request, payload: CompositionCreateIn):
             "VALIDATION",
             f"Invalid status. Expected one of: {', '.join(VALID_STATUSES)}.",
         )
+    if payload.kind not in VALID_KINDS:
+        raise AdminError(
+            400,
+            "VALIDATION",
+            f"Invalid kind. Expected one of: {', '.join(VALID_KINDS)}.",
+        )
     key = payload.key.strip()
     title = payload.title.strip()
     if not key or not KEY_RE.fullmatch(key):
@@ -403,6 +427,7 @@ def composition_create(request, payload: CompositionCreateIn):
         with transaction.atomic():
             page = CompositionPage.objects.create(
                 key=key,
+                kind=payload.kind,
                 locale=payload.locale,
                 title=title,
                 status=payload.status,
@@ -459,7 +484,7 @@ def composition_update(request, page_id: int, payload: CompositionUpdateIn):
                     )
                 page.status = payload.status
             if payload.sections is not None:
-                _validate_sections(payload.sections)
+                _validate_sections(payload.sections, kind=page.kind)
                 page.sections.all().delete()
                 for position, section in enumerate(payload.sections):
                     new_section = CompositionSection.objects.create(

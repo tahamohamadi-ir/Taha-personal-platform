@@ -824,7 +824,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 - [x] Page → Section → Block با اعتبارسنجی fail-closed سمت سرور (کلیدهای مجاز، الزامی، bounds، ارجاع media دقیق)؛ layout presets: ۱/۲/۳ ستون + نسبت ستون‌ها + ترتیب (کنار/زیر هم). *(2026-08-18: `apps/composition/` + `/api/v1/admin/composition/*` — LOG-0160)*
 - [x] ویرایشگر ساخت‌یافته‌ی سکشن/بلوک با پیش‌نمایش؛ کاتالوگ بلوک‌ها (hero/text/heading/quote/cta/gallery/divider). *(2026-08-18: ویرایشگر schema-driven در SPA با MediaPicker + پیش‌نمایش grid — LOG-0160)*
 - [ ] کاتالوگ بلوک‌های غنی v2 (اختیاری پس از v1): accordion، tabs، timeline، counters، before/after، slider — از کاتالوگ ماژول Divi 5. *(§14 U3 — بعدی)*
-- [x] داده‌های عمومی به‌صورت published-only پروژه می‌شوند؛ مدل‌های موجود تغییر نمی‌کنند (افزودن مدل Composition به‌صورت additive). *(projection عمومی → ADM-6 — LOG-0160)*
+- [x] داده‌های عمومی به‌صورت published-only پروژه می‌شوند؛ مدل‌های موجود تغییر نمی‌کنند (افزودن مدل Composition به‌صورت additive). *(projection عمومی داستان بلاگ — LOG-0167؛ انواع دیگر → `DEFER-0030`)*
 
 ### Task ADM-4 — Workflow + revisions + translation queue
 
@@ -842,6 +842,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 - [x] Astro: fetch داده‌های منتشرشده هنگام build + اجرای rebuild-trigger پس از انتشار (loopback، بدون افشای `/api/v1/admin/*`). *(LOG-0165 — HMAC default off; `invoke_static_rebuild` mocked in tests; production enable `DEFER-0027`)*
 - [x] E2E: lifecycle JSON (create→edit→publish→public fa/en) + anonymous published-only. *(LOG-0165 — `test_content_lifecycle_e2e.py`)* Playwright browser matrix → `DEFER-0026`.
+- [x] Blog story composition → Astro (`StoryBody` + article fallback). *(LOG-0167; spec `blog-story-composition-task-spec.md`; `DEFER-0028` CLOSED)* Production migrate/rebuild is owner.
 - [ ] QA کامل: RTL/LTR، keyboard، noindex/cache policy، bulk destructive با count+confirm+audit، release checklist §18. *(DEFER-0026)*
 
 ---

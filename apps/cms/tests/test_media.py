@@ -24,6 +24,16 @@ PNG_1X1 = (
 
 PDF_MIN = b"%PDF-1.4\n%\xe2\xe3\xcf\xd3\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF"
 
+SVG_MIN = b'<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"></svg>'
+SVG_SCRIPT = (
+    b'<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>'
+)
+WAV_MIN = (
+    b"RIFF$\x00\x00\x00WAVEfmt \x10\x00\x00\x00\x01\x00\x01\x00"
+    b"D\xac\x00\x00\x88X\x01\x00\x02\x00\x10\x00data\x00\x00\x00\x00"
+)
+MP3_MIN = b"ID3\x03\x00\x00\x00\x00\x00\x00\xff\xfb\x90\x00" + b"\x00" * 200
+
 
 class FakeFile:
     """Minimal stand-in with the attributes validators read."""
@@ -60,6 +70,19 @@ class TestValidateFileType:
     def test_accepts_real_pdf(self):
         validate_file_type(uploaded("cv.pdf", PDF_MIN))
 
+    def test_accepts_svg(self):
+        validate_file_type(uploaded("icon.svg", SVG_MIN))
+
+    def test_rejects_svg_with_script(self):
+        with pytest.raises(ValidationError):
+            validate_file_type(uploaded("evil.svg", SVG_SCRIPT))
+
+    def test_accepts_wav(self):
+        validate_file_type(uploaded("clip.wav", WAV_MIN))
+
+    def test_accepts_mp3(self):
+        validate_file_type(uploaded("clip.mp3", MP3_MIN))
+
     def test_restores_file_position_after_check(self):
         fake = uploaded("photo.png", PNG_1X1)
         validate_file_type(fake)
@@ -80,6 +103,31 @@ class TestValidateFileSize:
 
     def test_accepts_small_file(self):
         validate_file_size(FakeFile(1024))
+
+    def test_av_cap_is_50mb(self):
+        from apps.media.validators import MAX_AV_FILE_SIZE
+
+        class WavFile:
+            def __init__(self, size):
+                self.size = size
+                self.name = "clip.wav"
+                self._pos = 0
+
+            def seek(self, pos):
+                self._pos = pos
+
+            def tell(self):
+                return self._pos
+
+            def read(self, n=-1):
+                data = WAV_MIN
+                if n == -1:
+                    return data
+                return data[:n]
+
+        validate_file_size(WavFile(MAX_AV_FILE_SIZE))
+        with pytest.raises(ValidationError, match="50MB"):
+            validate_file_size(WavFile(MAX_AV_FILE_SIZE + 1))
 
 
 class TestMediaUploadPath:

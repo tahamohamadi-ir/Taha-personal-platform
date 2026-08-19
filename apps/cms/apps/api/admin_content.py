@@ -100,6 +100,7 @@ DETAIL_FIELD_MAPS: dict[str, dict[str, str]] = {
         "license": "license",
         "reading_time_minutes": "readingTimeMinutes",
         "accessibility_notes": "accessibilityNotes",
+        "story": "storyId",
     },
     "research-topic": {
         "summary": "summary",
@@ -165,6 +166,8 @@ def _field_type(field) -> str:
     """Generic form widget type for a Django model field."""
     if isinstance(field, models.BooleanField):
         return "boolean"
+    if isinstance(field, models.ForeignKey):
+        return "number"
     if isinstance(field, models.DateField):
         return "date"
     if isinstance(field, models.IntegerField):
@@ -207,7 +210,38 @@ def _coerce_field_value(field, attr: str, key: str, value) -> object:
                 "VALIDATION",
                 f"Invalid integer for '{key}'.",
                 fields={"fields": [key]},
+            )             from None
+    if isinstance(field, models.ForeignKey):
+        if value in (None, ""):
+            return None
+        try:
+            pk = int(value)
+        except (TypeError, ValueError):
+            raise AdminError(
+                400,
+                "VALIDATION",
+                f"Invalid integer for '{key}'.",
+                fields={"fields": [key]},
             ) from None
+        related = field.related_model.objects.filter(pk=pk).first()
+        if related is None:
+            raise AdminError(
+                400,
+                "VALIDATION",
+                f"Invalid reference for '{key}'.",
+                fields={"fields": [key]},
+            )
+        if attr == "story":
+            from apps.composition.blocks import KIND_STORY
+
+            if getattr(related, "kind", None) != KIND_STORY:
+                raise AdminError(
+                    400,
+                    "VALIDATION",
+                    "storyId must reference a story composition.",
+                    fields={"fields": [key]},
+                )
+        return related
     if isinstance(field, models.DateField):
         if value in (None, ""):
             return None
@@ -399,10 +433,13 @@ class ContentTransitionIn(Schema):
 
 def _detail_response(item, model, entity: str) -> ContentDetailOut:
     """Serialize an entity row into the shared detail envelope."""
-    fields: dict[str, object] = {
-        key: getattr(item, attr)
-        for attr, key in DETAIL_FIELD_MAPS[entity].items()
-    }
+    fields: dict[str, object] = {}
+    for attr, key in DETAIL_FIELD_MAPS[entity].items():
+        field = model._meta.get_field(attr)
+        if isinstance(field, models.ForeignKey):
+            fields[key] = getattr(item, field.attname)
+        else:
+            fields[key] = getattr(item, attr)
     return ContentDetailOut(
         id=item.pk,
         locale=item.locale,
@@ -595,6 +632,15 @@ def content_update(request, entity: str, id: int, payload: ContentUpdateIn):
             if payload.fields is not None:
                 for attr, value in _coerce_fields(entity, model, payload.fields).items():
                     setattr(item, attr, value)
+            if entity == "article":
+                story = getattr(item, "story", None)
+                if story is not None and story.locale != item.locale:
+                    raise AdminError(
+                        400,
+                        "VALIDATION",
+                        "storyId locale must match the article locale.",
+                        fields={"fields": ["storyId"]},
+                    )
             if (
                 payload.status == "published"
                 and hasattr(model, "published_at")

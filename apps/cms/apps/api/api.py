@@ -14,6 +14,7 @@ from ninja.errors import HttpError
 from ninja.pagination import PageNumberPagination, paginate
 from wagtail.whitelist import Whitelister
 
+from apps.composition.projection import public_story_document
 from apps.content.models import (
     Article,
     ArticleSlugRedirect,
@@ -102,15 +103,37 @@ class ArticleListOut(Schema):
         return list(obj.series.public().order_by("ordering", "slug"))
 
 
+class StoryBlockOut(Schema):
+    blockType: str
+    settings: dict = Field(default_factory=dict)
+
+
+class StorySectionOut(Schema):
+    layout: str
+    ratio: str
+    blocks: list[StoryBlockOut] = Field(default_factory=list)
+
+
+class StoryDocumentOut(Schema):
+    locale: str
+    title: str
+    sections: list[StorySectionOut] = Field(default_factory=list)
+
+
 class ArticleDetailOut(ArticleListOut):
-    """Public article detail including sanitized rich-text body."""
+    """Public article detail including sanitized rich-text body and optional story."""
 
     body: str
     accessibility_notes: str
+    story: StoryDocumentOut | None = None
 
     @staticmethod
     def resolve_body(obj: Article) -> str:
         return sanitize_public_richtext(str(obj.body or ""))
+
+    @staticmethod
+    def resolve_story(obj: Article) -> dict | None:
+        return public_story_document(getattr(obj, "story", None), obj.locale)
 
 
 class ArticleSlugRedirectOut(Schema):
@@ -198,7 +221,8 @@ def get_article(request, locale: str, slug: str) -> Article:
     article = (
         Article.objects.public()
         .filter(locale=locale, slug=slug)
-        .prefetch_related("topic_tags", "series")
+        .select_related("story")
+        .prefetch_related("topic_tags", "series", "story__sections__blocks")
         .first()
     )
     if article is None:

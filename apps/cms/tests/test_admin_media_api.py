@@ -255,7 +255,7 @@ def test_detail_404(admin_api_client):
     assert response.json()["code"] == "NOT_FOUND"
 
 def test_list_invalid_type_400(admin_api_client):
-    r = admin_api_client.get("/api/v1/admin/media?type=video")
+    r = admin_api_client.get("/api/v1/admin/media?type=bogus")
     assert r.status_code == 400
     assert r.json()["code"] == "VALIDATION"
 
