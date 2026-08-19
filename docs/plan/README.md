@@ -7,7 +7,7 @@ Rule:
 Execute a spec only if it appears under **Active** below.
 Everything under **Archived** is history. Read it for context; never execute it.
 
-Last reconciled: 2026-08-18.
+Last reconciled: 2026-08-19.
 
 ---
 
@@ -15,16 +15,17 @@ Last reconciled: 2026-08-18.
 
 | Spec | State | Who runs it | Notes |
 |---|---|---|---|
+| `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | Public project listing + cards, nested profile skills in SPA, TOTP-in-SPA (ADM-0 partial), rebuild hook + lifecycle pytest. Production migrate/HMAC enable is owner. |
 | `P0-A-stack-inventory-task-spec.md` | BLOCKED (owner) | owner | Read-only VPS inventory. Not an agent task. |
 
-Owner remaining work that is **not** a new spec: production CMS `migrate` through `0005`/`0006` and `import_profile_seed` (`LOG-0150`). Until that runs, public About uses `profile.snapshot.json`.
+Owner remaining work that is **not** a new spec: production `migrate` for additive schema (`show_on_projects` and any pending 0005/0006), `rebuild-static.sh`, and HMAC enable (`DEFER-0027`).
 
 ## 2. Queued — do not start yet
 
 | Spec | Blocked by |
 |---|---|
-| `P7-professional-admin-task-spec.md` | P4–P6 models exist. `/admin/profiles/` already shipped (`LOG-0150` / PR #31). Remaining P7-01–P7-04 (ops dashboard, composition, advanced preview) stay queued. |
-| `P7-admin-detail-pages-task-spec.md` | Profile detail admin shipped. Remaining bilingual detail pages for other typed entities stay queued. |
+| `P7-professional-admin-task-spec.md` | Superseded by ADM phases (ADR-0026). Remaining P7-01–P7-04 live in ADM-4/ADM-1/ADM-6. Do not execute this spec. |
+| `P7-admin-detail-pages-task-spec.md` | Nested profile editor moves into the SPA; remaining bilingual detail pages for other entities stay queued. |
 
 ## 3. Reference — not executable
 
@@ -101,7 +102,7 @@ template. Two parts are stale:
 - Its phase backlog lists tasks as READY that `S-PLAN-STATE.md` already marks DONE.
 
 When they disagree, `S-PLAN-STATE.md` and this file win.
-The only active spec in §1 is owner inventory. P7 remains queued in §2.
+The active agent spec in §1 is `ADM-6-frontend-wiring-task-spec.md`. P7 remains queued/superseded. Owner inventory stays owner-only.
 
 If the playbook mentions an OpenCode agent you do not have, ignore the dispatch
 mechanism and execute the active spec directly.
