@@ -366,6 +366,13 @@ class Article(LocalizedContentMixin, LifecycleMixin):
     accessibility_notes = models.TextField(blank=True)
     reading_time_minutes = models.PositiveIntegerField(default=0)
     allow_comments = models.BooleanField(default=False)
+    story = models.ForeignKey(
+        "composition.CompositionPage",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="attached_articles",
+    )
 
     class Meta:
         db_table = "content_article"

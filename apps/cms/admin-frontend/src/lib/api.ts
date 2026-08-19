@@ -367,7 +367,7 @@ export interface MediaList {
   total: number;
 }
 
-export type MediaType = "image" | "pdf";
+export type MediaType = "image" | "pdf" | "video" | "audio";
 
 export interface MediaListParams {
   q?: string;
@@ -553,9 +553,12 @@ export function replaceMedia(
 
 export type CompositionLayout = "1col" | "2col" | "3col";
 
+export type CompositionKind = "landing" | "story";
+
 export interface CompositionPageItem {
   id: number;
   key: string;
+  kind: CompositionKind;
   locale: ContentLocale;
   title: string;
   status: ContentStatus;
@@ -586,6 +589,7 @@ export interface CompositionSectionDoc {
 export interface CompositionDetail {
   id: number;
   key: string;
+  kind: CompositionKind;
   locale: ContentLocale;
   title: string;
   status: ContentStatus;
@@ -616,6 +620,7 @@ export interface CompositionFieldSpec {
 export interface CompositionBlockType {
   type: string;
   labelFa: string;
+  required?: string[];
   fields: CompositionFieldSpec[];
 }
 
@@ -626,6 +631,7 @@ export interface CompositionLayoutSpec {
 }
 
 export interface CompositionSchema {
+  kind?: CompositionKind;
   blockTypes: CompositionBlockType[];
   sectionLayouts: CompositionLayoutSpec[];
 }
@@ -635,6 +641,7 @@ export interface CompositionCreatePayload {
   locale: ContentLocale;
   title: string;
   status?: ContentStatus;
+  kind?: CompositionKind;
 }
 
 export interface CompositionUpdatePayload {
@@ -660,8 +667,10 @@ export async function fetchCompositionPages(params: {
   return request<CompositionPageList>(`/composition${qs ? `?${qs}` : ""}`);
 }
 
-export async function fetchCompositionSchema(): Promise<CompositionSchema> {
-  return request<CompositionSchema>("/composition/schema");
+export async function fetchCompositionSchema(
+  kind: CompositionKind = "landing"
+): Promise<CompositionSchema> {
+  return request<CompositionSchema>(`/composition/schema?kind=${kind}`);
 }
 
 export async function fetchCompositionDetail(id: number): Promise<CompositionDetail> {

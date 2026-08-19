@@ -15,6 +15,7 @@ Last reconciled: 2026-08-19.
 
 | Spec | State | Who runs it | Notes |
 |---|---|---|---|
+| `blog-story-composition-task-spec.md` | PARTIAL | agent | Blog story body via composition; owner migrate + static rebuild. |
 | `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | Public project listing + cards, nested profile skills in SPA, TOTP-in-SPA (ADM-0 partial), rebuild hook + lifecycle pytest. Production migrate/HMAC enable is owner. |
 | `P0-A-stack-inventory-task-spec.md` | BLOCKED (owner) | owner | Read-only VPS inventory. Not an agent task. |
 

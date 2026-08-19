@@ -28,6 +28,7 @@ import {
   isContentStatus,
 } from "../lib/entities";
 import ProfileNestedEditor from "../components/ProfileNestedEditor";
+import ArticleStoryEditor from "../components/ArticleStoryEditor";
 
 type LoadState = "loading" | "ready" | "error" | "invalid";
 
@@ -54,6 +55,9 @@ function toErrorMessage(error: unknown, fallback: string): string {
 function formValuesFromDetail(detail: ContentDetail): FormValues {
   const fields: Record<string, string> = {};
   for (const [key, value] of Object.entries(detail.fields)) {
+    if (key === "storyId") {
+      continue;
+    }
     if (typeof value === "boolean") {
       fields[key] = value ? "true" : "false";
     } else {
@@ -219,6 +223,7 @@ export default function ContentEditPage(): ReactElement {
   const [schema, setSchema] = useState<ContentEntitySchema | null>(null);
   const [form, setForm] = useState<FormValues | null>(null);
   const [updatedAt, setUpdatedAt] = useState("");
+  const [storyId, setStoryId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
@@ -262,6 +267,14 @@ export default function ContentEditPage(): ReactElement {
           setSchema(entitySchema);
           setForm(formValuesFromDetail(detail));
           setUpdatedAt(detail.updatedAt);
+          const rawStory = detail.fields.storyId;
+          setStoryId(
+            typeof rawStory === "number"
+              ? rawStory
+              : typeof rawStory === "string" && rawStory !== ""
+                ? Number.parseInt(rawStory, 10)
+                : null
+          );
         } else if (!cancelled) {
           setSchema(entitySchema);
           const booleanDefaults: Record<string, string> = {};
@@ -601,7 +614,9 @@ export default function ContentEditPage(): ReactElement {
             </p>
           )}
 
-          {schema.fields.map((spec) => {
+          {schema.fields
+            .filter((spec) => spec.key !== "storyId")
+            .map((spec) => {
             const info = fieldErrorInfo(fieldErrors, spec.key);
             return (
               <div key={spec.key} className="admin-form-row">
@@ -639,6 +654,19 @@ export default function ContentEditPage(): ReactElement {
       </form>
       {isEditing && entity === "profile" && form !== null ? (
         <ProfileNestedEditor locale={form.locale} slug={form.slug} />
+      ) : null}
+      {isEditing && entity === "article" && form !== null ? (
+        <ArticleStoryEditor
+          articleId={id}
+          locale={form.locale}
+          title={form.title}
+          storyId={Number.isFinite(storyId) ? storyId : null}
+          articleUpdatedAt={updatedAt}
+          onArticleUpdated={(next) => {
+            setStoryId(next.storyId);
+            setUpdatedAt(next.updatedAt);
+          }}
+        />
       ) : null}
     </div>
   );

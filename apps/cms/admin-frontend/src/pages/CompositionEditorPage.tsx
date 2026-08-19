@@ -15,6 +15,7 @@ import {
   updateComposition,
   type CompositionDetail,
   type CompositionFieldSpec,
+  type CompositionKind,
   type CompositionLayout,
   type CompositionSchema,
   type ContentLocale,
@@ -29,7 +30,7 @@ import {
   isValidKey,
   ratioLabel,
   ratioOptionsFor,
-  REQUIRED_BLOCK_FIELDS,
+  requiredFieldsFor,
 } from "../lib/composition";
 
 interface EditorBlock {
@@ -76,6 +77,7 @@ export default function CompositionEditorPage(): ReactElement {
   const [schema, setSchema] = useState<CompositionSchema | null>(null);
   const [key, setKey] = useState("");
   const [locale, setLocale] = useState<ContentLocale>("fa");
+  const [kind, setKind] = useState<CompositionKind>("landing");
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState<ContentStatus>("draft");
   const [updatedAt, setUpdatedAt] = useState("");
@@ -115,6 +117,7 @@ export default function CompositionEditorPage(): ReactElement {
   async function loadDetail(compId: number): Promise<void> {
     const detail = await fetchCompositionDetail(compId);
     setKey(detail.key);
+    setKind(detail.kind);
     setLocale(detail.locale);
     setTitle(detail.title);
     setStatus(detail.status);
@@ -127,14 +130,23 @@ export default function CompositionEditorPage(): ReactElement {
     let cancelled = false;
     async function init(): Promise<void> {
       try {
-        const s = await fetchCompositionSchema();
-        if (cancelled) {
-          return;
-        }
-        setSchema(s);
         if (editing && id !== undefined) {
+          const detail = await fetchCompositionDetail(Number(id));
+          if (cancelled) {
+            return;
+          }
+          const s = await fetchCompositionSchema(detail.kind);
+          if (cancelled) {
+            return;
+          }
+          setSchema(s);
           await loadDetail(Number(id));
         } else {
+          const s = await fetchCompositionSchema(kind);
+          if (cancelled) {
+            return;
+          }
+          setSchema(s);
           const fresh = [emptySection()];
           setSections(fresh);
           cleanRef.current = JSON.stringify({
@@ -353,7 +365,7 @@ export default function CompositionEditorPage(): ReactElement {
     for (let i = 0; i < sections.length; i += 1) {
       for (let j = 0; j < sections[i].blocks.length; j += 1) {
         const block = sections[i].blocks[j];
-        const required = REQUIRED_BLOCK_FIELDS[block.blockType] ?? [];
+        const required = requiredFieldsFor(schema ?? { blockTypes: [], sectionLayouts: [] }, block.blockType);
         if (required.length === 0) {
           continue;
         }
@@ -363,7 +375,9 @@ export default function CompositionEditorPage(): ReactElement {
           const missing =
             fieldKey === "mediaIds"
               ? !(Array.isArray(value) && value.length >= 1)
-              : typeof value !== "string" || value.trim() === "";
+              : fieldKey === "mediaId"
+                ? typeof value !== "number"
+                : typeof value !== "string" || value.trim() === "";
           if (missing) {
             errors[path] = [`فیلد «${fieldKey}» الزامی است.`];
             break;
@@ -416,7 +430,7 @@ export default function CompositionEditorPage(): ReactElement {
         const updated = await updateComposition(Number(id), documentPayload, updatedAt);
         storeCleanFromDetail(updated);
       } else {
-        const created = await createComposition({ key, locale, title, status });
+        const created = await createComposition({ key, locale, title, status, kind });
         if (sections.length > 0) {
           const updated = await updateComposition(
             created.id,
@@ -541,7 +555,7 @@ export default function CompositionEditorPage(): ReactElement {
                 className="admin-btn"
                 onClick={() => openMediaPicker(sectionIndex, blockIndex, "mediaId")}
               >
-                انتخاب تصویر
+                انتخاب رسانه
               </button>
               {mediaId !== undefined && (
                 <button
@@ -649,8 +663,10 @@ export default function CompositionEditorPage(): ReactElement {
       case "text":
         return (
           <div>
-            <p className="text-sm" dir="auto">{String(s.bodyFa ?? "")}</p>
-            <p className="text-sm" dir="ltr">{String(s.bodyEn ?? "")}</p>
+            <p className="text-sm" dir="auto">{String(s.bodyFa ?? s.body ?? "")}</p>
+            {s.bodyEn !== undefined && (
+              <p className="text-sm" dir="ltr">{String(s.bodyEn ?? "")}</p>
+            )}
           </div>
         );
       case "quote":
@@ -779,6 +795,28 @@ export default function CompositionEditorPage(): ReactElement {
             >
               <option value="fa">فارسی</option>
               <option value="en">English</option>
+            </select>
+          </div>
+          <div className="admin-form-row">
+            <label htmlFor="comp-kind" className="admin-label">
+              نوع
+            </label>
+            <select
+              id="comp-kind"
+              className="admin-input"
+              value={kind}
+              disabled={editing}
+              onChange={(event) => {
+                const next = event.target.value as CompositionKind;
+                setKind(next);
+                void fetchCompositionSchema(next).then((s) => {
+                  setSchema(s);
+                  setSections([emptySection()]);
+                });
+              }}
+            >
+              <option value="landing">لندینگ</option>
+              <option value="story">داستان</option>
             </select>
           </div>
           <div className="admin-form-row">

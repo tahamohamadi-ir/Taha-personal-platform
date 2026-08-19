@@ -19,6 +19,10 @@ export const BLOCK_TYPE_LABELS: Record<string, string> = {
   cta: "فراخوان",
   gallery: "گالری",
   divider: "جداکننده",
+  figure: "تصویر",
+  video: "ویدیو",
+  audio: "صوت",
+  math: "فرمول",
 };
 
 export function isValidKey(value: string): boolean {
@@ -67,3 +71,29 @@ export const REQUIRED_BLOCK_FIELDS: Record<string, string[]> = {
   cta: ["labelFa", "labelEn"],
   gallery: ["mediaIds"],
 };
+
+export const STORY_REQUIRED_BLOCK_FIELDS: Record<string, string[]> = {
+  heading: ["text"],
+  text: ["body"],
+  quote: ["body", "source"],
+  cta: ["label"],
+  figure: ["mediaId"],
+  gallery: ["mediaIds"],
+  video: ["mediaId"],
+  audio: ["mediaId"],
+  math: ["html"],
+};
+
+export function requiredFieldsFor(
+  schema: CompositionSchema,
+  blockType: string
+): string[] {
+  const spec = schema.blockTypes.find((b) => b.type === blockType);
+  if (spec?.required !== undefined) {
+    return spec.required;
+  }
+  if (schema.kind === "story") {
+    return STORY_REQUIRED_BLOCK_FIELDS[blockType] ?? [];
+  }
+  return REQUIRED_BLOCK_FIELDS[blockType] ?? [];
+}
