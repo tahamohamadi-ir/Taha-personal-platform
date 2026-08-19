@@ -11,36 +11,43 @@ fail=0
 
 WEB_LOOPBACK="${WEB_LOOPBACK:-http://127.0.0.1:13080}"
 
-check_loopback() {
-  local path="$1"
-  local expect="$2"
+# Use mktemp (not fixed /tmp names) — stale root-owned files cause curl exit 23.
+LOOPBACK_BODY="$(mktemp -t cms-smoke-loopback.XXXXXX)"
+PUBLIC_BODY="$(mktemp -t cms-smoke-public.XXXXXX)"
+cleanup() { rm -f "$LOOPBACK_BODY" "$PUBLIC_BODY"; }
+trap cleanup EXIT
+
+curl_check() {
+  local label="$1"
+  local url="$2"
+  local expect="$3"
+  local body_file="$4"
   local code
-  code="$(curl -sS -o /tmp/cms-smoke-loopback-body -w "%{http_code}" "${WEB_LOOPBACK}${path}")"
+  if ! code="$(curl -sS -o "$body_file" -w "%{http_code}" "$url")"; then
+    echo "FAIL ${label} curl error (url=${url})" >&2
+    fail=1
+    return
+  fi
   if [[ "$code" != "$expect" ]]; then
-    echo "FAIL loopback ${path} expected ${expect} got ${code}" >&2
+    echo "FAIL ${label} expected ${expect} got ${code} (url=${url})" >&2
     fail=1
   else
-    echo "PASS loopback ${path} ${code}"
+    echo "PASS ${label} ${code}"
   fi
 }
 
+check_loopback() {
+  curl_check "loopback ${1}" "${WEB_LOOPBACK}${1}" "$2" "$LOOPBACK_BODY"
+}
+
 check() {
-  local path="$1"
-  local expect="$2"
-  local code
-  code="$(curl -sS -o /tmp/cms-smoke-body -w "%{http_code}" "${BASE_URL}${path}")"
-  if [[ "$code" != "$expect" ]]; then
-    echo "FAIL ${path} expected ${expect} got ${code}" >&2
-    fail=1
-  else
-    echo "PASS ${path} ${code}"
-  fi
+  curl_check "${1}" "${BASE_URL}${1}" "$2" "$PUBLIC_BODY"
 }
 
 # ADR-0027 Slice 1: nginx web container on loopback (before public edge checks).
 check_loopback "/" "200"
 check_loopback "/health.json" "200"
-if ! grep -q '"service":"static"' /tmp/cms-smoke-loopback-body && ! grep -q '"service": "static"' /tmp/cms-smoke-loopback-body; then
+if ! grep -q '"service":"static"' "$LOOPBACK_BODY" && ! grep -q '"service": "static"' "$LOOPBACK_BODY"; then
   echo "FAIL loopback /health.json is not the static-site payload" >&2
   fail=1
 fi
@@ -50,18 +57,18 @@ check "/admin/" "200"
 # Legacy Wagtail admin at /admin-wagtail/ (TOTP HTML, preview, rollback).
 # LOGIN_URL is /admin-wagtail/login/ — not Django's /accounts/login/ (that 302s).
 check "/admin-wagtail/login/" "200"
-if ! grep -qiE "Wagtail|password|ورود|sign.in|login" /tmp/cms-smoke-body; then
+if ! grep -qiE "Wagtail|password|ورود|sign.in|login" "$PUBLIC_BODY"; then
   echo "FAIL /admin-wagtail/login/ is not a sign-in page" >&2
   fail=1
 fi
 check "/health/" "200"
-if ! grep -q '"db"' /tmp/cms-smoke-body; then
+if ! grep -q '"db"' "$PUBLIC_BODY"; then
   echo "FAIL /health/ body is not CMS JSON" >&2
   fail=1
 fi
 # Must remain the static artifact — /health* glob would steal this path.
 check "/health.json" "200"
-if ! grep -q '"service":"static"' /tmp/cms-smoke-body && ! grep -q '"service": "static"' /tmp/cms-smoke-body; then
+if ! grep -q '"service":"static"' "$PUBLIC_BODY" && ! grep -q '"service": "static"' "$PUBLIC_BODY"; then
   echo "FAIL /health.json was not the static-site payload (Caddy must not proxy /health*)" >&2
   fail=1
 fi
