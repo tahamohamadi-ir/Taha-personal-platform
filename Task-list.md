@@ -834,9 +834,9 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 ### Task ADM-5 — Site customization + inbox
 
-- [ ] Site settings: منو/هدر/فوتر، توکن‌های طراحی (رنگ از CMS → CSS vars هنگام build)، SEO fields (title/description/canonical/OG)، تگ‌ها و فیلترهای بلاگ/پورتفولیو، صندوق پیام‌های تماس (body فقط در detail، رعایت جهت).
-- [ ] featured spotlight با پنجره‌ی زمانی (دقیقاً یک target فعال + بازه؛ الگوی AdminFeaturedItemController نمونه). *(§14 F4)*
-- [ ] CV/Resume: سیاست «یک سند جاری» از ادمین (جای دانلودهای markdown ثابت در `Downloads.astro`). *(§14 F5)*
+- [x] Site settings: brand/tagline/footer، توکن رنگ (primaryColor)، منو (navLinks)، SEO defaults — در `/api/v1/admin/site` + صفحه‌ی تنظیمات. تگ‌های بلاگ (TopicTag) CRUD در `/api/v1/admin/tags`. *(2026-08-18 — LOG-0162)*
+- [x] featured spotlight با پنجره‌ی زمانی و دقیقاً یک آیتم فعال (باز کردن یکی، بقیه را غیرفعال می‌کند) در `/api/v1/admin/featured`. *(2026-08-18 — LOG-0162)*
+- [ ] CV/Resume: سیاست «یک سند جاری» از ادمین (جای دانلودهای markdown ثابت در `Downloads.astro`). *(§14 F5)* *(ADM-6 — DEBT-0006)*
 
 ### Task ADM-6 — Frontend wiring + verification
 
