@@ -4,6 +4,10 @@
 # Builds apps/web with loopback CMS_API_BASE, stages release-<sha>, and atomically
 # switches /opt/taha/site/current via update-release.sh.
 #
+# After Caddy web cutover (public HTML from the `web` nginx container at
+# 127.0.0.1:13080 instead of file_server on /opt/taha/site/current), use
+# infra/deploy/rebuild-web.sh instead. During transition you may run both.
+#
 # Usage (operator on VPS):
 #   bash infra/deploy/rebuild-static.sh
 #

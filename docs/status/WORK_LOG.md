@@ -1,5 +1,25 @@
 # Work Log
 
+## LOG-0173 — 2026-08-19 — rebuild-web.sh: CMS publish → web nginx container
+
+- Outcome: Added `infra/deploy/rebuild-web.sh` to build the `web` Docker image with live CMS content (`CMS_API_BASE` build-arg, default loopback `18000`), restart Compose `web`, and smoke `127.0.0.1:13080/health.json` (+ optional public smoke). Updated `rebuild-static.sh` header and `DEPLOY_RUNBOOK.md`.
+- Why: After Caddy cutover to `127.0.0.1:13080`, disk-based `rebuild-static.sh` no longer updates visitor-facing HTML.
+- Scope / files: `infra/deploy/rebuild-web.sh`, `infra/deploy/rebuild-static.sh`, `docs/governance/DEPLOY_RUNBOOK.md`, `infra/cms/README.md`, ledgers.
+- Commands or actions actually performed: none on VPS (script + docs only).
+- Verification actually performed and result: Dockerfile `CMS_API_BASE` arg and compose `web` build context confirmed against existing patterns.
+- Deferred or risk IDs: none new.
+- Rollback / recovery: revert script; pin previous `WEB_IMAGE` or re-run with older git ref.
+
+## LOG-0172 — 2026-08-19 — ADR-0027 Slice 1: Caddy cutover to nginx web loopback
+
+- Outcome: `(taha_application_routes)` in `infra/caddy/Caddyfile` now reverse-proxies `127.0.0.1:13080` (nginx `web` container) instead of serving `/opt/taha/site/current` via `file_server`. Rollback comment documents restoring disk `file_server` until rsync path is removed. `smoke-cms.sh` adds loopback checks for `/` and `/health.json`.
+- Why: ADR-0027 Slice 1 — public HTML origin moves from host symlink to Compose `web` while host Caddy remains edge until `DEFER-0031`.
+- Scope / files: `infra/caddy/Caddyfile`, `infra/deploy/smoke-cms.sh`, `docs/plan/cms-origin-and-full-stack-cd-task-spec.md`, CHANGELOG, this entry.
+- Commands or actions actually performed: repo-only; no VPS apply in this session.
+- Verification actually performed and result: snippet matches ADR-0027 target; smoke script syntax valid; loopback checks gated on `127.0.0.1:13080`.
+- Deferred or risk IDs: `DEFER-0031` unchanged; rsync `/opt/taha/site/current` remains rollback until removed from CD.
+- Rollback / recovery: revert snippet to `root * /opt/taha/site/current` + `file_server`; `sudo /opt/taha/bin/caddy-sync.sh` with restored file; `web` container can stay running.
+
 ## LOG-0171 — 2026-08-19 — Admin SPA: merge content detail + edit (story/skills reachable)
 
 - Outcome: Content list links now open the unified edit page (`/content/:entity/:id`). Removed read-only `ContentDetailPage`. Article story editor and profile skills editor are visible immediately from list click. `/content/:entity/:id/edit` redirects to canonical URL. Workflow transitions and published/updated metadata ported to edit page.

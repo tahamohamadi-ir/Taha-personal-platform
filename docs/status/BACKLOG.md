@@ -4,7 +4,7 @@
 
 | ID | Phase | Item | Blocked by / prerequisite | Owner | Evidence |
 |---|---|---|---|---|---|
-| ADR-0027 | OPS | Unified Compose db/cms/web(+caddy later); Slice 1 web image next | Slice 0 docs+smoke; owner CMS migrate done | Project owner | LOG-0169 |
+| ADR-0027 | OPS | Slice 1 Caddy→web cutover + `rebuild-web.sh` in repo; owner applies `caddy-sync`; Slice 2 CD CMS migrate next | VPS: `taha-cms-web-1` healthy on `:13080`; merge + owner `caddy-sync` | Project owner | LOG-0172, LOG-0173 |
 | QA-playwright | QA | Playwright config کامل (retries/trace/video/html reporter) به‌جای spec های خام (الگوی نمونه‌ها S2) | `DEFER-0026` | Project owner | custom-admin-rebuild-fa.md §14.2 |
 | ADM-0 | ADM | Wagtail schema uninstall remainder (`DEBT-0003`); SPA TOTP shipped | dumpdata + backup before migrate; prove SPA enrollment on new image | Project owner | Task-list §17; LOG-0165 |
 | ADM-1 | ADM | Custom admin foundation + cutover | DONE (LOG-0156..0158, LOG-0163); `DEFER-0023` CLOSED | Project owner | Task-list §17 |
