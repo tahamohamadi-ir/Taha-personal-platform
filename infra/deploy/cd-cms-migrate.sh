@@ -9,28 +9,54 @@
 #
 # Env:
 #   CMS_REPO_DIR   default /home/deploy/cms-repo (or repo root when script lives there)
-#   BACKUP_ROOT    default /home/deploy/backups
+#   BACKUP_ROOT    default: writable dir under deploy home (see resolve_backup_root)
 #   SKIP_GIT_PULL  set to 1 to skip ff-only pull of main (CD may have already synced)
 #   SKIP_SMOKE     set to 1 to skip public smoke-cms.sh
 #   SITE_URL       default https://tahamohamadi.ir
 #
 # RISK-0012: first production CD migrate must be owner-attended (workflow_dispatch).
 # Unattended CD only when repository variable CMS_CD_AUTO_MIGRATE=true.
+#
+# Note: /home/deploy/backups is often root-owned (prod-cms-update-migrate.sh). This
+# script prefers a deploy-writable path so CD SSH does not need sudo for mkdir.
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_FROM_SCRIPT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 CMS_REPO_DIR="${CMS_REPO_DIR:-${REPO_FROM_SCRIPT}}"
-BACKUP_ROOT="${BACKUP_ROOT:-/home/deploy/backups}"
 SKIP_GIT_PULL="${SKIP_GIT_PULL:-0}"
 SKIP_SMOKE="${SKIP_SMOKE:-0}"
 SITE_URL="${SITE_URL:-https://tahamohamadi.ir}"
 TIMESTAMP="$(date -u +%Y%m%dT%H%M%SZ)"
-BACKUP_DIR="${BACKUP_ROOT}/pre-migrate-${TIMESTAMP}"
 COMPOSE_FILE="infra/cms/docker-compose.cms.yml"
 
-: "${CMS_IMAGE:?CMS_IMAGE is required â€” pin a GHCR sha tag (e.g. ghcr.io/tahamohamadi-ir/taha-cms:2e200fe)}"
+: "${CMS_IMAGE:?CMS_IMAGE is required - pin a GHCR sha tag (e.g. ghcr.io/tahamohamadi-ir/taha-cms:2e200fe)}"
+
+resolve_backup_root() {
+  local candidate
+  if [[ -n "${BACKUP_ROOT:-}" ]]; then
+    candidate="$BACKUP_ROOT"
+    if mkdir -p "$candidate" 2>/dev/null; then
+      echo "$candidate"
+      return 0
+    fi
+    echo "error: BACKUP_ROOT=${candidate} is not writable by $(id -un)" >&2
+    return 1
+  fi
+  for candidate in \
+    "${HOME}/cms-migrate-backups" \
+    /home/deploy/cms-migrate-backups \
+    /home/deploy/backups
+  do
+    if mkdir -p "$candidate" 2>/dev/null; then
+      echo "$candidate"
+      return 0
+    fi
+  done
+  echo "error: no writable backup root (tried \$HOME/cms-migrate-backups and /home/deploy/backups)" >&2
+  return 1
+}
 
 cd "$CMS_REPO_DIR"
 
@@ -40,15 +66,18 @@ if [[ ! -f "$COMPOSE_FILE" ]]; then
 fi
 
 if ! command -v docker >/dev/null 2>&1; then
-  echo "error: docker not found â€” deploy user needs docker group access" >&2
+  echo "error: docker not found - deploy user needs docker group access" >&2
   exit 1
 fi
+
+BACKUP_ROOT="$(resolve_backup_root)"
+BACKUP_DIR="${BACKUP_ROOT}/pre-migrate-${TIMESTAMP}"
 
 PREVIOUS_IMAGE="$(docker inspect taha-cms-cms-1 --format '{{.Config.Image}}' 2>/dev/null || echo unknown)"
 echo "==> [cd-cms-migrate] previous_image=${PREVIOUS_IMAGE}"
 echo "==> [cd-cms-migrate] target_image=${CMS_IMAGE}"
 
-echo "==> [cd-cms-migrate] pg_dumpall backup â†’ ${BACKUP_DIR}"
+echo "==> [cd-cms-migrate] pg_dumpall backup -> ${BACKUP_DIR}"
 mkdir -p "$BACKUP_DIR"
 docker exec taha-cms-db-1 sh -ceu 'exec pg_dumpall -U "$POSTGRES_USER"' \
   > "${BACKUP_DIR}/cms-postgres-all.sql"

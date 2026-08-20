@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0177 — 2026-08-20 — cd-cms-migrate: writable backup root for deploy
+
+- Outcome: First CD `cms-migrate` (run 32406462067, tag `2e200fe`) failed at `mkdir /home/deploy/backups/...` (Permission denied; root-owned from sudo migrate path). `cd-cms-migrate.sh` now resolves a deploy-writable backup root (`$HOME/cms-migrate-backups` preferred).
+- Why: Slice 2 CD SSH runs as `deploy`, not root (`RISK-0012` attended path).
+- Scope / files: `infra/deploy/cd-cms-migrate.sh`, this entry.
+- Commands or actions actually performed: inspected failed Actions log; cancelled duplicate dispatch 32406482633.
+- Verification actually performed and result: failure mode confirmed in log; `bash -n` after fix.
+- Deferred or risk IDs: `RISK-0012` still OPEN until migrate PASS.
+- Rollback / recovery: previous script; or `BACKUP_ROOT=` to an owner-chowned dir.
+
 ## LOG-0176 — 2026-08-20 — ADR-0027 Slice 2: gated CD CMS migrate
 
 - Outcome: Added `infra/deploy/cd-cms-migrate.sh` (`pg_dumpall` → `update-cms.sh` → `smoke-cms.sh`) and CD job `cms-migrate` gated by `workflow_dispatch` `migrate_cms=true` or repo var `CMS_CD_AUTO_MIGRATE=true` (default off). Ordinary `main` pushes do not migrate Postgres.
