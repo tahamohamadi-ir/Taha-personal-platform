@@ -109,8 +109,9 @@ DETAIL_FIELD_MAPS: dict[str, dict[str, str]] = {
         "research_questions": "researchQuestions",
         "methods": "methods",
         "future_directions": "futureDirections",
+        "story": "storyId",
     },
-    "research-statement": {"body": "body"},
+    "research-statement": {"body": "body", "story": "storyId"},
     "project": {
         "project_type": "projectType",
         "objective": "objective",
@@ -126,6 +127,7 @@ DETAIL_FIELD_MAPS: dict[str, dict[str, str]] = {
         "data_url": "dataUrl",
         "demo_url": "demoUrl",
         "show_on_projects": "showOnProjects",
+        "story": "storyId",
     },
     "publication": {
         "authors": "authors",
@@ -632,13 +634,13 @@ def content_update(request, entity: str, id: int, payload: ContentUpdateIn):
             if payload.fields is not None:
                 for attr, value in _coerce_fields(entity, model, payload.fields).items():
                     setattr(item, attr, value)
-            if entity == "article":
+            if hasattr(item, "story"):
                 story = getattr(item, "story", None)
                 if story is not None and story.locale != item.locale:
                     raise AdminError(
                         400,
                         "VALIDATION",
-                        "storyId locale must match the article locale.",
+                        "storyId locale must match the content locale.",
                         fields={"fields": ["storyId"]},
                     )
             if (

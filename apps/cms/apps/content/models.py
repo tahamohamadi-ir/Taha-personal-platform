@@ -227,6 +227,13 @@ class ProfileExperience(ProfileDetailItem):
     location = models.CharField(max_length=200, blank=True)
     website = models.URLField(blank=True)
     bullets = models.JSONField(default=list, blank=True)
+    story = models.ForeignKey(
+        "composition.CompositionPage",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="attached_profile_experiences",
+    )
 
     class Meta(OrderedProfileItem.Meta):
         db_table = "content_profile_experience"
@@ -459,6 +466,13 @@ class ResearchTopic(LocalizedContentMixin, LifecycleMixin):
     research_questions = models.TextField(blank=True)
     methods = models.TextField(blank=True)
     future_directions = models.TextField(blank=True)
+    story = models.ForeignKey(
+        "composition.CompositionPage",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="attached_research_topics",
+    )
 
     class Meta:
         db_table = "content_research_topic"
@@ -484,6 +498,13 @@ class ResearchStatement(LocalizedContentMixin, LifecycleMixin):
     """Independent research agenda statement (rich text; PDF deferred)."""
 
     body = RichTextField(features=ARTICLE_RICHTEXT_FEATURES, blank=True)
+    story = models.ForeignKey(
+        "composition.CompositionPage",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="attached_research_statements",
+    )
 
     class Meta:
         db_table = "content_research_statement"
@@ -616,6 +637,13 @@ class Project(LocalizedContentMixin, LifecycleMixin):
         default=True,
         db_default=True,
         help_text="When false, a published project is omitted from the public /projects/ list.",
+    )
+    story = models.ForeignKey(
+        "composition.CompositionPage",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="attached_projects",
     )
     topics = models.ManyToManyField(
         ResearchTopic,

@@ -1,5 +1,20 @@
 # Work Log
 
+## LOG-0181 — 2026-08-20 — Slice 5 / DEFER-0030: entity story bodies
+
+- Outcome: Additive `story` FK on `Project`, `ResearchTopic`, `ResearchStatement`, and `ProfileExperience` (migration `content.0009_entity_stories`). Public APIs project published-only story via `public_story_document`; admin `storyId` on content entities; `ArticleStoryEditor` generalized to `EntityStoryEditor` (content + profile experience attach). Astro detail pages reuse `StoryBody.astro` with existing field fallbacks. `DEFER-0030` CLOSED in ledger.
+- Why: Close Slice 5 after blog story reference implementation.
+- Scope / files: `apps/cms/**` (models/migration/API/admin SPA/tests), `apps/web/**` (DTOs + detail pages), `docs/status/**`, `docs/plan/**`.
+- Commands or actions actually performed: isolated worktree `feat/slice-5-entity-stories`; pytest/ruff/npm check.
+- Verification actually performed and result:
+  - `uv run pytest -q tests/test_story_composition.py` — 10 passed
+  - `uv run ruff check apps/content apps/api tests/test_story_composition.py` — All checks passed
+  - `uv run python manage.py makemigrations --check --dry-run` — No changes detected
+  - `npm run check` in `apps/web` — 0 errors (73 files)
+  - `npm run check` in `apps/cms/admin-frontend` — PASS
+- Deferred or risk IDs: `DEFER-0030` CLOSED (code); owner attended migrate for `0009` still required before production use. Do not enable `CMS_CD_AUTO_MIGRATE`.
+- Rollback / recovery: revert PR; nullable FKs are backward compatible.
+
 ## LOG-0179 — 2026-08-20 — ADR-0027 Slice 2: first attended CD CMS migrate PASS
 
 - Outcome: GitHub Actions CD `workflow_dispatch` `migrate_cms=true` `cms_image_tag=2e200fe` run [32407698471](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32407698471) **success**. Evidence: `backup_ok` under `/home/deploy/cms-migrate-backups/...`, recreate `cms`/`db`/`web`, migrate no-op, `CMS smoke PASS`, `cd-cms-migrate PASS`. Image remained `ghcr.io/tahamohamadi-ir/taha-cms:2e200fe`.

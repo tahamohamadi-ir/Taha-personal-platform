@@ -20,7 +20,7 @@
   - Public article JSON includes published-only `story`; Astro `StoryBody` + `ArticleDetail` fallback to sanitized `body`.
   - Typed footer (license / accessibility notes) only when filled; listing cards unchanged.
 - Non-goals:
-  - Project / research / experience story bodies (later slices).
+  - Project / research / experience story bodies — **done in Slice 5 / LOG-0181** (`DEFER-0030` CLOSED).
   - `primaryColor` CSS injection and admin-managed current CV (`DEFER-0029`).
   - HMAC production enable (`DEFER-0027`), full Playwright matrix (`DEFER-0026`).
   - Uninstalling Wagtail (`DEBT-0003`). Inventing content. Enabling HMAC.
@@ -59,5 +59,5 @@
   - `uv run python manage.py makemigrations --check --dry-run` — No changes detected
   - `npm run check` in `apps/web` — 0 errors (72 files)
   - `npm run check` in `apps/cms/admin-frontend` — PASS
-- Deferred/risk IDs: `DEFER-0028` CLOSED (blog story→Astro); `DEFER-0029` OPEN (primaryColor + CV); `DEFER-0030` OPEN (story bodies for project/research/experience); `DEFER-0026`/`DEFER-0027` unchanged; `DEBT-0003` unchanged.
+- Deferred/risk IDs: `DEFER-0028` CLOSED (blog story→Astro); `DEFER-0029` OPEN (primaryColor + CV); `DEFER-0030` CLOSED (entity stories, LOG-0181); `DEFER-0026`/`DEFER-0027` unchanged; `DEBT-0003` unchanged.
 - Explicit blockers and next input: owner dumpdata + backup, migrate `0002`/`0008`, CMS image rebuild, `rebuild-static.sh`. Not DONE for production until migrate + rebuild.

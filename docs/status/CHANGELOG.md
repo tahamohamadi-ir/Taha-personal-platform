@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-20 — Slice 5 / DEFER-0030: entity story bodies
+
+- Nullable `story` → `CompositionPage` on Project, ResearchTopic, ResearchStatement, ProfileExperience (`content.0009`).
+- Public JSON + Astro `StoryBody` with field fallbacks; admin story editor generalized beyond articles.
+- **Owner VPS:** attended CD migrate for `0009` (do not set `CMS_CD_AUTO_MIGRATE`); then `rebuild-web.sh`.
+
 ## 2026-08-20 — ADR-0027 Slice 2: first attended CD CMS migrate PASS
 
 - Actions run 32407698471: `migrate_cms=true` `cms_image_tag=2e200fe` → `cd-cms-migrate PASS` + `CMS smoke PASS`.

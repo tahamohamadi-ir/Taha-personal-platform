@@ -6,6 +6,7 @@ import { content as allContent } from "../../../../data/content";
 import {
   getAboutSection,
   getSectionAlternateHref,
+  hasDetailContent,
   type AboutSectionId,
 } from "../../../../data/aboutSections";
 import { loadPublicProfile } from "../../../../data/cmsProfile";
@@ -143,7 +144,7 @@ const description = section
                 <article class="about-section-card">
                   <div class="about-section-card-head">
                     <p class="about-section-card-eyebrow">{item.eyebrow}</p>
-                    {item.detailSlug && item.detailBody ? (
+                    {hasDetailContent(item) ? (
                       <h2 class="about-section-card-title">
                         <a href={`${sectionHref}${item.detailSlug}/`}>{item.title}</a>
                       </h2>

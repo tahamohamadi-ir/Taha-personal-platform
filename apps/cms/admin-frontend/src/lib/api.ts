@@ -921,6 +921,11 @@ export interface ProfileExperienceRow {
   location?: string;
   website?: string;
   bullets: string[];
+  slug?: string;
+  translationKey?: string;
+  detailBody?: string;
+  storyId?: number | null;
+  story?: unknown;
 }
 
 export interface AdminProfileDocument {

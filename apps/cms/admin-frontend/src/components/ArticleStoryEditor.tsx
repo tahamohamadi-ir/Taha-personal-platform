@@ -10,6 +10,7 @@ import {
   type CompositionFieldSpec,
   type CompositionLayout,
   type CompositionSchema,
+  type ContentEntity,
   type ContentLocale,
   type ContentStatus,
   type MediaItem,
@@ -24,6 +25,11 @@ import {
   requiredFieldsFor,
 } from "../lib/composition";
 
+export type StoryContentEntity = Extract<
+  ContentEntity,
+  "article" | "project" | "research-topic" | "research-statement"
+>;
+
 interface EditorBlock {
   blockType: string;
   settings: Record<string, unknown>;
@@ -37,14 +43,51 @@ interface EditorSection {
   blocks: EditorBlock[];
 }
 
-interface ArticleStoryEditorProps {
-  articleId: number;
+const STORY_COPY: Record<StoryContentEntity, { heading: string; description: string }> = {
+  article: {
+    heading: "داستان مقاله",
+    description:
+      "بدنهٔ عمومی از بلوک‌های تک‌زبانه ساخته می‌شود. اگر داستان منتشر نشده باشد، متن غنی فعلی نمایش داده می‌شود.",
+  },
+  project: {
+    heading: "داستان پروژه",
+    description:
+      "بدنهٔ عمومی از بلوک‌های تک‌زبانه ساخته می‌شود. اگر داستان منتشر نشده باشد، فیلدهای فعلی پروژه نمایش داده می‌شوند.",
+  },
+  "research-topic": {
+    heading: "داستان موضوع پژوهشی",
+    description:
+      "بدنهٔ عمومی از بلوک‌های تک‌زبانه ساخته می‌شود. اگر داستان منتشر نشده باشد، فیلدهای فعلی موضوع نمایش داده می‌شوند.",
+  },
+  "research-statement": {
+    heading: "داستان بیانیه پژوهشی",
+    description:
+      "بدنهٔ عمومی از بلوک‌های تک‌زبانه ساخته می‌شود. اگر داستان منتشر نشده باشد، متن غنی فعلی نمایش داده می‌شود.",
+  },
+};
+
+export interface EntityStoryEditorProps {
+  entity: StoryContentEntity;
+  entityId: number;
   locale: ContentLocale;
   title: string;
   storyId: number | null;
+  entityUpdatedAt: string;
+  onEntityUpdated: (next: { storyId: number; updatedAt: string }) => void;
+  /** Override composition key (e.g. profile experience slug). */
+  compositionKey?: string;
+  /** Custom attach path (profile experience) instead of content PUT. */
+  attachStory?: (storyId: number) => Promise<{ updatedAt?: string } | void>;
+  heading?: string;
+  description?: string;
+}
+
+/** @deprecated Prefer EntityStoryEditor; kept for call-site compatibility. */
+export type ArticleStoryEditorProps = Omit<EntityStoryEditorProps, "entity" | "entityId" | "entityUpdatedAt" | "onEntityUpdated"> & {
+  articleId: number;
   articleUpdatedAt: string;
   onArticleUpdated: (next: { storyId: number; updatedAt: string }) => void;
-}
+};
 
 function toEditorSections(detail: {
   sections: Array<{
@@ -70,14 +113,24 @@ function toEditorSections(detail: {
   }));
 }
 
-export default function ArticleStoryEditor({
-  articleId,
+export default function EntityStoryEditor({
+  entity,
+  entityId,
   locale,
   title,
   storyId,
-  articleUpdatedAt,
-  onArticleUpdated,
-}: ArticleStoryEditorProps): ReactElement {
+  entityUpdatedAt,
+  onEntityUpdated,
+  compositionKey,
+  attachStory,
+  heading,
+  description,
+}: EntityStoryEditorProps): ReactElement {
+  const copy = STORY_COPY[entity];
+  const headingText = heading ?? copy.heading;
+  const descriptionText = description ?? copy.description;
+  const headingId = `${entity}-story-heading`;
+  const statusId = `${entity}-story-status`;
   const [schema, setSchema] = useState<CompositionSchema | null>(null);
   const [pageId, setPageId] = useState<number | null>(storyId);
   const [status, setStatus] = useState<ContentStatus>("draft");
@@ -138,24 +191,36 @@ export default function ArticleStoryEditor({
     setCreating(true);
     setError(null);
     try {
+      const key =
+        compositionKey ??
+        `${entity}-${entityId}-story`;
       const created = await createComposition({
-        key: `article-${articleId}-story`,
+        key,
         locale,
-        title: title.trim() || `article-${articleId}`,
+        title: title.trim() || `${entity}-${entityId}`,
         status: "draft",
         kind: "story",
       });
-      const article = await updateContent(
-        "article",
-        articleId,
-        { fields: { storyId: created.id } },
-        articleUpdatedAt
-      );
+      let nextUpdatedAt = entityUpdatedAt;
+      if (attachStory) {
+        const attached = await attachStory(created.id);
+        if (attached?.updatedAt) {
+          nextUpdatedAt = attached.updatedAt;
+        }
+      } else {
+        const updated = await updateContent(
+          entity,
+          entityId,
+          { fields: { storyId: created.id } },
+          entityUpdatedAt
+        );
+        nextUpdatedAt = updated.updatedAt;
+      }
       setPageId(created.id);
       setStatus(created.status);
       setUpdatedAt(created.updatedAt);
       setSections(created.sections.length > 0 ? toEditorSections(created) : [emptySection()]);
-      onArticleUpdated({ storyId: created.id, updatedAt: article.updatedAt });
+      onEntityUpdated({ storyId: created.id, updatedAt: nextUpdatedAt });
     } catch (err) {
       setError(isApiError(err) ? err.message : "ساخت داستان ناموفق بود.");
     } finally {
@@ -387,12 +452,12 @@ export default function ArticleStoryEditor({
   }
 
   return (
-    <section className="admin-card mt-4" aria-labelledby="article-story-heading">
-      <h2 id="article-story-heading" className="text-sm font-bold">
-        داستان مقاله
+    <section className="admin-card mt-4" aria-labelledby={headingId}>
+      <h2 id={headingId} className="text-sm font-bold">
+        {headingText}
       </h2>
       <p className="admin-muted mt-1 text-xs">
-        بدنهٔ عمومی از بلوک‌های تک‌زبانه ساخته می‌شود. اگر داستان منتشر نشده باشد، متن غنی فعلی نمایش داده می‌شود.
+        {descriptionText}
       </p>
       {error !== null && (
         <p className="mt-2 text-sm" style={{ color: "var(--admin-danger)" }}>
@@ -413,11 +478,11 @@ export default function ArticleStoryEditor({
       ) : schema === null ? null : (
         <form className="mt-3 space-y-4" onSubmit={(event) => void handleSave(event)}>
           <div className="admin-form-row">
-            <label className="admin-label" htmlFor="article-story-status">
+            <label className="admin-label" htmlFor={statusId}>
               وضعیت داستان
             </label>
             <select
-              id="article-story-status"
+              id={statusId}
               className="admin-input"
               value={status}
               onChange={(event) => setStatus(event.target.value as ContentStatus)}

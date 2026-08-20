@@ -1,6 +1,9 @@
 /** CMS public research DTOs consumed by Astro at build time (optional CMS_API_BASE). */
 
 import { cmsFetchJson } from "./client";
+import type { StoryDocumentDto } from "./story";
+
+export type { StoryDocumentDto };
 
 export interface RelatedSlugDto {
   slug: string;
@@ -39,6 +42,7 @@ export interface ResearchTopicDetailDto extends ResearchTopicListDto {
   research_questions: string;
   methods: string;
   future_directions: string;
+  story?: StoryDocumentDto | null;
   projects: RelatedSlugDto[];
   publications: RelatedSlugDto[];
 }
@@ -48,6 +52,7 @@ export interface ResearchStatementDto {
   slug: string;
   title: string;
   body: string;
+  story?: StoryDocumentDto | null;
   published_at: string | null;
   updated_at: string | null;
 }
@@ -76,6 +81,7 @@ export interface ProjectDetailDto extends ProjectListDto {
   code_url: string;
   data_url: string;
   demo_url: string;
+  story?: StoryDocumentDto | null;
   topics: RelatedSlugDto[];
   publications: RelatedSlugDto[];
   evidence: EvidenceDto[];
