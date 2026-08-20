@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-08-20 — ADR-0027 Slice 2: first attended CD CMS migrate PASS
+
+- Actions run 32407698471: `migrate_cms=true` `cms_image_tag=2e200fe` → `cd-cms-migrate PASS` + `CMS smoke PASS`.
+- Leave `CMS_CD_AUTO_MIGRATE` unset (`RISK-0012`).
+
 ## 2026-08-20 — ADR-0027 Slice 2: gated CD CMS migrate
 
 - New `infra/deploy/cd-cms-migrate.sh` and CD job `cms-migrate` (off by default).
