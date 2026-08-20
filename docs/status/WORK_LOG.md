@@ -1,6 +1,6 @@
 # Work Log
 
-## LOG-0180 — 2026-08-20 — DEBT-0005: revisions + scheduled publish
+## LOG-0181 — 2026-08-20 — DEBT-0005: revisions + scheduled publish
 
 - Outcome: Added immutable `ContentRevision` snapshots with restore-as-draft, `scheduled` lifecycle + `scheduled_for`, extended `ALLOWED_TRANSITIONS`, management command `publish_scheduled_content` (no Celery), and optional systemd timer units under `infra/cms/`. Admin SPA can schedule, snapshot, and restore.
 - Why: Close ADM-4 follow-up DEBT-0005 separately from Wagtail uninstall (DEBT-0003).

@@ -4,7 +4,7 @@
 
 Immutable `ContentRevision` snapshots with restore-as-draft; `scheduled` status +
 `scheduled_for`; `publish_scheduled_content` management command and optional
-systemd timer (no Celery). Admin API/SPA updated. LOG-0180; DEBT-0005 CLOSED.
+systemd timer (no Celery). Admin API/SPA updated. LOG-0181; DEBT-0005 CLOSED.
 
 ## 2026-08-20 — ADR-0027 Slice 2: first attended CD CMS migrate PASS
 

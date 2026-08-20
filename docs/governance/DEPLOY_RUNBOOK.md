@@ -149,7 +149,7 @@ Caddy (TLS)
 
   Unattended CD migrate only after an attended PASS and repo variable
   `CMS_CD_AUTO_MIGRATE=true`. Rollback: `CMS_IMAGE=<previous>` + `update-cms.sh`.
-- **Scheduled publish timer (DEBT-0005 / LOG-0180):** no Celery. After CMS image
+- **Scheduled publish timer (DEBT-0005 / LOG-0181):** no Celery. After CMS image
   with migration `content.0009` is applied (attended migrate only), install:
 
   ```bash
