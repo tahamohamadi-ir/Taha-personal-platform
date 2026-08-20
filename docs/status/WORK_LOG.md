@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0180 — 2026-08-20 — DEBT-0005: revisions + scheduled publish
+
+- Outcome: Added immutable `ContentRevision` snapshots with restore-as-draft, `scheduled` lifecycle + `scheduled_for`, extended `ALLOWED_TRANSITIONS`, management command `publish_scheduled_content` (no Celery), and optional systemd timer units under `infra/cms/`. Admin SPA can schedule, snapshot, and restore.
+- Why: Close ADM-4 follow-up DEBT-0005 separately from Wagtail uninstall (DEBT-0003).
+- Scope / files: `apps/cms/apps/content/models.py`, `revisions.py`, migration `0009_*`, `admin_content.py`, `admin_health.py`, `publish_scheduled_content` command, `infra/cms/publish-scheduled-content.*`, admin-frontend workflow/status, tests, ledgers.
+- Commands or actions actually performed: worktree `feat/adm-revisions-schedule`; `uv run ruff check` (pass); `uv run pytest tests/test_admin_revisions_schedule.py tests/test_admin_workflow_api.py` (23 passed).
+- Verification actually performed and result: ruff clean; 23 pytest passed (workflow + revisions/schedule).
+- Deferred or risk IDs: DEBT-0005 CLOSED; owner must install timer + run attended migrate for `0009` (do not enable `CMS_CD_AUTO_MIGRATE`). Preview token remains open on Task-list ADM-4.
+- Rollback / recovery: revert migration `0009` after image rollback; disable timer unit.
+
 ## LOG-0179 — 2026-08-20 — ADR-0027 Slice 2: first attended CD CMS migrate PASS
 
 - Outcome: GitHub Actions CD `workflow_dispatch` `migrate_cms=true` `cms_image_tag=2e200fe` run [32407698471](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32407698471) **success**. Evidence: `backup_ok` under `/home/deploy/cms-migrate-backups/...`, recreate `cms`/`db`/`web`, migrate no-op, `CMS smoke PASS`, `cd-cms-migrate PASS`. Image remained `ghcr.io/tahamohamadi-ir/taha-cms:2e200fe`.
