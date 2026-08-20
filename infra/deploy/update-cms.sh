@@ -115,7 +115,9 @@ echo "Loopback health:"
 curl -fsS "http://127.0.0.1:18000/health/"
 echo
 echo "Loopback admin login (forwarded proto, as Caddy will send):"
-admin_code="$(curl -sS -o /tmp/cms-admin-login -w "%{http_code}" \
+admin_body="$(mktemp -t cms-admin-login.XXXXXX)"
+trap 'rm -f "$admin_body"' EXIT
+admin_code="$(curl -sS -o "$admin_body" -w "%{http_code}" \
   -H "Host: tahamohamadi.ir" \
   -H "X-Forwarded-Proto: https" \
   "http://127.0.0.1:18000/admin/login/")"
