@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-08-20 — web nginx: preserve HTTP 404 for missing paths
+
+- nginx `try_files` uses `=404`; Caddy no longer re-proxies `/404.html` on errors (that forced 200).
+- **Owner VPS after merge:** `git pull` → `bash infra/deploy/rebuild-web.sh` → `sudo /opt/taha/bin/caddy-sync.sh .../infra/caddy/Caddyfile` → confirm `curl -o /dev/null -w '%{http_code}\n' https://tahamohamadi.ir/nonexistent-qa` → `404`.
+
 ## 2026-08-19 — rebuild-web.sh: CMS publish → web nginx container
 
 - New `infra/deploy/rebuild-web.sh` builds `taha-web:local` with loopback `CMS_API_BASE`, restarts Compose `web`, smokes `127.0.0.1:13080/health.json`.

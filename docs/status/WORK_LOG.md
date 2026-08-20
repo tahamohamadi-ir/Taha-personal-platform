@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0175 — 2026-08-20 — web nginx: real HTTP 404 for missing paths
+
+- Outcome: `infra/web/nginx.conf` `try_files` ends with `=404` (not `/404.html` as last URI). Removed Caddy `handle_errors` re-proxy of `/404.html` which overwrote upstream 404 with 200. Owner `rebuild-web.sh` otherwise PASS; public smoke failed only on `/nonexistent-qa` expected 404 got 200.
+- Why: After Slice 1 cutover, visitors and `smoke.sh` need correct 404 status while still serving Astro `404.html` body via nginx `error_page`.
+- Scope / files: `infra/web/nginx.conf`, `infra/caddy/Caddyfile`, ledgers.
+- Commands or actions actually performed: none on VPS yet (owner apply after merge).
+- Verification actually performed and result: root-cause match to smoke FAIL; nginx/Caddy interaction documented.
+- Deferred or risk IDs: none.
+- Rollback / recovery: previous nginx try_files + Caddy handle_errors; `rebuild-web.sh` + `caddy-sync`.
+
 ## LOG-0173 — 2026-08-19 — rebuild-web.sh: CMS publish → web nginx container
 
 - Outcome: Added `infra/deploy/rebuild-web.sh` to build the `web` Docker image with live CMS content (`CMS_API_BASE` build-arg, default loopback `18000`), restart Compose `web`, and smoke `127.0.0.1:13080/health.json` (+ optional public smoke). Updated `rebuild-static.sh` header and `DEPLOY_RUNBOOK.md`.

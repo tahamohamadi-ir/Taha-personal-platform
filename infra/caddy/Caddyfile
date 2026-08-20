@@ -15,12 +15,10 @@
 
 # Rollback until rsync /opt/taha/site/current is removed: restore
 # root * /opt/taha/site/current + file_server (see static-site.caddy).
+# 404 body+status come from nginx (try_files =404 + error_page). Do not
+# re-proxy /404.html here — that would turn 404 into 200 and break smoke.
 (taha_application_routes) {
 	reverse_proxy 127.0.0.1:13080
-	handle_errors {
-		rewrite * /404.html
-		reverse_proxy 127.0.0.1:13080
-	}
 }
 
 tahamohamadi.ir {
