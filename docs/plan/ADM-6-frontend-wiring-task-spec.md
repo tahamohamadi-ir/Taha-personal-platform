@@ -60,5 +60,5 @@
   - `uv run python manage.py check` — no issues; `makemigrations --check --dry-run` — No changes detected
   - `npm run check` in `apps/web` — 0 errors (71 files); `npm run build` — 40 pages; `node qa/projects-catalog.spec.mjs` — PASS
   - `npm run check` / `npm run build` in `apps/cms/admin-frontend` — PASS
-- Deferred/risk IDs: `DEFER-0026` CLOSED (Playwright lifecycle LOG-0180); `DEFER-0032` OPEN (§18 QA remainder); `DEFER-0027`, `DEFER-0029`, `DEBT-0003`, `DEBT-0006`, `RISK-0010`.
+- Deferred/risk IDs: `DEFER-0026` CLOSED (Playwright lifecycle LOG-0184); `DEFER-0032` OPEN (§18 QA remainder); `DEFER-0027`, `DEFER-0029`, `DEBT-0003`, `DEBT-0006`, `RISK-0010`.
 - Explicit blockers and next input: owner VPS dumpdata + backup, `migrate` through `0007`, `rebuild-static.sh`; HMAC enable only after smoke (`DEFER-0027`). Not DONE for production.
