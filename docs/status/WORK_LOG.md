@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0178 — 2026-08-20 — update-cms: mktemp for admin login curl body
+
+- Outcome: Second CD migrate (32406996402) passed backup + compose recreate + migrate (no-op) + loopback `/health/` then failed `curl: (23)` writing `/tmp/cms-admin-login` (stale root-owned file). Switched to `mktemp` like `smoke-cms.sh`.
+- Why: Complete Slice 2 attended path without sudo cleanup of `/tmp`.
+- Scope / files: `infra/deploy/update-cms.sh`, this entry.
+- Commands or actions actually performed: read failed Actions log after PR #54.
+- Verification actually performed and result: root cause matched prior smoke-cms curl-23 fix.
+- Deferred or risk IDs: `RISK-0012` OPEN until full `cd-cms-migrate PASS`.
+- Rollback / recovery: revert to fixed `/tmp` path (may need `sudo rm`).
+
 ## LOG-0177 — 2026-08-20 — cd-cms-migrate: writable backup root for deploy
 
 - Outcome: First CD `cms-migrate` (run 32406462067, tag `2e200fe`) failed at `mkdir /home/deploy/backups/...` (Permission denied; root-owned from sudo migrate path). `cd-cms-migrate.sh` now resolves a deploy-writable backup root (`$HOME/cms-migrate-backups` preferred).
