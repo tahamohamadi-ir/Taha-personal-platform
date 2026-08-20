@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0179 — 2026-08-20 — ADR-0027 Slice 2: first attended CD CMS migrate PASS
+
+- Outcome: GitHub Actions CD `workflow_dispatch` `migrate_cms=true` `cms_image_tag=2e200fe` run [32407698471](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32407698471) **success**. Evidence: `backup_ok` under `/home/deploy/cms-migrate-backups/...`, recreate `cms`/`db`/`web`, migrate no-op, `CMS smoke PASS`, `cd-cms-migrate PASS`. Image remained `ghcr.io/tahamohamadi-ir/taha-cms:2e200fe`.
+- Why: Prove Slice 2 owner-attended path (`RISK-0012`) without enabling `CMS_CD_AUTO_MIGRATE`.
+- Scope / files: live VPS via CD; ledgers/task spec.
+- Commands or actions actually performed: agent dispatched workflow; prior fixes PR #54/#55 for backup dir + mktemp.
+- Verification actually performed and result: Actions conclusion success; log lines `cd-cms-migrate PASS` / `CMS smoke PASS`.
+- Deferred or risk IDs: `RISK-0012` remains OPEN (auto migrate still off); `DEFER-0027` unchanged.
+- Rollback / recovery: `CMS_IMAGE=<previous>` + `update-cms.sh`; backup at `/home/deploy/cms-migrate-backups/pre-migrate-20260820T191842Z/`.
+
 ## LOG-0178 — 2026-08-20 — update-cms: mktemp for admin login curl body
 
 - Outcome: Second CD migrate (32406996402) passed backup + compose recreate + migrate (no-op) + loopback `/health/` then failed `curl: (23)` writing `/tmp/cms-admin-login` (stale root-owned file). Switched to `mktemp` like `smoke-cms.sh`.
