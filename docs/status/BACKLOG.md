@@ -4,7 +4,7 @@
 
 | ID | Phase | Item | Blocked by / prerequisite | Owner | Evidence |
 |---|---|---|---|---|---|
-| ADR-0027 | OPS | Slice 1 cutover **live**; Slice 2 CD CMS image migrate next (owner-attended, RISK-0012) | Slice 1 PASS (`smoke-cms.sh`) | Project owner | LOG-0174 |
+| ADR-0027 | OPS | Slice 2 CD CMS migrate **in repo** (owner-attended `workflow_dispatch`); Slice 3 CMS origin honesty next | First CD migrate PASS closes RISK-0012 gate for auto var | Project owner | LOG-0176 |
 | QA-playwright | QA | Playwright config کامل (retries/trace/video/html reporter) به‌جای spec های خام (الگوی نمونه‌ها S2) | `DEFER-0026` | Project owner | custom-admin-rebuild-fa.md §14.2 |
 | ADM-0 | ADM | Wagtail schema uninstall remainder (`DEBT-0003`); SPA TOTP shipped | dumpdata + backup before migrate; prove SPA enrollment on new image | Project owner | Task-list §17; LOG-0165 |
 | ADM-1 | ADM | Custom admin foundation + cutover | DONE (LOG-0156..0158, LOG-0163); `DEFER-0023` CLOSED | Project owner | Task-list §17 |

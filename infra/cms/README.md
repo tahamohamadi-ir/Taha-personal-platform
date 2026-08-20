@@ -51,6 +51,23 @@ ghcr.io/<owner>/taha-cms:main          # moving pointer on default branch
 Production **must** set `CMS_IMAGE` to a sha tag for deploy/rollback clarity.
 `:main` is a convenience pointer only.
 
+## CD migrate (ADR-0027 Slice 2)
+
+Preferred path after a GHCR `taha-cms:<sha>` exists: GitHub Actions → **CD — Deploy
+to production** → Run workflow → `migrate_cms=true` + `cms_image_tag=<sha>`.
+That SSHs as `deploy` and runs `infra/deploy/cd-cms-migrate.sh` (backup →
+`update-cms.sh` → `smoke-cms.sh`). Leave repository variable
+`CMS_CD_AUTO_MIGRATE` unset until the first attended PASS (`RISK-0012`).
+
+Manual on VPS:
+
+```bash
+cd /home/deploy/cms-repo
+git pull --ff-only origin main
+export CMS_IMAGE=ghcr.io/tahamohamadi-ir/taha-cms:<sha>
+bash infra/deploy/cd-cms-migrate.sh
+```
+
 ## Deploy (operator)
 
 Copy-paste safe (no angle-bracket placeholders):

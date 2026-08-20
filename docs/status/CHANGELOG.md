@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-20 — ADR-0027 Slice 2: gated CD CMS migrate
+
+- New `infra/deploy/cd-cms-migrate.sh` and CD job `cms-migrate` (off by default).
+- **Owner-attended first run:** Actions → CD → Run workflow → `migrate_cms=true` + `cms_image_tag` (existing GHCR sha). Do not set `CMS_CD_AUTO_MIGRATE=true` until that PASS.
+- `RISK-0012` remains OPEN until first live CD migrate evidence.
+
 ## 2026-08-20 — web nginx: preserve HTTP 404 for missing paths
 
 - nginx `try_files` uses `=404`; Caddy no longer re-proxies `/404.html` on errors (that forced 200).

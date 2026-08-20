@@ -1,6 +1,6 @@
 # Task Specification — Unified Compose + CMS origin + CD
 
-**Status:** `IN_PROGRESS` (ADR-0027 accepted). Slice 0 done; Slice 1 cutover **live** on VPS (2026-08-20, PR #50 / `a29838d`, LOG-0174). Later slices are separate PRs.
+**Status:** `IN_PROGRESS` (ADR-0027 accepted). Slice 0–1 done (cutover live). Slice 2 CD CMS migrate **in repo** (owner-attended first via `workflow_dispatch`; `RISK-0012` OPEN until first live CD migrate). Later slices are separate PRs.
 
 ## Task: One Compose network; CMS origin; CD updates cms and web
 
@@ -44,10 +44,11 @@ False smoke: `smoke-cms.sh` probed `/admin-wagtail/accounts/login/` (302). Real 
 - `smoke-cms.sh` checks loopback `/` and `/health.json` on 13080.
 - Targeted check: `npm run check` + image build locally. No Playwright matrix.
 
-### Slice 2 — CD updates CMS image (owner-attended first)
+### Slice 2 — CD updates CMS image (owner-attended first) (**done in repo**)
 
-- After `ci-cms-image` success, CD SSH: `pg_dumpall` → `CMS_IMAGE` pin → `update-cms.sh` → `smoke-cms.sh`.
-- New `RISK-0012`. First production run is not unattended. HMAC still off (`DEFER-0027`).
+- `infra/deploy/cd-cms-migrate.sh`: `pg_dumpall` → pin `CMS_IMAGE` → `update-cms.sh` → `smoke-cms.sh`.
+- CD job `cms-migrate` (`.github/workflows/cd.yml`): **off** on ordinary pushes. Owner runs Actions → CD → **Run workflow** → `migrate_cms=true` (optional `cms_image_tag`). Unattended later only if repo var `CMS_CD_AUTO_MIGRATE=true` (skips when GHCR tag missing).
+- `RISK-0012` remains OPEN until the first owner-attended CD migrate PASS on production. HMAC still off (`DEFER-0027`).
 
 ### Slice 3 — CMS origin honesty
 
@@ -85,6 +86,8 @@ False smoke: `smoke-cms.sh` probed `/admin-wagtail/accounts/login/` (302). Real 
 
 ## Handoff
 
-- Slice 1 Caddy cutover is **live** (LOG-0174): owner `caddy-sync` + `smoke-cms.sh` PASS on 2026-08-20.
-- Next agent starts Slice 2 (CD CMS image migrate) from this spec; first run owner-attended (`RISK-0012`).
-- Owner: after admin publish, `bash infra/deploy/rebuild-web.sh` (not `rebuild-static.sh`).
+- Slice 1 Caddy cutover is **live** (LOG-0174). Slice 2 CD CMS migrate path is in repo; first production run is owner-attended (`RISK-0012`).
+- Owner first CD migrate: ensure GHCR has `taha-cms:<tag>` (Actions → CMS image), then Actions → **CD — Deploy to production** → Run workflow → `migrate_cms=true`, set `cms_image_tag` (e.g. `2e200fe` or newer sha). Confirm job PASS and `smoke-cms.sh` in logs.
+- Do **not** set `CMS_CD_AUTO_MIGRATE=true` until after that attended PASS.
+- Next agent starts Slice 3 (CMS origin honesty) or waits for owner Slice 2 evidence.
+- After admin publish: `bash infra/deploy/rebuild-web.sh`.
