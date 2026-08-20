@@ -1,6 +1,7 @@
 /** CMS public article DTOs consumed by Astro at build time (optional CMS_API_BASE). */
 
-import { cmsFetchJson } from "./client";
+import { cmsFetchJson, CmsOriginError, throwIfCmsError } from "./client";
+import type { CmsFetchResult } from "./client";
 
 export interface TopicTagDto {
   name: string;
@@ -55,26 +56,51 @@ export interface ArticleSlugRedirectDto {
 
 type Locale = "fa" | "en";
 
-async function fetchJson<T>(path: string): Promise<T | null> {
-  return cmsFetchJson<T>(path);
-}
-
-function unwrapItems<T>(payload: T[] | { items: T[] } | null): T[] {
-  if (!payload) return [];
+function unwrapItems<T>(payload: T[] | { items: T[] }): T[] {
   if (Array.isArray(payload)) return payload;
   if (Array.isArray(payload.items)) return payload.items;
   return [];
 }
 
-/** Published articles for a locale. Empty when CMS_API_BASE is unset or unreachable. */
-export async function getPublishedArticles(locale: Locale): Promise<ArticleListDto[]> {
-  const pages: ArticleListDto[] = [];
+function requireListPayload<T>(
+  result: CmsFetchResult<T[] | { items: T[] }>,
+  context: string,
+): T[] | null {
+  throwIfCmsError(result, context);
+  if (result.kind === "unset") return null;
+  if (result.kind === "http") {
+    throw new CmsOriginError(
+      `${context}: unexpected HTTP ${result.status}`,
+      result.status,
+    );
+  }
+  return unwrapItems(result.data);
+}
+
+async function fetchDetail<T>(path: string, context: string): Promise<T | null> {
+  const result = await cmsFetchJson<T>(path);
+  throwIfCmsError(result, context);
+  if (result.kind === "unset") return null;
+  if (result.kind === "http") {
+    if (result.status === 404) return null;
+    throw new CmsOriginError(
+      `${context}: unexpected HTTP ${result.status}`,
+      result.status,
+    );
+  }
+  return result.data;
+}
+
+async function paginateAll<T>(pathPrefix: string, context: string): Promise<T[]> {
+  const pages: T[] = [];
   let page = 1;
   while (page <= 50) {
-    const payload = await fetchJson<ArticleListDto[] | { items: ArticleListDto[] }>(
-      `/api/articles/${locale}?page=${page}`,
+    const payload = await cmsFetchJson<T[] | { items: T[] }>(
+      `${pathPrefix}?page=${page}`,
     );
-    const items = unwrapItems(payload);
+    const items = requireListPayload(payload, `${context} page ${page}`);
+    // CMS_API_BASE unset → honest empty (local/offline), not snapshot invent.
+    if (items === null) return [];
     if (items.length === 0) break;
     pages.push(...items);
     if (items.length < 10) break;
@@ -83,28 +109,41 @@ export async function getPublishedArticles(locale: Locale): Promise<ArticleListD
   return pages;
 }
 
+/** Published articles for a locale. Empty when CMS_API_BASE is unset or the API returns an empty list. Outage fails the build. */
+export async function getPublishedArticles(locale: Locale): Promise<ArticleListDto[]> {
+  return paginateAll(`/api/articles/${locale}`, `articles/${locale}`);
+}
+
 export async function getPublishedArticle(
   locale: Locale,
   slug: string,
 ): Promise<ArticleDetailDto | null> {
-  return fetchJson<ArticleDetailDto>(`/api/articles/${locale}/${slug}`);
+  return fetchDetail(
+    `/api/articles/${locale}/${slug}`,
+    `article ${locale}/${slug}`,
+  );
 }
 
 export async function getPublishedSeries(locale: Locale): Promise<SeriesDto[]> {
-  return (await fetchJson<SeriesDto[]>(`/api/series/${locale}`)) ?? [];
+  const result = await cmsFetchJson<SeriesDto[]>(`/api/series/${locale}`);
+  const items = requireListPayload(result, `series/${locale}`);
+  return items ?? [];
 }
 
 export async function getTopicTags(locale: Locale): Promise<TopicTagDto[]> {
-  return (await fetchJson<TopicTagDto[]>(`/api/tags/${locale}`)) ?? [];
+  const result = await cmsFetchJson<TopicTagDto[]>(`/api/tags/${locale}`);
+  const items = requireListPayload(result, `tags/${locale}`);
+  return items ?? [];
 }
 
 export async function getArticleRedirects(
   locale: Locale,
 ): Promise<ArticleSlugRedirectDto[]> {
-  return (
-    (await fetchJson<ArticleSlugRedirectDto[]>(`/api/article-redirects/${locale}`)) ??
-    []
+  const result = await cmsFetchJson<ArticleSlugRedirectDto[]>(
+    `/api/article-redirects/${locale}`,
   );
+  const items = requireListPayload(result, `article-redirects/${locale}`);
+  return items ?? [];
 }
 
 export function articlesForTag(
