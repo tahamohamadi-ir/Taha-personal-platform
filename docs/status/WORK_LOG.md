@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0180 — 2026-08-20 — DEFER-0026 Playwright lifecycle suite
+
+- Outcome: Added full Playwright Test config (`apps/web/playwright.config.ts`: workers=1, CI retries=2, trace/video on first retry, HTML reporter) and browser suite `qa/e2e/content-lifecycle.spec.ts` (create→publish→public fa/en JSON) using fixture admin+TOTP (`e2e@example.com`, not production secrets). CMS e2e settings + seed + `run_e2e_stack.sh`; CI job `playwright-lifecycle` in `ci-cms.yml`. Pytest `test_content_lifecycle_e2e.py` kept. `DEFER-0026` CLOSED; remainder §18 matrix → `DEFER-0032`.
+- Why: Plan item 2d / ADM-6 — complement JSON lifecycle with browser UI evidence and S2 config pattern.
+- Scope / files: `apps/web/playwright.config.ts`, `apps/web/qa/e2e/**`, `apps/web/package.json`+lock, `apps/cms/config/settings/e2e.py`, `apps/cms/scripts/seed_e2e_fixtures.py`, `apps/cms/scripts/run_e2e_stack.sh`, `.github/workflows/ci-cms.yml`, ledgers, ADM-6 spec, Task-list, PROJECT_MANIFEST.
+- Commands or actions actually performed: worktree `feat/adm6-playwright-lifecycle`; `npm install @playwright/test`; admin SPA build; CMS `migrate`+`seed_e2e_fixtures`+`ruff` PASS; pytest lifecycle PASS. Local `playwright install chromium` blocked (CDN 403 geo); CI ubuntu job is the browser evidence path.
+- Verification actually performed and result: seed prints fixture ready; `uv run ruff check` PASS; `uv run pytest -q tests/test_content_lifecycle_e2e.py` PASS; admin-frontend `npm run build` PASS. Browser suite runs in GitHub Actions `playwright-lifecycle`.
+- Deferred or risk IDs: `DEFER-0026` CLOSED; `DEFER-0032` OPEN; `DEFER-0027` unchanged.
+- Rollback / recovery: revert PR; CI job and e2e scripts go with it.
+
 ## LOG-0179 — 2026-08-20 — ADR-0027 Slice 2: first attended CD CMS migrate PASS
 
 - Outcome: GitHub Actions CD `workflow_dispatch` `migrate_cms=true` `cms_image_tag=2e200fe` run [32407698471](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32407698471) **success**. Evidence: `backup_ok` under `/home/deploy/cms-migrate-backups/...`, recreate `cms`/`db`/`web`, migrate no-op, `CMS smoke PASS`, `cd-cms-migrate PASS`. Image remained `ghcr.io/tahamohamadi-ir/taha-cms:2e200fe`.

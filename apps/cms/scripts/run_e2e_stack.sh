@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Start a disposable CMS stack for Playwright lifecycle (admin SPA + Ninja API).
+# Requires: uv, built apps/cms/admin-frontend/dist, bash.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+
+export DJANGO_SETTINGS_MODULE="${DJANGO_SETTINGS_MODULE:-config.settings.e2e}"
+
+if [[ ! -f admin-frontend/dist/index.html ]]; then
+  echo "Admin SPA missing — run: (cd admin-frontend && npm ci && npm run build)" >&2
+  exit 1
+fi
+
+rm -f e2e.sqlite3
+uv run python manage.py migrate --noinput
+uv run python scripts/seed_e2e_fixtures.py
+exec uv run python manage.py runserver 127.0.0.1:8000 --noreload

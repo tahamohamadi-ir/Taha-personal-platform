@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-20 — DEFER-0026 Playwright content lifecycle
+
+- Full Playwright Test config in `apps/web` (retries/trace/video/html) and browser suite create→publish→public fa/en against disposable CMS fixtures.
+- CI: `playwright-lifecycle` job in `ci-cms.yml`. How to run: `apps/web/qa/e2e/README.md` (`npm run test:e2e`).
+- Pytest JSON lifecycle unchanged. Remaining §18 QA matrix → `DEFER-0032`.
+
 ## 2026-08-20 — ADR-0027 Slice 2: first attended CD CMS migrate PASS
 
 - Actions run 32407698471: `migrate_cms=true` `cms_image_tag=2e200fe` → `cd-cms-migrate PASS` + `CMS smoke PASS`.

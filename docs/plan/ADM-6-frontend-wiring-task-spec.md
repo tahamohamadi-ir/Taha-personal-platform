@@ -22,7 +22,7 @@
 - Non-goals:
   - Opening `/rebuild-trigger/` on public Caddy.
   - Enabling HMAC on production without owner action (`DEFER-0027`).
-  - Full Playwright §18 matrix (`DEFER-0026`).
+  - Full Playwright §18 matrix remainder (`DEFER-0032`). Lifecycle browser suite shipped (`DEFER-0026` CLOSED).
   - Composition → Astro for **non-blog** types, `primaryColor` CSS injection, CV current-document, contact inbox (`DEBT-0006`, `DEFER-0029`). Blog story→Astro is `docs/plan/blog-story-composition-task-spec.md` (`DEFER-0028` CLOSED).
   - OpenAPI admin docs, feature flags, preview tokens, rich blocks v2.
   - Uninstalling Wagtail (`DEBT-0003`).
@@ -60,5 +60,5 @@
   - `uv run python manage.py check` — no issues; `makemigrations --check --dry-run` — No changes detected
   - `npm run check` in `apps/web` — 0 errors (71 files); `npm run build` — 40 pages; `node qa/projects-catalog.spec.mjs` — PASS
   - `npm run check` / `npm run build` in `apps/cms/admin-frontend` — PASS
-- Deferred/risk IDs: `DEFER-0026`, `DEFER-0027`, `DEFER-0029`, `DEBT-0003`, `DEBT-0006`, `RISK-0010`.
+- Deferred/risk IDs: `DEFER-0026` CLOSED (Playwright lifecycle LOG-0180); `DEFER-0032` OPEN (§18 QA remainder); `DEFER-0027`, `DEFER-0029`, `DEBT-0003`, `DEBT-0006`, `RISK-0010`.
 - Explicit blockers and next input: owner VPS dumpdata + backup, `migrate` through `0007`, `rebuild-static.sh`; HMAC enable only after smoke (`DEFER-0027`). Not DONE for production.

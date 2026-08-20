@@ -51,3 +51,55 @@ jobs:
             echo "secret-like pattern found in CMS tree" >&2
             exit 1
           fi
+
+  playwright-lifecycle:
+    name: Playwright content lifecycle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.0.1
+
+      - name: Set up Node
+        uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            apps/web/package-lock.json
+            apps/cms/admin-frontend/package-lock.json
+
+      - name: Install CMS Python deps
+        working-directory: apps/cms
+        run: uv sync --python 3.12
+
+      - name: Build admin SPA
+        working-directory: apps/cms/admin-frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Install web + Playwright
+        working-directory: apps/web
+        run: |
+          npm ci
+          timeout 180 npx playwright install chromium --with-deps
+
+      - name: Content lifecycle (create→publish→public fa/en)
+        working-directory: apps/web
+        env:
+          CI: true
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: playwright-lifecycle-report-${{ github.sha }}
+          path: |
+            apps/web/qa/playwright-report
+            apps/web/qa/test-results
+          if-no-files-found: ignore
+          retention-days: 14

@@ -5,11 +5,11 @@
 | ID | Phase | Item | Blocked by / prerequisite | Owner | Evidence |
 |---|---|---|---|---|---|
 | ADR-0027 | OPS | Slice 2 attended CD migrate **PASS** (LOG-0179); Slice 3 CMS origin honesty next | Keep `CMS_CD_AUTO_MIGRATE` unset | Project owner | LOG-0179 |
-| QA-playwright | QA | Playwright config کامل (retries/trace/video/html reporter) به‌جای spec های خام (الگوی نمونه‌ها S2) | `DEFER-0026` | Project owner | custom-admin-rebuild-fa.md §14.2 |
+| QA-playwright | QA | Playwright config کامل + lifecycle browser suite | DONE (`DEFER-0026` CLOSED LOG-0180); §18 remainder `DEFER-0032` | Project owner | `apps/web/qa/e2e/README.md` |
 | ADM-0 | ADM | Wagtail schema uninstall remainder (`DEBT-0003`); SPA TOTP shipped | dumpdata + backup before migrate; prove SPA enrollment on new image | Project owner | Task-list §17; LOG-0165 |
 | ADM-1 | ADM | Custom admin foundation + cutover | DONE (LOG-0156..0158, LOG-0163); `DEFER-0023` CLOSED | Project owner | Task-list §17 |
 | ADM-2 | ADM | Media library + alt-by-locale | DONE (LOG-0159); `DEFER-0014` CLOSED | Project owner | Task-list §17 |
-| ADM-6 | ADM | Astro wiring + rebuild trigger + E2E JSON | PARTIAL — HMAC enable `DEFER-0027`; Playwright `DEFER-0026`; primaryColor/CV `DEFER-0029`; owner VPS migrate | Project owner | Task-list §17; LOG-0165 |
+| ADM-6 | ADM | Astro wiring + rebuild trigger + E2E JSON | PARTIAL — HMAC `DEFER-0027`; §18 QA `DEFER-0032`; primaryColor/CV `DEFER-0029` | Project owner | Task-list §17; LOG-0165/0180 |
 | P4-reading | P4 | Reading time real + TOC + JSON-LD additions as needed (F1/F6/F2 — partially DONE on main) | P4 follow-up | Project owner | custom-admin-rebuild-fa.md §14.1 |
 | P6-gallery | P6 | گالری lightbox پروژه‌ها (F7) + فیلترهای URL-driven (F3) | P6 start | Project owner | custom-admin-rebuild-fa.md §14.1 |
 | ADM-5-featured | ADM | Featured spotlight با پنجره‌ی زمانی (F4) + CV «یک سند جاری» از ادمین (F5) | ADM-5 | Project owner | custom-admin-rebuild-fa.md §14.1 |
