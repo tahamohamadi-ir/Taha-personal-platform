@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0175 — 2026-08-20 — web nginx: real HTTP 404 for missing paths
+
+- Outcome: `infra/web/nginx.conf` `try_files` ends with `=404` (not `/404.html` as last URI). Removed Caddy `handle_errors` re-proxy of `/404.html` which overwrote upstream 404 with 200. Owner `rebuild-web.sh` otherwise PASS; public smoke failed only on `/nonexistent-qa` expected 404 got 200.
+- Why: After Slice 1 cutover, visitors and `smoke.sh` need correct 404 status while still serving Astro `404.html` body via nginx `error_page`.
+- Scope / files: `infra/web/nginx.conf`, `infra/caddy/Caddyfile`, ledgers.
+- Commands or actions actually performed: none on VPS yet (owner apply after merge).
+- Verification actually performed and result: root-cause match to smoke FAIL; nginx/Caddy interaction documented.
+- Deferred or risk IDs: none.
+- Rollback / recovery: previous nginx try_files + Caddy handle_errors; `rebuild-web.sh` + `caddy-sync`.
+
 ## LOG-0174 — 2026-08-20 — ADR-0027 Slice 1 cutover live on VPS
 
 - Outcome: Owner applied PR #50 (`a29838d`): `git pull`, confirmed `(taha_application_routes)` → `reverse_proxy 127.0.0.1:13080`, `taha-cms-web-1` healthy, `caddy-sync`, `smoke-cms.sh` **PASS** (loopback `/` + `/health.json`, `/admin/`, Wagtail login, `/health/`, `/health.json`, `/admin` 308, `/`). Brief accidental restore of `Caddyfile.bak-20260819194342` then re-sync; final state is cutover live.
