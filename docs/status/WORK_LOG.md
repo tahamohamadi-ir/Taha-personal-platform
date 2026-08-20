@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0176 — 2026-08-20 — ADR-0027 Slice 2: gated CD CMS migrate
+
+- Outcome: Added `infra/deploy/cd-cms-migrate.sh` (`pg_dumpall` → `update-cms.sh` → `smoke-cms.sh`) and CD job `cms-migrate` gated by `workflow_dispatch` `migrate_cms=true` or repo var `CMS_CD_AUTO_MIGRATE=true` (default off). Ordinary `main` pushes do not migrate Postgres.
+- Why: ADR-0027 Slice 2 / `RISK-0012` — wire GitHub→VPS CMS image updates without unattended first production migrate.
+- Scope / files: `infra/deploy/cd-cms-migrate.sh`, `.github/workflows/cd.yml`, task spec, RISK_REGISTER, DEPLOY_RUNBOOK, ledgers.
+- Commands or actions actually performed: `bash -n` on new script (local). No VPS migrate in this session.
+- Verification actually performed and result: workflow YAML gates reviewed; auto path soft-skips missing GHCR tag; dispatch hard-fails.
+- Deferred or risk IDs: `RISK-0012` OPEN until owner-attended CD migrate PASS; `DEFER-0027` unchanged.
+- Rollback / recovery: previous `CMS_IMAGE` via `update-cms.sh`; disable migrate by leaving `CMS_CD_AUTO_MIGRATE` unset and not dispatching `migrate_cms`.
+
 ## LOG-0175 — 2026-08-20 — web nginx: real HTTP 404 for missing paths
 
 - Outcome: `infra/web/nginx.conf` `try_files` ends with `=404` (not `/404.html` as last URI). Removed Caddy `handle_errors` re-proxy of `/404.html` which overwrote upstream 404 with 200. Owner `rebuild-web.sh` otherwise PASS; public smoke failed only on `/nonexistent-qa` expected 404 got 200.

@@ -3,6 +3,17 @@ name: CD — Deploy to production
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      migrate_cms:
+        description: "Owner-attended CMS image pull + pg_dumpall + migrate + smoke (RISK-0012)"
+        type: boolean
+        default: false
+      cms_image_tag:
+        description: "CMS image tag (short or full sha). Empty = this workflow SHA short."
+        type: string
+        required: false
+        default: ""
 
 concurrency:
   group: production-deploy
@@ -155,3 +166,56 @@ jobs:
             fi
             echo "PASS ${path} → ${status}"
           done
+
+  # ADR-0027 Slice 2 / RISK-0012: CMS migrate is NOT on every push by default.
+  # Owner-attended: Actions → CD → Run workflow → migrate_cms = true (after CMS image exists).
+  # Later unattended: set repository variable CMS_CD_AUTO_MIGRATE=true (fails if image missing).
+  cms-migrate:
+    name: CMS image migrate (gated)
+    needs: deploy
+    runs-on: ubuntu-latest
+    environment: production
+    if: >
+      (github.event_name == 'workflow_dispatch' && inputs.migrate_cms == true) ||
+      (github.event_name == 'push' && vars.CMS_CD_AUTO_MIGRATE == 'true')
+    steps:
+      - name: Backup + pin CMS_IMAGE + migrate + smoke
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ vars.DEPLOY_USER || 'deploy' }}
+          CMS_TAG_INPUT: ${{ inputs.cms_image_tag || '' }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          install -m 600 /dev/null ~/.ssh_deploy_key
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh_deploy_key
+          SSH_OPTS="-i ~/.ssh_deploy_key -o StrictHostKeyChecking=accept-new"
+
+          if [[ -n "${CMS_TAG_INPUT}" ]]; then
+            TAG="${CMS_TAG_INPUT}"
+          else
+            TAG="${GITHUB_SHA:0:7}"
+          fi
+          CMS_IMAGE="ghcr.io/tahamohamadi-ir/taha-cms:${TAG}"
+          echo "CMS_IMAGE=${CMS_IMAGE}"
+
+          ssh $SSH_OPTS "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "set -euo pipefail
+             cd /home/deploy/cms-repo
+             git fetch origin
+             git checkout main
+             git pull --ff-only origin main
+             if ! docker pull \"${CMS_IMAGE}\"; then
+               if [[ \"${EVENT_NAME}\" == \"workflow_dispatch\" ]]; then
+                 echo \"::error::CMS image not in GHCR: ${CMS_IMAGE}. Wait for workflow CMS image, or pass cms_image_tag.\"
+                 exit 1
+               fi
+               echo \"::warning::No CMS image for ${TAG}; skipping migrate (CMS_CD_AUTO_MIGRATE)\"
+               exit 0
+             fi
+             export CMS_IMAGE=\"${CMS_IMAGE}\"
+             export SKIP_GIT_PULL=1
+             bash infra/deploy/cd-cms-migrate.sh"
+
+          rm -f ~/.ssh_deploy_key
