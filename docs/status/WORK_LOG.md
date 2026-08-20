@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0183 — 2026-08-20 — HMAC rebuild trigger rewired to rebuild-web.sh (DEFER-0027)
+
+- Outcome: Default script for signed `/rebuild-trigger/` is now `infra/deploy/rebuild-web.sh` (Compose web image + loopback smoke). `REBUILD_TRIGGER_ENABLED` remains False. Tests assert `rebuild-web.sh` path. `DEFER-0027` stays OPEN until owner VPS smoke + enable.
+- Why: After ADR-0027 Slice 1 Caddy cutover, disk `rebuild-static.sh` no longer updates visitor HTML; HMAC must target the web container rebuild.
+- Scope / files: `apps/cms/apps/rebuild/services.py`, `apps/cms/apps/rebuild/views.py`, `apps/cms/tests/test_rebuild.py`, `infra/cms/.env.example`, ADR-0023, ADM-6 task spec, deferred-validation, CHANGELOG.
+- Commands or actions actually performed: code + doc rewire on `feat/hmac-rebuild-web` from `origin/main`.
+- Verification actually performed and result: `uv run pytest tests/test_rebuild.py -q` -> 10 passed; `uv run ruff check apps/rebuild tests/test_rebuild.py` -> All checks passed.
+- Deferred or risk IDs: `DEFER-0027` OPEN (owner enable + smoke); no new risk.
+- Rollback / recovery: revert branch; keep trigger disabled; manual `bash infra/deploy/rebuild-web.sh` after publish.
+
 ## LOG-0179 — 2026-08-20 — ADR-0027 Slice 2: first attended CD CMS migrate PASS
 
 - Outcome: GitHub Actions CD `workflow_dispatch` `migrate_cms=true` `cms_image_tag=2e200fe` run [32407698471](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32407698471) **success**. Evidence: `backup_ok` under `/home/deploy/cms-migrate-backups/...`, recreate `cms`/`db`/`web`, migrate no-op, `CMS smoke PASS`, `cd-cms-migrate PASS`. Image remained `ghcr.io/tahamohamadi-ir/taha-cms:2e200fe`.
