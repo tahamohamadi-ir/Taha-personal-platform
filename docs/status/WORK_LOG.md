@@ -10,6 +10,16 @@
 - Deferred or risk IDs: none.
 - Rollback / recovery: previous nginx try_files + Caddy handle_errors; `rebuild-web.sh` + `caddy-sync`.
 
+## LOG-0174 — 2026-08-20 — ADR-0027 Slice 1 cutover live on VPS
+
+- Outcome: Owner applied PR #50 (`a29838d`): `git pull`, confirmed `(taha_application_routes)` → `reverse_proxy 127.0.0.1:13080`, `taha-cms-web-1` healthy, `caddy-sync`, `smoke-cms.sh` **PASS** (loopback `/` + `/health.json`, `/admin/`, Wagtail login, `/health/`, `/health.json`, `/admin` 308, `/`). Brief accidental restore of `Caddyfile.bak-20260819194342` then re-sync; final state is cutover live.
+- Why: Production public HTML now originates from Compose `web` nginx, not `/opt/taha/site/current`.
+- Scope / files: live `/etc/caddy/Caddyfile` via sync from repo; ledgers.
+- Commands or actions actually performed: owner on VPS (no agent SSH).
+- Verification actually performed and result: `CMS smoke PASS`; loopback `{"status":"ok","service":"static","version":"0.1.0"}`.
+- Deferred or risk IDs: `DEFER-0031` unchanged; next Slice 2 CD CMS migrate (`RISK-0012`).
+- Rollback / recovery: restore `file_server` snippet + `caddy-sync`; bak under `/etc/caddy/Caddyfile.bak-*`.
+
 ## LOG-0173 — 2026-08-19 — rebuild-web.sh: CMS publish → web nginx container
 
 - Outcome: Added `infra/deploy/rebuild-web.sh` to build the `web` Docker image with live CMS content (`CMS_API_BASE` build-arg, default loopback `18000`), restart Compose `web`, and smoke `127.0.0.1:13080/health.json` (+ optional public smoke). Updated `rebuild-static.sh` header and `DEPLOY_RUNBOOK.md`.
