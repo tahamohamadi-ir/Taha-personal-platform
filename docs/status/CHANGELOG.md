@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-08-20 — ADM-6: primaryColor + current CV/resume from admin
+
+- Public `GET /api/site` exposes `primaryColor` and active current CV/resume downloads.
+- Astro injects `--color-brand` from CMS at build; CV pages prefer media-library PDFs (fallback: committed markdown).
+- Admin Settings: MediaPicker slots for academic CV + industry resume (one PDF each).
+- `DEFER-0029` CLOSED; `DEBT-0006` CV RESOLVED (contact inbox not reopened).
+
 ## 2026-08-20 — ADR-0027 Slice 2: first attended CD CMS migrate PASS
 
 - Actions run 32407698471: `migrate_cms=true` `cms_image_tag=2e200fe` → `cd-cms-migrate PASS` + `CMS smoke PASS`.
