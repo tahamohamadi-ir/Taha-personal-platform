@@ -5,7 +5,7 @@
 | ID | Phase | Item | Blocked by / prerequisite | Owner | Evidence |
 |---|---|---|---|---|---|
 | ADR-0027 | OPS | Slice 2 attended CD migrate **PASS** (LOG-0179); Slice 3 CMS origin honesty next | Keep `CMS_CD_AUTO_MIGRATE` unset | Project owner | LOG-0179 |
-| QA-playwright | QA | Playwright config کامل + lifecycle browser suite | DONE (`DEFER-0026` CLOSED LOG-0180); §18 remainder `DEFER-0032` | Project owner | `apps/web/qa/e2e/README.md` |
+| QA-playwright | QA | Playwright config کامل + lifecycle browser suite | DONE (`DEFER-0026` CLOSED LOG-0184); §18 remainder `DEFER-0032` | Project owner | `apps/web/qa/e2e/README.md` |
 | ADM-0 | ADM | Wagtail schema uninstall remainder (`DEBT-0003`); SPA TOTP shipped | dumpdata + backup before migrate; prove SPA enrollment on new image | Project owner | Task-list §17; LOG-0165 |
 | ADM-1 | ADM | Custom admin foundation + cutover | DONE (LOG-0156..0158, LOG-0163); `DEFER-0023` CLOSED | Project owner | Task-list §17 |
 | ADM-2 | ADM | Media library + alt-by-locale | DONE (LOG-0159); `DEFER-0014` CLOSED | Project owner | Task-list §17 |

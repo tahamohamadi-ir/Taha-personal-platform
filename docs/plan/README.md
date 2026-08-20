@@ -17,7 +17,7 @@ Last reconciled: 2026-08-19.
 |---|---|---|---|
 | `cms-origin-and-full-stack-cd-task-spec.md` | IN_PROGRESS | agent | ADR-0027. Slice 0+1 done. Next: Slice 2 CD auto-migrate. |
 | `blog-story-composition-task-spec.md` | PARTIAL | agent | Blog story body via composition; owner migrate + static rebuild. |
-| `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | HMAC `DEFER-0027`; Playwright lifecycle `DEFER-0026` CLOSED (LOG-0180); §18 remainder `DEFER-0032`; story projection shipped on `b6bea6a`. |
+| `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | HMAC `DEFER-0027`; Playwright lifecycle `DEFER-0026` CLOSED (LOG-0184); §18 remainder `DEFER-0032`; story projection shipped on `b6bea6a`. |
 | `P0-A-stack-inventory-task-spec.md` | BLOCKED (owner) | owner | Read-only VPS inventory. Not an agent task. |
 
 Owner remaining work that is **not** a new spec: HMAC enable (`DEFER-0027`); apt/SSH (`RISK-0005`/`0006`). CMS migrate through `0008` is **done** on production (`b6bea6a`).

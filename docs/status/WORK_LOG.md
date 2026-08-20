@@ -1,6 +1,6 @@
 # Work Log
 
-## LOG-0180 — 2026-08-20 — DEFER-0026 Playwright lifecycle suite
+## LOG-0184 — 2026-08-20 — DEFER-0026 Playwright lifecycle suite
 
 - Outcome: Added full Playwright Test config (`apps/web/playwright.config.ts`: workers=1, CI retries=2, trace/video on first retry, HTML reporter) and browser suite `qa/e2e/content-lifecycle.spec.ts` (create→publish→public fa/en JSON) using fixture admin+TOTP (`e2e@example.com`, not production secrets). CMS e2e settings + seed + `run_e2e_stack.sh`; CI job `playwright-lifecycle` in `ci-cms.yml`. Pytest `test_content_lifecycle_e2e.py` kept. `DEFER-0026` CLOSED; remainder §18 matrix → `DEFER-0032`.
 - Why: Plan item 2d / ADM-6 — complement JSON lifecycle with browser UI evidence and S2 config pattern.
