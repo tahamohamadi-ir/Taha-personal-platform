@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-08-20 — ADR-0027 Slice 1 cutover live
+
+- Owner applied PR #50 on VPS: Caddy public routes → `127.0.0.1:13080` (`taha-cms-web-1`); `smoke-cms.sh` PASS.
+- Post-publish public HTML rebuild: `bash infra/deploy/rebuild-web.sh` (not disk `rebuild-static.sh`).
+
 ## 2026-08-19 — rebuild-web.sh: CMS publish → web nginx container
 
 - New `infra/deploy/rebuild-web.sh` builds `taha-web:local` with loopback `CMS_API_BASE`, restarts Compose `web`, smokes `127.0.0.1:13080/health.json`.

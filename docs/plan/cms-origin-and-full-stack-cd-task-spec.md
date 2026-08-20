@@ -1,6 +1,6 @@
 # Task Specification — Unified Compose + CMS origin + CD
 
-**Status:** `IN_PROGRESS` (ADR-0027 accepted). Slice 0 done; Slice 1 cutover implemented in repo (pending merge; owner applies via CD or manual `caddy-sync`). Later slices are separate PRs.
+**Status:** `IN_PROGRESS` (ADR-0027 accepted). Slice 0 done; Slice 1 cutover **live** on VPS (2026-08-20, PR #50 / `a29838d`, LOG-0174). Later slices are separate PRs.
 
 ## Task: One Compose network; CMS origin; CD updates cms and web
 
@@ -85,6 +85,6 @@ False smoke: `smoke-cms.sh` probed `/admin-wagtail/accounts/login/` (302). Real 
 
 ## Handoff
 
-- Slice 1 Caddy cutover is in repo; owner applies with `git pull` + `sudo /opt/taha/bin/caddy-sync.sh` (or wait for CD).
-- Next agent starts Slice 2 (CD CMS image migrate) from this spec.
-- Owner: confirm `curl -sS http://127.0.0.1:13080/health.json` and `bash infra/deploy/smoke-cms.sh` after cutover.
+- Slice 1 Caddy cutover is **live** (LOG-0174): owner `caddy-sync` + `smoke-cms.sh` PASS on 2026-08-20.
+- Next agent starts Slice 2 (CD CMS image migrate) from this spec; first run owner-attended (`RISK-0012`).
+- Owner: after admin publish, `bash infra/deploy/rebuild-web.sh` (not `rebuild-static.sh`).
