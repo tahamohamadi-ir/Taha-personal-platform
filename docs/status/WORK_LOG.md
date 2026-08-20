@@ -1,8 +1,10 @@
 # Work Log
 
-## LOG-0181 — 2026-08-20 — Slice 5 / DEFER-0030: entity story bodies
+## LOG-0186 — 2026-08-20 — Slice 5 / DEFER-0030: entity story bodies
 
-- Outcome: Additive `story` FK on `Project`, `ResearchTopic`, `ResearchStatement`, and `ProfileExperience` (migration `content.0009_entity_stories`). Public APIs project published-only story via `public_story_document`; admin `storyId` on content entities; `ArticleStoryEditor` generalized to `EntityStoryEditor` (content + profile experience attach). Astro detail pages reuse `StoryBody.astro` with existing field fallbacks. `DEFER-0030` CLOSED in ledger.
+- Outcome: Additive `story` FK on `Project`, `ResearchTopic`, `ResearchStatement`, and `ProfileExperience` (migration `content.0010_entity_stories`). Public APIs project published-only story via `public_story_document`; admin `storyId` on content entities; `ArticleStoryEditor` generalized to `EntityStoryEditor` (content + profile experience attach). Astro detail pages reuse `StoryBody.astro` with existing field fallbacks. `DEFER-0030` CLOSED in ledger.
+
+- Note: Renumbered from colliding LOG-0181 (PRs #60/#62 also claimed it) to LOG-0186 (open PRs #57–#63; highest was LOG-0185 on #62). Migration renumbered `content.0009_entity_stories` → `content.0010_entity_stories` (still depends on `0008_article_story`) to avoid collision with PR #60 `content.0009_scheduled_for_and_contentrevision`. Both PRs currently branch from `0008`; merging both leaves two migration heads until a merge migration or rebase of one onto the other.
 - Why: Close Slice 5 after blog story reference implementation.
 - Scope / files: `apps/cms/**` (models/migration/API/admin SPA/tests), `apps/web/**` (DTOs + detail pages), `docs/status/**`, `docs/plan/**`.
 - Commands or actions actually performed: isolated worktree `feat/slice-5-entity-stories`; pytest/ruff/npm check.
@@ -12,7 +14,7 @@
   - `uv run python manage.py makemigrations --check --dry-run` — No changes detected
   - `npm run check` in `apps/web` — 0 errors (73 files)
   - `npm run check` in `apps/cms/admin-frontend` — PASS
-- Deferred or risk IDs: `DEFER-0030` CLOSED (code); owner attended migrate for `0009` still required before production use. Do not enable `CMS_CD_AUTO_MIGRATE`.
+- Deferred or risk IDs: `DEFER-0030` CLOSED (code); owner attended migrate for `0010` still required before production use. Do not enable `CMS_CD_AUTO_MIGRATE`.
 - Rollback / recovery: revert PR; nullable FKs are backward compatible.
 
 ## LOG-0179 — 2026-08-20 — ADR-0027 Slice 2: first attended CD CMS migrate PASS
