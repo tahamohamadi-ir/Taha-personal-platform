@@ -1,6 +1,6 @@
 # Work Log
 
-## LOG-0181 — 2026-08-20 — ADM-6: primaryColor inject + current CV/resume
+## LOG-0185 — 2026-08-20 — ADM-6: primaryColor inject + current CV/resume
 
 - Outcome: Wired site-settings `primaryColor` into Astro `--color-brand` at build via public `GET /api/site`. Added one-current-document CV + industry resume slots on `SiteSettings` (PDF media FKs), admin Settings MediaPicker, and Downloads/cv pages that prefer active CMS downloads (markdown fallback when CMS unset/empty). Contact inbox not reopened.
 - Why: Close `DEFER-0029` / CV half of `DEBT-0006` without inventing tokens beyond the site-settings field.
