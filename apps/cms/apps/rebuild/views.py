@@ -1,6 +1,6 @@
 """Rebuild trigger endpoint (P3-08) — POST only, signed, gated.
 
-When HMAC validation succeeds, starts ``rebuild-static.sh`` in the background.
+When HMAC validation succeeds, starts ``rebuild-web.sh`` in the background.
 The endpoint stays off the public Caddy surface; loopback callers only.
 """
 
