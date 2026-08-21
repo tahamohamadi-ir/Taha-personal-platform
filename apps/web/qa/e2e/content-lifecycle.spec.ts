@@ -31,10 +31,10 @@ async function createAndPublishArticle(
     await body.fill(BODY);
   }
 
-  await page.getByRole("button", { name: "ذخیره" }).click();
+  await page.getByRole("button", { name: "ذخیره", exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`/admin/content/article/?$`));
 
-  const rowLink = page.getByRole("link", { name: PW Lifecycle , exact: true }).first();
+  const rowLink = page.getByRole("link", { name: `PW Lifecycle ${locale}`, exact: true }).first();
   await expect(rowLink).toBeVisible();
   await rowLink.click();
   await expect(page).toHaveURL(/\/admin\/content\/article\/\d+/);
