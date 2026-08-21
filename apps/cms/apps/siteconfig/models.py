@@ -9,6 +9,10 @@ class SiteSettings(models.Model):
     ``nav_links`` is a list of ``{label, href, locale}`` dicts used by the
     admin SPA to render the public navigation; no nav link is resolved or
     validated against public routes here (presentation owns that).
+
+    ``current_cv_media`` / ``current_resume_media`` enforce the one-current-
+    document policy (§14 F5): at most one active academic CV and one industry
+    resume from the media library, projected to Astro CV downloads.
     """
 
     brand_name = models.CharField(max_length=200, default="Taha Mohammadi")
@@ -18,6 +22,20 @@ class SiteSettings(models.Model):
     nav_links = models.JSONField(default=list, blank=True)
     seo_default_title = models.CharField(max_length=200, blank=True, default="")
     seo_default_description = models.TextField(blank=True, default="")
+    current_cv_media = models.ForeignKey(
+        "media.Media",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+    current_resume_media = models.ForeignKey(
+        "media.Media",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
     updated_at = models.DateTimeField(auto_now=True)
     site_key = models.CharField(max_length=20, default="default", unique=True)
 

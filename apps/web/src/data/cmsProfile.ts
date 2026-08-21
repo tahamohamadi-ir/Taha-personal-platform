@@ -36,6 +36,8 @@ export type ProfileLoadResult =
     };
 
 const PROFILE_SLUG = "about";
+const CMS_TIMEOUT_MS = 5000;
+
 function readSnapshotProfiles(): Record<LocaleCode, Profile> {
   const profiles = (snapshot as SnapshotPayload).profiles;
 
@@ -60,6 +62,12 @@ function isTranslationUnavailable(value: unknown): value is TranslationUnavailab
   );
 }
 
+/**
+ * Load the public About profile.
+ * - CMS_API_BASE unset → committed `profile.snapshot.json` (local/offline only).
+ * - CMS_API_BASE set → live API only; transport/5xx/timeout fails the build.
+ *   Successful empty/missing CMS responses are not replaced by the snapshot.
+ */
 export async function loadPublicProfile(locale: LocaleCode): Promise<ProfileLoadResult> {
   const cmsBase = import.meta.env.CMS_API_BASE?.trim();
   if (!cmsBase) {
@@ -67,32 +75,41 @@ export async function loadPublicProfile(locale: LocaleCode): Promise<ProfileLoad
     return { kind: "profile", profile: profiles[locale], source: "snapshot" };
   }
 
+  let response: Response;
   try {
-    const response = await fetch(buildProfileUrl(cmsBase, locale), {
-      headers: { accept: "application/json" },
-      signal: AbortSignal.timeout(5000),
+    response = await fetch(buildProfileUrl(cmsBase, locale), {
+      headers: { accept: "application/json", "X-Forwarded-Proto": "https" },
+      signal: AbortSignal.timeout(CMS_TIMEOUT_MS),
     });
-
-    if (response.ok) {
-      const profile = (await response.json()) as Profile;
-      validateProfile(profile, locale);
-      return { kind: "profile", profile, source: "cms" };
-    }
-
-    const payload = (await response.json().catch(() => null)) as unknown;
-    if (response.status === 404 && isTranslationUnavailable(payload)) {
-      return {
-        kind: "translation-unavailable",
-        locale,
-        slug: payload.slug,
-        availableLocales: payload.availableLocales,
-        source: "cms",
-      };
-    }
-
-    return { kind: "not-found", locale, slug: PROFILE_SLUG, source: "cms" };
-  } catch {
-    const profiles = readSnapshotProfiles();
-    return { kind: "profile", profile: profiles[locale], source: "snapshot" };
+  } catch (cause) {
+    const detail = cause instanceof Error ? cause.message : String(cause);
+    throw new Error(
+      `CMS profile origin unreachable for ${locale}/${PROFILE_SLUG}: ${detail}`,
+    );
   }
+
+  if (response.ok) {
+    const profile = (await response.json()) as Profile;
+    validateProfile(profile, locale);
+    return { kind: "profile", profile, source: "cms" };
+  }
+
+  if (response.status >= 500) {
+    throw new Error(
+      `CMS profile origin HTTP ${response.status} for ${locale}/${PROFILE_SLUG}`,
+    );
+  }
+
+  const payload = (await response.json().catch(() => null)) as unknown;
+  if (response.status === 404 && isTranslationUnavailable(payload)) {
+    return {
+      kind: "translation-unavailable",
+      locale,
+      slug: payload.slug,
+      availableLocales: payload.availableLocales,
+      source: "cms",
+    };
+  }
+
+  return { kind: "not-found", locale, slug: PROFILE_SLUG, source: "cms" };
 }
