@@ -6,7 +6,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-export DJANGO_SETTINGS_MODULE="${DJANGO_SETTINGS_MODULE:-config.settings.e2e}"
+# Always use e2e settings (file SQLite). Do not inherit CI's config.settings.test
+# (:memory: DB) — migrate and seed are separate processes and would not share state.
+export DJANGO_SETTINGS_MODULE="config.settings.e2e"
 
 if [[ ! -f admin-frontend/dist/index.html ]]; then
   echo "Admin SPA missing — run: (cd admin-frontend && npm ci && npm run build)" >&2

@@ -16,7 +16,8 @@ if str(ROOT) not in sys.path:
 
 import django  # noqa: E402
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.e2e")
+# Force e2e settings so CI workflow env (config.settings.test / :memory:) cannot win.
+os.environ["DJANGO_SETTINGS_MODULE"] = "config.settings.e2e"
 django.setup()
 
 from django.contrib.auth import get_user_model  # noqa: E402
