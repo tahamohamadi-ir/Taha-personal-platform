@@ -9,6 +9,24 @@
 - Verification actually performed and result: ruff clean; 23 pytest passed (workflow + revisions/schedule).
 - Deferred or risk IDs: DEBT-0005 CLOSED; owner must install timer + run attended migrate for `0009` (do not enable `CMS_CD_AUTO_MIGRATE`). Preview token remains open on Task-list ADM-4.
 - Rollback / recovery: revert migration `0009` after image rollback; disable timer unit.
+## LOG-0182 — 2026-08-20 — ADR-0027 Slice 3: CMS origin honesty (fail-build on outage)
+
+- Outcome: Astro build-time CMS fetch is typed (`unset` / `ok` / `http` / `error`). When `CMS_API_BASE` is set, transport/timeout/5xx throws and fails `npm run build`. Committed `profile.snapshot.json` is used only when the base is unset (local/offline). Successful empty published lists are not overridden by the snapshot. Articles/projects/research share the same outage policy. QA asserts snapshot dist + fail-build on unreachable base.
+- Why: ADR-0027 Slice 3 / locked plan policy — silent snapshot-as-live CMS was dishonest when the origin was configured but down.
+- Scope / files: `apps/web/src/lib/cms/{client,articles,projects,research}.ts`, `apps/web/src/data/cmsProfile.ts`, `apps/web/qa/cms-profile-build.spec.mjs`, `docs/governance/DEPLOY_RUNBOOK.md`, `AGENTS.md`, `docs/README.md`, CHANGELOG/BACKLOG, this entry (plan file left untouched).
+- Commands or actions actually performed: isolated worktree `feat/adr-0027-slice-3-cms-origin` from `origin/main`; `npm run check` + `npm run build` without base; build with `CMS_API_BASE=http://127.0.0.1:9` expected fail; `node qa/cms-profile-build.spec.mjs`.
+- Verification actually performed and result: `npm run check` → 0 errors; `npm run build` without `CMS_API_BASE` → 40 pages; `CMS_API_BASE=http://127.0.0.1:9 npm run build` fails with `CMS … unreachable`; `node qa/cms-profile-build.spec.mjs` PASS (snapshot + fail-build + restore).
+- Deferred or risk IDs: Slice 4 `DEFER-0031` / Slice 5 `DEFER-0030` unchanged; `DEFER-0022` local HTTP preview unchanged; `RISK-0012` CLOSED on PR #57 (attended migrate PASS evidence LOG-0179 / Actions 32407698471); auto migrate remains unset.
+- Rollback / recovery: revert this branch/PR; previous web image continues prior silent-null behavior until rebuilt.
+## LOG-0180 — 2026-08-20 — Phase 0: Slice 2 owner checklist + RISK-0012 CLOSED
+
+- Outcome: Documented short owner attended CD CMS migrate checklist in `DEPLOY_RUNBOOK`. Independently re-verified Actions [32407698471](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32407698471) job **CMS image migrate (gated)** success with log lines `backup_ok`, `CMS smoke PASS`, `cd-cms-migrate PASS`. Closed `RISK-0012` on that evidence. Fixed `docs/plan/README.md` handoff (was wrongly saying “Slice 2 CD auto-migrate”). Did **not** enable or recommend `CMS_CD_AUTO_MIGRATE=true`.
+- Why: Approved backlog Phase 0 — support Slice 2 gate with runbook checklist and close risk only after authoritative PASS.
+- Scope / files: `docs/governance/DEPLOY_RUNBOOK.md`, `docs/status/RISK_REGISTER.md`, `docs/plan/README.md`, `docs/plan/cms-origin-and-full-stack-cd-task-spec.md`, `AGENTS.md`, `infra/cms/README.md`, CHANGELOG, BACKLOG, this entry.
+- Commands or actions actually performed: `gh run view 32407698471`; `git fetch origin main`; worktree `docs/slice-2-cd-migrate-checklist` from `origin/main`.
+- Verification actually performed and result: job conclusion success; migrate log markers present; no script bug found for a further fix PR.
+- Deferred or risk IDs: `RISK-0012` CLOSED; `DEFER-0027` unchanged.
+- Rollback / recovery: revert this docs PR; risk row can be re-opened if evidence is disputed.
 
 ## LOG-0179 — 2026-08-20 — ADR-0027 Slice 2: first attended CD CMS migrate PASS
 
@@ -17,7 +35,7 @@
 - Scope / files: live VPS via CD; ledgers/task spec.
 - Commands or actions actually performed: agent dispatched workflow; prior fixes PR #54/#55 for backup dir + mktemp.
 - Verification actually performed and result: Actions conclusion success; log lines `cd-cms-migrate PASS` / `CMS smoke PASS`.
-- Deferred or risk IDs: `RISK-0012` remains OPEN (auto migrate still off); `DEFER-0027` unchanged.
+- Deferred or risk IDs: `RISK-0012` remains OPEN (auto migrate still off); `DEFER-0027` unchanged. Superseded for risk status by LOG-0180 CLOSE.
 - Rollback / recovery: `CMS_IMAGE=<previous>` + `update-cms.sh`; backup at `/home/deploy/cms-migrate-backups/pre-migrate-20260820T191842Z/`.
 
 ## LOG-0178 — 2026-08-20 — update-cms: mktemp for admin login curl body
