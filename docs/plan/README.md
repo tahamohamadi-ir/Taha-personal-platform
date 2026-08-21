@@ -7,7 +7,7 @@ Rule:
 Execute a spec only if it appears under **Active** below.
 Everything under **Archived** is history. Read it for context; never execute it.
 
-Last reconciled: 2026-08-19.
+Last reconciled: 2026-08-20.
 
 ---
 
@@ -15,12 +15,12 @@ Last reconciled: 2026-08-19.
 
 | Spec | State | Who runs it | Notes |
 |---|---|---|---|
-| `cms-origin-and-full-stack-cd-task-spec.md` | IN_PROGRESS | agent | ADR-0027. Slice 0–2 + Slice 5 code done. Next: Slice 3 honesty / Slice 4 Caddy; owner migrate `0009`. |
+| `cms-origin-and-full-stack-cd-task-spec.md` | IN_PROGRESS | agent | ADR-0027. Slice 0–2 + Slice 5 code done. Slice 3 on main; next Slice 4 Caddy; owner migrate `0009`. |
 | `blog-story-composition-task-spec.md` | PARTIAL | agent | Blog story live; entity stories Slice 5 (`DEFER-0030` CLOSED in ledger). Owner migrate + rebuild. |
 | `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | HMAC `DEFER-0027`; Playwright `DEFER-0026`; story projection shipped on `b6bea6a`. |
 | `P0-A-stack-inventory-task-spec.md` | BLOCKED (owner) | owner | Read-only VPS inventory. Not an agent task. |
 
-Owner remaining work that is **not** a new spec: HMAC enable (`DEFER-0027`); apt/SSH (`RISK-0005`/`0006`). CMS migrate through `0008` is **done** on production (`b6bea6a`).
+Owner remaining work that is **not** a new spec: future CMS bumps via attended CD checklist (`DEPLOY_RUNBOOK`); HMAC enable (`DEFER-0027`); apt/SSH (`RISK-0005`/`0006`). Do **not** set `CMS_CD_AUTO_MIGRATE=true`. CMS migrate through `0008` is **done** on production (`b6bea6a`; CD path proven on `2e200fe`).
 
 ## 2. Queued — do not start yet
 
