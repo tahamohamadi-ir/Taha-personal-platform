@@ -1,4 +1,4 @@
-/** CMS public research DTOs consumed by Astro at build time (optional CMS_API_BASE). */
+﻿/** CMS public research DTOs consumed by Astro at build time (optional CMS_API_BASE). */
 
 import { cmsFetchJson, CmsOriginError, throwIfCmsError } from "./client";
 import type { CmsFetchResult } from "./client";
@@ -38,6 +38,7 @@ export interface ResearchTopicListDto {
 }
 
 export interface ResearchTopicDetailDto extends ResearchTopicListDto {
+  story?: StoryDocumentDto | null;
   motivation: string;
   problems: string;
   research_questions: string;
@@ -52,6 +53,7 @@ export interface ResearchStatementDto {
   slug: string;
   title: string;
   body: string;
+  story?: StoryDocumentDto | null;
   published_at: string | null;
   updated_at: string | null;
 }
