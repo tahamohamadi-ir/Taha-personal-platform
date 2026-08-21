@@ -37,11 +37,6 @@ api = NinjaAPI(title="Taha CMS Public API", version="0.4.0")
 _HEX_COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 
 
-def sanitize_public_richtext(raw: str) -> str:
-    """Re-sanitize rich text for public projection (same Whitelister as staff preview)."""
-    return _BODY_WHITELISTER.clean(raw or "")
-
-
 class PublicDownloadOut(Schema):
     """One current CV/resume download from the media library (active only)."""
 
@@ -81,6 +76,9 @@ def _public_download(kind: str, media: Media | None) -> PublicDownloadOut | None
         mime=media.mime,
         size_bytes=media.size,
         updated_at=media.updated_at,
+    )
+
+
 _BODY_WHITELISTER = Whitelister()
 
 
