@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-21 — Featured/diagram/screenshot → Media library
+
+- `Article.featured_image`, `ProjectDiagram.diagram_image`, `ProjectScreenshot.screenshot_image` now FK to `media.Media` (`content.0011_rewire_image_fks_to_media`, depends on `0010_entity_stories`).
+- Public projections expose active Media URLs only; admin MediaPicker + project case-media assign; `MEDIA_REFERENCE_FIELDS` wired. Wagtail stays installed.
+- **Owner VPS:** dumpdata + backup (`RISK-0010`) before attended migrate for `0011` (after `0009`/`0010`); do not set `CMS_CD_AUTO_MIGRATE`. LOG-0187.
+
 ## 2026-08-20 — DEFER-0026 Playwright content lifecycle
 
 - Full Playwright Test config in `apps/web` (retries/trace/video/html) and browser suite create→publish→public fa/en against disposable CMS fixtures.

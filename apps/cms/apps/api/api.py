@@ -29,16 +29,12 @@ from apps.content.models import (
     TopicTag,
 )
 from apps.media.models import Media
+from apps.media.public_urls import public_media_ref
 from apps.siteconfig.models import SiteSettings
 
 api = NinjaAPI(title="Taha CMS Public API", version="0.4.0")
-_BODY_WHITELISTER = Whitelister()
+
 _HEX_COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
-
-
-def sanitize_public_richtext(raw: str) -> str:
-    """Re-sanitize rich text for public projection (same Whitelister as staff preview)."""
-    return _BODY_WHITELISTER.clean(raw or "")
 
 
 class PublicDownloadOut(Schema):
@@ -81,6 +77,14 @@ def _public_download(kind: str, media: Media | None) -> PublicDownloadOut | None
         size_bytes=media.size,
         updated_at=media.updated_at,
     )
+
+
+_BODY_WHITELISTER = Whitelister()
+
+
+def sanitize_public_richtext(raw: str) -> str:
+    """Re-sanitize rich text for public projection (same Whitelister as staff preview)."""
+    return _BODY_WHITELISTER.clean(raw or "")
 
 
 class LandingOut(Schema):
@@ -126,6 +130,15 @@ class SeriesOut(Schema):
     published_at: datetime | None
 
 
+class PublicMediaOut(Schema):
+    """Active Media library projection (URL only when is_active)."""
+
+    url: str
+    alt: str
+    mime: str = ""
+    title: str = ""
+
+
 class ArticleListOut(Schema):
     """Public article list card (no full body)."""
 
@@ -139,6 +152,7 @@ class ArticleListOut(Schema):
     updated_at: datetime | None
     topic_tags: list[TopicTagOut] = Field(default_factory=list)
     series: list[SeriesOut] = Field(default_factory=list)
+    featured_image: PublicMediaOut | None = None
 
     @staticmethod
     def resolve_topic_tags(obj: Article) -> list[TopicTag]:
@@ -147,6 +161,15 @@ class ArticleListOut(Schema):
     @staticmethod
     def resolve_series(obj: Article) -> list[Series]:
         return list(obj.series.public().order_by("ordering", "slug"))
+
+    @staticmethod
+    def resolve_featured_image(obj: Article, context) -> dict | None:
+        request = context.get("request") if context else None
+        return public_media_ref(
+            getattr(obj, "featured_image", None),
+            request,
+            locale=obj.locale,
+        )
 
 
 class StoryBlockOut(Schema):
@@ -189,6 +212,32 @@ class ArticleSlugRedirectOut(Schema):
     old_slug: str
     new_slug: str
 
+
+@api.get(
+    "/site",
+    response=PublicSiteSettingsOut,
+    summary="Public site settings (primaryColor + current CV/resume downloads)",
+)
+def get_public_site_settings(request) -> PublicSiteSettingsOut:
+    settings = (
+        SiteSettings.objects.select_related("current_cv_media", "current_resume_media")
+        .filter(site_key="default")
+        .first()
+    )
+    if settings is None:
+        settings = SiteSettings.get_singleton()
+    color = (settings.primary_color or "").strip()
+    if not _HEX_COLOR_RE.fullmatch(color):
+        color = "#1f2937"
+    downloads: list[PublicDownloadOut] = []
+    for kind, media in (
+        ("academic_cv", settings.current_cv_media),
+        ("industry_resume", settings.current_resume_media),
+    ):
+        item = _public_download(kind, media)
+        if item is not None:
+            downloads.append(item)
+    return PublicSiteSettingsOut(primaryColor=color, downloads=downloads)
 
 @api.get(
     "/landings/{locale}",
@@ -247,6 +296,7 @@ def list_articles(
     qs = (
         Article.objects.public()
         .filter(locale=locale)
+        .select_related("featured_image")
         .prefetch_related("topic_tags", "series")
         .order_by("-published_at", "slug")
     )
@@ -267,7 +317,7 @@ def get_article(request, locale: str, slug: str) -> Article:
     article = (
         Article.objects.public()
         .filter(locale=locale, slug=slug)
-        .select_related("story")
+        .select_related("story", "featured_image")
         .prefetch_related("topic_tags", "series", "story__sections__blocks")
         .first()
     )
@@ -361,21 +411,23 @@ class CaseStudyOut(Schema):
 
 
 class DiagramOut(Schema):
-    """Public diagram metadata (no image URL while /media/ is closed)."""
+    """Public diagram metadata with optional active Media URL."""
 
     title: str
     version: str
     diagram_date: date
     alt_text: str
     long_description: str
+    image: PublicMediaOut | None = None
 
 
 class ScreenshotOut(Schema):
-    """Public screenshot metadata (no image URL while /media/ is closed)."""
+    """Public screenshot metadata with optional active Media URL."""
 
     caption: str
     alt_text: str
     external_url: str = ""
+    image: PublicMediaOut | None = None
 
 
 class ResearchTopicListOut(Schema):
@@ -557,7 +609,8 @@ class ProjectDetailOut(ProjectListOut):
             return None
 
     @staticmethod
-    def resolve_diagrams(obj: Project) -> list[DiagramOut]:
+    def resolve_diagrams(obj: Project, context) -> list[DiagramOut]:
+        request = context.get("request") if context else None
         return [
             DiagramOut(
                 title=row.title,
@@ -565,18 +618,29 @@ class ProjectDetailOut(ProjectListOut):
                 diagram_date=row.diagram_date,
                 alt_text=row.alt_text,
                 long_description=row.long_description,
+                image=public_media_ref(
+                    getattr(row, "diagram_image", None),
+                    request,
+                    locale=obj.locale,
+                ),
             )
             for row in obj.diagrams.all()
             if row.is_publicly_projectable()
         ]
 
     @staticmethod
-    def resolve_screenshots(obj: Project) -> list[ScreenshotOut]:
+    def resolve_screenshots(obj: Project, context) -> list[ScreenshotOut]:
+        request = context.get("request") if context else None
         return [
             ScreenshotOut(
                 caption=row.caption,
                 alt_text=row.alt_text,
                 external_url=row.public_external_url(),
+                image=public_media_ref(
+                    getattr(row, "screenshot_image", None),
+                    request,
+                    locale=obj.locale,
+                ),
             )
             for row in obj.screenshots.all()
             if row.is_publicly_projectable()
@@ -593,8 +657,8 @@ def _project_detail_queryset():
             "evidence_items",
             "collaborators",
             "funding_items",
-            "diagrams",
-            "screenshots",
+            "diagrams__diagram_image",
+            "screenshots__screenshot_image",
             "case_study",
             "story__sections__blocks",
         )
@@ -765,33 +829,6 @@ def list_research_publications(request, locale: str):
         .filter(locale=locale)
         .order_by("-date", "slug")
     )
-
-
-@api.get(
-    "/site",
-    response=PublicSiteSettingsOut,
-    summary="Public site settings (primaryColor + current CV/resume downloads)",
-)
-def get_public_site_settings(request) -> PublicSiteSettingsOut:
-    settings = (
-        SiteSettings.objects.select_related("current_cv_media", "current_resume_media")
-        .filter(site_key="default")
-        .first()
-    )
-    if settings is None:
-        settings = SiteSettings.get_singleton()
-    color = (settings.primary_color or "").strip()
-    if not _HEX_COLOR_RE.fullmatch(color):
-        color = "#1f2937"
-    downloads: list[PublicDownloadOut] = []
-    for kind, media in (
-        ("academic_cv", settings.current_cv_media),
-        ("industry_resume", settings.current_resume_media),
-    ):
-        item = _public_download(kind, media)
-        if item is not None:
-            downloads.append(item)
-    return PublicSiteSettingsOut(primaryColor=color, downloads=downloads)
 
 
 @api.get(

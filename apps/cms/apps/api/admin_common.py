@@ -66,3 +66,20 @@ def _require_admin_otp(request) -> None:
     _require_staff_session(request)
     if getattr(request.user, "otp_device", None) is None:
         raise AdminError(403, "OTP_REQUIRED", "A verified TOTP session is required.")
+
+
+def _parse_positive_int(
+    request, name: str, raw: str | None, default: int, max_value: int
+) -> int:
+    """Parse an integer query param; invalid/out-of-range returns 400 VALIDATION."""
+    if raw is None or raw == "":
+        return default
+    try:
+        value = int(raw)
+    except (TypeError, ValueError):
+        raise AdminError(400, "VALIDATION", f"Invalid {name}.") from None
+    if value < 1 or value > max_value:
+        raise AdminError(
+            400, "VALIDATION", f"{name} must be between 1 and {max_value}."
+        )
+    return value

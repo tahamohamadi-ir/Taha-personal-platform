@@ -26,6 +26,12 @@ export interface ArticleListDto {
   slug: string;
   title: string;
   excerpt: string;
+  featured_image?: {
+    url: string;
+    alt: string;
+    mime?: string;
+    title?: string;
+  } | null;
   license: string;
   reading_time_minutes: number;
   published_at: string | null;

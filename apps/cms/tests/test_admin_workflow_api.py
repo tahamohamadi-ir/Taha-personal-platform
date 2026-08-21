@@ -407,6 +407,6 @@ def test_content_health_exact_counts(admin_api_client):
     assert body["review"] == 1
     assert body["archived"] == 1
     assert body["missingAltMedia"] == 1  # only the all-empty-alt media
-    assert body["orphanMedia"] == 2  # both media are unused (empty registry)
+    assert body["orphanMedia"] == 2  # both media are unused (no content FKs)
     assert body["incompleteTranslations"] >= 2
 

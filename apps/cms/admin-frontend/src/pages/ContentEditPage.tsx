@@ -12,6 +12,7 @@ import {
   fetchContentDetail,
   fetchContentRevisions,
   fetchContentSchema,
+  fetchMediaDetail,
   isApiError,
   isConflict,
   restoreContentRevision,
@@ -24,6 +25,7 @@ import {
   type ContentLocale,
   type ContentRevision,
   type ContentStatus,
+  type MediaItem,
 } from "../lib/api";
 import {
   CONTENT_STATUSES,
@@ -43,6 +45,9 @@ import ProfileNestedEditor from "../components/ProfileNestedEditor";
 import EntityStoryEditor, {
   type StoryContentEntity,
 } from "../components/ArticleStoryEditor";
+import MediaPicker from "../components/MediaPicker";
+import MediaThumb from "../components/MediaThumb";
+import ProjectCaseMediaEditor from "../components/ProjectCaseMediaEditor";
 
 const STORY_ENTITIES = new Set<StoryContentEntity>([
   "article",
@@ -101,15 +106,18 @@ function formValuesFromDetail(detail: ContentDetail): FormValues {
 function fieldValueToPayload(
   spec: ContentFieldSpec,
   value: string
-): string | number | boolean {
+): string | number | boolean | null {
   if (spec.type === "boolean") {
     return value === "true";
   }
-  if (spec.type === "number" && value !== "") {
+  if ((spec.type === "number" || spec.type === "media") && value !== "") {
     const parsed = Number(value);
     if (Number.isFinite(parsed)) {
       return parsed;
     }
+  }
+  if (spec.type === "media" && value === "") {
+    return null;
   }
   return value;
 }
@@ -147,6 +155,77 @@ function FieldErrorList({
   );
 }
 
+function MediaFieldControl({
+  value,
+  onValueChange,
+  errorId,
+}: {
+  value: string;
+  onValueChange: (value: string) => void;
+  errorId: string | undefined;
+}): ReactElement {
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [preview, setPreview] = useState<MediaItem | null>(null);
+  const mediaId = value.trim() === "" ? null : Number.parseInt(value, 10);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (mediaId === null || !Number.isFinite(mediaId)) {
+      setPreview(null);
+      return;
+    }
+    void fetchMediaDetail(mediaId)
+      .then((item) => {
+        if (!cancelled) setPreview(item);
+      })
+      .catch(() => {
+        if (!cancelled) setPreview(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [mediaId]);
+
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-center gap-2">
+        {preview ? <MediaThumb media={preview} /> : null}
+        <span className="admin-muted text-sm" dir="ltr">
+          {mediaId !== null && Number.isFinite(mediaId)
+            ? `Media #${mediaId}`
+            : "انتخاب نشده"}
+        </span>
+        <button
+          type="button"
+          className="admin-btn"
+          onClick={() => setPickerOpen(true)}
+          aria-describedby={errorId}
+        >
+          انتخاب از Media
+        </button>
+        {mediaId !== null && Number.isFinite(mediaId) ? (
+          <button
+            type="button"
+            className="admin-btn"
+            onClick={() => onValueChange("")}
+          >
+            حذف
+          </button>
+        ) : null}
+      </div>
+      <MediaPicker
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onSelect={(media) => {
+          onValueChange(String(media.id));
+          setPreview(media);
+          setPickerOpen(false);
+        }}
+      />
+    </div>
+  );
+}
+
 function renderFieldControl(
   spec: ContentFieldSpec,
   value: string,
@@ -160,6 +239,15 @@ function renderFieldControl(
   ): void => {
     onValueChange(event.target.value);
   };
+  if (spec.type === "media") {
+    return (
+      <MediaFieldControl
+        value={value}
+        onValueChange={onValueChange}
+        errorId={errorId}
+      />
+    );
+  }
   if (spec.type === "boolean") {
     return (
       <input
@@ -510,7 +598,7 @@ export default function ContentEditPage(): ReactElement {
     setConflictError(null);
     try {
       const schemaKeys = new Set(schema.fields.map((spec) => spec.key));
-      const fields: Record<string, string | number | boolean> = {};
+      const fields: Record<string, string | number | boolean | null> = {};
       for (const spec of schema.fields) {
         fields[spec.key] = fieldValueToPayload(
           spec,
@@ -979,6 +1067,9 @@ export default function ContentEditPage(): ReactElement {
             setUpdatedAt(next.updatedAt);
           }}
         />
+      ) : null}
+      {isEditing && entity === "project" ? (
+        <ProjectCaseMediaEditor projectId={id} />
       ) : null}
     </div>
   );
