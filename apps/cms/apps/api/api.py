@@ -7,6 +7,7 @@ Public edge exposure of ``/api/`` remains deferred (DEFER-0017); this module is
 for in-process and optional build-time ``CMS_API_BASE`` consumers only.
 """
 
+import re
 from datetime import date, datetime
 
 from ninja import Field, NinjaAPI, Schema
@@ -27,11 +28,59 @@ from apps.content.models import (
     Series,
     TopicTag,
 )
-from apps.media.public_urls import public_media_ref
 from apps.media.models import Media
+from apps.media.public_urls import public_media_ref
 from apps.siteconfig.models import SiteSettings
 
 api = NinjaAPI(title="Taha CMS Public API", version="0.4.0")
+
+_HEX_COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
+
+
+def sanitize_public_richtext(raw: str) -> str:
+    """Re-sanitize rich text for public projection (same Whitelister as staff preview)."""
+    return _BODY_WHITELISTER.clean(raw or "")
+
+
+class PublicDownloadOut(Schema):
+    """One current CV/resume download from the media library (active only)."""
+
+    kind: str
+    title: str
+    note: str
+    href: str
+    mime: str
+    size_bytes: int
+    updated_at: datetime | None
+
+
+class PublicSiteSettingsOut(Schema):
+    """Public site presentation used by Astro at build time.
+
+    Only ``primaryColor`` and active current-document downloads are projected.
+    Inactive media slots are omitted (private-by-default).
+    """
+
+    primaryColor: str
+    downloads: list[PublicDownloadOut] = Field(default_factory=list)
+
+
+def _public_media_href(media: Media) -> str:
+    name = (media.file.name or "").lstrip("/")
+    return f"/media/{name}"
+
+
+def _public_download(kind: str, media: Media | None) -> PublicDownloadOut | None:
+    if media is None or not media.is_active:
+        return None
+    return PublicDownloadOut(
+        kind=kind,
+        title=media.title,
+        note=(media.alt_text or "").strip(),
+        href=_public_media_href(media),
+        mime=media.mime,
+        size_bytes=media.size,
+        updated_at=media.updated_at,
 _BODY_WHITELISTER = Whitelister()
 
 
@@ -165,6 +214,32 @@ class ArticleSlugRedirectOut(Schema):
     old_slug: str
     new_slug: str
 
+
+@api.get(
+    "/site",
+    response=PublicSiteSettingsOut,
+    summary="Public site settings (primaryColor + current CV/resume downloads)",
+)
+def get_public_site_settings(request) -> PublicSiteSettingsOut:
+    settings = (
+        SiteSettings.objects.select_related("current_cv_media", "current_resume_media")
+        .filter(site_key="default")
+        .first()
+    )
+    if settings is None:
+        settings = SiteSettings.get_singleton()
+    color = (settings.primary_color or "").strip()
+    if not _HEX_COLOR_RE.fullmatch(color):
+        color = "#1f2937"
+    downloads: list[PublicDownloadOut] = []
+    for kind, media in (
+        ("academic_cv", settings.current_cv_media),
+        ("industry_resume", settings.current_resume_media),
+    ):
+        item = _public_download(kind, media)
+        if item is not None:
+            downloads.append(item)
+    return PublicSiteSettingsOut(primaryColor=color, downloads=downloads)
 
 @api.get(
     "/landings/{locale}",
