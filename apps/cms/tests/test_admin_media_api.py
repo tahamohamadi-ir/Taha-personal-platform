@@ -2,7 +2,7 @@
 
 Covers the /api/v1/admin/media contract: OTP guard, multipart upload (accept /
 reject / missing file), list filters + pagination, optimistically-locked update
-(If-Match), orphan listing (usage registry empty -> every row is an orphan) and
+(If-Match), orphan listing (usage registry includes site-settings CV slots) and
 detail 404.
 """
 
@@ -241,7 +241,7 @@ def test_orphans_list(admin_api_client):
     response = admin_api_client.get("/api/v1/admin/media/orphans")
     assert response.status_code == 200
     body = response.json()
-    # With an empty usage registry every row is an orphan (active or not).
+    # Unreferenced rows remain orphans (active or not).
     assert body["total"] == 3
     assert len(body["items"]) == 3
     assert all(item["usageCount"] == 0 for item in body["items"])

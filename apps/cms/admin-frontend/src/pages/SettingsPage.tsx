@@ -11,9 +11,13 @@ import {
   updateSiteSettings,
   type ApiError,
   type ContentLocale,
+  type CurrentDocument,
+  type MediaItem,
   type NavLink,
   type SiteSettings,
 } from "../lib/api";
+import MediaPicker from "../components/MediaPicker";
+import { formatFileSize } from "../lib/format";
 
 type LoadState = "loading" | "ready" | "error";
 
@@ -29,6 +33,10 @@ interface SettingsForm {
   seoDefaultTitle: string;
   seoDefaultDescription: string;
   navLinks: NavLink[];
+  currentCvMediaId: number | null;
+  currentResumeMediaId: number | null;
+  currentCv: CurrentDocument | null;
+  currentResume: CurrentDocument | null;
 }
 
 function formFromSettings(settings: SiteSettings): SettingsForm {
@@ -40,6 +48,10 @@ function formFromSettings(settings: SiteSettings): SettingsForm {
     seoDefaultTitle: settings.seoDefaultTitle,
     seoDefaultDescription: settings.seoDefaultDescription,
     navLinks: settings.navLinks.map((link) => ({ ...link })),
+    currentCvMediaId: settings.currentCvMediaId,
+    currentResumeMediaId: settings.currentResumeMediaId,
+    currentCv: settings.currentCv,
+    currentResume: settings.currentResume,
   };
 }
 
@@ -89,6 +101,8 @@ export default function SettingsPage(): ReactElement {
   const [conflictError, setConflictError] = useState<ApiError | null>(null);
   const [successNote, setSuccessNote] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const [cvPickerOpen, setCvPickerOpen] = useState(false);
+  const [resumePickerOpen, setResumePickerOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -176,6 +190,64 @@ export default function SettingsPage(): ReactElement {
     });
   }
 
+  function applyDocumentSelection(
+    slot: "cv" | "resume",
+    media: MediaItem
+  ): void {
+    if (media.mime !== "application/pdf") {
+      setFieldErrors((prev) => ({
+        ...prev,
+        [slot === "cv" ? "currentCvMediaId" : "currentResumeMediaId"]: [
+          "سند جاری باید یک فایل PDF از کتابخانهٔ رسانه باشد.",
+        ],
+      }));
+      return;
+    }
+    setFieldErrors((prev) => {
+      const next = { ...prev };
+      delete next[slot === "cv" ? "currentCvMediaId" : "currentResumeMediaId"];
+      return next;
+    });
+    const doc: CurrentDocument = {
+      id: media.id,
+      title: media.title,
+      mime: media.mime,
+      size: media.size,
+      isActive: media.isActive,
+      url: media.url ?? "",
+      updatedAt: media.updatedAt,
+    };
+    setForm((prev) => {
+      if (prev === null) {
+        return prev;
+      }
+      if (slot === "cv") {
+        return {
+          ...prev,
+          currentCvMediaId: media.id,
+          currentCv: doc,
+        };
+      }
+      return {
+        ...prev,
+        currentResumeMediaId: media.id,
+        currentResume: doc,
+      };
+    });
+  }
+
+  function clearDocument(slot: "cv" | "resume"): void {
+    setForm((prev) => {
+      if (prev === null) {
+        return prev;
+      }
+      if (slot === "cv") {
+        return { ...prev, currentCvMediaId: null, currentCv: null };
+      }
+      return { ...prev, currentResumeMediaId: null, currentResume: null };
+    });
+  }
+
   function errorInfo(
     key: string
   ): { messages: string[]; id: string | undefined } {
@@ -227,6 +299,8 @@ export default function SettingsPage(): ReactElement {
           navLinks,
           seoDefaultTitle: form.seoDefaultTitle,
           seoDefaultDescription: form.seoDefaultDescription,
+          currentCvMediaId: form.currentCvMediaId,
+          currentResumeMediaId: form.currentResumeMediaId,
         },
         updatedAt
       );
@@ -293,6 +367,57 @@ export default function SettingsPage(): ReactElement {
   const primaryColorErr = errorInfo("primaryColor");
   const seoTitleErr = errorInfo("seoDefaultTitle");
   const seoDescriptionErr = errorInfo("seoDefaultDescription");
+  const currentCvErr = errorInfo("currentCvMediaId");
+  const currentResumeErr = errorInfo("currentResumeMediaId");
+
+  function renderDocumentSlot(
+    slot: "cv" | "resume",
+    label: string,
+    help: string,
+    doc: CurrentDocument | null,
+    fieldErr: { messages: string[]; id: string | undefined }
+  ): ReactElement {
+    return (
+      <div className="admin-form-row">
+        <label className="admin-label">{label}</label>
+        <p className="admin-muted mb-2 text-sm">{help}</p>
+        {doc !== null ? (
+          <div className="mb-2 rounded border border-[var(--admin-border)] p-3 text-sm">
+            <p className="font-medium">{doc.title}</p>
+            <p className="admin-muted mt-1">
+              PDF · {formatFileSize(doc.size)}
+              {doc.isActive ? "" : " · غیرفعال (در سایت عمومی نمایش داده نمی‌شود)"}
+            </p>
+          </div>
+        ) : (
+          <p className="admin-muted mb-2 text-sm">هنوز سندی انتخاب نشده است.</p>
+        )}
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="admin-btn admin-btn-secondary"
+            disabled={saving}
+            onClick={() =>
+              slot === "cv" ? setCvPickerOpen(true) : setResumePickerOpen(true)
+            }
+          >
+            انتخاب از کتابخانه
+          </button>
+          {doc !== null && (
+            <button
+              type="button"
+              className="admin-btn"
+              disabled={saving}
+              onClick={() => clearDocument(slot)}
+            >
+              پاک کردن
+            </button>
+          )}
+        </div>
+        <FieldErrorList {...fieldErr} />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl">
@@ -300,7 +425,8 @@ export default function SettingsPage(): ReactElement {
         <div>
           <h1 className="text-xl font-bold">تنظیمات سایت</h1>
           <p className="admin-muted text-sm">
-            نام برند، رنگ اصلی، پیوندهای منو و متاداده‌های پیش‌فرض
+            نام برند، رنگ اصلی، سند جاری CV/رزومه، پیوندهای منو و متاداده‌های
+            پیش‌فرض
           </p>
         </div>
       </div>
@@ -460,6 +586,22 @@ export default function SettingsPage(): ReactElement {
             <FieldErrorList {...primaryColorErr} />
           </div>
 
+          {renderDocumentSlot(
+            "cv",
+            "سند جاری CV دانشگاهی",
+            "حداکثر یک PDF فعال از کتابخانهٔ رسانه. جایگزین دانلودهای ثابت در صفحات CV می‌شود.",
+            form.currentCv,
+            currentCvErr
+          )}
+
+          {renderDocumentSlot(
+            "resume",
+            "سند جاری رزومهٔ حرفه‌ای",
+            "حداکثر یک PDF فعال از کتابخانهٔ رسانه برای رزومهٔ صنعت.",
+            form.currentResume,
+            currentResumeErr
+          )}
+
           <div className="admin-form-row">
             <label className="admin-label">پیوندهای ناوبری</label>
             {form.navLinks.length === 0 && (
@@ -608,6 +750,23 @@ export default function SettingsPage(): ReactElement {
           </button>
         </div>
       </form>
+
+      <MediaPicker
+        open={cvPickerOpen}
+        onClose={() => setCvPickerOpen(false)}
+        onSelect={(media) => {
+          applyDocumentSelection("cv", media);
+          setCvPickerOpen(false);
+        }}
+      />
+      <MediaPicker
+        open={resumePickerOpen}
+        onClose={() => setResumePickerOpen(false)}
+        onSelect={(media) => {
+          applyDocumentSelection("resume", media);
+          setResumePickerOpen(false);
+        }}
+      />
     </div>
   );
 }

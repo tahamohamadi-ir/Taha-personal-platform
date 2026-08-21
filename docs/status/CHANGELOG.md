@@ -1,10 +1,19 @@
 # Changelog
 
+<<<<<<< HEAD
 ## 2026-08-20 — DEFER-0026 Playwright content lifecycle
 
 - Full Playwright Test config in `apps/web` (retries/trace/video/html) and browser suite create→publish→public fa/en against disposable CMS fixtures.
 - CI: `playwright-lifecycle` job in `ci-cms.yml`. How to run: `apps/web/qa/e2e/README.md` (`npm run test:e2e`).
 - Pytest JSON lifecycle unchanged. Remaining §18 QA matrix → `DEFER-0032`.
+=======
+## 2026-08-20 — ADM-6: primaryColor + current CV/resume from admin
+
+- Public `GET /api/site` exposes `primaryColor` and active current CV/resume downloads.
+- Astro injects `--color-brand` from CMS at build; CV pages prefer media-library PDFs (fallback: committed markdown).
+- Admin Settings: MediaPicker slots for academic CV + industry resume (one PDF each).
+- `DEFER-0029` CLOSED; `DEBT-0006` CV RESOLVED (contact inbox not reopened).
+>>>>>>> origin/main
 ## 2026-08-20 — HMAC rebuild trigger to rebuild-web.sh
 
 - Signed CMS rebuild hook default script is `infra/deploy/rebuild-web.sh` (not disk `rebuild-static.sh`).
