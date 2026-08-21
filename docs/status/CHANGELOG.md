@@ -5,6 +5,11 @@
 - Full Playwright Test config in `apps/web` (retries/trace/video/html) and browser suite create→publish→public fa/en against disposable CMS fixtures.
 - CI: `playwright-lifecycle` job in `ci-cms.yml`. How to run: `apps/web/qa/e2e/README.md` (`npm run test:e2e`).
 - Pytest JSON lifecycle unchanged. Remaining §18 QA matrix → `DEFER-0032`.
+## 2026-08-20 — ADM-4 follow-up: revisions + scheduled publish (DEBT-0005)
+
+Immutable `ContentRevision` snapshots with restore-as-draft; `scheduled` status +
+`scheduled_for`; `publish_scheduled_content` management command and optional
+systemd timer (no Celery). Admin API/SPA updated. LOG-0181; DEBT-0005 CLOSED.
 ## 2026-08-20 — ADM-6: primaryColor + current CV/resume from admin
 
 - Public `GET /api/site` exposes `primaryColor` and active current CV/resume downloads.

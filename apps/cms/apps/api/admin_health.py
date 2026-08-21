@@ -63,6 +63,7 @@ class ContentHealthOut(Schema):
     published: int
     drafts: int
     review: int
+    scheduled: int = 0
     archived: int
     incompleteTranslations: int
     missingAltMedia: int
@@ -150,11 +151,12 @@ def translation_queue(request):
 )
 def content_health(request):
     _require_admin_otp(request)
-    published = drafts = review = archived = 0
+    published = drafts = review = scheduled = archived = 0
     for model in ENTITY_MODELS.values():
         published += model.objects.filter(status="published").count()
         drafts += model.objects.filter(status="draft").count()
         review += model.objects.filter(status="review").count()
+        scheduled += model.objects.filter(status="scheduled").count()
         archived += model.objects.filter(status="archived").count()
     missing_alt = Media.objects.filter(
         alt_text="",
@@ -171,6 +173,7 @@ def content_health(request):
         published=published,
         drafts=drafts,
         review=review,
+        scheduled=scheduled,
         archived=archived,
         incompleteTranslations=incomplete,
         missingAltMedia=missing_alt,

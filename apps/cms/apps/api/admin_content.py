@@ -26,6 +26,7 @@ from apps.api.admin_common import (
 )
 from apps.content.models import (
     Article,
+    ContentRevision,
     Landing,
     Profile,
     Project,
@@ -33,6 +34,7 @@ from apps.content.models import (
     ResearchStatement,
     ResearchTopic,
 )
+from apps.content.revisions import create_revision, restore_revision_as_draft
 from apps.rebuild.services import invoke_static_rebuild
 from apps.security.models import AuditLog
 
@@ -49,13 +51,13 @@ ENTITY_MODELS = {
 }
 
 VALID_LOCALES = ("fa", "en")
-VALID_STATUSES = ("draft", "review", "published", "archived")
+VALID_STATUSES = ("draft", "review", "scheduled", "published", "archived")
 
-# Allowed lifecycle transitions per current status (ADM-4). Statuses not listed
-# are terminal for a given transition; every row starts at "draft".
+# Allowed lifecycle transitions per current status (ADM-4 / DEBT-0005).
 ALLOWED_TRANSITIONS = {
-    "draft": {"review", "published", "archived"},
-    "review": {"draft", "published", "archived"},
+    "draft": {"review", "scheduled", "published", "archived"},
+    "review": {"draft", "scheduled", "published", "archived"},
+    "scheduled": {"draft", "published", "archived"},
     "published": {"archived"},
     "archived": {"draft"},
 }
@@ -358,6 +360,7 @@ class ContentListItemOut(Schema):
     title: str
     status: str
     publishedAt: datetime | None
+    scheduledFor: datetime | None = None
     updatedAt: datetime
 
 
@@ -379,6 +382,7 @@ class ContentDetailOut(Schema):
     title: str
     status: str
     publishedAt: datetime | None
+    scheduledFor: datetime | None = None
     createdAt: datetime
     updatedAt: datetime
     fields: dict[str, object]
@@ -425,10 +429,35 @@ class ContentUpdateIn(Schema):
 
 
 class ContentTransitionIn(Schema):
-    """Lifecycle transition request (ADM-4)."""
+    """Lifecycle transition request (ADM-4 / DEBT-0005)."""
 
     to: str
     reason: str | None = None
+    scheduledFor: datetime | None = None
+
+
+class ContentRevisionCreateIn(Schema):
+    """Optional note when creating an immutable snapshot."""
+
+    note: str | None = None
+
+
+class ContentRevisionOut(Schema):
+    """Immutable content revision metadata (snapshot omitted from list)."""
+
+    id: int
+    entityKey: str
+    objectId: int
+    note: str
+    createdAt: datetime
+    createdById: int | None = None
+    snapshot: dict[str, object] | None = None
+
+
+class ContentRevisionListOut(Schema):
+    """Revision history for one content row."""
+
+    items: list[ContentRevisionOut]
 
 
 def _detail_response(item, model, entity: str) -> ContentDetailOut:
@@ -447,10 +476,49 @@ def _detail_response(item, model, entity: str) -> ContentDetailOut:
         title=item.title,
         status=item.status,
         publishedAt=item.published_at,
+        scheduledFor=getattr(item, "scheduled_for", None),
         createdAt=item.created_at,
         updatedAt=item.updated_at,
         fields=fields,
     )
+
+
+def _revision_out(rev: ContentRevision, *, include_snapshot: bool = False) -> ContentRevisionOut:
+    return ContentRevisionOut(
+        id=rev.pk,
+        entityKey=rev.entity_key,
+        objectId=rev.object_id,
+        note=rev.note,
+        createdAt=rev.created_at,
+        createdById=rev.created_by_id,
+        snapshot=rev.snapshot if include_snapshot else None,
+    )
+
+
+def _apply_lifecycle_side_effects(item, *, new_status: str, scheduled_for: datetime | None) -> None:
+    """Set published_at / scheduled_for consistent with the target status."""
+    if new_status == "scheduled":
+        if scheduled_for is None:
+            raise AdminError(
+                400,
+                "VALIDATION",
+                "scheduledFor is required when transitioning to scheduled.",
+            )
+        if timezone.is_naive(scheduled_for):
+            scheduled_for = timezone.make_aware(
+                scheduled_for, timezone.get_current_timezone()
+            )
+        if scheduled_for <= timezone.now():
+            raise AdminError(
+                400,
+                "VALIDATION",
+                "scheduledFor must be in the future.",
+            )
+        item.scheduled_for = scheduled_for
+    else:
+        item.scheduled_for = None
+    if new_status == "published" and item.published_at is None:
+        item.published_at = timezone.now()
 
 
 @content_router.get("/schema", response=ContentSchemaOut, summary="Writable-field metadata.")
@@ -517,6 +585,7 @@ def content_list(
                 title=item.title,
                 status=item.status,
                 publishedAt=item.published_at,
+                scheduledFor=getattr(item, "scheduled_for", None),
                 updatedAt=item.updated_at,
             )
             for item in items
@@ -561,6 +630,12 @@ def content_create(request, entity: str, payload: ContentCreateIn):
     if payload.status not in VALID_STATUSES:
         raise AdminError(
             400, "VALIDATION", f"Invalid status. Expected one of: {', '.join(VALID_STATUSES)}."
+        )
+    if payload.status == "scheduled":
+        raise AdminError(
+            400,
+            "VALIDATION",
+            "Use POST .../transition with scheduledFor to schedule publishing.",
         )
     slug = payload.slug.strip()
     title = payload.title.strip()
@@ -628,7 +703,15 @@ def content_update(request, entity: str, id: int, payload: ContentUpdateIn):
                         "VALIDATION",
                         f"Invalid status. Expected one of: {', '.join(VALID_STATUSES)}.",
                     )
+                if payload.status == "scheduled":
+                    raise AdminError(
+                        400,
+                        "VALIDATION",
+                        "Use POST .../transition with scheduledFor to schedule publishing.",
+                    )
                 item.status = payload.status
+                if payload.status != "scheduled":
+                    item.scheduled_for = None
             if payload.fields is not None:
                 for attr, value in _coerce_fields(entity, model, payload.fields).items():
                     setattr(item, attr, value)
@@ -689,31 +772,122 @@ def content_transition(request, entity: str, id: int, payload: ContentTransition
                     "VALIDATION",
                     f"Invalid transition from {old_status} to {payload.to}.",
                 )
+            _apply_lifecycle_side_effects(
+                item,
+                new_status=payload.to,
+                scheduled_for=payload.scheduledFor,
+            )
             item.status = payload.to
-            if (
-                payload.to == "published"
-                and hasattr(model, "published_at")
-                and item.published_at is None
-            ):
-                item.published_at = timezone.now()
             try:
                 item.save()
             except IntegrityError:
                 raise AdminError(
                     409, "DUPLICATE", "A record with this locale and slug already exists."
                 ) from None
+            detail = f"reason={reason}"
+            if payload.to == "scheduled" and item.scheduled_for is not None:
+                detail = f"{detail}; scheduledFor={item.scheduled_for.isoformat()}"
             AuditLog.objects.create(
                 user=request.user,
                 action=f"lifecycle.{old_status}->{payload.to}",
                 model_name=entity,
                 object_id=str(id),
                 ip=_client_ip(request),
-                detail=f"reason={reason}",
+                detail=detail,
             )
     except model.DoesNotExist:
         raise AdminError(404, "NOT_FOUND", "Content not found.") from None
     if payload.to == "published":
         invoke_static_rebuild()
+    return _detail_response(item, model, entity)
+
+
+@content_router.get(
+    "/{entity}/{id}/revisions",
+    response=ContentRevisionListOut,
+    summary="List immutable content revisions.",
+)
+def content_revisions_list(request, entity: str, id: int):
+    _require_admin_otp(request)
+    model = ENTITY_MODELS.get(entity)
+    if model is None:
+        raise AdminError(404, "NOT_FOUND", "Unknown content entity.")
+    if not model.objects.filter(pk=id).exists():
+        raise AdminError(404, "NOT_FOUND", "Content not found.")
+    revs = ContentRevision.objects.filter(entity_key=entity, object_id=id)[:100]
+    return ContentRevisionListOut(items=[_revision_out(rev) for rev in revs])
+
+
+@content_router.post(
+    "/{entity}/{id}/revisions",
+    response={201: ContentRevisionOut},
+    summary="Create an immutable content snapshot.",
+)
+def content_revisions_create(request, entity: str, id: int, payload: ContentRevisionCreateIn):
+    _require_admin_otp(request)
+    _check_csrf(request)
+    model = ENTITY_MODELS.get(entity)
+    if model is None:
+        raise AdminError(404, "NOT_FOUND", "Unknown content entity.")
+    item = model.objects.filter(pk=id).first()
+    if item is None:
+        raise AdminError(404, "NOT_FOUND", "Content not found.")
+    rev = create_revision(
+        entity_key=entity,
+        item=item,
+        field_attrs=DETAIL_FIELD_MAPS[entity],
+        user=request.user,
+        note=payload.note or "",
+    )
+    AuditLog.objects.create(
+        user=request.user,
+        action="revision.create",
+        model_name=entity,
+        object_id=str(id),
+        ip=_client_ip(request),
+        detail=f"revision_id={rev.pk}; note={rev.note}",
+    )
+    return _revision_out(rev, include_snapshot=True)
+
+
+@content_router.post(
+    "/{entity}/{id}/revisions/{revision_id}/restore",
+    response=ContentDetailOut,
+    summary="Restore a revision as draft (never overwrites live published).",
+)
+def content_revisions_restore(request, entity: str, id: int, revision_id: int):
+    _require_admin_otp(request)
+    _check_csrf(request)
+    model = ENTITY_MODELS.get(entity)
+    if model is None:
+        raise AdminError(404, "NOT_FOUND", "Unknown content entity.")
+    try:
+        with transaction.atomic():
+            item = model.objects.select_for_update().get(pk=id)
+            revision = ContentRevision.objects.filter(
+                pk=revision_id, entity_key=entity, object_id=id
+            ).first()
+            if revision is None:
+                raise AdminError(404, "NOT_FOUND", "Revision not found.")
+            pre = restore_revision_as_draft(
+                entity_key=entity,
+                item=item,
+                revision=revision,
+                field_attrs=DETAIL_FIELD_MAPS[entity],
+                user=request.user,
+            )
+            AuditLog.objects.create(
+                user=request.user,
+                action="revision.restore_as_draft",
+                model_name=entity,
+                object_id=str(id),
+                ip=_client_ip(request),
+                detail=f"restored_revision_id={revision_id}; pre_restore_revision_id={pre.pk}",
+            )
+    except model.DoesNotExist:
+        raise AdminError(404, "NOT_FOUND", "Content not found.") from None
+    except ValueError as exc:
+        raise AdminError(400, "VALIDATION", str(exc)) from None
     return _detail_response(item, model, entity)
 
 
