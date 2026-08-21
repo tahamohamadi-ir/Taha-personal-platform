@@ -20,6 +20,15 @@
 - Verification actually performed and result: seed prints fixture ready; `uv run ruff check` PASS; `uv run pytest -q tests/test_content_lifecycle_e2e.py` PASS; admin-frontend `npm run build` PASS. Browser suite runs in GitHub Actions `playwright-lifecycle`.
 - Deferred or risk IDs: `DEFER-0026` CLOSED; `DEFER-0032` OPEN; `DEFER-0027` unchanged.
 - Rollback / recovery: revert PR; CI job and e2e scripts go with it.
+## LOG-0180 — 2026-08-20 — Phase 0: Slice 2 owner checklist + RISK-0012 CLOSED
+
+- Outcome: Documented short owner attended CD CMS migrate checklist in `DEPLOY_RUNBOOK`. Independently re-verified Actions [32407698471](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32407698471) job **CMS image migrate (gated)** success with log lines `backup_ok`, `CMS smoke PASS`, `cd-cms-migrate PASS`. Closed `RISK-0012` on that evidence. Fixed `docs/plan/README.md` handoff (was wrongly saying “Slice 2 CD auto-migrate”). Did **not** enable or recommend `CMS_CD_AUTO_MIGRATE=true`.
+- Why: Approved backlog Phase 0 — support Slice 2 gate with runbook checklist and close risk only after authoritative PASS.
+- Scope / files: `docs/governance/DEPLOY_RUNBOOK.md`, `docs/status/RISK_REGISTER.md`, `docs/plan/README.md`, `docs/plan/cms-origin-and-full-stack-cd-task-spec.md`, `AGENTS.md`, `infra/cms/README.md`, CHANGELOG, BACKLOG, this entry.
+- Commands or actions actually performed: `gh run view 32407698471`; `git fetch origin main`; worktree `docs/slice-2-cd-migrate-checklist` from `origin/main`.
+- Verification actually performed and result: job conclusion success; migrate log markers present; no script bug found for a further fix PR.
+- Deferred or risk IDs: `RISK-0012` CLOSED; `DEFER-0027` unchanged.
+- Rollback / recovery: revert this docs PR; risk row can be re-opened if evidence is disputed.
 
 ## LOG-0179 — 2026-08-20 — ADR-0027 Slice 2: first attended CD CMS migrate PASS
 
@@ -28,7 +37,7 @@
 - Scope / files: live VPS via CD; ledgers/task spec.
 - Commands or actions actually performed: agent dispatched workflow; prior fixes PR #54/#55 for backup dir + mktemp.
 - Verification actually performed and result: Actions conclusion success; log lines `cd-cms-migrate PASS` / `CMS smoke PASS`.
-- Deferred or risk IDs: `RISK-0012` remains OPEN (auto migrate still off); `DEFER-0027` unchanged.
+- Deferred or risk IDs: `RISK-0012` remains OPEN (auto migrate still off); `DEFER-0027` unchanged. Superseded for risk status by LOG-0180 CLOSE.
 - Rollback / recovery: `CMS_IMAGE=<previous>` + `update-cms.sh`; backup at `/home/deploy/cms-migrate-backups/pre-migrate-20260820T191842Z/`.
 
 ## LOG-0178 — 2026-08-20 — update-cms: mktemp for admin login curl body
