@@ -1,6 +1,6 @@
-/** CMS public site settings consumed by Astro at build time (optional CMS_API_BASE). */
+﻿/** CMS public site settings consumed by Astro at build time (optional CMS_API_BASE). */
 
-import { cmsFetchJson } from "./client";
+import { cmsFetchJson, CmsOriginError, throwIfCmsError } from "./client";
 
 const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 
@@ -22,8 +22,19 @@ export interface PublicSiteSettingsDto {
 /** Defaults when CMS_API_BASE is unset or `/api/site` is unreachable. */
 export const FALLBACK_PRIMARY_COLOR = "#087c73";
 
+/** Published site settings. Null when CMS_API_BASE is unset. Outage fails the build. */
 export async function getPublicSiteSettings(): Promise<PublicSiteSettingsDto | null> {
-  return cmsFetchJson<PublicSiteSettingsDto>("/api/site");
+  const result = await cmsFetchJson<PublicSiteSettingsDto>("/api/site");
+  throwIfCmsError(result, "site settings");
+  if (result.kind === "unset") return null;
+  if (result.kind === "http") {
+    if (result.status === 404) return null;
+    throw new CmsOriginError(
+      `site settings: unexpected HTTP ${result.status}`,
+      result.status,
+    );
+  }
+  return result.data;
 }
 
 /** Valid `#RRGGBB` from CMS, else null (keep CSS defaults). */
