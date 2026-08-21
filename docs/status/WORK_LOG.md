@@ -1,5 +1,14 @@
 # Work Log
 
+## LOG-0181 — 2026-08-20 — DEBT-0005: revisions + scheduled publish
+
+- Outcome: Added immutable `ContentRevision` snapshots with restore-as-draft, `scheduled` lifecycle + `scheduled_for`, extended `ALLOWED_TRANSITIONS`, management command `publish_scheduled_content` (no Celery), and optional systemd timer units under `infra/cms/`. Admin SPA can schedule, snapshot, and restore.
+- Why: Close ADM-4 follow-up DEBT-0005 separately from Wagtail uninstall (DEBT-0003).
+- Scope / files: `apps/cms/apps/content/models.py`, `revisions.py`, migration `0009_*`, `admin_content.py`, `admin_health.py`, `publish_scheduled_content` command, `infra/cms/publish-scheduled-content.*`, admin-frontend workflow/status, tests, ledgers.
+- Commands or actions actually performed: worktree `feat/adm-revisions-schedule`; `uv run ruff check` (pass); `uv run pytest tests/test_admin_revisions_schedule.py tests/test_admin_workflow_api.py` (23 passed).
+- Verification actually performed and result: ruff clean; 23 pytest passed (workflow + revisions/schedule).
+- Deferred or risk IDs: DEBT-0005 CLOSED; owner must install timer + run attended migrate for `0009` (do not enable `CMS_CD_AUTO_MIGRATE`). Preview token remains open on Task-list ADM-4.
+- Rollback / recovery: revert migration `0009` after image rollback; disable timer unit.
 ## LOG-0185 — 2026-08-20 — ADM-6: primaryColor inject + current CV/resume
 
 - Outcome: Wired site-settings `primaryColor` into Astro `--color-brand` at build via public `GET /api/site`. Added one-current-document CV + industry resume slots on `SiteSettings` (PDF media FKs), admin Settings MediaPicker, and Downloads/cv pages that prefer active CMS downloads (markdown fallback when CMS unset/empty). Contact inbox not reopened.

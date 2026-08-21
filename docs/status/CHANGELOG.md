@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-08-20 — ADM-4 follow-up: revisions + scheduled publish (DEBT-0005)
+
+Immutable `ContentRevision` snapshots with restore-as-draft; `scheduled` status +
+`scheduled_for`; `publish_scheduled_content` management command and optional
+systemd timer (no Celery). Admin API/SPA updated. LOG-0181; DEBT-0005 CLOSED.
 ## 2026-08-20 — ADM-6: primaryColor + current CV/resume from admin
 
 - Public `GET /api/site` exposes `primaryColor` and active current CV/resume downloads.

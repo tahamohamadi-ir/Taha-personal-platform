@@ -829,6 +829,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 ### Task ADM-4 — Workflow + revisions + translation queue
 
 - [x] Lifecycle transitions (Draft→Review→Published→Archived) با reason+audit اتمیک + select_for_update؛ بازیابی-به-صورت-پیشنویس (archived→draft)؛ انتشار sets published_at فقط وقتی None. *(زمان‌بندی Scheduled → DEBT-0005؛ 2026-08-18 — LOG-0161)*
+- [x] Revisions (immutable snapshot + restore-as-draft) + scheduled publish (`scheduled` + `scheduled_for` + `publish_scheduled_content` + systemd timer). *(2026-08-20 — LOG-0180; DEBT-0005 CLOSED)*
 - [x] صف ترجمه fa/en (Missing/Incomplete/Complete/Partial؛ بدون fallback) + content health (ترجمه ناقص، alt ناقص، orphan، شمارش وضعیت‌ها). *(2026-08-18 — LOG-0161)*
 - [ ] preview token با noindex/no-store. *(بعدی)*
 
