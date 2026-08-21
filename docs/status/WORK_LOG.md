@@ -4,7 +4,7 @@
 
 - Outcome: Additive `story` FK on `Project`, `ResearchTopic`, `ResearchStatement`, and `ProfileExperience` (migration `content.0010_entity_stories`). Public APIs project published-only story via `public_story_document`; admin `storyId` on content entities; `ArticleStoryEditor` generalized to `EntityStoryEditor` (content + profile experience attach). Astro detail pages reuse `StoryBody.astro` with existing field fallbacks. `DEFER-0030` CLOSED in ledger.
 
-- Note: Renumbered from colliding LOG-0181 (PRs #60/#62 also claimed it) to LOG-0186 (open PRs #57–#63; highest was LOG-0185 on #62). Migration renumbered `content.0009_entity_stories` → `content.0010_entity_stories` (still depends on `0008_article_story`) to avoid collision with PR #60 `content.0009_scheduled_for_and_contentrevision`. Both PRs currently branch from `0008`; merging both leaves two migration heads until a merge migration or rebase of one onto the other.
+- Note: Renumbered from colliding LOG-0181 (PRs #60/#62 also claimed it) to LOG-0186 (open PRs #57–#63; highest was LOG-0185 on #62). Migration is `content.0010_entity_stories` depending on PR #60 `content.0009_scheduled_for_and_contentrevision` (merged into this branch) so the graph is linear: `0008_article_story` → `0009_scheduled_for_and_contentrevision` → `0010_entity_stories`.
 - Why: Close Slice 5 after blog story reference implementation.
 - Scope / files: `apps/cms/**` (models/migration/API/admin SPA/tests), `apps/web/**` (DTOs + detail pages), `docs/status/**`, `docs/plan/**`.
 - Commands or actions actually performed: isolated worktree `feat/slice-5-entity-stories`; pytest/ruff/npm check.
@@ -16,6 +16,16 @@
   - `npm run check` in `apps/cms/admin-frontend` — PASS
 - Deferred or risk IDs: `DEFER-0030` CLOSED (code); owner attended migrate for `0010` still required before production use. Do not enable `CMS_CD_AUTO_MIGRATE`.
 - Rollback / recovery: revert PR; nullable FKs are backward compatible.
+
+## LOG-0181 — 2026-08-20 — DEBT-0005: revisions + scheduled publish
+
+- Outcome: Added immutable `ContentRevision` snapshots with restore-as-draft, `scheduled` lifecycle + `scheduled_for`, extended `ALLOWED_TRANSITIONS`, management command `publish_scheduled_content` (no Celery), and optional systemd timer units under `infra/cms/`. Admin SPA can schedule, snapshot, and restore.
+- Why: Close ADM-4 follow-up DEBT-0005 separately from Wagtail uninstall (DEBT-0003).
+- Scope / files: `apps/cms/apps/content/models.py`, `revisions.py`, migration `0009_*`, `admin_content.py`, `admin_health.py`, `publish_scheduled_content` command, `infra/cms/publish-scheduled-content.*`, admin-frontend workflow/status, tests, ledgers.
+- Commands or actions actually performed: worktree `feat/adm-revisions-schedule`; `uv run ruff check` (pass); `uv run pytest tests/test_admin_revisions_schedule.py tests/test_admin_workflow_api.py` (23 passed).
+- Verification actually performed and result: ruff clean; 23 pytest passed (workflow + revisions/schedule).
+- Deferred or risk IDs: DEBT-0005 CLOSED; owner must install timer + run attended migrate for `0009` (do not enable `CMS_CD_AUTO_MIGRATE`). Preview token remains open on Task-list ADM-4.
+- Rollback / recovery: revert migration `0009` after image rollback; disable timer unit.
 
 ## LOG-0179 — 2026-08-20 — ADR-0027 Slice 2: first attended CD CMS migrate PASS
 

@@ -15,7 +15,7 @@
 | ADM-5-featured | ADM | Featured spotlight با پنجره‌ی زمانی (F4) + CV «یک سند جاری» از ادمین (F5) | ADM-5 | Project owner | custom-admin-rebuild-fa.md §14.1 |
 | QA-vitest | QA | Vitest + تست‌های colocated برای کامپوننت‌های وب (S3) + Lighthouse budget (S5) | — | Project owner | custom-admin-rebuild-fa.md §14.2 |
 | ADM-3 | ADM | Page composition Section/Block + layout presets (1/2/3 columns, ratios) + preview | ADM-1 — **DONE (LOG-0160): composition API + editor؛ projection عمومی → ADM-6** | Project owner | Task-list §17 |
-| ADM-4 | ADM | Workflow transitions + translation queue + content health | ADM-2/ADM-3 — **DONE (LOG-0161): lifecycle transitions (reason+audit اتمیک + select_for_update)؛ صف ترجمه fa/en + content health؛ revisions + scheduled publish → DEBT-0005** | Project owner | Task-list §17 |
+| ADM-4 | ADM | Workflow transitions + translation queue + content health | ADM-2/ADM-3 — **DONE (LOG-0161 + LOG-0181): lifecycle + translation queue + content health + revisions/schedule (DEBT-0005 CLOSED)** | Project owner | Task-list §17 |
 | ADM-5 | ADM | Site settings (nav/header/footer/tokens/SEO) + tags/filters + contact inbox | ADM-4 — **DONE (LOG-0162): site settings (`/api/v1/admin/site`) + تگ‌ها (TopicTag CRUD) + featured spotlight (بازه‌ی زمانی، دقیقاً یک آیتم فعال)؛ contact inbox + CV → DEBT-0006** | Project owner | Task-list §17 |
 | P4+P5 CMS prod | P4–P5 | Publish CMS content + `rebuild-static.sh` (loopback `CMS_API_BASE`) | RISK-0003 CLOSED; migrate 0002–0004 already on `b369885` | Project owner | LOG-0131, LOG-0140 |
 | P3 versioned CI/CD | P3 | GHCR sha-tagged CMS image + proxy/health fixes + update-cms.sh | merge branch; VPS pull + Caddy snippet + smoke-cms.sh | Project owner | P3-cms-versioned-cicd-task-spec.md, LOG-0120 |

@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("composition", "0002_compositionpage_kind"),
-        ("content", "0008_article_story"),
+        ("content", "0009_scheduled_for_and_contentrevision"),
     ]
 
     operations = [

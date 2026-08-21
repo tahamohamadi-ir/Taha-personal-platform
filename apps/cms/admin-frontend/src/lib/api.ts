@@ -38,7 +38,12 @@ export type ContentEntity =
   | "project"
   | "publication";
 
-export type ContentStatus = "draft" | "review" | "published" | "archived";
+export type ContentStatus =
+  | "draft"
+  | "review"
+  | "scheduled"
+  | "published"
+  | "archived";
 
 export type ContentLocale = "fa" | "en";
 
@@ -49,6 +54,7 @@ export interface ContentListItem {
   title: string;
   status: ContentStatus;
   publishedAt: string | null;
+  scheduledFor?: string | null;
   updatedAt: string;
 }
 
@@ -70,6 +76,7 @@ export interface ContentDetail {
   title: string;
   status: string;
   publishedAt: string | null;
+  scheduledFor?: string | null;
   createdAt: string;
   updatedAt: string;
   fields: ContentFields;
@@ -116,6 +123,7 @@ export interface ContentUpdatePayload {
 export interface TransitionPayload {
   to: ContentStatus;
   reason?: string;
+  scheduledFor?: string;
 }
 
 export interface TranslationLocaleStatus {
@@ -140,10 +148,25 @@ export interface ContentHealth {
   published: number;
   drafts: number;
   review: number;
+  scheduled?: number;
   archived: number;
   incompleteTranslations: number;
   missingAltMedia: number;
   orphanMedia: number;
+}
+
+export interface ContentRevision {
+  id: number;
+  entityKey: string;
+  objectId: number;
+  note: string;
+  createdAt: string;
+  createdById: number | null;
+  snapshot?: Record<string, unknown> | null;
+}
+
+export interface ContentRevisionList {
+  items: ContentRevision[];
 }
 
 export function isApiError(value: unknown): value is ApiError {
@@ -335,6 +358,35 @@ export async function transitionContent(
     method: "POST",
     body: JSON.stringify(payload),
   });
+}
+
+export async function fetchContentRevisions(
+  entity: ContentEntity,
+  id: number
+): Promise<ContentRevisionList> {
+  return request<ContentRevisionList>(`/content/${entity}/${id}/revisions`);
+}
+
+export async function createContentRevision(
+  entity: ContentEntity,
+  id: number,
+  note?: string
+): Promise<ContentRevision> {
+  return request<ContentRevision>(`/content/${entity}/${id}/revisions`, {
+    method: "POST",
+    body: JSON.stringify({ note: note ?? "" }),
+  });
+}
+
+export async function restoreContentRevision(
+  entity: ContentEntity,
+  id: number,
+  revisionId: number
+): Promise<ContentDetail> {
+  return request<ContentDetail>(
+    `/content/${entity}/${id}/revisions/${revisionId}/restore`,
+    { method: "POST", body: "{}" }
+  );
 }
 
 export async function fetchTranslationQueue(): Promise<TranslationQueue> {

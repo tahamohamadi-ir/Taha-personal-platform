@@ -149,6 +149,19 @@ Caddy (TLS)
 
   Unattended CD migrate only after an attended PASS and repo variable
   `CMS_CD_AUTO_MIGRATE=true`. Rollback: `CMS_IMAGE=<previous>` + `update-cms.sh`.
+- **Scheduled publish timer (DEBT-0005 / LOG-0181):** no Celery. After CMS image
+  with migration `content.0009` is applied (attended migrate only), install:
+
+  ```bash
+  sudo install -m 0755 infra/cms/publish-scheduled-content.sh /usr/local/sbin/taha-publish-scheduled-content
+  sudo install -m 0644 infra/cms/taha-publish-scheduled-content.service /etc/systemd/system/
+  sudo install -m 0644 infra/cms/taha-publish-scheduled-content.timer /etc/systemd/system/
+  sudo systemctl daemon-reload
+  sudo systemctl enable --now taha-publish-scheduled-content.timer
+  ```
+
+  Manual dry-run:
+  `docker compose -f infra/cms/docker-compose.cms.yml exec -T cms python manage.py publish_scheduled_content --dry-run`
 - Superuser (owner interactive only):
   `docker compose -f infra/cms/docker-compose.cms.yml exec cms python manage.py createsuperuser`
   (`python` inside the image is the venv — Django is on `PATH`).

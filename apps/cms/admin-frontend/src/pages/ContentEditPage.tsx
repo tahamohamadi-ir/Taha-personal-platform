@@ -8,10 +8,13 @@ import {
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   createContent,
+  createContentRevision,
   fetchContentDetail,
+  fetchContentRevisions,
   fetchContentSchema,
   isApiError,
   isConflict,
+  restoreContentRevision,
   transitionContent,
   updateContent,
   type ApiError,
@@ -19,6 +22,7 @@ import {
   type ContentEntitySchema,
   type ContentFieldSpec,
   type ContentLocale,
+  type ContentRevision,
   type ContentStatus,
 } from "../lib/api";
 import {
@@ -258,6 +262,9 @@ export default function ContentEditPage(): ReactElement {
   const [transitionSuccess, setTransitionSuccess] = useState<string | null>(
     null
   );
+  const [revisions, setRevisions] = useState<ContentRevision[]>([]);
+  const [revisionsError, setRevisionsError] = useState<unknown>(null);
+  const [revisionsBusy, setRevisionsBusy] = useState(false);
 
   const listUrl = entity === null ? "/content" : `/content/${entity}`;
 
@@ -341,6 +348,29 @@ export default function ContentEditPage(): ReactElement {
     };
   }, [entity, isEditing, id, idIsValid, reloadKey]);
 
+  useEffect(() => {
+    if (entity === null || !isEditing || state !== "ready") {
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const data = await fetchContentRevisions(entity, id);
+        if (!cancelled) {
+          setRevisions(data.items);
+          setRevisionsError(null);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setRevisionsError(err);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [entity, isEditing, id, state, reloadKey]);
+
   async function reloadVersion(): Promise<void> {
     if (entity === null || !isEditing) {
       return;
@@ -380,6 +410,16 @@ export default function ContentEditPage(): ReactElement {
     if (entity === null || !isEditing || transitioningTo !== null) {
       return;
     }
+    let scheduledFor: string | undefined;
+    if (to === "scheduled") {
+      const raw = window.prompt(
+        "زمان انتشار را وارد کنید (UTC، مثال 2026-12-01T10:00:00Z):"
+      );
+      if (raw === null || raw.trim() === "") {
+        return;
+      }
+      scheduledFor = raw.trim();
+    }
     if (!window.confirm(transitionConfirm(to))) {
       return;
     }
@@ -387,15 +427,73 @@ export default function ContentEditPage(): ReactElement {
     setTransitionError(null);
     setTransitionSuccess(null);
     try {
-      const updated = await transitionContent(entity, id, { to });
+      const updated = await transitionContent(entity, id, {
+        to,
+        ...(scheduledFor !== undefined ? { scheduledFor } : {}),
+      });
       applyDetail(updated);
       setTransitionSuccess(
         `وضعیت به «${contentStatusMeta(updated.status).labelFa}» تغییر کرد.`
       );
+      await loadRevisions();
     } catch (err) {
       setTransitionError(err);
     } finally {
       setTransitioningTo(null);
+    }
+  }
+
+  async function loadRevisions(): Promise<void> {
+    if (entity === null || !isEditing) {
+      return;
+    }
+    try {
+      const data = await fetchContentRevisions(entity, id);
+      setRevisions(data.items);
+      setRevisionsError(null);
+    } catch (err) {
+      setRevisionsError(err);
+    }
+  }
+
+  async function handleCreateRevision(): Promise<void> {
+    if (entity === null || !isEditing || revisionsBusy) {
+      return;
+    }
+    setRevisionsBusy(true);
+    setRevisionsError(null);
+    try {
+      await createContentRevision(entity, id, "manual snapshot");
+      await loadRevisions();
+    } catch (err) {
+      setRevisionsError(err);
+    } finally {
+      setRevisionsBusy(false);
+    }
+  }
+
+  async function handleRestoreRevision(revisionId: number): Promise<void> {
+    if (entity === null || !isEditing || revisionsBusy) {
+      return;
+    }
+    if (
+      !window.confirm(
+        "بازیابی این نسخه وضعیت را به پیش‌نویس می‌برد و محتوای زنده را بازنویسی می‌کند. ادامه؟"
+      )
+    ) {
+      return;
+    }
+    setRevisionsBusy(true);
+    setRevisionsError(null);
+    try {
+      const updated = await restoreContentRevision(entity, id, revisionId);
+      applyDetail(updated);
+      await loadRevisions();
+      setTransitionSuccess("نسخه به‌صورت پیش‌نویس بازیابی شد.");
+    } catch (err) {
+      setRevisionsError(err);
+    } finally {
+      setRevisionsBusy(false);
     }
   }
 
@@ -645,6 +743,60 @@ export default function ContentEditPage(): ReactElement {
             >
               <p>{transitionSuccess}</p>
             </div>
+          )}
+        </div>
+      ) : null}
+
+      {isEditing ? (
+        <div className="admin-card mb-4">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-base font-bold">نسخه‌ها</h2>
+            <button
+              type="button"
+              className="admin-btn"
+              disabled={revisionsBusy || saving}
+              onClick={() => void handleCreateRevision()}
+            >
+              {revisionsBusy ? "در حال انجام…" : "ثبت اسنپ‌شات"}
+            </button>
+          </div>
+          {revisionsError !== null && (
+            <div className="admin-banner-error mb-3" role="alert">
+              <p>
+                {toErrorMessage(
+                  revisionsError,
+                  "بارگذاری نسخه‌ها با خطا مواجه شد."
+                )}
+              </p>
+            </div>
+          )}
+          {revisions.length === 0 ? (
+            <p className="admin-muted text-sm">هنوز نسخه‌ای ثبت نشده است.</p>
+          ) : (
+            <ul className="space-y-2 text-sm">
+              {revisions.map((rev) => (
+                <li
+                  key={rev.id}
+                  className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--color-border)] pb-2"
+                >
+                  <div>
+                    <div>#{rev.id}</div>
+                    <div className="admin-muted">
+                      {formatDateTime(rev.createdAt)}
+                      {rev.note ? ` — ${rev.note}` : ""}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="admin-btn"
+                    disabled={revisionsBusy || saving}
+                    onClick={() => void handleRestoreRevision(rev.id)}
+                  >
+                    بازیابی به‌صورت پیش‌نویس
+                  </button>
+                </li>
+              ))}
+            </ul>
           )}
         </div>
       ) : null}
