@@ -2,7 +2,8 @@
 
 > Status: Active for production. Staging is decommissioned (ADR-0025, 2026-08-15); the
 > mechanics below implement ADR-0017 as amended by **ADR-0027** (`web` nginx image
-> is the target artifact; host Caddy until `DEFER-0031`). Production deploys
+> is the target artifact; host Caddy until owner completes `DEFER-0031` cutover —
+> Compose `caddy` + profile `edge` is in repo). Production deploys
 > require owner approval, a documented rollback path and a passing release gate
 > (CI web + cms workflows + production smoke; see `RELEASE_POLICY.md`). No deploy
 > is performed by this file.
@@ -119,13 +120,22 @@ those containers (RISK-0004, closed 2026-08-16).
 
 ## CMS runtime (Caddy + versioned image + Compose)
 
-Canonical topology:
+Canonical topology (host Caddy — default until DEFER-0031 live cutover):
 
 ```text
-Caddy (TLS)
+Caddy (TLS, systemd)
   ├── public HTML (Slice 1+) → 127.0.0.1:13080 (nginx `web`; rollback: file_server on /opt/taha/site/current)
   ├── /admin* + /static*     → 127.0.0.1:18000
   └── /health/               → 127.0.0.1:18000   (NOT /health* — that steals /health.json)
+```
+
+Canonical topology (Compose edge — after owner cutover, profile `edge`):
+
+```text
+Compose caddy (TLS, ports 80/443)
+  ├── public HTML → web:8080
+  ├── /admin* /static* /api* /media* /health/ /admin-wagtail* → cms:8000
+  └── ACME data in Docker volume `caddy_data`
 ```
 
 - Image source of truth: `ghcr.io/<owner>/taha-cms:<git-sha>` (CI:
@@ -149,6 +159,7 @@ Caddy (TLS)
 
   Unattended CD migrate only after an attended PASS and repo variable
   `CMS_CD_AUTO_MIGRATE=true`. Rollback: `CMS_IMAGE=<previous>` + `update-cms.sh`.
+  **Do not enable `CMS_CD_AUTO_MIGRATE` from this Slice 4 work.**
 - Superuser (owner interactive only):
   `docker compose -f infra/cms/docker-compose.cms.yml exec cms python manage.py createsuperuser`
   (`python` inside the image is the venv — Django is on `PATH`).
@@ -181,3 +192,57 @@ Caddy (TLS)
   The VPS has no Node — use CD, not `rebuild-static.sh`, on the server.
   Committed `profile.snapshot.json` remains the build fallback when the API is down.
 - Details: `infra/cms/README.md`, `docs/plan/P3-cms-versioned-cicd-task-spec.md`.
+
+## Caddy-in-Compose cutover (ADR-0027 Slice 4 / DEFER-0031 / RISK-0013)
+
+Repo work is ready; **owner-attended VPS cutover** is the gate for live TLS.
+Agents must not SSH to production for this step. Do not enable
+`CMS_CD_AUTO_MIGRATE` as part of this cutover.
+
+### Preconditions
+
+- `web` and `cms` healthy on loopback (`13080` / `18000`).
+- Repo pulled on VPS (`/home/deploy/cms-repo`) including `Caddyfile.compose` and
+  compose service `caddy` (profile `edge`).
+- Maintenance window accepted; Cloudflare remains Full (or Full strict only if
+  origin certs stay valid).
+
+### Cutover (owner)
+
+1. Backup host Caddyfile:
+   `sudo cp -a /etc/caddy/Caddyfile "/etc/caddy/Caddyfile.bak-$(date +%Y%m%d%H%M%S)"`
+2. Optional: seed Compose ACME volume from host Caddy data dir if you want to
+   avoid a fresh certificate issuance (path varies; common:
+   `/var/lib/caddy`). If unsure, let Compose Caddy obtain certs via HTTP-01
+   after host Caddy stops (brief TLS gap possible).
+3. Stop host Caddy (ports must free): see `infra/caddy/HOST-CADDY-DISABLE.md`
+   (`sudo systemctl disable --now caddy`).
+4. Start Compose edge:
+   ```bash
+   cd /home/deploy/cms-repo
+   docker compose -f infra/cms/docker-compose.cms.yml --profile edge up -d caddy
+   bash infra/deploy/caddy-compose-reload.sh
+   ```
+5. Smoke: `bash infra/deploy/smoke-cms.sh https://tahamohamadi.ir` and
+   `bash infra/deploy/smoke.sh https://tahamohamadi.ir`.
+6. Only after smoke PASS: set GitHub repository variable **`CADDY_EDGE=compose`**
+   so CD reloads Compose Caddy instead of calling `caddy-sync.sh`.
+7. Record evidence in `WORK_LOG` and close `DEFER-0031` / resolve `RISK-0013`.
+
+### Rollback rehearsal (restore host Caddy)
+
+Practice before or immediately after a failed cutover:
+
+```bash
+cd /home/deploy/cms-repo
+docker compose -f infra/cms/docker-compose.cms.yml --profile edge stop caddy
+# Restore the timestamped backup from step 1 (use the real bak name):
+sudo cp -a /etc/caddy/Caddyfile.bak-YYYYMMDDHHMMSS /etc/caddy/Caddyfile
+sudo caddy validate --config /etc/caddy/Caddyfile
+sudo systemctl enable --now caddy
+# Clear compose CD gate if it was set:
+#   GitHub → Settings → Variables → delete or unset CADDY_EDGE
+bash infra/deploy/smoke-cms.sh https://tahamohamadi.ir
+```
+
+Host Caddy again proxies loopback `13080`/`18000`. Compose `web`/`cms` stay up.

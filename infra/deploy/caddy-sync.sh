@@ -6,6 +6,10 @@
 # Installed at /opt/taha/bin/caddy-sync.sh on the VPS (root:root 0755).
 # The CD workflow can also run it from a temporary path via SSH.
 #
+# Host-edge only. After DEFER-0031 live cutover (Compose profile `edge`), CD
+# uses repository variable CADDY_EDGE=compose and infra/deploy/caddy-compose-reload.sh
+# instead of this script. Do not sync Caddyfile.compose into /etc/caddy/.
+#
 # Steps:
 #   1. Back up the current Caddyfile with a timestamp
 #   2. Copy the new file into place

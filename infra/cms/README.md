@@ -6,26 +6,33 @@
 Internet
    │
    ▼
-Caddy  (TLS + routing)
-   ├── /*            → static Astro artifact (/opt/taha/site/current)  [NOT containerized]
+Caddy  (TLS + routing)  — host systemd until DEFER-0031 live cutover
+   ├── /*            → reverse_proxy 127.0.0.1:13080  (nginx `web`)
    ├── /admin*       → reverse_proxy 127.0.0.1:18000
    ├── /static*      → reverse_proxy 127.0.0.1:18000
+   ├── /api* /media* → reverse_proxy 127.0.0.1:18000
    └── /health/      → reverse_proxy 127.0.0.1:18000
-       /health.json  → static artifact (do not glob /health*)
+       /health.json  → web container (do not glob /health*)
 
 Docker Compose (this directory)
+   ├── db    ← postgres:17-alpine + named volume
    ├── cms   ← ghcr.io/<owner>/taha-cms:<git-sha>
-   └── db    ← postgres:17-alpine + named volume
+   ├── web   ← ghcr.io/<owner>/taha-web:<git-sha>  (nginx + Astro dist)
+   └── caddy ← caddy:2.9-alpine (profile `edge` only; public 80/443)
 ```
 
-- **Caddy** = edge HTTPS and path routing.
-- **Versioned artifact (web)** = immutable static release directories + `current` symlink.
+After owner cutover (`DEFER-0031`): Compose `caddy` proxies `web:8080` /
+`cms:8000` via Docker DNS; host systemd Caddy is stopped. See
+`infra/caddy/HOST-CADDY-DISABLE.md` and DEPLOY_RUNBOOK § “Caddy-in-Compose cutover”.
+
+- **Caddy** = edge HTTPS and path routing (host today; Compose profile `edge` when cut over).
+- **Versioned artifact (web)** = `taha-web` nginx image (host `current` symlink remains rollback/CD rsync until removed later).
 - **Versioned artifact (CMS)** = immutable container image tags on GHCR (git sha).
-- **Compose** = only the CMS + PostgreSQL stateful stack.
+- **Compose** = `db` + `cms` + `web` (+ optional `caddy` via `--profile edge`).
 
 Do **not** run a Node.js public runtime in production (ADR-0027). The public
 `web` service is nginx serving a prebuilt Astro `dist`. Host Caddy remains the
-TLS edge until Compose `caddy` (`DEFER-0031`). The sentence “do not containerize
+TLS edge until Compose `caddy` cutover (`DEFER-0031`). The sentence “do not containerize
 Astro” is superseded: the **artifact** is containerized; the **runtime** is not Node.
 
 ## Files
@@ -33,11 +40,14 @@ Astro” is superseded: the **artifact** is containerized; the **runtime** is no
 | File | Role |
 |---|---|
 | `Dockerfile.cms` | Multi-stage image; venv on `PATH`; gunicorn |
-| `docker-compose.cms.yml` | `db` + `cms`; loopback publish `127.0.0.1:18000` |
-| `Caddyfile.cms.snippet` | `/admin*` + `/static*` + `/health/` reverse_proxy fragment |
-| `Caddyfile.cms.api.snippet` | **Optional** `/api*` + `/media*` (DEFER-0017; owner apply) |
+| `docker-compose.cms.yml` | `db` + `cms` + `web` + optional `caddy` (profile `edge`) |
+| `../caddy/Caddyfile` | Host-edge Caddyfile (CD `caddy-sync` while `CADDY_EDGE` unset) |
+| `../caddy/Caddyfile.compose` | Compose-edge Caddyfile (Docker DNS upstreams) |
+| `../caddy/HOST-CADDY-DISABLE.md` | Stop host Caddy before Compose binds 80/443 |
+| `Caddyfile.cms.snippet` | Historical `/admin*` fragment (superseded by full Caddyfile) |
+| `Caddyfile.cms.api.snippet` | Historical `/api*` fragment (live in full Caddyfile) |
 | `.env.example` | Template for server-side `.env` (never commit real secrets) |
-
+| `../deploy/caddy-compose-reload.sh` | Reload Compose `caddy` after cutover |
 ## Image tags
 
 CI workflow `.github/workflows/ci-cms-image.yml` pushes:

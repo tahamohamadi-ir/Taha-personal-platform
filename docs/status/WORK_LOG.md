@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0191 — 2026-08-21 — ADR-0027 Slice 4: Compose Caddy (repo; cutover owner-gated)
+
+- Outcome: Added Compose service `caddy` (official `caddy:2.9-alpine`, profile `edge`), `infra/caddy/Caddyfile.compose` (Docker DNS → `web:8080` / `cms:8000`, ACME volumes + `/var/www/html`), host-disable + rollback rehearsal docs, `caddy-compose-reload.sh`, and CD gate `CADDY_EDGE=compose` (default remains host `caddy-sync`). `DEFER-0031` stays OPEN until live TLS cutover; `RISK-0013` OPEN for the cutover window.
+- Why: Complete Slice 4 repository work without binding production 80/443 or enabling auto-migrate.
+- Scope / files: `infra/cms/docker-compose.cms.yml`, `infra/caddy/*`, `infra/deploy/caddy-compose-reload.sh`, `infra/deploy/caddy-sync.sh`, `.github/workflows/cd.yml`, DEPLOY_RUNBOOK, task spec, plan README, cms README, deferred/RISK/CHANGELOG, this entry.
+- Commands or actions actually performed: worktree `feat/caddy-in-compose` from `origin/main`; compose config validate; no VPS SSH; no `CMS_CD_AUTO_MIGRATE`.
+- Verification actually performed and result: `docker compose … config` PASS for default and `--profile edge` (temporary `.env` from example, removed); `bash -n infra/deploy/caddy-compose-reload.sh` PASS. No VPS TLS move.
+- Deferred or risk IDs: `DEFER-0031` OPEN (owner cutover); `RISK-0013` OPEN; `RISK-0012` unchanged (auto migrate off).
+- Rollback / recovery: leave host Caddy as edge; do not set `CADDY_EDGE`; do not `--profile edge up -d caddy` on production until owner window.
+
 ## LOG-0179 — 2026-08-20 — ADR-0027 Slice 2: first attended CD CMS migrate PASS
 
 - Outcome: GitHub Actions CD `workflow_dispatch` `migrate_cms=true` `cms_image_tag=2e200fe` run [32407698471](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32407698471) **success**. Evidence: `backup_ok` under `/home/deploy/cms-migrate-backups/...`, recreate `cms`/`db`/`web`, migrate no-op, `CMS smoke PASS`, `cd-cms-migrate PASS`. Image remained `ghcr.io/tahamohamadi-ir/taha-cms:2e200fe`.

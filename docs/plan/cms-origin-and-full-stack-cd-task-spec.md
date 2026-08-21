@@ -1,6 +1,6 @@
 # Task Specification — Unified Compose + CMS origin + CD
 
-**Status:** `IN_PROGRESS` (ADR-0027 accepted). Slice 0–2 done in production evidence (Slice 2 attended CD migrate PASS 2026-08-20, LOG-0179). Slice 3+ separate. `RISK-0012` OPEN (auto migrate still off).
+**Status:** `IN_PROGRESS` (ADR-0027 accepted). Slice 0–2 done in production evidence (Slice 2 attended CD migrate PASS 2026-08-20, LOG-0179). Slice 4 Compose Caddy **in repo** (LOG-0191); live TLS cutover owner-gated (`DEFER-0031` / `RISK-0013` OPEN). Slice 3+ separate. `RISK-0012` OPEN (auto migrate still off).
 
 ## Task: One Compose network; CMS origin; CD updates cms and web
 
@@ -55,9 +55,22 @@ False smoke: `smoke-cms.sh` probed `/admin-wagtail/accounts/login/` (302). Real 
 - Build fails or emits explicit stale-cache headers/pages when API errors; do not silently prefer committed `profile.snapshot.json` over a successful empty published list.
 - No invented copy.
 
-### Slice 4 — Caddy in Compose (`DEFER-0031`)
+### Slice 4 — Caddy in Compose (`DEFER-0031`) — **repo done; live cutover owner-gated**
 
-- Mount certs; single public 80/443; host Caddy disabled for this site. Separate rollback rehearsal.
+- Compose service `caddy` (official `caddy:2.9-alpine`), profile `edge` so ordinary
+  `compose up -d` / CD does not bind 80/443 while host Caddy is live.
+- `infra/caddy/Caddyfile.compose`: Docker DNS upstreams `web:8080` / `cms:8000`;
+  mounts `/data` (ACME), `/config`, `/var/www/html` (fonts/presentation).
+- Host disable path: `infra/caddy/HOST-CADDY-DISABLE.md` (`systemctl disable --now caddy`).
+- Reload helper: `infra/deploy/caddy-compose-reload.sh`.
+- CD: repository variable `CADDY_EDGE=compose` switches sync from host
+  `caddy-sync.sh` to Compose reload (default remains host).
+- Rollback rehearsal documented in `DEPLOY_RUNBOOK` (restore host Caddyfile bak,
+  stop Compose `caddy`, re-enable systemd Caddy).
+- `RISK-0013` OPEN until cutover PASS. `DEFER-0031` stays OPEN until production
+  TLS move is evidenced (repo readiness alone does not close it).
+- **Not done by agents:** VPS cutover, setting `CADDY_EDGE`, enabling
+  `CMS_CD_AUTO_MIGRATE`.
 
 ### Slice 5 — `DEFER-0030` story bodies (project, research, experience)
 
@@ -76,6 +89,7 @@ False smoke: `smoke-cms.sh` probed `/admin-wagtail/accounts/login/` (302). Real 
 
 - Slice 0: script grep for `/admin-wagtail/login/`; no live VPS required.
 - Slice 1: docker build web; compose config valid; loopback smoke `/` + `/health.json` 200; owner `caddy-sync` after pull.
+- Slice 4: `docker compose -f infra/cms/docker-compose.cms.yml --profile edge config` validates; no live VPS TLS move in the PR.
 - Skip full pytest/Playwright unless the slice touches CMS Python.
 
 ## Rollback
@@ -87,6 +101,7 @@ False smoke: `smoke-cms.sh` probed `/admin-wagtail/accounts/login/` (302). Real 
 ## Handoff
 
 - Slice 2 attended CD migrate is **PASS** (LOG-0179, Actions [32407698471](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32407698471)). Do **not** set `CMS_CD_AUTO_MIGRATE=true` unless owner accepts unattended migrate (`RISK-0012` still OPEN).
-- Next agent starts Slice 3 (CMS origin honesty) from this spec.
+- Slice 4 Compose Caddy is **in repo** (LOG-0191): profile `edge`, `Caddyfile.compose`, cutover/rollback in DEPLOY_RUNBOOK. Owner must attend live TLS cutover before closing `DEFER-0031` / resolving `RISK-0013`. Do not set `CADDY_EDGE=compose` until smoke PASS after cutover.
+- Next agent starts Slice 3 (CMS origin honesty) or other ADM slices on separate branches; Slice 4 live cutover is owner-only.
 - After admin publish: `bash infra/deploy/rebuild-web.sh`.
 - Future CMS image bumps: Actions → CD → Run workflow → `migrate_cms=true` + `cms_image_tag=<sha>` after **CMS image** workflow publishes the tag.

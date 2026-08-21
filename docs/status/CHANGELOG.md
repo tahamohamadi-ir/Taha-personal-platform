@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-08-21 — ADR-0027 Slice 4: Compose Caddy (repo; cutover owner-gated)
+
+- Compose service `caddy` (official image, profile `edge`), `infra/caddy/Caddyfile.compose`, host-disable + rollback rehearsal, CD gate `CADDY_EDGE=compose`.
+- `DEFER-0031` / `RISK-0013` stay OPEN until owner-attended live TLS cutover. Do not enable `CMS_CD_AUTO_MIGRATE`.
+
 ## 2026-08-20 — ADR-0027 Slice 2: first attended CD CMS migrate PASS
 
 - Actions run 32407698471: `migrate_cms=true` `cms_image_tag=2e200fe` → `cd-cms-migrate PASS` + `CMS smoke PASS`.
