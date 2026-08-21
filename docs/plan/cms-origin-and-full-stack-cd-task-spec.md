@@ -48,7 +48,7 @@ False smoke: `smoke-cms.sh` probed `/admin-wagtail/accounts/login/` (302). Real 
 
 - `infra/deploy/cd-cms-migrate.sh`: `pg_dumpall` → pin `CMS_IMAGE` → `update-cms.sh` → `smoke-cms.sh`.
 - CD job `cms-migrate` (`.github/workflows/cd.yml`): **off** on ordinary pushes. Owner runs Actions → CD → **Run workflow** → `migrate_cms=true` (optional `cms_image_tag`). Unattended later only if repo var `CMS_CD_AUTO_MIGRATE=true` (skips when GHCR tag missing).
-- First attended production CD migrate **PASS** 2026-08-20 (`2e200fe`, Actions 32407698471). `RISK-0012` OPEN until owner enables auto. HMAC still off (`DEFER-0027`).
+- First attended production CD migrate **PASS** 2026-08-20 (`2e200fe`, Actions 32407698471). `RISK-0012` CLOSED on that evidence. Leave `CMS_CD_AUTO_MIGRATE` unset. HMAC still off (`DEFER-0027`).
 
 ### Slice 3 — CMS origin honesty
 
@@ -72,9 +72,10 @@ False smoke: `smoke-cms.sh` probed `/admin-wagtail/accounts/login/` (302). Real 
 - **Not done by agents:** VPS cutover, setting `CADDY_EDGE`, enabling
   `CMS_CD_AUTO_MIGRATE`.
 
-### Slice 5 — `DEFER-0030` story bodies (project, research, experience)
+### Slice 5 — `DEFER-0030` story bodies (project, research, experience) (**done in repo**)
 
 - Reuse `StoryBody.astro`. Independent of Slice 4.
+- Code: `content.0010_entity_stories`; public/admin wiring; LOG-0181. Owner migrate before production.
 
 ## Non-goals
 

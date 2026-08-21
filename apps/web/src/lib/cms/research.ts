@@ -1,6 +1,10 @@
-/** CMS public research DTOs consumed by Astro at build time (optional CMS_API_BASE). */
+﻿/** CMS public research DTOs consumed by Astro at build time (optional CMS_API_BASE). */
 
-import { cmsFetchJson } from "./client";
+import { cmsFetchJson, CmsOriginError, throwIfCmsError } from "./client";
+import type { CmsFetchResult } from "./client";
+import type { StoryDocumentDto } from "./story";
+
+export type { StoryDocumentDto };
 
 export interface RelatedSlugDto {
   slug: string;
@@ -34,6 +38,7 @@ export interface ResearchTopicListDto {
 }
 
 export interface ResearchTopicDetailDto extends ResearchTopicListDto {
+  story?: StoryDocumentDto | null;
   motivation: string;
   problems: string;
   research_questions: string;
@@ -48,6 +53,7 @@ export interface ResearchStatementDto {
   slug: string;
   title: string;
   body: string;
+  story?: StoryDocumentDto | null;
   published_at: string | null;
   updated_at: string | null;
 }
@@ -76,6 +82,7 @@ export interface ProjectDetailDto extends ProjectListDto {
   code_url: string;
   data_url: string;
   demo_url: string;
+  story?: StoryDocumentDto | null;
   topics: RelatedSlugDto[];
   publications: RelatedSlugDto[];
   evidence: EvidenceDto[];
@@ -126,25 +133,50 @@ export interface PublicationDetailDto extends PublicationListDto {
 
 type Locale = "fa" | "en";
 
-async function fetchJson<T>(path: string): Promise<T | null> {
-  return cmsFetchJson<T>(path);
-}
-
-function unwrapItems<T>(payload: T[] | { items: T[] } | null): T[] {
-  if (!payload) return [];
+function unwrapItems<T>(payload: T[] | { items: T[] }): T[] {
   if (Array.isArray(payload)) return payload;
   if (Array.isArray(payload.items)) return payload.items;
   return [];
 }
 
-async function paginateAll<T>(pathPrefix: string): Promise<T[]> {
+function requireListPayload<T>(
+  result: CmsFetchResult<T[] | { items: T[] }>,
+  context: string,
+): T[] | null {
+  throwIfCmsError(result, context);
+  if (result.kind === "unset") return null;
+  if (result.kind === "http") {
+    throw new CmsOriginError(
+      `${context}: unexpected HTTP ${result.status}`,
+      result.status,
+    );
+  }
+  return unwrapItems(result.data);
+}
+
+async function fetchDetail<T>(path: string, context: string): Promise<T | null> {
+  const result = await cmsFetchJson<T>(path);
+  throwIfCmsError(result, context);
+  if (result.kind === "unset") return null;
+  if (result.kind === "http") {
+    if (result.status === 404) return null;
+    throw new CmsOriginError(
+      `${context}: unexpected HTTP ${result.status}`,
+      result.status,
+    );
+  }
+  return result.data;
+}
+
+async function paginateAll<T>(pathPrefix: string, context: string): Promise<T[]> {
   const pages: T[] = [];
   let page = 1;
   while (page <= 50) {
-    const payload = await fetchJson<T[] | { items: T[] }>(
+    const payload = await cmsFetchJson<T[] | { items: T[] }>(
       `${pathPrefix}?page=${page}`,
     );
-    const items = unwrapItems(payload);
+    const items = requireListPayload(payload, `${context} page ${page}`);
+    if (items === null) return [];
     if (items.length === 0) break;
     pages.push(...items);
     if (items.length < 10) break;
@@ -153,24 +185,31 @@ async function paginateAll<T>(pathPrefix: string): Promise<T[]> {
   return pages;
 }
 
-/** Empty when CMS_API_BASE is unset or unreachable. */
+/** Empty when CMS_API_BASE is unset or the API returns an empty list. Outage fails the build. */
 export async function getResearchTopics(
   locale: Locale,
 ): Promise<ResearchTopicListDto[]> {
-  return paginateAll(`/api/research/topics/${locale}`);
+  return paginateAll(`/api/research/topics/${locale}`, `research/topics/${locale}`);
 }
 
 export async function getResearchTopic(
   locale: Locale,
   slug: string,
 ): Promise<ResearchTopicDetailDto | null> {
-  return fetchJson(`/api/research/topics/${locale}/${slug}`);
+  return fetchDetail(
+    `/api/research/topics/${locale}/${slug}`,
+    `research topic ${locale}/${slug}`,
+  );
 }
 
 export async function getResearchStatements(
   locale: Locale,
 ): Promise<ResearchStatementDto[]> {
-  return (await fetchJson(`/api/research/statements/${locale}`)) ?? [];
+  const result = await cmsFetchJson<ResearchStatementDto[]>(
+    `/api/research/statements/${locale}`,
+  );
+  const items = requireListPayload(result, `research/statements/${locale}`);
+  return items ?? [];
 }
 
 export async function getResearchStatement(
@@ -183,25 +222,37 @@ export async function getResearchStatement(
 export async function getResearchProjects(
   locale: Locale,
 ): Promise<ProjectListDto[]> {
-  return paginateAll(`/api/research/projects/${locale}`);
+  return paginateAll(
+    `/api/research/projects/${locale}`,
+    `research/projects/${locale}`,
+  );
 }
 
 export async function getResearchProject(
   locale: Locale,
   slug: string,
 ): Promise<ProjectDetailDto | null> {
-  return fetchJson(`/api/research/projects/${locale}/${slug}`);
+  return fetchDetail(
+    `/api/research/projects/${locale}/${slug}`,
+    `research project ${locale}/${slug}`,
+  );
 }
 
 export async function getResearchPublications(
   locale: Locale,
 ): Promise<PublicationListDto[]> {
-  return paginateAll(`/api/research/publications/${locale}`);
+  return paginateAll(
+    `/api/research/publications/${locale}`,
+    `research/publications/${locale}`,
+  );
 }
 
 export async function getResearchPublication(
   locale: Locale,
   slug: string,
 ): Promise<PublicationDetailDto | null> {
-  return fetchJson(`/api/research/publications/${locale}/${slug}`);
+  return fetchDetail(
+    `/api/research/publications/${locale}/${slug}`,
+    `research publication ${locale}/${slug}`,
+  );
 }

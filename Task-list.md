@@ -829,6 +829,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 ### Task ADM-4 — Workflow + revisions + translation queue
 
 - [x] Lifecycle transitions (Draft→Review→Published→Archived) با reason+audit اتمیک + select_for_update؛ بازیابی-به-صورت-پیشنویس (archived→draft)؛ انتشار sets published_at فقط وقتی None. *(زمان‌بندی Scheduled → DEBT-0005؛ 2026-08-18 — LOG-0161)*
+- [x] Revisions (immutable snapshot + restore-as-draft) + scheduled publish (`scheduled` + `scheduled_for` + `publish_scheduled_content` + systemd timer). *(2026-08-20 — LOG-0180; DEBT-0005 CLOSED)*
 - [x] صف ترجمه fa/en (Missing/Incomplete/Complete/Partial؛ بدون fallback) + content health (ترجمه ناقص، alt ناقص، orphan، شمارش وضعیت‌ها). *(2026-08-18 — LOG-0161)*
 - [ ] preview token با noindex/no-store. *(بعدی)*
 
@@ -836,14 +837,15 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 - [x] Site settings: brand/tagline/footer، توکن رنگ (primaryColor)، منو (navLinks)، SEO defaults — در `/api/v1/admin/site` + صفحه‌ی تنظیمات. تگ‌های بلاگ (TopicTag) CRUD در `/api/v1/admin/tags`. *(2026-08-18 — LOG-0162)*
 - [x] featured spotlight با پنجره‌ی زمانی و دقیقاً یک آیتم فعال (باز کردن یکی، بقیه را غیرفعال می‌کند) در `/api/v1/admin/featured`. *(2026-08-18 — LOG-0162)*
-- [ ] CV/Resume: سیاست «یک سند جاری» از ادمین (جای دانلودهای markdown ثابت در `Downloads.astro`). *(§14 F5)* *(ADM-6 — DEBT-0006)*
+- [x] CV/Resume: سیاست «یک سند جاری» از ادمین (جای دانلودهای markdown ثابت در `Downloads.astro`). *(§14 F5)* *(2026-08-20 — LOG-0185; DEFER-0029 CLOSED; DEBT-0006 CV RESOLVED)*
 
 ### Task ADM-6 — Frontend wiring + verification
 
 - [x] Astro: fetch داده‌های منتشرشده هنگام build + اجرای rebuild-trigger پس از انتشار (loopback، بدون افشای `/api/v1/admin/*`). *(LOG-0165 — HMAC default off; `invoke_static_rebuild` mocked in tests; production enable `DEFER-0027`)*
-- [x] E2E: lifecycle JSON (create→edit→publish→public fa/en) + anonymous published-only. *(LOG-0165 — `test_content_lifecycle_e2e.py`)* Playwright browser matrix → `DEFER-0026`.
+- [x] E2E: lifecycle JSON (create→edit→publish→public fa/en) + anonymous published-only. *(LOG-0165 — `test_content_lifecycle_e2e.py`)*
+- [x] Playwright browser lifecycle create→publish→public fa/en + full config (retries/trace/video/html). *(LOG-0184 — `qa/e2e/content-lifecycle.spec.ts`; `DEFER-0026` CLOSED)*
 - [x] Blog story composition → Astro (`StoryBody` + article fallback). *(LOG-0167; spec `blog-story-composition-task-spec.md`; `DEFER-0028` CLOSED)* Production migrate/rebuild is owner.
-- [ ] QA کامل: RTL/LTR، keyboard، noindex/cache policy، bulk destructive با count+confirm+audit، release checklist §18. *(DEFER-0026)*
+- [ ] QA کامل: RTL/LTR، keyboard، noindex/cache policy، bulk destructive با count+confirm+audit، release checklist §18. *(DEFER-0032)*
 
 ---
 
@@ -861,8 +863,8 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 - [ ] deferred/riskها ID، owner، target، mitigation و evidence دارند.
 - [ ] production deploy approval و post-deploy smoke وجود دارد.
 - [ ] Release DoD از Completion DoD جدا گزارش شده است.
-- [ ] Playwright config کامل (retries/trace/video/html reporter) به‌جای spec های خام نگهداری شود. *(§14 S2)*
-- [ ] manual-test checklists (keyboard-nav، responsive، rtl-ltr، reduced-motion، accessibility، performance) در scope اثر slice اجرا شوند. *(§14 S6)*
+- [x] Playwright config کامل (retries/trace/video/html reporter) به‌جای spec های خام نگهداری شود. *(§14 S2; LOG-0184 — raw `qa/*.spec.mjs` smoke kept; lifecycle uses `@playwright/test`)*
+- [ ] manual-test checklists (keyboard-nav، responsive، rtl-ltr، reduced-motion، accessibility، performance) در scope اثر slice اجرا شوند. *(§14 S6; DEFER-0032)*
 
 ---
 

@@ -51,6 +51,12 @@ def admin_api_client(csrf_client, admin_user, totp_device):
     return csrf_client
 
 
+@pytest.fixture
+def media_root(tmp_path, settings):
+    settings.MEDIA_ROOT = tmp_path
+    return tmp_path
+
+
 def _post_json(client, path, payload):
     return client.post(
         path,
@@ -101,6 +107,10 @@ def test_settings_get_defaults(admin_api_client):
     assert body["navLinks"] == []
     assert body["seoDefaultTitle"] == ""
     assert body["seoDefaultDescription"] == ""
+    assert body["currentCvMediaId"] is None
+    assert body["currentResumeMediaId"] is None
+    assert body["currentCv"] is None
+    assert body["currentResume"] is None
     assert "updatedAt" in body
 
 
@@ -510,6 +520,93 @@ def test_settings_put_rejects_over_20_nav_links(admin_api_client):
         got.json()["updatedAt"],
     )
     assert bad.status_code == 400
+
+
+def test_settings_put_current_cv_pdf_and_public_site(admin_api_client, media_root):
+    from django.core.files.uploadedfile import SimpleUploadedFile
+
+    from apps.media.models import Media
+
+    PDF_MIN = b"%PDF-1.4\n%\xe2\xe3\xcf\xd3\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF"
+    PNG_1X1 = (
+        b"\x89PNG\r\n\x1a\n"
+        b"\x00\x00\x00\rIHDR"
+        b"\x00\x00\x00\x01\x00\x00\x00\x01"
+        b"\x08\x06\x00\x00\x00\x1f\x15\xc4\x89"
+        b"\x00\x00\x00\rIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4"
+        b"\x00\x00\x00\x00IEND\xaeB`\x82"
+    )
+
+    pdf = Media(
+        title="Academic CV",
+        alt_text="Full career profile",
+        is_active=True,
+        file=SimpleUploadedFile("cv.pdf", PDF_MIN, content_type="application/pdf"),
+    )
+    pdf.save()
+    inactive = Media(
+        title="Draft resume",
+        is_active=False,
+        file=SimpleUploadedFile("draft.pdf", PDF_MIN, content_type="application/pdf"),
+    )
+    inactive.save()
+    png = Media(
+        title="Photo",
+        is_active=True,
+        file=SimpleUploadedFile("photo.png", PNG_1X1, content_type="image/png"),
+    )
+    png.save()
+
+    got = admin_api_client.get("/api/v1/admin/site")
+    bad_png = _put_json(
+        admin_api_client,
+        "/api/v1/admin/site",
+        {"currentCvMediaId": png.pk},
+        got.json()["updatedAt"],
+    )
+    assert bad_png.status_code == 400
+    assert "currentCvMediaId" in bad_png.json()["fields"]
+
+    got = admin_api_client.get("/api/v1/admin/site")
+    put = _put_json(
+        admin_api_client,
+        "/api/v1/admin/site",
+        {
+            "primaryColor": "#087c73",
+            "currentCvMediaId": pdf.pk,
+            "currentResumeMediaId": inactive.pk,
+        },
+        got.json()["updatedAt"],
+    )
+    assert put.status_code == 200
+    body = put.json()
+    assert body["currentCvMediaId"] == pdf.pk
+    assert body["currentResumeMediaId"] == inactive.pk
+    assert body["currentCv"]["title"] == "Academic CV"
+    assert body["currentCv"]["url"].startswith("/media/")
+
+    public = admin_api_client.get("/api/site")
+    assert public.status_code == 200
+    pub = public.json()
+    assert pub["primaryColor"] == "#087c73"
+    assert len(pub["downloads"]) == 1
+    assert pub["downloads"][0]["kind"] == "academic_cv"
+    assert pub["downloads"][0]["href"].startswith("/media/")
+    assert pub["downloads"][0]["title"] == "Academic CV"
+
+    got = admin_api_client.get("/api/v1/admin/site")
+    cleared = _put_json(
+        admin_api_client,
+        "/api/v1/admin/site",
+        {"currentCvMediaId": None, "currentResumeMediaId": None},
+        got.json()["updatedAt"],
+    )
+    assert cleared.status_code == 200
+    assert cleared.json()["currentCvMediaId"] is None
+    assert cleared.json()["currentResumeMediaId"] is None
+
+    public_empty = admin_api_client.get("/api/site")
+    assert public_empty.json()["downloads"] == []
 
 
 def test_featured_singleton_created_on_get(admin_api_client):

@@ -9,6 +9,9 @@ from typing import Any
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
+from apps.composition.blocks import KIND_STORY
+from apps.composition.models import CompositionPage
+from apps.composition.projection import public_story_document
 from apps.content.models import (
     LifecycleStatus,
     Profile,
@@ -87,20 +90,50 @@ def _optional_detail_body(payload: dict[str, Any]) -> str:
     return _optional_string(payload, "detailBody") or _optional_string(payload, "detail_body")
 
 
-def _validate_detail_route_fields(payload: dict[str, Any]) -> dict[str, Any]:
+def _optional_story_fk(payload: dict[str, Any], *, locale: str) -> CompositionPage | None:
+    raw = payload.get("storyId", payload.get("story_id"))
+    if raw in (None, ""):
+        return None
+    try:
+        pk = int(raw)
+    except (TypeError, ValueError) as exc:
+        raise ValidationError({"storyId": "storyId must be an integer."}) from exc
+    page = CompositionPage.objects.filter(pk=pk).first()
+    if page is None:
+        raise ValidationError({"storyId": "Invalid story composition reference."})
+    if getattr(page, "kind", None) != KIND_STORY:
+        raise ValidationError({"storyId": "storyId must reference a story composition."})
+    if page.locale != locale:
+        raise ValidationError({"storyId": "storyId locale must match the profile locale."})
+    return page
+
+
+def _validate_detail_route_fields(
+    payload: dict[str, Any],
+    *,
+    locale: str | None = None,
+    allow_story: bool = False,
+) -> dict[str, Any]:
     slug = _optional_latin_slug(payload)
     detail_body = _optional_detail_body(payload)
     translation_key = _optional_translation_key(payload)
     if detail_body and not slug:
         raise ValidationError({"slug": "Slug is required when detailBody is provided."})
-    return {
+    fields: dict[str, Any] = {
         "slug": slug,
         "detail_body": detail_body,
         "translation_key": translation_key,
     }
+    if allow_story:
+        if locale is None:
+            raise ValidationError({"storyId": "Profile locale is required for storyId."})
+        fields["story"] = _optional_story_fk(payload, locale=locale)
+        if fields["story"] is not None and not slug:
+            raise ValidationError({"slug": "Slug is required when storyId is provided."})
+    return fields
 
 
-def _serialize_detail_route_fields(row: Any) -> dict[str, Any]:
+def _serialize_detail_route_fields(row: Any, *, locale: str | None = None) -> dict[str, Any]:
     data: dict[str, Any] = {}
     if row.slug:
         data["slug"] = row.slug
@@ -108,6 +141,13 @@ def _serialize_detail_route_fields(row: Any) -> dict[str, Any]:
         data["translationKey"] = str(row.translation_key)
     if row.detail_body:
         data["detailBody"] = row.detail_body
+    story = getattr(row, "story", None)
+    if story is not None:
+        data["storyId"] = story.pk
+        if locale:
+            projected = public_story_document(story, locale)
+            if projected is not None:
+                data["story"] = projected
     return data
 
 
@@ -145,7 +185,7 @@ def serialize_profile_detail(profile: Profile) -> dict[str, Any]:
             "location": row.location,
             "website": row.website,
             "bullets": row.bullets,
-            **_serialize_detail_route_fields(row),
+            **_serialize_detail_route_fields(row, locale=profile.locale),
         }
         for row in profile.experience_entries.all()
     ]
@@ -267,10 +307,16 @@ def parse_profile_payload(raw_body: bytes) -> dict[str, Any]:
     return payload
 
 
-def validate_profile_payload(payload: dict[str, Any]) -> dict[str, Any]:
+def validate_profile_payload(
+    payload: dict[str, Any],
+    *,
+    locale: str,
+) -> dict[str, Any]:
     status = _optional_string(payload, "status") or LifecycleStatus.DRAFT
     if status not in LifecycleStatus.values:
         raise ValidationError({"status": "Unsupported lifecycle status."})
+    if locale not in ("fa", "en"):
+        raise ValidationError({"locale": "Unsupported locale."})
 
     validated = {
         "title": _require_string(payload, "title"),
@@ -313,7 +359,7 @@ def validate_profile_payload(payload: dict[str, Any]) -> dict[str, Any]:
                 "location": _optional_string(item, "location"),
                 "website": _optional_string(item, "website"),
                 "bullets": _validate_bullets(item),
-                **_validate_detail_route_fields(item),
+                **_validate_detail_route_fields(item, locale=locale, allow_story=True),
             }
         )
 

@@ -29,10 +29,16 @@ function searchText(parts: Array<string | undefined>): string {
 
 function detailHref(
   section: string,
-  entry: { slug?: string; detailBody?: string; detail_body?: string },
+  entry: {
+    slug?: string;
+    detailBody?: string;
+    detail_body?: string;
+    story?: { sections?: unknown[] } | null;
+  },
 ): string | null {
   const body = entry.detailBody?.trim() || entry.detail_body?.trim();
-  if (!entry.slug || !body) {
+  const hasStory = Boolean(entry.story && Array.isArray(entry.story.sections) && entry.story.sections.length > 0);
+  if (!entry.slug || (!body && !hasStory)) {
     return null;
   }
   return `/${content.lang}/about/${section}/${entry.slug}/`;

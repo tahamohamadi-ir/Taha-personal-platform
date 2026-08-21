@@ -4,11 +4,48 @@
 
 - Compose service `caddy` (official image, profile `edge`), `infra/caddy/Caddyfile.compose`, host-disable + rollback rehearsal, CD gate `CADDY_EDGE=compose`.
 - `DEFER-0031` / `RISK-0013` stay OPEN until owner-attended live TLS cutover. Do not enable `CMS_CD_AUTO_MIGRATE`.
+## 2026-08-20 — DEFER-0026 Playwright content lifecycle
+
+- Full Playwright Test config in `apps/web` (retries/trace/video/html) and browser suite create→publish→public fa/en against disposable CMS fixtures.
+- CI: `playwright-lifecycle` job in `ci-cms.yml`. How to run: `apps/web/qa/e2e/README.md` (`npm run test:e2e`).
+- Pytest JSON lifecycle unchanged. Remaining §18 QA matrix → `DEFER-0032`.
+## 2026-08-20 — Slice 5 / DEFER-0030: entity story bodies
+
+- Nullable `story` → `CompositionPage` on Project, ResearchTopic, ResearchStatement, ProfileExperience (`content.0010`).
+- Public JSON + Astro `StoryBody` with field fallbacks; admin story editor generalized beyond articles.
+- **Owner VPS:** attended CD migrate for `0010` (do not set `CMS_CD_AUTO_MIGRATE`); then `rebuild-web.sh`.
+
+## 2026-08-20 — ADM-4 follow-up: revisions + scheduled publish (DEBT-0005)
+
+Immutable `ContentRevision` snapshots with restore-as-draft; `scheduled` status +
+`scheduled_for`; `publish_scheduled_content` management command and optional
+systemd timer (no Celery). Admin API/SPA updated. LOG-0181; DEBT-0005 CLOSED.
+## 2026-08-20 — ADM-6: primaryColor + current CV/resume from admin
+
+- Public `GET /api/site` exposes `primaryColor` and active current CV/resume downloads.
+- Astro injects `--color-brand` from CMS at build; CV pages prefer media-library PDFs (fallback: committed markdown).
+- Admin Settings: MediaPicker slots for academic CV + industry resume (one PDF each).
+- `DEFER-0029` CLOSED; `DEBT-0006` CV RESOLVED (contact inbox not reopened).
+## 2026-08-20 — HMAC rebuild trigger to rebuild-web.sh
+
+- Signed CMS rebuild hook default script is `infra/deploy/rebuild-web.sh` (not disk `rebuild-static.sh`).
+- `REBUILD_TRIGGER_ENABLED` remains False (`DEFER-0027` OPEN until owner VPS smoke + enable).
+- **Owner VPS (enable path):** smoke `bash infra/deploy/rebuild-web.sh` then set `REBUILD_SCRIPT_PATH` to that script, set `REBUILD_TRIGGER_ENABLED=true` plus secret, recreate CMS, and confirm post-publish web updates.
+## 2026-08-20 — ADR-0027 Slice 3: CMS origin honesty
+
+- Typed CMS fetch (`unset` / `ok` / `http` / `error`); outage with `CMS_API_BASE` set fails `npm run build`.
+- `profile.snapshot.json` is local/offline only (base unset); successful empty CMS lists stay empty.
+- QA: `cms-profile-build.spec.mjs` asserts fail-build on unreachable base.
+## 2026-08-20 — Phase 0: owner CD migrate checklist + RISK-0012 CLOSED
+
+- `DEPLOY_RUNBOOK`: numbered attended checklist (Actions → `migrate_cms=true` + GHCR `cms_image_tag` → confirm job PASS + `smoke-cms.sh` / `cd-cms-migrate PASS` in logs).
+- `RISK-0012` CLOSED on Actions 32407698471 / LOG-0179 (re-verified LOG-0180). Leave `CMS_CD_AUTO_MIGRATE` unset.
+- Plan index handoff: next is Slice 3 (not “auto-migrate”).
 
 ## 2026-08-20 — ADR-0027 Slice 2: first attended CD CMS migrate PASS
 
 - Actions run 32407698471: `migrate_cms=true` `cms_image_tag=2e200fe` → `cd-cms-migrate PASS` + `CMS smoke PASS`.
-- Leave `CMS_CD_AUTO_MIGRATE` unset (`RISK-0012`).
+- Leave `CMS_CD_AUTO_MIGRATE` unset (`RISK-0012` later CLOSED in LOG-0180).
 
 ## 2026-08-20 — ADR-0027 Slice 2: gated CD CMS migrate
 

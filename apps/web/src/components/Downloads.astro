@@ -1,14 +1,19 @@
 ---
 import type { LocaleContent } from "../data/content";
 
+export interface DownloadFile {
+  title: string;
+  note: string;
+  sizeKb: number;
+  href: string;
+  downloadName?: string;
+  updatedAt?: string;
+  formatLabel?: string;
+}
+
 interface Props {
   content: LocaleContent;
-  files: {
-    title: string;
-    filename: string;
-    note: string;
-    sizeKb: number;
-  }[];
+  files: DownloadFile[];
 }
 
 const { content, files } = Astro.props;
@@ -24,14 +29,15 @@ const { content, files } = Astro.props;
           <p class="downloads-title">{file.title}</p>
           <p class="downloads-note">{file.note}</p>
           <p class="downloads-meta">
-            Markdown · {file.sizeKb} KB · {content.downloads.updatedLabel}{" "}
-            2026-08-16
+            {file.formatLabel ?? "Markdown"} · {file.sizeKb} KB ·{" "}
+            {content.downloads.updatedLabel}{" "}
+            {file.updatedAt ?? "2026-08-16"}
           </p>
         </div>
         <a
           class="downloads-link"
-          href={`/downloads/${file.filename}`}
-          download={file.filename}
+          href={file.href}
+          download={file.downloadName}
         >
           {content.downloads.downloadLabel}
         </a>

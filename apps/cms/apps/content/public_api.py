@@ -12,7 +12,7 @@ from apps.content.profile_api import (
 
 PROFILE_PREFETCH = (
     "skills",
-    "experience_entries",
+    "experience_entries__story__sections__blocks",
     "education_entries",
     "publication_entries",
     "research_projects",

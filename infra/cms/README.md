@@ -63,11 +63,11 @@ Production **must** set `CMS_IMAGE` to a sha tag for deploy/rollback clarity.
 
 ## CD migrate (ADR-0027 Slice 2)
 
-Preferred path after a GHCR `taha-cms:<sha>` exists: GitHub Actions → **CD — Deploy
-to production** → Run workflow → `migrate_cms=true` + `cms_image_tag=<sha>`.
-That SSHs as `deploy` and runs `infra/deploy/cd-cms-migrate.sh` (backup →
-`update-cms.sh` → `smoke-cms.sh`). Leave repository variable
-`CMS_CD_AUTO_MIGRATE` unset until the first attended PASS (`RISK-0012`).
+Owner checklist (canonical): `docs/governance/DEPLOY_RUNBOOK.md` — Actions → **CD —
+Deploy to production** → Run workflow → `migrate_cms=true` + valid GHCR
+`cms_image_tag`, then confirm job **CMS image migrate (gated)** PASS and log
+lines `cd-cms-migrate PASS` / `CMS smoke PASS`. Leave `CMS_CD_AUTO_MIGRATE`
+**unset** (`RISK-0012` CLOSED after attended PASS LOG-0179 / LOG-0180).
 
 Manual on VPS:
 

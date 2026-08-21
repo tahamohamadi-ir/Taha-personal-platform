@@ -33,6 +33,7 @@ export function isContentStatus(value: string): value is ContentStatus {
   return (
     value === "draft" ||
     value === "review" ||
+    value === "scheduled" ||
     value === "published" ||
     value === "archived"
   );
@@ -51,6 +52,11 @@ export interface ContentStatusMeta {
 export const CONTENT_STATUSES: ContentStatusMeta[] = [
   { key: "draft", labelFa: "پیش‌نویس", className: "admin-status-draft" },
   { key: "review", labelFa: "در بازبینی", className: "admin-status-review" },
+  {
+    key: "scheduled",
+    labelFa: "زمان‌بندی‌شده",
+    className: "admin-status-scheduled",
+  },
   { key: "published", labelFa: "منتشرشده", className: "admin-status-published" },
   { key: "archived", labelFa: "بایگانی", className: "admin-status-archived" },
 ];

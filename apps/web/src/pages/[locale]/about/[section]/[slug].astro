@@ -5,8 +5,11 @@ import { content as allContent } from "../../../../data/content";
 import {
   getAboutSection,
   getDetailAlternateHref,
+  hasDetailContent,
   type AboutSectionId,
 } from "../../../../data/aboutSections";
+import StoryBody from "../../../../components/StoryBody.astro";
+import { hasPublishedStory } from "../../../../lib/cms/story";
 import { loadPublicProfile } from "../../../../data/cmsProfile";
 import { breadcrumbJsonLd, personJsonLd, websiteJsonLd } from "../../../../data/structured";
 import { site, type LocaleCode } from "../../../../data/site";
@@ -31,12 +34,12 @@ export async function getStaticPaths() {
     for (const sectionId of validSections) {
       const section = getAboutSection(allContent[locale], profileResult.profile, sectionId);
       for (const item of section?.items ?? []) {
-        if (item.detailSlug && item.detailBody) {
+        if (hasDetailContent(item)) {
           paths.push({
             params: {
               locale,
               section: sectionId,
-              slug: item.detailSlug,
+              slug: item.detailSlug!,
             },
           });
         }
@@ -64,9 +67,10 @@ const section =
     ? getAboutSection(content, profileResult.profile, sectionId)
     : undefined;
 const item = section?.items.find(
-  (candidate) => candidate.detailSlug === slug && candidate.detailBody,
+  (candidate) => candidate.detailSlug === slug && hasDetailContent(candidate),
 );
 const detailParagraphs = item?.detailBody?.split(/\n{2,}/) ?? [];
+const itemHasStory = hasPublishedStory(item?.story);
 
 if (!item || profileResult.kind !== "profile") {
   Astro.response.status = 404;
@@ -130,7 +134,13 @@ const description = item?.body ?? content.meta.description;
           </header>
 
           <div class="about-detail-body">
-            {detailParagraphs.map((paragraph) => <p>{paragraph}</p>)}
+            {
+              itemHasStory && item?.story ? (
+                <StoryBody locale={locale} story={item.story} />
+              ) : (
+                detailParagraphs.map((paragraph) => <p>{paragraph}</p>)
+              )
+            }
           </div>
 
           <aside class="about-detail-next-step">

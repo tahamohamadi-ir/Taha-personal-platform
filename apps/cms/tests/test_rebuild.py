@@ -76,7 +76,7 @@ def test_invoke_static_rebuild_disabled_by_default(settings):
 
 
 def test_invoke_static_rebuild_starts_script(tmp_path, settings):
-    script = tmp_path / "rebuild-static.sh"
+    script = tmp_path / "rebuild-web.sh"
     script.write_text("#!/bin/bash\n")
     settings.REBUILD_TRIGGER_ENABLED = True
     settings.REBUILD_SCRIPT_PATH = str(script)
@@ -99,4 +99,4 @@ def test_invoke_static_rebuild_missing_script(tmp_path, settings):
 def test_rebuild_script_path_does_not_require_repo_depth(settings):
     settings.REBUILD_SCRIPT_PATH = ""
     path = rebuild_script_path()
-    assert path.name.endswith("rebuild-static.sh") or path.name == "nonexistent-rebuild-static.sh"
+    assert path.name.endswith("rebuild-web.sh") or path.name == "nonexistent-rebuild-web.sh"

@@ -11,6 +11,7 @@ import math
 import re
 import uuid
 
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 from django.utils.html import strip_tags
@@ -40,6 +41,7 @@ class LifecycleStatus(models.TextChoices):
 
     DRAFT = "draft", "Draft"
     REVIEW = "review", "Review"
+    SCHEDULED = "scheduled", "Scheduled"
     PUBLISHED = "published", "Published"
     ARCHIVED = "archived", "Archived"
 
@@ -84,6 +86,7 @@ class LifecycleMixin(models.Model):
         db_index=True,
     )
     published_at = models.DateTimeField(null=True, blank=True)
+    scheduled_for = models.DateTimeField(null=True, blank=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -227,6 +230,13 @@ class ProfileExperience(ProfileDetailItem):
     location = models.CharField(max_length=200, blank=True)
     website = models.URLField(blank=True)
     bullets = models.JSONField(default=list, blank=True)
+    story = models.ForeignKey(
+        "composition.CompositionPage",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="attached_profile_experiences",
+    )
 
     class Meta(OrderedProfileItem.Meta):
         db_table = "content_profile_experience"
@@ -459,6 +469,13 @@ class ResearchTopic(LocalizedContentMixin, LifecycleMixin):
     research_questions = models.TextField(blank=True)
     methods = models.TextField(blank=True)
     future_directions = models.TextField(blank=True)
+    story = models.ForeignKey(
+        "composition.CompositionPage",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="attached_research_topics",
+    )
 
     class Meta:
         db_table = "content_research_topic"
@@ -484,6 +501,13 @@ class ResearchStatement(LocalizedContentMixin, LifecycleMixin):
     """Independent research agenda statement (rich text; PDF deferred)."""
 
     body = RichTextField(features=ARTICLE_RICHTEXT_FEATURES, blank=True)
+    story = models.ForeignKey(
+        "composition.CompositionPage",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="attached_research_statements",
+    )
 
     class Meta:
         db_table = "content_research_statement"
@@ -616,6 +640,13 @@ class Project(LocalizedContentMixin, LifecycleMixin):
         default=True,
         db_default=True,
         help_text="When false, a published project is omitted from the public /projects/ list.",
+    )
+    story = models.ForeignKey(
+        "composition.CompositionPage",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="attached_projects",
     )
     topics = models.ManyToManyField(
         ResearchTopic,
@@ -940,3 +971,38 @@ class ProjectFunding(models.Model):
 
     def __str__(self) -> str:
         return self.funder
+
+
+class ContentRevision(models.Model):
+    """Immutable content snapshot for restore-as-draft (ADM-4 / DEBT-0005).
+
+    ``entity_key`` matches admin content API keys (``landing``, ``article``, …).
+    Snapshots never mutate after create; restore always forces draft and keeps
+    a fresh pre-restore snapshot of the live row.
+    """
+
+    entity_key = models.CharField(max_length=64, db_index=True)
+    object_id = models.PositiveIntegerField(db_index=True)
+    snapshot = models.JSONField()
+    note = models.CharField(max_length=200, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="content_revisions",
+    )
+
+    class Meta:
+        db_table = "content_revision"
+        ordering = ["-created_at", "-id"]
+        indexes = [
+            models.Index(
+                fields=["entity_key", "object_id", "-created_at"],
+                name="content_rev_entity_obj_created",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.entity_key}:{self.object_id}@{self.pk}"

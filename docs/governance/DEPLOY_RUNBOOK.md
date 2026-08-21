@@ -144,11 +144,26 @@ Compose caddy (TLS, ports 80/443)
 - Operator script: `infra/deploy/update-cms.sh` (pull → up → migrate → loopback
   health). Caddy snippet: `infra/cms/Caddyfile.cms.snippet` (owner sudo apply).
 - Smoke after proxy is live: `infra/deploy/smoke-cms.sh https://tahamohamadi.ir`.
-- **CD CMS migrate (ADR-0027 Slice 2 / RISK-0012):** not on every push. Prefer
-  Actions → **CD — Deploy to production** → Run workflow → enable `migrate_cms`,
-  set `cms_image_tag` to a GHCR `taha-cms` sha that already exists (after **CMS
-  image** workflow). That runs `cd-cms-migrate.sh` on the VPS (backup → update →
-  smoke). Manual equivalent:
+- **CD CMS migrate (ADR-0027 Slice 2):** not on every push. Ordinary `main`
+  pushes must not migrate Postgres. Leave repository variable
+  `CMS_CD_AUTO_MIGRATE` **unset** (do not enable unattended migrate).
+
+  **Owner checklist — attended CMS migrate**
+
+  1. Confirm GHCR has `ghcr.io/tahamohamadi-ir/taha-cms:<sha>` (Actions → **CMS
+     image** workflow green for that commit sha).
+  2. GitHub → Actions → **CD — Deploy to production** → **Run workflow**.
+  3. Set `migrate_cms` = `true`.
+  4. Set `cms_image_tag` to that exact GHCR sha (required; do not invent a tag).
+  5. Wait for job **CMS image migrate (gated)** to finish **success**.
+  6. In that job’s log, confirm both lines: `cd-cms-migrate PASS` and
+     `CMS smoke PASS` (`smoke-cms.sh`).
+
+  First production attended PASS: Actions
+  [32407698471](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32407698471)
+  (`cms_image_tag=2e200fe`, LOG-0179). `RISK-0012` CLOSED on that evidence.
+
+  Manual equivalent (SSH as `deploy`):
 
   ```bash
   cd /home/deploy/cms-repo
@@ -190,7 +205,11 @@ Compose caddy (TLS, ports 80/443)
   verify `content.0005`/`0006` applied, run `import_profile_seed`, then rerun CD on
   `main` (or trigger `cd.yml`) so static About builds from live `/api/profiles/*`.
   The VPS has no Node — use CD, not `rebuild-static.sh`, on the server.
-  Committed `profile.snapshot.json` remains the build fallback when the API is down.
+  **CMS origin honesty (ADR-0027 Slice 3):** production/CD builds set `CMS_API_BASE`.
+  Transport, timeout, or 5xx from that origin **fails** `npm run build` — do not ship
+  HTML that silently substitutes committed `profile.snapshot.json`. Snapshot is only
+  for local/offline builds when `CMS_API_BASE` is unset. A successful empty published
+  list must stay empty (no snapshot override).
 - Details: `infra/cms/README.md`, `docs/plan/P3-cms-versioned-cicd-task-spec.md`.
 
 ## Caddy-in-Compose cutover (ADR-0027 Slice 4 / DEFER-0031 / RISK-0013)

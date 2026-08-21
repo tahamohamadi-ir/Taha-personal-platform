@@ -7,6 +7,7 @@ Public edge exposure of ``/api/`` remains deferred (DEFER-0017); this module is
 for in-process and optional build-time ``CMS_API_BASE`` consumers only.
 """
 
+import re
 from datetime import date, datetime
 
 from ninja import Field, NinjaAPI, Schema
@@ -27,14 +28,59 @@ from apps.content.models import (
     Series,
     TopicTag,
 )
+from apps.media.models import Media
+from apps.siteconfig.models import SiteSettings
 
 api = NinjaAPI(title="Taha CMS Public API", version="0.4.0")
 _BODY_WHITELISTER = Whitelister()
+_HEX_COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 
 
 def sanitize_public_richtext(raw: str) -> str:
     """Re-sanitize rich text for public projection (same Whitelister as staff preview)."""
     return _BODY_WHITELISTER.clean(raw or "")
+
+
+class PublicDownloadOut(Schema):
+    """One current CV/resume download from the media library (active only)."""
+
+    kind: str
+    title: str
+    note: str
+    href: str
+    mime: str
+    size_bytes: int
+    updated_at: datetime | None
+
+
+class PublicSiteSettingsOut(Schema):
+    """Public site presentation used by Astro at build time.
+
+    Only ``primaryColor`` and active current-document downloads are projected.
+    Inactive media slots are omitted (private-by-default).
+    """
+
+    primaryColor: str
+    downloads: list[PublicDownloadOut] = Field(default_factory=list)
+
+
+def _public_media_href(media: Media) -> str:
+    name = (media.file.name or "").lstrip("/")
+    return f"/media/{name}"
+
+
+def _public_download(kind: str, media: Media | None) -> PublicDownloadOut | None:
+    if media is None or not media.is_active:
+        return None
+    return PublicDownloadOut(
+        kind=kind,
+        title=media.title,
+        note=(media.alt_text or "").strip(),
+        href=_public_media_href(media),
+        mime=media.mime,
+        size_bytes=media.size,
+        updated_at=media.updated_at,
+    )
 
 
 class LandingOut(Schema):
@@ -351,8 +397,13 @@ class ResearchTopicDetailOut(ResearchTopicListOut):
     research_questions: str
     methods: str
     future_directions: str
+    story: StoryDocumentOut | None = None
     projects: list[RelatedSlugOut] = Field(default_factory=list)
     publications: list[RelatedSlugOut] = Field(default_factory=list)
+
+    @staticmethod
+    def resolve_story(obj: ResearchTopic) -> dict | None:
+        return public_story_document(getattr(obj, "story", None), obj.locale)
 
     @staticmethod
     def resolve_projects(obj: ResearchTopic) -> list[RelatedSlugOut]:
@@ -379,12 +430,17 @@ class ResearchStatementOut(Schema):
     slug: str
     title: str
     body: str
+    story: StoryDocumentOut | None = None
     published_at: datetime | None
     updated_at: datetime | None
 
     @staticmethod
     def resolve_body(obj: ResearchStatement) -> str:
         return sanitize_public_richtext(str(obj.body or ""))
+
+    @staticmethod
+    def resolve_story(obj: ResearchStatement) -> dict | None:
+        return public_story_document(getattr(obj, "story", None), obj.locale)
 
 
 class ProjectListOut(Schema):
@@ -426,6 +482,7 @@ class ProjectDetailOut(ProjectListOut):
     code_url: str
     data_url: str
     demo_url: str
+    story: StoryDocumentOut | None = None
     topics: list[RelatedSlugOut] = Field(default_factory=list)
     publications: list[RelatedSlugOut] = Field(default_factory=list)
     evidence: list[EvidenceOut] = Field(default_factory=list)
@@ -434,6 +491,10 @@ class ProjectDetailOut(ProjectListOut):
     case_study: CaseStudyOut | None = None
     diagrams: list[DiagramOut] = Field(default_factory=list)
     screenshots: list[ScreenshotOut] = Field(default_factory=list)
+
+    @staticmethod
+    def resolve_story(obj: Project) -> dict | None:
+        return public_story_document(getattr(obj, "story", None), obj.locale)
 
     @staticmethod
     def resolve_code_url(obj: Project) -> str:
@@ -523,15 +584,20 @@ class ProjectDetailOut(ProjectListOut):
 
 
 def _project_detail_queryset():
-    return Project.objects.public().prefetch_related(
-        "topics",
-        "publications",
-        "evidence_items",
-        "collaborators",
-        "funding_items",
-        "diagrams",
-        "screenshots",
-        "case_study",
+    return (
+        Project.objects.public()
+        .select_related("story")
+        .prefetch_related(
+            "topics",
+            "publications",
+            "evidence_items",
+            "collaborators",
+            "funding_items",
+            "diagrams",
+            "screenshots",
+            "case_study",
+            "story__sections__blocks",
+        )
     )
 
 
@@ -592,7 +658,8 @@ def get_research_topic(request, locale: str, slug: str) -> ResearchTopic:
     topic = (
         ResearchTopic.objects.public()
         .filter(locale=locale, slug=slug)
-        .prefetch_related("projects")
+        .select_related("story")
+        .prefetch_related("projects", "story__sections__blocks")
         .first()
     )
     if topic is None:
@@ -607,7 +674,11 @@ def get_research_topic(request, locale: str, slug: str) -> ResearchTopic:
 )
 def list_research_statements(request, locale: str) -> list[ResearchStatement]:
     return list(
-        ResearchStatement.objects.public().filter(locale=locale).order_by("slug")
+        ResearchStatement.objects.public()
+        .filter(locale=locale)
+        .select_related("story")
+        .prefetch_related("story__sections__blocks")
+        .order_by("slug")
     )
 
 
@@ -618,7 +689,11 @@ def list_research_statements(request, locale: str) -> list[ResearchStatement]:
 )
 def get_research_statement(request, locale: str, slug: str) -> ResearchStatement:
     statement = (
-        ResearchStatement.objects.public().filter(locale=locale, slug=slug).first()
+        ResearchStatement.objects.public()
+        .filter(locale=locale, slug=slug)
+        .select_related("story")
+        .prefetch_related("story__sections__blocks")
+        .first()
     )
     if statement is None:
         raise HttpError(404, "research statement not found")
@@ -690,6 +765,33 @@ def list_research_publications(request, locale: str):
         .filter(locale=locale)
         .order_by("-date", "slug")
     )
+
+
+@api.get(
+    "/site",
+    response=PublicSiteSettingsOut,
+    summary="Public site settings (primaryColor + current CV/resume downloads)",
+)
+def get_public_site_settings(request) -> PublicSiteSettingsOut:
+    settings = (
+        SiteSettings.objects.select_related("current_cv_media", "current_resume_media")
+        .filter(site_key="default")
+        .first()
+    )
+    if settings is None:
+        settings = SiteSettings.get_singleton()
+    color = (settings.primary_color or "").strip()
+    if not _HEX_COLOR_RE.fullmatch(color):
+        color = "#1f2937"
+    downloads: list[PublicDownloadOut] = []
+    for kind, media in (
+        ("academic_cv", settings.current_cv_media),
+        ("industry_resume", settings.current_resume_media),
+    ):
+        item = _public_download(kind, media)
+        if item is not None:
+            downloads.append(item)
+    return PublicSiteSettingsOut(primaryColor=color, downloads=downloads)
 
 
 @api.get(

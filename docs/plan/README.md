@@ -17,7 +17,7 @@ Last reconciled: 2026-08-21.
 |---|---|---|---|
 | `cms-origin-and-full-stack-cd-task-spec.md` | IN_PROGRESS | agent + owner | ADR-0027. Slice 0–2 done (attended migrate PASS). Slice 4 Compose Caddy **in repo**; live TLS cutover = owner (`DEFER-0031` / `RISK-0013`). Next code slices: 3 / 5 on other PRs. |
 | `blog-story-composition-task-spec.md` | PARTIAL | agent | Blog story body via composition; owner migrate + static rebuild. |
-| `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | HMAC `DEFER-0027`; Playwright `DEFER-0026`; story projection shipped on `b6bea6a`. |
+| `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | HMAC `DEFER-0027`; Playwright lifecycle `DEFER-0026` CLOSED (LOG-0184); section 18 remainder `DEFER-0032`; `primaryColor`+CV `DEFER-0029` CLOSED (LOG-0185). |
 | `P0-A-stack-inventory-task-spec.md` | BLOCKED (owner) | owner | Read-only VPS inventory. Not an agent task. |
 
 Owner remaining work that is **not** a new spec: HMAC enable (`DEFER-0027`); apt/SSH (`RISK-0005`/`0006`); Compose Caddy cutover (`DEFER-0031`). CMS migrate through `0008` is **done** on production (`b6bea6a`). Do **not** set `CMS_CD_AUTO_MIGRATE`.

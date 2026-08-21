@@ -10,7 +10,16 @@ from django.utils import timezone
 
 from apps.composition.blocks import KIND_STORY, BlockValidationError, validate_block_settings
 from apps.composition.models import CompositionBlock, CompositionPage, CompositionSection
-from apps.content.models import Article, LifecycleStatus, Locale
+from apps.content.models import (
+    Article,
+    LifecycleStatus,
+    Locale,
+    Profile,
+    ProfileExperience,
+    Project,
+    ResearchStatement,
+    ResearchTopic,
+)
 from apps.media.models import Media
 
 PNG_1X1 = (
@@ -203,3 +212,169 @@ def test_public_article_story_published_only(db, media_root):
     figure = published["story"]["sections"][0]["blocks"][1]
     assert figure["settings"]["media"]["url"].endswith(image.file.name)
     assert article.slug == "story-post"
+
+
+def test_public_project_story_published_only(db, media_root):
+    draft_story = CompositionPage.objects.create(
+        key="project-draft-story",
+        kind=KIND_STORY,
+        locale="en",
+        title="Project draft story",
+        status="draft",
+    )
+    project = Project.objects.create(
+        locale=Locale.EN,
+        slug="story-project",
+        title="Story project",
+        objective="Fallback objective",
+        status=LifecycleStatus.PUBLISHED,
+        published_at=timezone.now(),
+        show_on_projects=True,
+        story=draft_story,
+    )
+    client = Client()
+    draft_json = client.get("/api/projects/en/story-project").json()
+    assert draft_json["story"] is None
+    assert draft_json["objective"] == "Fallback objective"
+
+    draft_story.status = "published"
+    draft_story.published_at = timezone.now()
+    draft_story.save()
+    section = CompositionSection.objects.create(
+        page=draft_story, position=0, layout="1col", enabled=True
+    )
+    CompositionBlock.objects.create(
+        section=section,
+        position=0,
+        block_type="text",
+        settings={"body": "<p>Project story</p>"},
+        enabled=True,
+    )
+    published = client.get("/api/projects/en/story-project").json()
+    assert published["story"] is not None
+    assert published["story"]["sections"][0]["blocks"][0]["settings"]["body"]
+    assert project.slug == "story-project"
+
+
+def test_public_research_topic_and_statement_story(db, media_root):
+    story = CompositionPage.objects.create(
+        key="topic-story",
+        kind=KIND_STORY,
+        locale="en",
+        title="Topic story",
+        status="published",
+        published_at=timezone.now(),
+    )
+    section = CompositionSection.objects.create(
+        page=story, position=0, layout="1col", enabled=True
+    )
+    CompositionBlock.objects.create(
+        section=section,
+        position=0,
+        block_type="text",
+        settings={"body": "<p>Topic body</p>"},
+        enabled=True,
+    )
+    topic = ResearchTopic.objects.create(
+        locale=Locale.EN,
+        slug="story-topic",
+        title="Story topic",
+        summary="Summary fallback",
+        status=LifecycleStatus.PUBLISHED,
+        published_at=timezone.now(),
+        story=story,
+    )
+    statement_story = CompositionPage.objects.create(
+        key="statement-story",
+        kind=KIND_STORY,
+        locale="en",
+        title="Statement story",
+        status="published",
+        published_at=timezone.now(),
+    )
+    stmt_section = CompositionSection.objects.create(
+        page=statement_story, position=0, layout="1col", enabled=True
+    )
+    CompositionBlock.objects.create(
+        section=stmt_section,
+        position=0,
+        block_type="text",
+        settings={"body": "<p>Statement story body</p>"},
+        enabled=True,
+    )
+    statement = ResearchStatement.objects.create(
+        locale=Locale.EN,
+        slug="story-statement",
+        title="Story statement",
+        body="<p>Richtext fallback</p>",
+        status=LifecycleStatus.PUBLISHED,
+        published_at=timezone.now(),
+        story=statement_story,
+    )
+    client = Client()
+    topic_json = client.get("/api/research/topics/en/story-topic").json()
+    assert topic_json["story"]["sections"][0]["blocks"][0]["blockType"] == "text"
+    statement_json = client.get("/api/research/statements/en/story-statement").json()
+    assert statement_json["story"] is not None
+    assert topic.slug == "story-topic"
+    assert statement.slug == "story-statement"
+
+
+def test_profile_experience_story_public_projection(db, media_root):
+    story = CompositionPage.objects.create(
+        key="experience-story",
+        kind=KIND_STORY,
+        locale="en",
+        title="Experience story",
+        status="published",
+        published_at=timezone.now(),
+    )
+    section = CompositionSection.objects.create(
+        page=story, position=0, layout="1col", enabled=True
+    )
+    CompositionBlock.objects.create(
+        section=section,
+        position=0,
+        block_type="text",
+        settings={"body": "<p>Experience narrative</p>"},
+        enabled=True,
+    )
+    profile = Profile.objects.create(
+        locale=Locale.EN,
+        slug="taha",
+        title="Taha",
+        short_bio="Bio",
+        availability="Open",
+        status=LifecycleStatus.PUBLISHED,
+        published_at=timezone.now(),
+    )
+    ProfileExperience.objects.create(
+        profile=profile,
+        ordering=0,
+        organization="Org",
+        role="Engineer",
+        period="2020-2024",
+        bullets=["Did things"],
+        slug="mci-backend",
+        detail_body="Fallback detail",
+        story=story,
+    )
+    client = Client()
+    payload = client.get("/api/profiles/en/taha").json()
+    experience = payload["experience"][0]
+    assert experience["storyId"] == story.pk
+    assert experience["story"]["sections"][0]["blocks"][0]["blockType"] == "text"
+
+
+def test_admin_project_story_id_field(admin_api_client):
+    schema = admin_api_client.get("/api/v1/admin/content/schema").json()
+    project_keys = {field["key"] for field in schema["entities"]["project"]["fields"]}
+    topic_keys = {
+        field["key"] for field in schema["entities"]["research-topic"]["fields"]
+    }
+    statement_keys = {
+        field["key"] for field in schema["entities"]["research-statement"]["fields"]
+    }
+    assert "storyId" in project_keys
+    assert "storyId" in topic_keys
+    assert "storyId" in statement_keys
