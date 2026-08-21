@@ -17,7 +17,7 @@ from apps.security.models import AuditLog
 
 PROFILE_PREFETCH = (
     "skills",
-    "experience_entries",
+    "experience_entries__story__sections__blocks",
     "education_entries",
     "publication_entries",
     "research_projects",
@@ -94,7 +94,10 @@ def admin_profile_detail(request, locale: str, slug: str):
         )
 
     try:
-        payload = validate_profile_payload(parse_profile_payload(request.body))
+        payload = validate_profile_payload(
+            parse_profile_payload(request.body),
+            locale=locale,
+        )
         profile = replace_profile_content(
             profile,
             payload,

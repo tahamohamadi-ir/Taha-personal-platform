@@ -397,8 +397,13 @@ class ResearchTopicDetailOut(ResearchTopicListOut):
     research_questions: str
     methods: str
     future_directions: str
+    story: StoryDocumentOut | None = None
     projects: list[RelatedSlugOut] = Field(default_factory=list)
     publications: list[RelatedSlugOut] = Field(default_factory=list)
+
+    @staticmethod
+    def resolve_story(obj: ResearchTopic) -> dict | None:
+        return public_story_document(getattr(obj, "story", None), obj.locale)
 
     @staticmethod
     def resolve_projects(obj: ResearchTopic) -> list[RelatedSlugOut]:
@@ -425,12 +430,17 @@ class ResearchStatementOut(Schema):
     slug: str
     title: str
     body: str
+    story: StoryDocumentOut | None = None
     published_at: datetime | None
     updated_at: datetime | None
 
     @staticmethod
     def resolve_body(obj: ResearchStatement) -> str:
         return sanitize_public_richtext(str(obj.body or ""))
+
+    @staticmethod
+    def resolve_story(obj: ResearchStatement) -> dict | None:
+        return public_story_document(getattr(obj, "story", None), obj.locale)
 
 
 class ProjectListOut(Schema):
@@ -472,6 +482,7 @@ class ProjectDetailOut(ProjectListOut):
     code_url: str
     data_url: str
     demo_url: str
+    story: StoryDocumentOut | None = None
     topics: list[RelatedSlugOut] = Field(default_factory=list)
     publications: list[RelatedSlugOut] = Field(default_factory=list)
     evidence: list[EvidenceOut] = Field(default_factory=list)
@@ -480,6 +491,10 @@ class ProjectDetailOut(ProjectListOut):
     case_study: CaseStudyOut | None = None
     diagrams: list[DiagramOut] = Field(default_factory=list)
     screenshots: list[ScreenshotOut] = Field(default_factory=list)
+
+    @staticmethod
+    def resolve_story(obj: Project) -> dict | None:
+        return public_story_document(getattr(obj, "story", None), obj.locale)
 
     @staticmethod
     def resolve_code_url(obj: Project) -> str:
@@ -569,15 +584,20 @@ class ProjectDetailOut(ProjectListOut):
 
 
 def _project_detail_queryset():
-    return Project.objects.public().prefetch_related(
-        "topics",
-        "publications",
-        "evidence_items",
-        "collaborators",
-        "funding_items",
-        "diagrams",
-        "screenshots",
-        "case_study",
+    return (
+        Project.objects.public()
+        .select_related("story")
+        .prefetch_related(
+            "topics",
+            "publications",
+            "evidence_items",
+            "collaborators",
+            "funding_items",
+            "diagrams",
+            "screenshots",
+            "case_study",
+            "story__sections__blocks",
+        )
     )
 
 
@@ -638,7 +658,8 @@ def get_research_topic(request, locale: str, slug: str) -> ResearchTopic:
     topic = (
         ResearchTopic.objects.public()
         .filter(locale=locale, slug=slug)
-        .prefetch_related("projects")
+        .select_related("story")
+        .prefetch_related("projects", "story__sections__blocks")
         .first()
     )
     if topic is None:
@@ -653,7 +674,11 @@ def get_research_topic(request, locale: str, slug: str) -> ResearchTopic:
 )
 def list_research_statements(request, locale: str) -> list[ResearchStatement]:
     return list(
-        ResearchStatement.objects.public().filter(locale=locale).order_by("slug")
+        ResearchStatement.objects.public()
+        .filter(locale=locale)
+        .select_related("story")
+        .prefetch_related("story__sections__blocks")
+        .order_by("slug")
     )
 
 
@@ -664,7 +689,11 @@ def list_research_statements(request, locale: str) -> list[ResearchStatement]:
 )
 def get_research_statement(request, locale: str, slug: str) -> ResearchStatement:
     statement = (
-        ResearchStatement.objects.public().filter(locale=locale, slug=slug).first()
+        ResearchStatement.objects.public()
+        .filter(locale=locale, slug=slug)
+        .select_related("story")
+        .prefetch_related("story__sections__blocks")
+        .first()
     )
     if statement is None:
         raise HttpError(404, "research statement not found")

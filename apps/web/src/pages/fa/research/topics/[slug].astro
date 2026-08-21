@@ -4,6 +4,8 @@ import Breadcrumbs from "../../../../components/blog/Breadcrumbs.astro";
 import { content } from "../../../../data/content";
 import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../../data/structured";
 import { getResearchTopic, getResearchTopics } from "../../../../lib/cms/research";
+import StoryBody from "../../../../components/StoryBody.astro";
+import { hasPublishedStory } from "../../../../lib/cms/story";
 
 export async function getStaticPaths() {
   const locale = "fa" as const;
@@ -29,6 +31,7 @@ const structured = [
 ];
 validateStructuredData(...structured);
 const alternateExists = (await getResearchTopic("en", topic.slug)) !== null;
+const topicHasStory = hasPublishedStory(topic.story);
 ---
 
 <BaseLayout
@@ -52,12 +55,20 @@ const alternateExists = (await getResearchTopic("en", topic.slug)) !== null;
     />
     {!alternateExists && <p class="missing">{research.missingTranslation}</p>}
     <h1>{topic.title}</h1>
-    {topic.summary && <p class="lead">{topic.summary}</p>}
-    {topic.motivation && <><h2>انگیزه</h2><p>{topic.motivation}</p></>}
-    {topic.problems && <><h2>مسائل</h2><p>{topic.problems}</p></>}
-    {topic.research_questions && <><h2>سؤالات پژوهشی</h2><p>{topic.research_questions}</p></>}
-    {topic.methods && <><h2>روش‌ها</h2><p>{topic.methods}</p></>}
-    {topic.future_directions && <><h2>مسیرهای آینده</h2><p>{topic.future_directions}</p></>}
+    {
+      topicHasStory && topic.story ? (
+        <StoryBody locale={locale} story={topic.story} />
+      ) : (
+        <>
+          {topic.summary && <p class="lead">{topic.summary}</p>}
+          {topic.motivation && <><h2>انگیزه</h2><p>{topic.motivation}</p></>}
+          {topic.problems && <><h2>مسائل</h2><p>{topic.problems}</p></>}
+          {topic.research_questions && <><h2>سؤالات پژوهشی</h2><p>{topic.research_questions}</p></>}
+          {topic.methods && <><h2>روش‌ها</h2><p>{topic.methods}</p></>}
+          {topic.future_directions && <><h2>مسیرهای آینده</h2><p>{topic.future_directions}</p></>}
+        </>
+      )
+    }
     <h2>{research.relatedHeading}</h2>
     <h3>{research.projectsHeading}</h3>
     {

@@ -4,6 +4,8 @@ import Breadcrumbs from "../../../../components/blog/Breadcrumbs.astro";
 import { content } from "../../../../data/content";
 import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../../data/structured";
 import { getResearchProject, getResearchProjects } from "../../../../lib/cms/research";
+import StoryBody from "../../../../components/StoryBody.astro";
+import { hasPublishedStory } from "../../../../lib/cms/story";
 
 export async function getStaticPaths() {
   const locale = "fa" as const;
@@ -29,6 +31,7 @@ const structured = [
 ];
 validateStructuredData(...structured);
 const alternateExists = (await getResearchProject("en", project.slug)) !== null;
+const projectHasStory = hasPublishedStory(project.story);
 ---
 
 <BaseLayout
@@ -60,9 +63,17 @@ const alternateExists = (await getResearchProject("en", project.slug)) !== null;
       )
     }
     <p class="meta">{project.project_type} · {research.licenseLabel}: {project.license}</p>
-    {project.objective && <p class="lead">{project.objective}</p>}
-    {project.methods_summary && <><h2>روش‌ها</h2><p>{project.methods_summary}</p></>}
-    {project.role && <><h2>نقش</h2><p>{project.role}</p></>}
+    {
+      projectHasStory && project.story ? (
+        <StoryBody locale={locale} story={project.story} />
+      ) : (
+        <>
+          {project.objective && <p class="lead">{project.objective}</p>}
+          {project.methods_summary && <><h2>روش‌ها</h2><p>{project.methods_summary}</p></>}
+          {project.role && <><h2>نقش</h2><p>{project.role}</p></>}
+        </>
+      )
+    }
     <h2>{research.availabilityLabel}</h2>
     <ul class="availability">
       <li>
