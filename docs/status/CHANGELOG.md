@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-08-20 — Featured/diagram/screenshot → Media library
+
+- `content.0009_rewire_image_fks_to_media`: content image FKs use `media.Media` (Wagtail Image bytes copied when present).
+- `MEDIA_REFERENCE_FIELDS` populated; public article/project projections expose active Media URLs.
+- Admin SPA MediaPicker for article `featuredImageId` and project diagram/screenshot FKs.
+- **Owner:** dumpdata + backup before production migrate (`RISK-0010`). Wagtail uninstall still blocked (`DEBT-0003`).
+
 ## 2026-08-20 — ADR-0027 Slice 2: first attended CD CMS migrate PASS
 
 - Actions run 32407698471: `migrate_cms=true` `cms_image_tag=2e200fe` → `cd-cms-migrate PASS` + `CMS smoke PASS`.

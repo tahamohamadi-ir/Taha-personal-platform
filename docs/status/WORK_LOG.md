@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0186 — 2026-08-20 — Featured/diagram/screenshot → Media library (DEBT-0003 step 1)
+
+- Outcome: Rewired `Article.featured_image`, `ProjectDiagram.diagram_image`, and `ProjectScreenshot.screenshot_image` from `wagtailimages.Image` to `media.Media` via additive migration `content.0009_rewire_image_fks_to_media` (temp Media FKs → copy Wagtail bytes → drop Wagtail FKs → rename). Populated `MEDIA_REFERENCE_FIELDS`. Public JSON exposes active Media URLs (`featured_image` / diagram+screenshot `image`). Admin SPA: `featuredImageId` MediaPicker on article edit; project case-media endpoints + MediaPicker for diagram/screenshot FKs. Wagtail remains installed (RichText + `/admin-wagtail/` MFA fallback).
+- Why: Prerequisite for Wagtail uninstall (`DEBT-0003`); content image FKs must leave `wagtailimages` before schema uninstall.
+- Scope / files: `apps/cms/apps/content/models.py`, `migrations/0009_rewire_image_fks_to_media.py`, `apps/media/public_urls.py`, `apps/api/api.py`, `admin_content.py`, `admin_media.py`, admin-frontend ContentEditPage + ProjectCaseMediaEditor, tests, ledgers.
+- Commands or actions actually performed: worktree `feat/featured-image-to-media-clean` from `origin/main`; implement + pytest/ruff.
+- Verification actually performed and result: `uv run ruff check apps tests` PASS; `uv run pytest -q` 324 passed; `npm run check` in `admin-frontend` PASS.
+- Deferred or risk IDs: `RISK-0010` — **owner must dumpdata + backup before production migrate `0009`**; `DEBT-0003` still OPEN (RichTextField, Wagtail apps, TOTP HTML under `/admin-wagtail/`).
+- Rollback / recovery: previous CMS image; migration reverse clears Media FKs (does not restore Wagtail Image rows).
+
 ## LOG-0179 — 2026-08-20 — ADR-0027 Slice 2: first attended CD CMS migrate PASS
 
 - Outcome: GitHub Actions CD `workflow_dispatch` `migrate_cms=true` `cms_image_tag=2e200fe` run [32407698471](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32407698471) **success**. Evidence: `backup_ok` under `/home/deploy/cms-migrate-backups/...`, recreate `cms`/`db`/`web`, migrate no-op, `CMS smoke PASS`, `cd-cms-migrate PASS`. Image remained `ghcr.io/tahamohamadi-ir/taha-cms:2e200fe`.

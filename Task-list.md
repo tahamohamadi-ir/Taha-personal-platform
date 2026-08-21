@@ -798,7 +798,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 - [x] بازنویسی فایل‌های امنیتی بدون import واگتِیل: `apps/security/views_totp.py`, `apps/security/forms.py`؛ hook های واگتِیل فقط fallback `/admin-wagtail/` می‌مانند. *(LOG-0165 — SPA `/admin/security` + `/api/v1/admin/auth/mfa/*`; Wagtail HTML هنوز fallback است)*
 - [x] لاگین/خروج/me/CSRF ادمین Django-level در Ninja (`/api/v1/admin/auth/*`) — LOG-0156. واگتِیل login هنوز برای fallback است.
 - [ ] خروجی ایمن: dumpdata روی VPS قبل از migrate (`RISK-0010`) — در این چرخه fixture تولیدی از DB زنده commit نمی‌شود.
-- [ ] حذف Wagtail از INSTALLED_APPS/uninstall — **مسدود** تا جایگزینی `RichTextField` و `wagtailimages.Image` (`DEBT-0003`).
+- [ ] حذف Wagtail از INSTALLED_APPS/uninstall — **مسدود** تا جایگزینی `RichTextField` و اثبات SPA TOTP به‌عنوان enrollment اصلی (`DEBT-0003`). Content image FKs → Media انجام شد (LOG-0186).
 - [x] به‌روزرسانی تست‌های MFA برای enrollment از SPA/Ninja در کنار مسیر `/admin-wagtail/`. *(LOG-0165 — `test_admin_mfa_api.py`)*
 
 ### Task ADM-1 — Admin foundation (real working admin)
@@ -817,7 +817,8 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 - [x] کتابخانه‌ی رسانه در ادمین: list/upload (multipart، پیشرفت)، replace با تأیید + هم‌خانواده‌ی MIME، archive با تأیید، orphan report، usage (رجیستری)، alt دو زبانه fa/en (بستن DEFER-0014). *(2026-08-18: `/api/v1/admin/media/*` + صفحه‌ی Media در SPA — LOG-0159)*
 - [x] DEFER-0014 (alt-by-locale) بسته شد: فیلدهای alt_text_fa/en + migration 0002 (additive، db_default). *(LOG-0159)*
-- [x] اتصال MediaPicker به ویرایشگر محتوای Composition (بلوک‌های media/mediaList) — DEBT-0004 بسته شد؛ featured_image های محتوا → ADM-6. *(LOG-0160)*
+- [x] اتصال MediaPicker به ویرایشگر محتوای Composition (بلوک‌های media/mediaList) — DEBT-0004 بسته شد. *(LOG-0160)*
+- [x] featured_image / diagram_image / screenshot_image → Media library + `MEDIA_REFERENCE_FIELDS` + public URLs + admin MediaPicker *(LOG-0186)*.
 
 ### Task ADM-3 — Page composition (Section/Block)
 

@@ -1,6 +1,9 @@
 /** CMS public article DTOs consumed by Astro at build time (optional CMS_API_BASE). */
 
 import { cmsFetchJson } from "./client";
+import type { StoryDocumentDto } from "./story";
+
+export type { StoryDocumentDto };
 
 export interface TopicTagDto {
   name: string;
@@ -28,23 +31,18 @@ export interface ArticleListDto {
   updated_at: string | null;
   topic_tags: TopicTagDto[];
   series: SeriesDto[];
+  featured_image?: {
+    url: string;
+    alt: string;
+    mime?: string;
+    title?: string;
+  } | null;
 }
 
 export interface ArticleDetailDto extends ArticleListDto {
   body: string;
   accessibility_notes: string;
-  story?: {
-    locale: string;
-    title: string;
-    sections: Array<{
-      layout: string;
-      ratio: string;
-      blocks: Array<{
-        blockType: string;
-        settings: Record<string, unknown>;
-      }>;
-    }>;
-  } | null;
+  story?: StoryDocumentDto | null;
 }
 
 export interface ArticleSlugRedirectDto {
