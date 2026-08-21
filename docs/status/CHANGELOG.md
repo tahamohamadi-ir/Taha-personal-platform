@@ -7,6 +7,10 @@
 - SPA `/admin/security` is primary TOTP enrollment; `/admin-wagtail/` kept (LOGIN_URL, preview, MFA HTML rollback). Wagtail stays in `INSTALLED_APPS` (`DEBT-0003` PARTIAL).
 - **Owner VPS:** dumpdata + backup (`RISK-0010`) before attended migrate for `0011` then `0012` (merge order #60→#63→#64→this); do not set `CMS_CD_AUTO_MIGRATE`. LOG-0190.
 
+## 2026-08-21 — ADR-0027 Slice 4: Compose Caddy (repo; cutover owner-gated)
+
+- Compose service `caddy` (official image, profile `edge`), `infra/caddy/Caddyfile.compose`, host-disable + rollback rehearsal, CD gate `CADDY_EDGE=compose`.
+- `DEFER-0031` / `RISK-0013` stay OPEN until owner-attended live TLS cutover. Do not enable `CMS_CD_AUTO_MIGRATE`.
 ## 2026-08-21 — Featured/diagram/screenshot → Media library
 
 - `Article.featured_image`, `ProjectDiagram.diagram_image`, `ProjectScreenshot.screenshot_image` now FK to `media.Media` (`content.0011_rewire_image_fks_to_media`, depends on `0010_entity_stories`).

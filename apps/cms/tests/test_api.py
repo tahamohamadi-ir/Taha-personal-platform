@@ -62,7 +62,6 @@ ARTICLE_LIST_FIELDS = {
     "updated_at",
     "topic_tags",
     "series",
-    "featured_image",
 }
 ARTICLE_DETAIL_FIELDS = ARTICLE_LIST_FIELDS | {"body", "accessibility_notes", "story"}
 

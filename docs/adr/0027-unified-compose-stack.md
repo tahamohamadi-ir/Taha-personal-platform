@@ -35,7 +35,7 @@ Constraints that still bind:
 
 2. **“Dynamic” means CMS origin, not request-time Node.** CI builds `taha-web` with `CMS_API_BASE` against the live published API (or a recorded empty/honest failure). Visitors get HTML files. Rebuild of `web` (CI job or later in-cluster builder) is how publish becomes public. Astro SSR / Django HTML templates are **out of the first implementation** and need a new ADR.
 
-3. **Host Caddy stays the edge until Slice 2.** Slice 1 adds `web` on loopback (for example `127.0.0.1:13080`) and points the **existing** Caddy `file_server` at that reverse_proxy **or** keeps the symlink until the owner switches one `handle`. Slice 2 mounts ACME data into Compose `caddy` and removes duplicate host Caddy. Do not cut TLS in the same change as the first `web` image.
+3. **Host Caddy stays the edge until Slice 4 (`DEFER-0031`).** Slice 1 adds `web` on loopback (for example `127.0.0.1:13080`) and points the **existing** Caddy `file_server` at that reverse_proxy **or** keeps the symlink until the owner switches one `handle`. Slice 4 mounts ACME data into Compose `caddy` (profile `edge`) and disables host Caddy for this site. Do not cut TLS in the same change as the first `web` image. (ADR text originally said “Slice 2” for the TLS move; the executable task spec numbers it Slice 4.)
 
 4. **CD must deploy CMS and web together** (sha-pinned). Auto-migrate still requires backup + smoke; first GitHub-driven migrate is owner-attended (`RISK-0012`). HMAC loopback rebuild (`DEFER-0027`) stays off until `web` rebuild no longer needs Node on the VPS.
 

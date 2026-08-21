@@ -108,10 +108,15 @@ jobs:
 
       - uses: actions/checkout@v7.0.1
         with:
-          sparse-checkout: infra/caddy
+          sparse-checkout: |
+            infra/caddy
+            infra/deploy/caddy-compose-reload.sh
           path: repo
 
-      - name: Sync Caddyfile
+      # Default: host systemd Caddy (caddy-sync). After DEFER-0031 live cutover,
+      # set repository variable CADDY_EDGE=compose so CD reloads Compose caddy.
+      - name: Sync Caddyfile (host edge)
+        if: ${{ vars.CADDY_EDGE != 'compose' }}
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
           DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
@@ -127,6 +132,37 @@ jobs:
 
           ssh $SSH_OPTS "${DEPLOY_USER}@${DEPLOY_HOST}" \
             "sudo -n /opt/taha/bin/caddy-sync.sh /tmp/Caddyfile.deploy"
+
+          rm -f ~/.ssh_deploy_key
+
+      - name: Reload Compose Caddy (edge profile)
+        if: ${{ vars.CADDY_EDGE == 'compose' }}
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ vars.DEPLOY_USER || 'deploy' }}
+        run: |
+          install -m 600 /dev/null ~/.ssh_deploy_key
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh_deploy_key
+          SSH_OPTS="-i ~/.ssh_deploy_key -o StrictHostKeyChecking=accept-new"
+
+          scp -o StrictHostKeyChecking=accept-new -i ~/.ssh_deploy_key \
+            repo/infra/caddy/Caddyfile.compose \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:/tmp/Caddyfile.compose.deploy"
+
+          ssh $SSH_OPTS "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "set -euo pipefail
+             cd /home/deploy/cms-repo
+             git pull --ff-only origin main || true
+             cp /tmp/Caddyfile.compose.deploy infra/caddy/Caddyfile.compose
+             install -m 0755 /dev/null /tmp/caddy-compose-reload.sh
+             # Prefer repo script after pull; fall back to scp'd copy if present
+             if [ -f infra/deploy/caddy-compose-reload.sh ]; then
+               bash infra/deploy/caddy-compose-reload.sh
+             else
+               echo 'error: caddy-compose-reload.sh missing after pull' >&2
+               exit 1
+             fi"
 
           rm -f ~/.ssh_deploy_key
 
