@@ -5,6 +5,11 @@
 - Full Playwright Test config in `apps/web` (retries/trace/video/html) and browser suite create→publish→public fa/en against disposable CMS fixtures.
 - CI: `playwright-lifecycle` job in `ci-cms.yml`. How to run: `apps/web/qa/e2e/README.md` (`npm run test:e2e`).
 - Pytest JSON lifecycle unchanged. Remaining §18 QA matrix → `DEFER-0032`.
+## 2026-08-20 — ADR-0027 Slice 3: CMS origin honesty
+
+- Typed CMS fetch (`unset` / `ok` / `http` / `error`); outage with `CMS_API_BASE` set fails `npm run build`.
+- `profile.snapshot.json` is local/offline only (base unset); successful empty CMS lists stay empty.
+- QA: `cms-profile-build.spec.mjs` asserts fail-build on unreachable base.
 ## 2026-08-20 — Phase 0: owner CD migrate checklist + RISK-0012 CLOSED
 
 - `DEPLOY_RUNBOOK`: numbered attended checklist (Actions → `migrate_cms=true` + GHCR `cms_image_tag` → confirm job PASS + `smoke-cms.sh` / `cd-cms-migrate PASS` in logs).
