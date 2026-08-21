@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-08-21 — OWNER_CUTOVER post-merge gates (docs)
+
+- DEPLOY_RUNBOOK § OWNER_CUTOVER: dumpdata → attended CD migrate `content.0009`–`0012` → `rebuild-web.sh` → scheduled-publish timer → optional HMAC / Caddy edge; never `CMS_CD_AUTO_MIGRATE`.
+- Evidence: no post-merge cms-migrate PASS (gated job skipped on recent CD). `RISK-0012` CLOSED (attended path); `RISK-0010` / `DEFER-0027` / `DEFER-0031` / `RISK-0013` remain OPEN. LOG-0192.
+
 ## 2026-08-21 — DEBT-0003 PARTIAL: RichText→TextField + local sanitizer
 
 - `Article.body` / `ResearchStatement.body` / `ProjectCaseStudyDetails.technical_decisions` are `TextField` (`content.0012`); HTML bytes unchanged.

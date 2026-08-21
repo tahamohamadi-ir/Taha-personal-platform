@@ -172,9 +172,10 @@ Compose caddy (TLS, ports 80/443)
   bash infra/deploy/cd-cms-migrate.sh
   ```
 
-  Unattended CD migrate only after an attended PASS and repo variable
-  `CMS_CD_AUTO_MIGRATE=true`. Rollback: `CMS_IMAGE=<previous>` + `update-cms.sh`.
-  **Do not enable `CMS_CD_AUTO_MIGRATE` from this Slice 4 work.**
+  Rollback: `CMS_IMAGE=<previous>` + `update-cms.sh`. **Keep
+  `CMS_CD_AUTO_MIGRATE` unset** (`RISK-0012` CLOSED for the attended path only;
+  do not enable unattended migrate). See § OWNER_CUTOVER for the post-merge
+  schema sequence (`content.0009`–`0012`).
 - Superuser (owner interactive only):
   `docker compose -f infra/cms/docker-compose.cms.yml exec cms python manage.py createsuperuser`
   (`python` inside the image is the venv — Django is on `PATH`).
@@ -211,6 +212,77 @@ Compose caddy (TLS, ports 80/443)
   for local/offline builds when `CMS_API_BASE` is unset. A successful empty published
   list must stay empty (no snapshot override).
 - Details: `infra/cms/README.md`, `docs/plan/P3-cms-versioned-cicd-task-spec.md`.
+
+## OWNER_CUTOVER — post-merge production gates
+
+Single ordered owner checklist after the 2026-08-20/21 merges on `main`
+(revisions/schedule, entity stories, Media rewire, RichText→TextField, HMAC
+rewire, Slice 4 Compose Caddy in repo). Agents must not invent PASS for VPS
+steps. **Never set `CMS_CD_AUTO_MIGRATE=true`.**
+
+### Evidence snapshot (checked against Actions, not assumed)
+
+| Gate | Ledger | Status | Evidence |
+|---|---|---|---|
+| Slice 2 attended CD migrate **path** | `RISK-0012` | **CLOSED** | workflow_dispatch [32407698471](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32407698471) job **CMS image migrate (gated)** success (`cms_image_tag=2e200fe`, LOG-0179 / LOG-0180). Auto-migrate stays **unset**. |
+| Production schema `content.0009`–`0012` (+ `siteconfig.0002`) | `RISK-0010` | **OPEN** | After merges #58–#67, every inspected `main` CD run left **CMS image migrate (gated)** as **skipped**. No post-merge migrate PASS. Last known live CMS schema: `content.0008` / `composition.0002` on `b6bea6a` (2026-08-19). |
+| HMAC rebuild enable | `DEFER-0027` | **OPEN** | Code targets `rebuild-web.sh`; `REBUILD_TRIGGER_ENABLED` remains False until owner smoke + enable. |
+| Compose Caddy TLS edge | `DEFER-0031` / `RISK-0013` | **OPEN** | Repo Slice 4 ready; live edge remains host systemd Caddy until owner cutover below. |
+| Scheduled-publish timer | (ops; `DEBT-0005` code CLOSED) | **OPEN** | Units in `infra/cms/taha-publish-scheduled-content.*`; no install attestation on VPS. |
+
+Suggested CMS image for the next attended migrate: GHCR sha matching `origin/main`
+HEAD after a green **CMS image** run (example: `25ffc1b` from
+[32474338980](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32474338980)).
+Confirm the tag exists in GHCR before dispatching.
+
+### Required sequence (owner)
+
+1. **dumpdata + backup** (`RISK-0010`): before any schema migrate, take a
+   content dump and confirm restic/daily backup posture. Prefer also letting
+   `cd-cms-migrate.sh` write its pre-migrate `pg_dumpall` under the deploy-writable
+   backup root.
+2. **Attended CD migrate** for `content.0009` → `0010` → `0011` → `0012` (and
+   `siteconfig.0002` if not yet applied) in one pinned image that contains the
+   full chain:
+   - Actions → **CD — Deploy to production** → **Run workflow**
+   - `migrate_cms=true`
+   - `cms_image_tag=<exact GHCR sha>` (do not invent)
+   - Confirm job **CMS image migrate (gated)** **success** and log lines
+     `cd-cms-migrate PASS` + `CMS smoke PASS`
+   - Or manual: `CMS_IMAGE=ghcr.io/tahamohamadi-ir/taha-cms:<sha>` +
+     `bash infra/deploy/cd-cms-migrate.sh` as `deploy`
+3. **Verify** inside CMS: migrations applied
+   (`content.0009`…`0012`, `siteconfig.0002` as applicable); SPA admin login +
+   smoke-cms still PASS.
+4. **`rebuild-web.sh`** so public HTML picks up new schema/projections:
+
+   ```bash
+   cd /home/deploy/cms-repo
+   git pull --ff-only origin main
+   bash infra/deploy/rebuild-web.sh
+   ```
+
+5. **Install scheduled-publish timer** (needed for `scheduled` → published):
+
+   ```bash
+   sudo install -m 755 infra/cms/publish-scheduled-content.sh /usr/local/sbin/taha-publish-scheduled-content
+   sudo install -m 644 infra/cms/taha-publish-scheduled-content.service /etc/systemd/system/
+   sudo install -m 644 infra/cms/taha-publish-scheduled-content.timer /etc/systemd/system/
+   sudo systemctl daemon-reload
+   sudo systemctl enable --now taha-publish-scheduled-content.timer
+   systemctl list-timers 'taha-publish-scheduled-content*'
+   ```
+
+6. **Optional — HMAC enable** (`DEFER-0027`): only after loopback
+   `rebuild-web.sh` smoke PASS and a rehearsal that CMS can invoke the signed
+   `/rebuild-trigger/` path. Keep trigger disabled until then.
+7. **Optional — Caddy edge cutover** (`DEFER-0031` / `RISK-0013`): follow the
+   section below; set `CADDY_EDGE=compose` only after smoke PASS.
+8. **Never enable `CMS_CD_AUTO_MIGRATE`.** Leave the variable unset; use
+   `workflow_dispatch` `migrate_cms=true` for each production schema change.
+
+Detail sections for migrate mechanics, HMAC, and Caddy cutover remain below/above;
+this section is the single post-merge order of operations.
 
 ## Caddy-in-Compose cutover (ADR-0027 Slice 4 / DEFER-0031 / RISK-0013)
 
