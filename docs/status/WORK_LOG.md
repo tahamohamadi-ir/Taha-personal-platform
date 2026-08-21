@@ -1,6 +1,7 @@
 # Work Log
 
-## LOG-0188 — 2026-08-21 — DEBT-0003: RichText→TextField + local sanitizer + retire viewsets
+## LOG-0190 — 2026-08-21 — DEBT-0003: RichText→TextField + local sanitizer + retire viewsets
+- Note: Renumbered from colliding LOG-0188 (PR #61 Playwright CI fix) to LOG-0190.
 
 - Outcome: Advanced Wagtail uninstall without removing Wagtail from `INSTALLED_APPS`/deps. Replaced remaining `RichTextField` (`Article.body`, `ResearchStatement.body`, `ProjectCaseStudyDetails.technical_decisions`) with `TextField` via additive `content.0012_richtext_to_textfield` (HTML bytes unchanged). Introduced `apps.content.html_sanitize` (BeautifulSoup allowlist; ADR-0022; no `wagtail.whitelist`). Unregistered content snippet/ModelViewSets (SPA-only CRUD). Documented SPA `/admin/security` + `/api/v1/admin/auth/mfa/*` as primary TOTP enrollment; `/admin-wagtail/` kept for LOGIN_URL, staff preview, profile HTML, and MFA HTML rollback. `DEBT-0003` → **PARTIAL** with explicit remaining blockers. Base branch: `feat/featured-image-to-media` (PR #64). Merge order: **#60 → #63 → #64 → this**.
 - Why: Close schema RichText / Whitelister / viewset blockers that prevented uninstall progress after Media rewire, without MFA lockout risk from dropping Wagtail login prematurely.
