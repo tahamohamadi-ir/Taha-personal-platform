@@ -6,7 +6,7 @@
 |---|---|---|---|---|---|
 | ADR-0027 | OPS | Slice 2 attended CD migrate **PASS** (LOG-0179); Slice 3 CMS origin honesty next | Keep `CMS_CD_AUTO_MIGRATE` unset | Project owner | LOG-0179 |
 | QA-playwright | QA | Playwright config کامل (retries/trace/video/html reporter) به‌جای spec های خام (الگوی نمونه‌ها S2) | `DEFER-0026` | Project owner | custom-admin-rebuild-fa.md §14.2 |
-| ADM-0 | ADM | Wagtail uninstall PARTIAL (`DEBT-0003`): RichText→TextField + local sanitizer + viewsets retired; SPA TOTP primary | dumpdata before `0012`; keep `/admin-wagtail/` until MFA proven; do not drop wagtail deps yet | Project owner | LOG-0188; Task-list §17 |
+| ADM-0 | ADM | Wagtail uninstall PARTIAL (`DEBT-0003`): RichText→TextField + local sanitizer + viewsets retired; SPA TOTP primary | dumpdata before `0012`; keep `/admin-wagtail/` until MFA proven; do not drop wagtail deps yet | Project owner | LOG-0190; Task-list §17 |
 | ADM-1 | ADM | Custom admin foundation + cutover | DONE (LOG-0156..0158, LOG-0163); `DEFER-0023` CLOSED | Project owner | Task-list §17 |
 | ADM-2 | ADM | Media library + alt-by-locale | DONE (LOG-0159); `DEFER-0014` CLOSED | Project owner | Task-list §17 |
 | ADM-6 | ADM | Astro wiring + rebuild trigger + E2E JSON | PARTIAL — featured→Media shipped (LOG-0187 / `0011`); HMAC `DEFER-0027`; Playwright `DEFER-0026`; primaryColor/CV `DEFER-0029`; owner dumpdata+migrate | Project owner | Task-list §17; LOG-0165; LOG-0187 |
