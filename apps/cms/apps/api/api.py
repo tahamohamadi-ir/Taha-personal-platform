@@ -28,6 +28,8 @@ from apps.content.models import (
     TopicTag,
 )
 from apps.media.public_urls import public_media_ref
+from apps.media.models import Media
+from apps.siteconfig.models import SiteSettings
 
 api = NinjaAPI(title="Taha CMS Public API", version="0.4.0")
 _BODY_WHITELISTER = Whitelister()

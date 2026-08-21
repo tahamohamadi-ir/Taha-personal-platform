@@ -1,6 +1,6 @@
 # Task Specification — Unified Compose + CMS origin + CD
 
-**Status:** `IN_PROGRESS` (ADR-0027 accepted). Slice 0–2 done in production evidence (Slice 2 attended CD migrate PASS 2026-08-20, LOG-0179). Slice 3+ separate. `RISK-0012` OPEN (auto migrate still off).
+**Status:** `IN_PROGRESS` (ADR-0027 accepted). Slice 0–2 done in production evidence (Slice 2 attended CD migrate PASS 2026-08-20, LOG-0179). Slice 3+ separate. `RISK-0012` CLOSED (attended PASS proven; leave `CMS_CD_AUTO_MIGRATE` unset).
 
 ## Task: One Compose network; CMS origin; CD updates cms and web
 
@@ -48,7 +48,7 @@ False smoke: `smoke-cms.sh` probed `/admin-wagtail/accounts/login/` (302). Real 
 
 - `infra/deploy/cd-cms-migrate.sh`: `pg_dumpall` → pin `CMS_IMAGE` → `update-cms.sh` → `smoke-cms.sh`.
 - CD job `cms-migrate` (`.github/workflows/cd.yml`): **off** on ordinary pushes. Owner runs Actions → CD → **Run workflow** → `migrate_cms=true` (optional `cms_image_tag`). Unattended later only if repo var `CMS_CD_AUTO_MIGRATE=true` (skips when GHCR tag missing).
-- First attended production CD migrate **PASS** 2026-08-20 (`2e200fe`, Actions 32407698471). `RISK-0012` OPEN until owner enables auto. HMAC still off (`DEFER-0027`).
+- First attended production CD migrate **PASS** 2026-08-20 (`2e200fe`, Actions 32407698471). `RISK-0012` CLOSED on that evidence. Leave `CMS_CD_AUTO_MIGRATE` unset. HMAC still off (`DEFER-0027`).
 
 ### Slice 3 — CMS origin honesty
 
@@ -87,7 +87,8 @@ False smoke: `smoke-cms.sh` probed `/admin-wagtail/accounts/login/` (302). Real 
 
 ## Handoff
 
-- Slice 2 attended CD migrate is **PASS** (LOG-0179, Actions [32407698471](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32407698471)). Do **not** set `CMS_CD_AUTO_MIGRATE=true` unless owner accepts unattended migrate (`RISK-0012` still OPEN).
+- Slice 2 attended CD migrate is **PASS** (LOG-0179, Actions [32407698471](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32407698471)). `RISK-0012` CLOSED. Do **not** set `CMS_CD_AUTO_MIGRATE=true`.
+- Owner checklist for future bumps: `docs/governance/DEPLOY_RUNBOOK.md` (attended CD CMS migrate).
 - Next agent starts Slice 3 (CMS origin honesty) from this spec.
 - After admin publish: `bash infra/deploy/rebuild-web.sh`.
 - Future CMS image bumps: Actions → CD → Run workflow → `migrate_cms=true` + `cms_image_tag=<sha>` after **CMS image** workflow publishes the tag.

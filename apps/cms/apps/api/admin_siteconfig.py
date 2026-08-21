@@ -28,6 +28,7 @@ from apps.api.admin_common import (
 )
 from apps.api.admin_content import ENTITY_MODELS
 from apps.content.models import Article, TopicTag
+from apps.media.models import Media
 from apps.siteconfig.models import FeaturedItem, SiteSettings
 
 siteconfig_router = Router()
@@ -40,6 +41,8 @@ SLUG_RE = re.compile(r"^[a-z0-9-]+$")
 HREF_RE = re.compile(r"^(https?://[^\s]+|/(?!/)[^\s]*)$")
 NAV_HREF_MAX = 500
 NAV_LINKS_MAX = 20
+# CV/Resume current documents must be PDFs from the media library (§14 F5).
+CV_DOCUMENT_MIME = "application/pdf"
 
 # TopicTag model bounds (model max_length wins over any larger spec default).
 TAG_NAME_MAX = 100
@@ -147,6 +150,18 @@ class NavLinkOut(Schema):
     locale: str
 
 
+class CurrentDocumentOut(Schema):
+    """Admin projection of one current CV/resume media slot."""
+
+    id: int
+    title: str
+    mime: str
+    size: int
+    isActive: bool
+    url: str
+    updatedAt: datetime
+
+
 class SiteSettingsOut(Schema):
     """Site settings projection (camelCase)."""
 
@@ -157,11 +172,19 @@ class SiteSettingsOut(Schema):
     navLinks: list[NavLinkOut]
     seoDefaultTitle: str
     seoDefaultDescription: str
+    currentCvMediaId: int | None
+    currentResumeMediaId: int | None
+    currentCv: CurrentDocumentOut | None
+    currentResume: CurrentDocumentOut | None
     updatedAt: datetime
 
 
 class SiteSettingsUpdateIn(Schema):
-    """Optimistically-locked partial settings update (None = unchanged)."""
+    """Optimistically-locked partial settings update (unset = unchanged).
+
+    ``currentCvMediaId`` / ``currentResumeMediaId``: omit to leave unchanged;
+    send ``null`` to clear; send a positive media id to set (must be PDF).
+    """
 
     brandName: str | None = None
     tagline: str | None = None
@@ -170,6 +193,8 @@ class SiteSettingsUpdateIn(Schema):
     navLinks: list[dict] | None = None
     seoDefaultTitle: str | None = None
     seoDefaultDescription: str | None = None
+    currentCvMediaId: int | None = None
+    currentResumeMediaId: int | None = None
 
 
 class TagOut(Schema):
@@ -260,7 +285,60 @@ class OkOut(Schema):
     ok: bool
 
 
+def _media_public_path(media: Media) -> str:
+    """Relative public URL for an active media file (``/media/<stored-name>``)."""
+    name = (media.file.name or "").lstrip("/")
+    return f"/media/{name}"
+
+
+def _serialize_current_document(media: Media | None) -> CurrentDocumentOut | None:
+    if media is None:
+        return None
+    return CurrentDocumentOut(
+        id=media.pk,
+        title=media.title,
+        mime=media.mime,
+        size=media.size,
+        isActive=media.is_active,
+        url=_media_public_path(media),
+        updatedAt=media.updated_at,
+    )
+
+
+def _resolve_cv_media(media_id: int | None, field: str) -> Media | None:
+    """Resolve a current-document media id; ``None`` clears the slot."""
+    if media_id is None:
+        return None
+    if not isinstance(media_id, int) or media_id < 1:
+        raise AdminError(
+            400,
+            "VALIDATION",
+            f"{field} must be a positive media id or null.",
+            fields={field: [f"{field} must be a positive media id or null."]},
+        )
+    media = Media.objects.filter(pk=media_id).first()
+    if media is None:
+        raise AdminError(
+            400,
+            "VALIDATION",
+            f"{field} media not found.",
+            fields={field: [f"{field} media not found."]},
+        )
+    if media.mime != CV_DOCUMENT_MIME:
+        raise AdminError(
+            400,
+            "VALIDATION",
+            f"{field} must reference an application/pdf media row.",
+            fields={
+                field: [f"{field} must reference an application/pdf media row."]
+            },
+        )
+    return media
+
+
 def _serialize_site_settings(item: SiteSettings) -> SiteSettingsOut:
+    cv = item.current_cv_media
+    resume = item.current_resume_media
     return SiteSettingsOut(
         brandName=item.brand_name,
         tagline=item.tagline,
@@ -269,6 +347,10 @@ def _serialize_site_settings(item: SiteSettings) -> SiteSettingsOut:
         navLinks=[NavLinkOut(**link) for link in item.nav_links],
         seoDefaultTitle=item.seo_default_title,
         seoDefaultDescription=item.seo_default_description,
+        currentCvMediaId=cv.pk if cv is not None else None,
+        currentResumeMediaId=resume.pk if resume is not None else None,
+        currentCv=_serialize_current_document(cv),
+        currentResume=_serialize_current_document(resume),
         updatedAt=item.updated_at,
     )
 
@@ -462,7 +544,12 @@ def _serialize_featured(item: FeaturedItem) -> FeaturedItemOut:
 @siteconfig_router.get("/site", response=SiteSettingsOut, summary="Get site settings.")
 def site_settings_get(request):
     _require_admin_otp(request)
-    return _serialize_site_settings(SiteSettings.get_singleton())
+    item = SiteSettings.objects.select_related(
+        "current_cv_media", "current_resume_media"
+    ).first()
+    if item is None:
+        item = SiteSettings.get_singleton()
+    return _serialize_site_settings(item)
 
 
 @siteconfig_router.put(
@@ -473,8 +560,18 @@ def site_settings_get(request):
 def site_settings_put(request, payload: SiteSettingsUpdateIn):
     _require_admin_otp(request)
     _check_csrf(request)
+    # Distinguish omitted fields from explicit null (clear CV/resume slots).
+    provided = (
+        payload.model_dump(exclude_unset=True)
+        if hasattr(payload, "model_dump")
+        else payload.dict(exclude_unset=True)
+    )
     with transaction.atomic():
-        item = SiteSettings.objects.select_for_update().first()
+        item = (
+            SiteSettings.objects.select_for_update()
+            .select_related("current_cv_media", "current_resume_media")
+            .first()
+        )
         if item is None:
             item = SiteSettings.objects.create()
         if not _if_match_matches(request.headers.get("If-Match"), item):
@@ -548,7 +645,20 @@ def site_settings_put(request, payload: SiteSettingsUpdateIn):
                     },
                 )
             item.seo_default_description = seo_description
+        if "currentCvMediaId" in provided:
+            item.current_cv_media = _resolve_cv_media(
+                provided["currentCvMediaId"], "currentCvMediaId"
+            )
+        if "currentResumeMediaId" in provided:
+            item.current_resume_media = _resolve_cv_media(
+                provided["currentResumeMediaId"], "currentResumeMediaId"
+            )
         item.save()
+    item = (
+        SiteSettings.objects.select_related("current_cv_media", "current_resume_media")
+        .filter(pk=item.pk)
+        .first()
+    )
     return _serialize_site_settings(item)
 
 

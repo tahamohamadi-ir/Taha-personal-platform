@@ -7,7 +7,7 @@ Rule:
 Execute a spec only if it appears under **Active** below.
 Everything under **Archived** is history. Read it for context; never execute it.
 
-Last reconciled: 2026-08-19.
+Last reconciled: 2026-08-20.
 
 ---
 
@@ -20,7 +20,7 @@ Last reconciled: 2026-08-19.
 | `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | Featured/diagram/screenshot → Media (`content.0011`, LOG-0187); HMAC `DEFER-0027`; Playwright `DEFER-0026`; story projection on `b6bea6a`. |
 | `P0-A-stack-inventory-task-spec.md` | BLOCKED (owner) | owner | Read-only VPS inventory. Not an agent task. |
 
-Owner remaining work that is **not** a new spec: HMAC enable (`DEFER-0027`); apt/SSH (`RISK-0005`/`0006`). CMS migrate through `0008` is **done** on production (`b6bea6a`).
+Owner remaining work that is **not** a new spec: future CMS bumps via attended CD checklist (`DEPLOY_RUNBOOK`); HMAC enable (`DEFER-0027`); apt/SSH (`RISK-0005`/`0006`). Do **not** set `CMS_CD_AUTO_MIGRATE=true`. CMS migrate through `0008` is **done** on production (`b6bea6a`; CD path proven on `2e200fe`).
 
 ## 2. Queued — do not start yet
 
