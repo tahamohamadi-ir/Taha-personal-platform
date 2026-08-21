@@ -817,7 +817,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 - [x] کتابخانه‌ی رسانه در ادمین: list/upload (multipart، پیشرفت)، replace با تأیید + هم‌خانواده‌ی MIME، archive با تأیید، orphan report، usage (رجیستری)، alt دو زبانه fa/en (بستن DEFER-0014). *(2026-08-18: `/api/v1/admin/media/*` + صفحه‌ی Media در SPA — LOG-0159)*
 - [x] DEFER-0014 (alt-by-locale) بسته شد: فیلدهای alt_text_fa/en + migration 0002 (additive، db_default). *(LOG-0159)*
-- [x] اتصال MediaPicker به ویرایشگر محتوای Composition (بلوک‌های media/mediaList) — DEBT-0004 بسته شد؛ featured_image های محتوا → ADM-6. *(LOG-0160)*
+- [x] اتصال MediaPicker به ویرایشگر محتوای Composition (بلوک‌های media/mediaList) — DEBT-0004 بسته شد؛ featured_image / diagram / screenshot → Media (`content.0011`, LOG-0187). *(LOG-0160, LOG-0187)*
 
 ### Task ADM-3 — Page composition (Section/Block)
 
@@ -845,7 +845,8 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 - [x] E2E: lifecycle JSON (create→edit→publish→public fa/en) + anonymous published-only. *(LOG-0165 — `test_content_lifecycle_e2e.py`)*
 - [x] Playwright browser lifecycle create→publish→public fa/en + full config (retries/trace/video/html). *(LOG-0184 — `qa/e2e/content-lifecycle.spec.ts`; `DEFER-0026` CLOSED)*
 - [x] Blog story composition → Astro (`StoryBody` + article fallback). *(LOG-0167; spec `blog-story-composition-task-spec.md`; `DEFER-0028` CLOSED)* Production migrate/rebuild is owner.
-- [ ] QA کامل: RTL/LTR، keyboard، noindex/cache policy، bulk destructive با count+confirm+audit، release checklist §18. *(DEFER-0032)*
+- [x] Content image FKs (featured / diagram / screenshot) → Media library + public projection + admin MediaPicker. *(LOG-0187; `content.0011_rewire_image_fks_to_media`; owner dumpdata per `RISK-0010`; do not enable `CMS_CD_AUTO_MIGRATE`)*
+- [ ] QA کامل: RTL/LTR، keyboard، noindex/cache policy، bulk destructive با count+confirm+audit، release checklist §18. *(DEFER-0026)*
 
 ---
 

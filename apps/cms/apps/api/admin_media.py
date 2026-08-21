@@ -6,8 +6,9 @@ upload, ``GET /orphans`` (rows with zero usage references), ``GET /{id}``
 detail and ``PUT /{id}`` optimistically-locked update (``If-Match``). Unsafe
 methods additionally enforce the same-origin CSRF baseline.
 
-The orphan/usage registry (``MEDIA_REFERENCE_FIELDS``) includes site-settings
-CV/resume current-document slots; composition/featured_image rewires add more.
+Content image FKs (featured / diagram / screenshot) register in
+``MEDIA_REFERENCE_FIELDS`` so orphan counting reflects Media-library usage.
+Composition block JSON ``mediaId`` / ``mediaIds`` remain outside this FK registry.
 """
 
 from __future__ import annotations
@@ -24,19 +25,19 @@ from ninja.files import UploadedFile
 from apps.api.admin_common import (
     AdminError,
     _check_csrf,
+    _parse_positive_int,
     _require_admin_otp,
 )
-from apps.api.admin_content import _parse_positive_int
 from apps.media.models import Media
 from apps.media.sniff import mime_family, sniff_mime
 
 media_router = Router()
 
-# ("app.Model", "field") pairs referencing a Media row — site settings CV/resume
-# slots plus future composition/featured_image rewires.
+# ("app.Model", "field") pairs referencing a Media row via Django FK.
 MEDIA_REFERENCE_FIELDS: list[tuple[str, str]] = [
-    ("siteconfig.SiteSettings", "current_cv_media"),
-    ("siteconfig.SiteSettings", "current_resume_media"),
+    ("content.Article", "featured_image"),
+    ("content.ProjectDiagram", "diagram_image"),
+    ("content.ProjectScreenshot", "screenshot_image"),
 ]
 
 

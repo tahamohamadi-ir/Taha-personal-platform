@@ -21,9 +21,9 @@ from ninja import Field, Router, Schema
 from apps.api.admin_common import (
     AdminError,
     _check_csrf,
+    _parse_positive_int,
     _require_admin_otp,
 )
-from apps.api.admin_content import _parse_positive_int
 from apps.composition.blocks import (
     KIND_LANDING,
     SECTION_LAYOUT_RATIOS,

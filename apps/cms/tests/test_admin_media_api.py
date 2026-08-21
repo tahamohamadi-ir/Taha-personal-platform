@@ -2,8 +2,7 @@
 
 Covers the /api/v1/admin/media contract: OTP guard, multipart upload (accept /
 reject / missing file), list filters + pagination, optimistically-locked update
-(If-Match), orphan listing (usage registry includes site-settings CV slots) and
-detail 404.
+(If-Match), orphan listing (rows with zero FK usage) and detail 404.
 """
 
 import json

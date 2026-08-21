@@ -9,6 +9,21 @@
 - Verification actually performed and result: `docker compose … config` PASS for default and `--profile edge` (temporary `.env` from example, removed); `bash -n infra/deploy/caddy-compose-reload.sh` PASS. No VPS TLS move.
 - Deferred or risk IDs: `DEFER-0031` OPEN (owner cutover); `RISK-0013` OPEN; `RISK-0012` unchanged (auto migrate off).
 - Rollback / recovery: leave host Caddy as edge; do not set `CADDY_EDGE`; do not `--profile edge up -d caddy` on production until owner window.
+## LOG-0187 — 2026-08-21 — Featured/diagram/screenshot FKs → Media library
+
+- Outcome: Rewired `Article.featured_image`, `ProjectDiagram.diagram_image`, and `ProjectScreenshot.screenshot_image` from `wagtailimages.Image` to `media.Media`. Additive data-copy migration `content.0011_rewire_image_fks_to_media` depends on `content.0010_entity_stories` (branch rebased onto `feat/slice-5-entity-stories` / PR #63). Public article/project projections expose active Media URLs only; admin schema type `media` + MediaPicker on article featured image; project case-media assign endpoints; `MEDIA_REFERENCE_FIELDS` registers the three FKs for orphan/usage counting. Wagtail remains installed (`DEBT-0003` — RichText + `/admin-wagtail/`).
+- Why: Close Media-library rewire for content image FKs without uninstalling Wagtail; unblock accurate orphan counting.
+- Scope / files: `apps/cms/apps/content/models.py` + migration `0011_*`, `apps/media/public_urls.py`, `apps/api/api.py`, `admin_content.py`, `admin_media.py`, admin SPA MediaPicker wiring, `apps/web` article DTO, tests, ledgers.
+- Commands or actions actually performed: rebase onto `origin/feat/slice-5-entity-stories`; rename colliding WIP `0009_rewire_*` → `0011_rewire_*`; move `_parse_positive_int` to `admin_common` (break circular import); pytest + ruff.
+- Verification actually performed and result:
+  - `uv run ruff check apps/content apps/media apps/api tests/test_media_image_rewire.py tests/test_admin_media_api.py tests/test_admin_workflow_api.py` — All checks passed
+  - `uv run pytest -q tests/test_media_image_rewire.py tests/test_admin_media_api.py tests/test_admin_workflow_api.py` — 43 passed
+  - `uv run python manage.py makemigrations --check --dry-run` — No changes detected
+  - `npx tsc -b --noEmit` in `apps/cms/admin-frontend` — PASS
+  - `uv run pytest -q tests/test_public_media.py tests/test_media.py` — 31 passed
+- Deferred or risk IDs: `RISK-0010` — owner must `dumpdata` + backup before applying `0011` on production; do **not** enable `CMS_CD_AUTO_MIGRATE`. Depends on PR #63 (`0010`) merge/order. `DEBT-0003` remains OPEN (RichText/Wagtail).
+- Rollback / recovery: revert PR / previous CMS image; reverse migration clears Media FKs (Wagtail Image bytes are not reconstructed).
+
 ## LOG-0188 — 2026-08-21 — Fix PR #61 web + Playwright CI failures
 
 - Outcome: Fixed CI on `feat/adm6-playwright-lifecycle` (PR #61). Web job failed `astro check` on Playwright Node files (`process`/`Buffer`/`node:*` without `@types/node`). Playwright job failed `seed_e2e_fixtures` with `no such table: users` because workflow-level `DJANGO_SETTINGS_MODULE=config.settings.test` (`:memory:`) was inherited by migrate+seed across separate processes.

@@ -10,7 +10,7 @@ Unsafe methods additionally enforce the same-origin CSRF baseline.
 from __future__ import annotations
 
 import re
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 
 from django.db import IntegrityError, models, transaction
 from django.db.models import Q
@@ -22,6 +22,7 @@ from apps.api.admin_common import (
     AdminError,
     _check_csrf,
     _client_ip,
+    _parse_positive_int,
     _require_admin_otp,
 )
 from apps.content.models import (
@@ -69,18 +70,6 @@ TRANSITION_REASON_MAX = 500
 _SKIP = object()
 
 
-def _parse_positive_int(request, name: str, raw: str | None, default: int, max_value: int) -> int:
-    """Parse an integer query param; invalid/out-of-range returns 400 VALIDATION."""
-    if raw is None or raw == "":
-        return default
-    try:
-        value = int(raw)
-    except (TypeError, ValueError):
-        raise AdminError(400, "VALIDATION", f"Invalid {name}.") from None
-    if value < 1 or value > max_value:
-        raise AdminError(400, "VALIDATION", f"{name} must be between 1 and {max_value}.")
-    return value
-
 DETAIL_FIELD_MAPS: dict[str, dict[str, str]] = {
     "landing": {
         "body": "body",
@@ -102,6 +91,7 @@ DETAIL_FIELD_MAPS: dict[str, dict[str, str]] = {
         "license": "license",
         "reading_time_minutes": "readingTimeMinutes",
         "accessibility_notes": "accessibilityNotes",
+        "featured_image": "featuredImageId",
         "story": "storyId",
     },
     "research-topic": {
@@ -171,6 +161,9 @@ def _field_type(field) -> str:
     if isinstance(field, models.BooleanField):
         return "boolean"
     if isinstance(field, models.ForeignKey):
+        related = field.related_model
+        if related is not None and getattr(related._meta, "label", "") == "media.Media":
+            return "media"
         return "number"
     if isinstance(field, models.DateField):
         return "date"
@@ -243,6 +236,15 @@ def _coerce_field_value(field, attr: str, key: str, value) -> object:
                     400,
                     "VALIDATION",
                     "storyId must reference a story composition.",
+                    fields={"fields": [key]},
+                )
+        if attr in {"featured_image", "diagram_image", "screenshot_image"}:
+            mime = getattr(related, "mime", "") or ""
+            if mime and not str(mime).startswith("image/"):
+                raise AdminError(
+                    400,
+                    "VALIDATION",
+                    f"{key} must reference an image Media row.",
                     fields={"fields": [key]},
                 )
         return related
@@ -891,6 +893,173 @@ def content_revisions_restore(request, entity: str, id: int, revision_id: int):
     except ValueError as exc:
         raise AdminError(400, "VALIDATION", str(exc)) from None
     return _detail_response(item, model, entity)
+
+
+class ProjectDiagramOut(Schema):
+    """Admin projection of a project diagram row."""
+
+    id: int
+    title: str
+    version: str
+    diagramDate: date
+    altText: str
+    longDescription: str
+    visibility: str
+    diagramImageId: int | None
+
+
+class ProjectScreenshotOut(Schema):
+    """Admin projection of a project screenshot row."""
+
+    id: int
+    caption: str
+    altText: str
+    externalUrl: str
+    visibility: str
+    screenshotImageId: int | None
+
+
+class ProjectCaseMediaOut(Schema):
+    """Nested diagram + screenshot rows for a project (Media library FKs)."""
+
+    projectId: int
+    diagrams: list[ProjectDiagramOut]
+    screenshots: list[ProjectScreenshotOut]
+
+
+class ProjectDiagramImageIn(Schema):
+    """Assign or clear a diagram Media FK."""
+
+    diagramImageId: int | None = None
+
+
+class ProjectScreenshotImageIn(Schema):
+    """Assign or clear a screenshot Media FK."""
+
+    screenshotImageId: int | None = None
+
+
+def _require_project(project_id: int) -> Project:
+    project = Project.objects.filter(pk=project_id).first()
+    if project is None:
+        raise AdminError(404, "NOT_FOUND", "Project not found.")
+    return project
+
+
+def _serialize_diagram(row) -> ProjectDiagramOut:
+    return ProjectDiagramOut(
+        id=row.pk,
+        title=row.title,
+        version=row.version,
+        diagramDate=row.diagram_date,
+        altText=row.alt_text,
+        longDescription=row.long_description,
+        visibility=row.visibility,
+        diagramImageId=row.diagram_image_id,
+    )
+
+
+def _serialize_screenshot(row) -> ProjectScreenshotOut:
+    return ProjectScreenshotOut(
+        id=row.pk,
+        caption=row.caption,
+        altText=row.alt_text,
+        externalUrl=row.external_url,
+        visibility=row.visibility,
+        screenshotImageId=row.screenshot_image_id,
+    )
+
+
+def _resolve_image_media(media_id: int | None, key: str):
+    """Resolve a Media pk for diagram/screenshot assignment (image MIME only)."""
+    if media_id is None:
+        return None
+    from apps.media.models import Media
+
+    media = Media.objects.filter(pk=media_id).first()
+    if media is None:
+        raise AdminError(
+            400,
+            "VALIDATION",
+            f"Invalid reference for '{key}'.",
+            fields={key: ["not found"]},
+        )
+    mime = media.mime or ""
+    if mime and not mime.startswith("image/"):
+        raise AdminError(
+            400,
+            "VALIDATION",
+            f"{key} must reference an image Media row.",
+            fields={key: ["not an image"]},
+        )
+    return media
+
+
+@content_router.get(
+    "/project/{id}/case-media",
+    response=ProjectCaseMediaOut,
+    summary="List project diagrams and screenshots (Media FKs).",
+)
+def project_case_media_list(request, id: int):
+    _require_admin_otp(request)
+    project = _require_project(id)
+    diagrams = [
+        _serialize_diagram(row)
+        for row in project.diagrams.select_related("diagram_image").order_by("id")
+    ]
+    screenshots = [
+        _serialize_screenshot(row)
+        for row in project.screenshots.select_related("screenshot_image").order_by("id")
+    ]
+    return ProjectCaseMediaOut(
+        projectId=project.pk,
+        diagrams=diagrams,
+        screenshots=screenshots,
+    )
+
+
+@content_router.put(
+    "/project/{id}/diagrams/{diagram_id}",
+    response=ProjectDiagramOut,
+    summary="Set diagram Media FK.",
+)
+def project_diagram_set_image(
+    request, id: int, diagram_id: int, payload: ProjectDiagramImageIn
+):
+    _require_admin_otp(request)
+    _check_csrf(request)
+    project = _require_project(id)
+    from apps.content.models import ProjectDiagram
+
+    row = ProjectDiagram.objects.filter(pk=diagram_id, project=project).first()
+    if row is None:
+        raise AdminError(404, "NOT_FOUND", "Diagram not found.")
+    row.diagram_image = _resolve_image_media(payload.diagramImageId, "diagramImageId")
+    row.save(update_fields=["diagram_image"])
+    return _serialize_diagram(row)
+
+
+@content_router.put(
+    "/project/{id}/screenshots/{screenshot_id}",
+    response=ProjectScreenshotOut,
+    summary="Set screenshot Media FK.",
+)
+def project_screenshot_set_image(
+    request, id: int, screenshot_id: int, payload: ProjectScreenshotImageIn
+):
+    _require_admin_otp(request)
+    _check_csrf(request)
+    project = _require_project(id)
+    from apps.content.models import ProjectScreenshot
+
+    row = ProjectScreenshot.objects.filter(pk=screenshot_id, project=project).first()
+    if row is None:
+        raise AdminError(404, "NOT_FOUND", "Screenshot not found.")
+    row.screenshot_image = _resolve_image_media(
+        payload.screenshotImageId, "screenshotImageId"
+    )
+    row.save(update_fields=["screenshot_image"])
+    return _serialize_screenshot(row)
 
 
 from apps.api.admin_api import admin_api  # noqa: E402
