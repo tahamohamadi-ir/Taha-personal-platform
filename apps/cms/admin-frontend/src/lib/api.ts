@@ -758,6 +758,16 @@ export interface NavLink {
   locale: ContentLocale;
 }
 
+export interface CurrentDocument {
+  id: number;
+  title: string;
+  mime: string;
+  size: number;
+  isActive: boolean;
+  url: string;
+  updatedAt: string;
+}
+
 export interface SiteSettings {
   brandName: string;
   tagline: string;
@@ -766,6 +776,10 @@ export interface SiteSettings {
   navLinks: NavLink[];
   seoDefaultTitle: string;
   seoDefaultDescription: string;
+  currentCvMediaId: number | null;
+  currentResumeMediaId: number | null;
+  currentCv: CurrentDocument | null;
+  currentResume: CurrentDocument | null;
   updatedAt: string;
 }
 
@@ -777,6 +791,8 @@ export interface SiteSettingsUpdatePayload {
   navLinks?: NavLink[];
   seoDefaultTitle?: string;
   seoDefaultDescription?: string;
+  currentCvMediaId?: number | null;
+  currentResumeMediaId?: number | null;
 }
 
 export interface TagItem {
