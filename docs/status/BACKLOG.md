@@ -4,7 +4,7 @@
 
 | ID | Phase | Item | Blocked by / prerequisite | Owner | Evidence |
 |---|---|---|---|---|---|
-| ADR-0027 | OPS | Slice 2 attended CD migrate **PASS**; `RISK-0012` CLOSED (LOG-0180); Slice 3 CMS origin honesty next | Keep `CMS_CD_AUTO_MIGRATE` unset; use attended checklist in DEPLOY_RUNBOOK | Project owner / agent | LOG-0179; LOG-0180 |
+| ADR-0027 | OPS | Slice 3 CMS origin honesty in-repo (LOG-0182); next Slice 4/5 after merge | Keep `CMS_CD_AUTO_MIGRATE` unset | Project owner | LOG-0179; LOG-0182 |
 | QA-playwright | QA | Playwright config کامل (retries/trace/video/html reporter) به‌جای spec های خام (الگوی نمونه‌ها S2) | `DEFER-0026` | Project owner | custom-admin-rebuild-fa.md §14.2 |
 | ADM-0 | ADM | Wagtail schema uninstall remainder (`DEBT-0003`); SPA TOTP shipped | dumpdata + backup before migrate; prove SPA enrollment on new image | Project owner | Task-list §17; LOG-0165 |
 | ADM-1 | ADM | Custom admin foundation + cutover | DONE (LOG-0156..0158, LOG-0163); `DEFER-0023` CLOSED | Project owner | Task-list §17 |

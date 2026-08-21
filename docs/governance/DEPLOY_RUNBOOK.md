@@ -193,5 +193,9 @@ Caddy (TLS)
   verify `content.0005`/`0006` applied, run `import_profile_seed`, then rerun CD on
   `main` (or trigger `cd.yml`) so static About builds from live `/api/profiles/*`.
   The VPS has no Node — use CD, not `rebuild-static.sh`, on the server.
-  Committed `profile.snapshot.json` remains the build fallback when the API is down.
+  **CMS origin honesty (ADR-0027 Slice 3):** production/CD builds set `CMS_API_BASE`.
+  Transport, timeout, or 5xx from that origin **fails** `npm run build` — do not ship
+  HTML that silently substitutes committed `profile.snapshot.json`. Snapshot is only
+  for local/offline builds when `CMS_API_BASE` is unset. A successful empty published
+  list must stay empty (no snapshot override).
 - Details: `infra/cms/README.md`, `docs/plan/P3-cms-versioned-cicd-task-spec.md`.
