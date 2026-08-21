@@ -842,7 +842,8 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 ### Task ADM-6 — Frontend wiring + verification
 
 - [x] Astro: fetch داده‌های منتشرشده هنگام build + اجرای rebuild-trigger پس از انتشار (loopback، بدون افشای `/api/v1/admin/*`). *(LOG-0165 — HMAC default off; `invoke_static_rebuild` mocked in tests; production enable `DEFER-0027`)*
-- [x] E2E: lifecycle JSON (create→edit→publish→public fa/en) + anonymous published-only. *(LOG-0165 — `test_content_lifecycle_e2e.py`)* Playwright browser matrix → `DEFER-0026`.
+- [x] E2E: lifecycle JSON (create→edit→publish→public fa/en) + anonymous published-only. *(LOG-0165 — `test_content_lifecycle_e2e.py`)*
+- [x] Playwright browser lifecycle create→publish→public fa/en + full config (retries/trace/video/html). *(LOG-0184 — `qa/e2e/content-lifecycle.spec.ts`; `DEFER-0026` CLOSED)*
 - [x] Blog story composition → Astro (`StoryBody` + article fallback). *(LOG-0167; spec `blog-story-composition-task-spec.md`; `DEFER-0028` CLOSED)* Production migrate/rebuild is owner.
 - [x] Content image FKs (featured / diagram / screenshot) → Media library + public projection + admin MediaPicker. *(LOG-0187; `content.0011_rewire_image_fks_to_media`; owner dumpdata per `RISK-0010`; do not enable `CMS_CD_AUTO_MIGRATE`)*
 - [ ] QA کامل: RTL/LTR، keyboard، noindex/cache policy، bulk destructive با count+confirm+audit، release checklist §18. *(DEFER-0026)*
@@ -863,8 +864,8 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 - [ ] deferred/riskها ID، owner، target، mitigation و evidence دارند.
 - [ ] production deploy approval و post-deploy smoke وجود دارد.
 - [ ] Release DoD از Completion DoD جدا گزارش شده است.
-- [ ] Playwright config کامل (retries/trace/video/html reporter) به‌جای spec های خام نگهداری شود. *(§14 S2)*
-- [ ] manual-test checklists (keyboard-nav، responsive، rtl-ltr، reduced-motion، accessibility، performance) در scope اثر slice اجرا شوند. *(§14 S6)*
+- [x] Playwright config کامل (retries/trace/video/html reporter) به‌جای spec های خام نگهداری شود. *(§14 S2; LOG-0184 — raw `qa/*.spec.mjs` smoke kept; lifecycle uses `@playwright/test`)*
+- [ ] manual-test checklists (keyboard-nav، responsive، rtl-ltr، reduced-motion، accessibility، performance) در scope اثر slice اجرا شوند. *(§14 S6; DEFER-0032)*
 
 ---
 

@@ -23,8 +23,8 @@
 - Non-goals:
   - Opening `/rebuild-trigger/` on public Caddy.
   - Enabling HMAC on production without owner action (`DEFER-0027`).
-  - Full Playwright §18 matrix (`DEFER-0026`).
-  - Composition → Astro for **non-blog** types (`DEFER-0030`). Contact inbox stays closed (`DEFER-0007`).
+  - Full Playwright section 18 matrix remainder (`DEFER-0032`). Lifecycle browser suite shipped (`DEFER-0026` CLOSED).
+  - Composition to Astro for **non-blog** types (`DEFER-0030`). `primaryColor` + CV current-document CLOSED (`DEFER-0029`). Contact inbox stays closed (`DEFER-0007`).
   - OpenAPI admin docs, feature flags, preview tokens, rich blocks v2.
   - Uninstalling Wagtail (`DEBT-0003`).
 - Allowed files: `apps/cms/**`, `apps/web/**`, `infra/deploy/rebuild-static.sh`, `docs/plan/ADM-6-frontend-wiring-task-spec.md`, `docs/plan/README.md`, `docs/status/**`, `Task-list.md`, `AGENTS.md`, `PROJECT_MANIFEST.md`.
@@ -61,5 +61,5 @@
   - `uv run python manage.py check` — no issues; `makemigrations --check --dry-run` — No changes detected
   - `npm run check` in `apps/web` — 0 errors (71 files); `npm run build` — 40 pages; `node qa/projects-catalog.spec.mjs` — PASS
   - `npm run check` / `npm run build` in `apps/cms/admin-frontend` — PASS
-- Deferred/risk IDs: `DEFER-0026`, `DEFER-0027`, `DEFER-0029` CLOSED (LOG-0181), `DEBT-0003`, `DEBT-0006` CV RESOLVED (contact remains out of scope under `DEFER-0007`), `RISK-0010`.
-- Explicit blockers and next input: owner VPS dumpdata + backup, `migrate` through siteconfig `0002`, `rebuild-web.sh`; HMAC enable only after smoke (`DEFER-0027`). Not DONE for production.
+- Deferred/risk IDs: `DEFER-0026` CLOSED (Playwright lifecycle LOG-0184); `DEFER-0032` OPEN (section 18 QA remainder); `DEFER-0027`; `DEFER-0029` CLOSED (LOG-0185); `DEBT-0003`, `DEBT-0006` CV RESOLVED (contact under `DEFER-0007`), `RISK-0010`.
+- Explicit blockers and next input: owner VPS dumpdata + backup, `migrate` through siteconfig `0002`, `rebuild-web.sh`; HMAC enable only after smoke (`DEFER-0027`). Not DONE for production

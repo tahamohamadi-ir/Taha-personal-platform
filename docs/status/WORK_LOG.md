@@ -15,6 +15,26 @@
 - Deferred or risk IDs: `RISK-0010` — owner must `dumpdata` + backup before applying `0011` on production; do **not** enable `CMS_CD_AUTO_MIGRATE`. Depends on PR #63 (`0010`) merge/order. `DEBT-0003` remains OPEN (RichText/Wagtail).
 - Rollback / recovery: revert PR / previous CMS image; reverse migration clears Media FKs (Wagtail Image bytes are not reconstructed).
 
+## LOG-0188 — 2026-08-21 — Fix PR #61 web + Playwright CI failures
+
+- Outcome: Fixed CI on `feat/adm6-playwright-lifecycle` (PR #61). Web job failed `astro check` on Playwright Node files (`process`/`Buffer`/`node:*` without `@types/node`). Playwright job failed `seed_e2e_fixtures` with `no such table: users` because workflow-level `DJANGO_SETTINGS_MODULE=config.settings.test` (`:memory:`) was inherited by migrate+seed across separate processes.
+- Note: Renumbered from colliding LOG-0185 (PR #62 primaryColor/CV) to LOG-0188 (0186=Slice 5 PR #63; 0187=featured-image worktree).
+- Why: Unblock PR #61 green checks without changing suite scope.
+- Scope / files: `apps/web/tsconfig.json` (exclude `playwright.config.ts`, `qa/e2e`), `apps/cms/scripts/run_e2e_stack.sh` (force `config.settings.e2e`), `apps/cms/scripts/seed_e2e_fixtures.py` (force e2e settings), `.github/workflows/ci-cms.yml` (job-level e2e env), this entry.
+- Commands or actions actually performed: `gh pr checks 61` + failed Actions logs; local `npm run check` after exclude; local migrate+seed with e2e settings.
+- Verification actually performed and result: local `astro check` → 0 errors; local `migrate`+`seed_e2e_fixtures` → fixture ready. Full browser suite left to GitHub Actions after push.
+- Deferred or risk IDs: none new; `DEFER-0032` unchanged.
+- Rollback / recovery: revert this commit.
+
+## LOG-0184 — 2026-08-20 — DEFER-0026 Playwright lifecycle suite
+
+- Outcome: Added full Playwright Test config (`apps/web/playwright.config.ts`: workers=1, CI retries=2, trace/video on first retry, HTML reporter) and browser suite `qa/e2e/content-lifecycle.spec.ts` (create→publish→public fa/en JSON) using fixture admin+TOTP (`e2e@example.com`, not production secrets). CMS e2e settings + seed + `run_e2e_stack.sh`; CI job `playwright-lifecycle` in `ci-cms.yml`. Pytest `test_content_lifecycle_e2e.py` kept. `DEFER-0026` CLOSED; remainder §18 matrix → `DEFER-0032`.
+- Why: Plan item 2d / ADM-6 — complement JSON lifecycle with browser UI evidence and S2 config pattern.
+- Scope / files: `apps/web/playwright.config.ts`, `apps/web/qa/e2e/**`, `apps/web/package.json`+lock, `apps/cms/config/settings/e2e.py`, `apps/cms/scripts/seed_e2e_fixtures.py`, `apps/cms/scripts/run_e2e_stack.sh`, `.github/workflows/ci-cms.yml`, ledgers, ADM-6 spec, Task-list, PROJECT_MANIFEST.
+- Commands or actions actually performed: worktree `feat/adm6-playwright-lifecycle`; `npm install @playwright/test`; admin SPA build; CMS `migrate`+`seed_e2e_fixtures`+`ruff` PASS; pytest lifecycle PASS. Local `playwright install chromium` blocked (CDN 403 geo); CI ubuntu job is the browser evidence path.
+- Verification actually performed and result: seed prints fixture ready; `uv run ruff check` PASS; `uv run pytest -q tests/test_content_lifecycle_e2e.py` PASS; admin-frontend `npm run build` PASS. Browser suite runs in GitHub Actions `playwright-lifecycle`.
+- Deferred or risk IDs: `DEFER-0026` CLOSED; `DEFER-0032` OPEN; `DEFER-0027` unchanged.
+- Rollback / recovery: revert PR; CI job and e2e scripts go with it.
 ## LOG-0186 — 2026-08-20 — Slice 5 / DEFER-0030: entity story bodies
 
 - Outcome: Additive `story` FK on `Project`, `ResearchTopic`, `ResearchStatement`, and `ProfileExperience` (migration `content.0010_entity_stories`). Public APIs project published-only story via `public_story_document`; admin `storyId` on content entities; `ArticleStoryEditor` generalized to `EntityStoryEditor` (content + profile experience attach). Astro detail pages reuse `StoryBody.astro` with existing field fallbacks. `DEFER-0030` CLOSED in ledger.
