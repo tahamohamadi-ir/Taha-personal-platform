@@ -7,8 +7,8 @@ Django models Landing / Profile / Article under ``/admin/preview/``.
 from django.http import Http404
 from django.shortcuts import get_object_or_404, render
 from wagtail.admin.auth import require_admin_access
-from wagtail.whitelist import Whitelister
 
+from apps.content.html_sanitize import sanitize_html
 from apps.content.models import Article, Landing, Profile
 
 PREVIEW_KINDS = {
@@ -19,8 +19,8 @@ PREVIEW_KINDS = {
 
 
 def sanitize_preview_body(raw: str) -> str:
-    """Apply the same Whitelister contract used by ADR-0022 allowlist tests."""
-    return Whitelister().clean(raw or "")
+    """Apply the same local allowlist contract used by ADR-0022 tests."""
+    return sanitize_html(raw)
 
 
 @require_admin_access

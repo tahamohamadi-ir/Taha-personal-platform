@@ -268,20 +268,21 @@ class TestRichTextAllowlist:
             "blockquote",
             "code",
         ]
+        assert settings.RICHTEXT_ALLOWED_FEATURES == expected
         assert settings.WAGTAIL_RICHTEXT_FEATURES == expected
 
     def test_risky_features_excluded(self, settings):
-        assert "embed" not in settings.WAGTAIL_RICHTEXT_FEATURES
-        assert "image" not in settings.WAGTAIL_RICHTEXT_FEATURES
+        assert "embed" not in settings.RICHTEXT_ALLOWED_FEATURES
+        assert "image" not in settings.RICHTEXT_ALLOWED_FEATURES
 
     def test_script_and_img_not_allowed(self, settings):
-        assert "script" not in settings.WAGTAIL_RICHTEXT_FEATURES
-        assert "img" not in settings.WAGTAIL_RICHTEXT_FEATURES
+        assert "script" not in settings.RICHTEXT_ALLOWED_FEATURES
+        assert "img" not in settings.RICHTEXT_ALLOWED_FEATURES
 
-    def test_xss_payload_stripped_by_wagtail_whitelister(self):
-        from wagtail.whitelist import Whitelister
+    def test_xss_payload_stripped_by_local_sanitizer(self):
+        from apps.content.html_sanitize import sanitize_html
 
-        cleaned = Whitelister().clean(
+        cleaned = sanitize_html(
             "<p>hi <script>alert(1)</script>"
             '<img src="https://example.com/x.png" onerror="alert(1)">'
             '<a href="javascript:alert(1)">link</a></p>'
@@ -289,4 +290,5 @@ class TestRichTextAllowlist:
         assert "<script" not in cleaned
         assert "onerror" not in cleaned
         assert 'href="javascript:' not in cleaned
+        assert "<img" not in cleaned
         assert cleaned.startswith("<p>")

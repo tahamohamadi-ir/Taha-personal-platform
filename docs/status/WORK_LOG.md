@@ -1,5 +1,19 @@
 # Work Log
 
+## LOG-0190 — 2026-08-21 — DEBT-0003: RichText→TextField + local sanitizer + retire viewsets
+- Note: Renumbered from colliding LOG-0188 (PR #61 Playwright CI fix) to LOG-0190.
+
+- Outcome: Advanced Wagtail uninstall without removing Wagtail from `INSTALLED_APPS`/deps. Replaced remaining `RichTextField` (`Article.body`, `ResearchStatement.body`, `ProjectCaseStudyDetails.technical_decisions`) with `TextField` via additive `content.0012_richtext_to_textfield` (HTML bytes unchanged). Introduced `apps.content.html_sanitize` (BeautifulSoup allowlist; ADR-0022; no `wagtail.whitelist`). Unregistered content snippet/ModelViewSets (SPA-only CRUD). Documented SPA `/admin/security` + `/api/v1/admin/auth/mfa/*` as primary TOTP enrollment; `/admin-wagtail/` kept for LOGIN_URL, staff preview, profile HTML, and MFA HTML rollback. `DEBT-0003` → **PARTIAL** with explicit remaining blockers. Base branch: `feat/featured-image-to-media` (PR #64). Merge order: **#60 → #63 → #64 → this**.
+- Why: Close schema RichText / Whitelister / viewset blockers that prevented uninstall progress after Media rewire, without MFA lockout risk from dropping Wagtail login prematurely.
+- Scope / files: `apps/cms/apps/content/{models,html_sanitize,admin,viewsets,wagtail_hooks,migrations/0012_*}`, `apps/api/api.py`, `composition/projection.py`, `views_preview.py`, settings, `pyproject.toml` (+ beautifulsoup4), admin SPA Security copy, tests, ledgers.
+- Commands or actions actually performed: worktree `feat/wagtail-uninstall` from `origin/feat/featured-image-to-media`; implement + pytest/ruff.
+- Verification actually performed and result:
+  - `uv run ruff check apps/content apps/api apps/composition config tests/test_html_sanitize.py tests/test_content_admin.py tests/test_security.py tests/test_api.py` — All checks passed
+  - `uv run pytest -q tests/test_html_sanitize.py tests/test_content_admin.py tests/test_security.py tests/test_admin_mfa_api.py tests/test_api.py tests/test_story_composition.py tests/test_media_image_rewire.py` — 72 passed
+  - `uv run python manage.py makemigrations --check --dry-run` — No changes detected
+- Deferred or risk IDs: `DEBT-0003` PARTIAL; `RISK-0010` — owner `dumpdata` + backup before production `0011`/`0012`; never `CMS_CD_AUTO_MIGRATE`. Remaining blockers: Wagtail still in INSTALLED_APPS; LOGIN_URL + preview + profile admin + TOTP HTML hooks; historical migrations.
+- Rollback / recovery: reverse `0012` (TextField→RichTextField) + revert PR / previous CMS image; `/admin-wagtail/` unchanged.
+
 ## LOG-0191 — 2026-08-21 — ADR-0027 Slice 4: Compose Caddy (repo; cutover owner-gated)
 
 - Outcome: Added Compose service `caddy` (official `caddy:2.9-alpine`, profile `edge`), `infra/caddy/Caddyfile.compose` (Docker DNS → `web:8080` / `cms:8000`, ACME volumes + `/var/www/html`), host-disable + rollback rehearsal docs, `caddy-compose-reload.sh`, and CD gate `CADDY_EDGE=compose` (default remains host `caddy-sync`). `DEFER-0031` stays OPEN until live TLS cutover; `RISK-0013` OPEN for the cutover window.

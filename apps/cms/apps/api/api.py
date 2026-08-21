@@ -13,9 +13,9 @@ from datetime import date, datetime
 from ninja import Field, NinjaAPI, Schema
 from ninja.errors import HttpError
 from ninja.pagination import PageNumberPagination, paginate
-from wagtail.whitelist import Whitelister
 
 from apps.composition.projection import public_story_document
+from apps.content.html_sanitize import sanitize_html
 from apps.content.models import (
     Article,
     ArticleSlugRedirect,
@@ -33,6 +33,7 @@ from apps.media.public_urls import public_media_ref
 from apps.siteconfig.models import SiteSettings
 
 api = NinjaAPI(title="Taha CMS Public API", version="0.4.0")
+
 
 _HEX_COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 
@@ -79,12 +80,12 @@ def _public_download(kind: str, media: Media | None) -> PublicDownloadOut | None
     )
 
 
-_BODY_WHITELISTER = Whitelister()
+
 
 
 def sanitize_public_richtext(raw: str) -> str:
-    """Re-sanitize rich text for public projection (same Whitelister as staff preview)."""
-    return _BODY_WHITELISTER.clean(raw or "")
+    """Re-sanitize rich HTML for public projection (local allowlist; ADR-0022)."""
+    return sanitize_html(raw)
 
 
 class LandingOut(Schema):
@@ -238,6 +239,7 @@ def get_public_site_settings(request) -> PublicSiteSettingsOut:
         if item is not None:
             downloads.append(item)
     return PublicSiteSettingsOut(primaryColor=color, downloads=downloads)
+
 
 @api.get(
     "/landings/{locale}",

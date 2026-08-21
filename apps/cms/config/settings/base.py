@@ -118,7 +118,9 @@ WAGTAILADMIN_BASE_URL = "http://localhost:8000"
 WAGTAIL_SITE_NAME = "Taha Personal Platform"
 WAGTAILADMIN_USER_LOGIN_FORM = "apps.security.forms.OTPLoginForm"
 
-WAGTAIL_RICHTEXT_FEATURES = [
+# ADR-0022 allowlist (docs/editor contract). Storage is TextField; sanitizer is
+# apps.content.html_sanitize. Alias kept for older tests/settings readers.
+RICHTEXT_ALLOWED_FEATURES = [
     "h2",
     "h3",
     "h4",
@@ -132,6 +134,7 @@ WAGTAIL_RICHTEXT_FEATURES = [
     "blockquote",
     "code",
 ]
+WAGTAIL_RICHTEXT_FEATURES = RICHTEXT_ALLOWED_FEATURES
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"

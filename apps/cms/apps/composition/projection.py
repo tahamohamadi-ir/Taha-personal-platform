@@ -6,28 +6,27 @@ import html as html_lib
 import re
 
 from django.conf import settings
-from wagtail.whitelist import Whitelister
 
 from apps.composition.blocks import KIND_STORY
 from apps.composition.models import CompositionPage
+from apps.content.html_sanitize import sanitize_html
 from apps.media.models import Media
 
-_BODY_WHITELISTER = Whitelister()
 _MATH_TAG = re.compile(r"<\s*math\b", re.IGNORECASE)
 
 _MEDIA_KEYS = ("mediaId", "mediaIds")
 
 
 def sanitize_story_text(raw: str) -> str:
-    """Sanitize story text/quote HTML with the same Whitelister as articles."""
-    return _BODY_WHITELISTER.clean(raw or "")
+    """Sanitize story text/quote HTML with the same allowlist as articles."""
+    return sanitize_html(raw)
 
 
 def sanitize_math_html(raw: str) -> str:
     """MathML when present; otherwise escaped plain text inside ``<pre>``."""
     value = raw or ""
     if _MATH_TAG.search(value):
-        return _BODY_WHITELISTER.clean(value)
+        return sanitize_html(value)
     escaped = html_lib.escape(value.strip(), quote=True)
     return f'<pre class="story-math">{escaped}</pre>'
 

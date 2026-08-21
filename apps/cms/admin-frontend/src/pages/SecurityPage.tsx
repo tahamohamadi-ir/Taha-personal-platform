@@ -88,8 +88,8 @@ export default function SecurityPage(): ReactElement {
     <div className="max-w-xl">
       <h1 className="text-xl font-bold">امنیت و تأیید دو مرحله‌ای</h1>
       <p className="admin-muted mb-4 text-sm">
-        Enrollment دیگر به واگتِیل وابسته نیست. کدهای بازیابی فقط یک‌بار نمایش داده
-        می‌شوند.
+        مسیر اصلی enrollment همین صفحه است (SPA). مسیر HTML واگتِیل فقط rollback
+        موقت است. کدهای بازیابی فقط یک‌بار نمایش داده می‌شوند.
       </p>
       {error !== null && (
         <div className="admin-banner-error mb-3" role="alert">
