@@ -5,11 +5,16 @@
 - Signed CMS rebuild hook default script is `infra/deploy/rebuild-web.sh` (not disk `rebuild-static.sh`).
 - `REBUILD_TRIGGER_ENABLED` remains False (`DEFER-0027` OPEN until owner VPS smoke + enable).
 - **Owner VPS (enable path):** smoke `bash infra/deploy/rebuild-web.sh` then set `REBUILD_SCRIPT_PATH` to that script, set `REBUILD_TRIGGER_ENABLED=true` plus secret, recreate CMS, and confirm post-publish web updates.
+## 2026-08-20 — Phase 0: owner CD migrate checklist + RISK-0012 CLOSED
+
+- `DEPLOY_RUNBOOK`: numbered attended checklist (Actions → `migrate_cms=true` + GHCR `cms_image_tag` → confirm job PASS + `smoke-cms.sh` / `cd-cms-migrate PASS` in logs).
+- `RISK-0012` CLOSED on Actions 32407698471 / LOG-0179 (re-verified LOG-0180). Leave `CMS_CD_AUTO_MIGRATE` unset.
+- Plan index handoff: next is Slice 3 (not “auto-migrate”).
 
 ## 2026-08-20 — ADR-0027 Slice 2: first attended CD CMS migrate PASS
 
 - Actions run 32407698471: `migrate_cms=true` `cms_image_tag=2e200fe` → `cd-cms-migrate PASS` + `CMS smoke PASS`.
-- Leave `CMS_CD_AUTO_MIGRATE` unset (`RISK-0012`).
+- Leave `CMS_CD_AUTO_MIGRATE` unset (`RISK-0012` later CLOSED in LOG-0180).
 
 ## 2026-08-20 — ADR-0027 Slice 2: gated CD CMS migrate
 
