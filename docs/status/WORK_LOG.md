@@ -1,5 +1,14 @@
 # Work Log
 
+## LOG-0191 — 2026-08-21 — ADR-0027 Slice 4: Compose Caddy (repo; cutover owner-gated)
+
+- Outcome: Added Compose service `caddy` (official `caddy:2.9-alpine`, profile `edge`), `infra/caddy/Caddyfile.compose` (Docker DNS → `web:8080` / `cms:8000`, ACME volumes + `/var/www/html`), host-disable + rollback rehearsal docs, `caddy-compose-reload.sh`, and CD gate `CADDY_EDGE=compose` (default remains host `caddy-sync`). `DEFER-0031` stays OPEN until live TLS cutover; `RISK-0013` OPEN for the cutover window.
+- Why: Complete Slice 4 repository work without binding production 80/443 or enabling auto-migrate.
+- Scope / files: `infra/cms/docker-compose.cms.yml`, `infra/caddy/*`, `infra/deploy/caddy-compose-reload.sh`, `infra/deploy/caddy-sync.sh`, `.github/workflows/cd.yml`, DEPLOY_RUNBOOK, task spec, plan README, cms README, deferred/RISK/CHANGELOG, this entry.
+- Commands or actions actually performed: worktree `feat/caddy-in-compose` from `origin/main`; compose config validate; no VPS SSH; no `CMS_CD_AUTO_MIGRATE`.
+- Verification actually performed and result: `docker compose … config` PASS for default and `--profile edge` (temporary `.env` from example, removed); `bash -n infra/deploy/caddy-compose-reload.sh` PASS. No VPS TLS move.
+- Deferred or risk IDs: `DEFER-0031` OPEN (owner cutover); `RISK-0013` OPEN; `RISK-0012` unchanged (auto migrate off).
+- Rollback / recovery: leave host Caddy as edge; do not set `CADDY_EDGE`; do not `--profile edge up -d caddy` on production until owner window.
 ## LOG-0187 — 2026-08-21 — Featured/diagram/screenshot FKs → Media library
 
 - Outcome: Rewired `Article.featured_image`, `ProjectDiagram.diagram_image`, and `ProjectScreenshot.screenshot_image` from `wagtailimages.Image` to `media.Media`. Additive data-copy migration `content.0011_rewire_image_fks_to_media` depends on `content.0010_entity_stories` (branch rebased onto `feat/slice-5-entity-stories` / PR #63). Public article/project projections expose active Media URLs only; admin schema type `media` + MediaPicker on article featured image; project case-media assign endpoints; `MEDIA_REFERENCE_FIELDS` registers the three FKs for orphan/usage counting. Wagtail remains installed (`DEBT-0003` — RichText + `/admin-wagtail/`).

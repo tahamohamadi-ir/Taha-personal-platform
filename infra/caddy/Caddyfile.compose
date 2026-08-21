@@ -1,13 +1,17 @@
-# Production Caddyfile — tahamohamadi.ir (HOST edge)
+# In-Compose Caddyfile — ADR-0027 Slice 4 / DEFER-0031
 #
-# Deployed automatically by CD via caddy-sync.sh while repository variable
-# CADDY_EDGE is unset or not `compose` (default until DEFER-0031 live cutover).
-# Do NOT edit /etc/caddy/Caddyfile on the VPS directly; change this file
-# and push to main.
+# Used only when Compose service `caddy` (profile `edge`) owns public 80/443.
+# Upstream targets are Docker DNS names on network `cms_internal`.
 #
-# Compose-edge alternative (Docker DNS upstreams): infra/caddy/Caddyfile.compose
-# Host disable + cutover/rollback: infra/caddy/HOST-CADDY-DISABLE.md
-# and DEPLOY_RUNBOOK § "Caddy-in-Compose cutover".
+# Host edge (infra/caddy/Caddyfile + systemd caddy) must be stopped before this
+# process binds 80/443. See DEPLOY_RUNBOOK § "Caddy-in-Compose cutover".
+#
+# Deploy / reload (owner, after cutover):
+#   docker compose -f infra/cms/docker-compose.cms.yml --profile edge \
+#     up -d caddy
+#   # or: bash infra/deploy/caddy-compose-reload.sh
+#
+# Do NOT point caddy-sync.sh at this file while host Caddy still owns the ports.
 
 (taha_security_headers) {
 	header {
@@ -18,16 +22,13 @@
 	}
 }
 
-# Rollback until rsync /opt/taha/site/current is removed: restore
-# root * /opt/taha/site/current + file_server (see static-site.caddy).
-# 404 body+status come from nginx (try_files =404 + error_page). Do not
-# re-proxy /404.html here — that would turn 404 into 200 and break smoke.
+# Catch-all public HTML: nginx `web` on the Compose network (port 8080).
 (taha_application_routes) {
-	reverse_proxy 127.0.0.1:13080
+	reverse_proxy web:8080
 }
 
 tahamohamadi.ir {
-	# Legacy static assets served directly from /var/www/html
+	# Legacy static assets from the host (mounted read-only into the container).
 	handle /fonts/* {
 		root * /var/www/html
 		file_server
@@ -42,36 +43,34 @@ tahamohamadi.ir {
 
 	import taha_security_headers
 
-	# --- CMS reverse proxy routes (Django/Ninja on 127.0.0.1:18000) ---
-
 	redir /admin /admin/ 308
 
 	handle /admin/* {
-		reverse_proxy 127.0.0.1:18000 {
+		reverse_proxy cms:8000 {
 			header_down X-Robots-Tag "noindex, nofollow"
 			header_down Cache-Control "no-store, no-cache, must-revalidate"
 		}
 	}
 
 	handle /health/* {
-		reverse_proxy 127.0.0.1:18000
+		reverse_proxy cms:8000
 	}
 
 	handle /static/* {
-		reverse_proxy 127.0.0.1:18000 {
+		reverse_proxy cms:8000 {
 			header_down X-Robots-Tag "noindex, nofollow"
 			header_down Cache-Control "public, max-age=3600"
 		}
 	}
 
 	handle /api/* {
-		reverse_proxy 127.0.0.1:18000 {
+		reverse_proxy cms:8000 {
 			header_down Cache-Control "public, max-age=60"
 		}
 	}
 
 	handle /media/* {
-		reverse_proxy 127.0.0.1:18000 {
+		reverse_proxy cms:8000 {
 			header_down Cache-Control "public, max-age=86400"
 		}
 	}
@@ -79,13 +78,12 @@ tahamohamadi.ir {
 	redir /admin-wagtail /admin-wagtail/ 308
 
 	handle /admin-wagtail/* {
-		reverse_proxy 127.0.0.1:18000 {
+		reverse_proxy cms:8000 {
 			header_down X-Robots-Tag "noindex, nofollow"
 			header_down Cache-Control "no-store, no-cache, must-revalidate"
 		}
 	}
 
-	# Catch-all: nginx web container (Astro dist on loopback 13080)
 	import taha_application_routes
 }
 

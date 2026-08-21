@@ -1,14 +1,20 @@
-# Unified Compose stack (ADR-0027): db + cms + web.
+# Unified Compose stack (ADR-0027): db + cms + web (+ optional caddy edge).
 #
 # Architecture (canonical):
-#   Caddy (edge TLS + routing)
+#   Host Caddy (until DEFER-0031 live cutover)
 #     ├── web (nginx, Astro dist) → 127.0.0.1:13080 (this stack)
 #     └── cms (Django/Gunicorn)   → 127.0.0.1:18000 (this stack)
+#
+#   After owner cutover (profile `edge`):
+#   Compose caddy (public 80/443) → web:8080 / cms:8000 via Docker DNS
 #
 # Versioned image (preferred production path):
 #   export CMS_IMAGE=ghcr.io/tahamohamadi-ir/taha-cms:<git-sha>
 #   docker compose -f infra/cms/docker-compose.cms.yml pull
 #   docker compose -f infra/cms/docker-compose.cms.yml up -d
+#
+# Edge Caddy (owner-attended only; does NOT start on ordinary `up -d`):
+#   docker compose -f infra/cms/docker-compose.cms.yml --profile edge up -d caddy
 #
 # Local/rebuild path (optional):
 #   export CMS_IMAGE=taha-cms:local
@@ -99,9 +105,54 @@ services:
         aliases:
           - web
 
+  # ADR-0027 Slice 4 / DEFER-0031 — public TLS edge inside Compose.
+  # Profile `edge` keeps ordinary `compose up -d` (CD) from binding 80/443 while
+  # host systemd Caddy still owns those ports. Owner cutover only.
+  caddy:
+    image: ${CADDY_IMAGE:-caddy:2.9-alpine}
+    profiles: ["edge"]
+    depends_on:
+      web:
+        condition: service_healthy
+      cms:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ../caddy/Caddyfile.compose:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+      # Legacy host static paths referenced by Caddyfile.compose (/fonts, /presentation).
+      - /var/www/html:/var/www/html:ro
+    mem_limit: 128m
+    cpus: "0.25"
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://127.0.0.1:80/",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks:
+      cms_internal:
+        aliases:
+          - caddy
+
 volumes:
   postgres_data:
   cms_media:
+  caddy_data:
+  caddy_config:
 
 networks:
   cms_internal:
