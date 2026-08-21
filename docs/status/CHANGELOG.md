@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-08-20 — DEFER-0026 Playwright content lifecycle
+
+- Full Playwright Test config in `apps/web` (retries/trace/video/html) and browser suite create→publish→public fa/en against disposable CMS fixtures.
+- CI: `playwright-lifecycle` job in `ci-cms.yml`. How to run: `apps/web/qa/e2e/README.md` (`npm run test:e2e`).
+- Pytest JSON lifecycle unchanged. Remaining §18 QA matrix → `DEFER-0032`.
 ## 2026-08-20 — Slice 5 / DEFER-0030: entity story bodies
 
 - Nullable `story` → `CompositionPage` on Project, ResearchTopic, ResearchStatement, ProfileExperience (`content.0010`).

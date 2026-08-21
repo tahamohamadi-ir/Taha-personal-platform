@@ -88,6 +88,7 @@ npm install        # reproducible install with package-lock.json
 npm run check      # astro check (typecheck) — verified: 0 errors / 0 warnings
 npm run build      # astro build — verified: static output in dist/
 npm run preview    # serve built artifact locally — verified with curl (routes 200)
+npm run test:e2e   # Playwright lifecycle (create→publish→public fa/en); needs admin SPA build + uv CMS — see apps/web/qa/e2e/README.md
 npm audit          # dependency security scan — verified: 0 vulnerabilities
 ```
 

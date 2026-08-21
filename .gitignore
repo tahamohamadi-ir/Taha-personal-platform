@@ -70,6 +70,8 @@ Samples/
 
 # Playwright local artifacts
 **/test-results/
+**/playwright-report/
+**/blob-report/
 
 # Local editor/agent tooling state
 .serena/
