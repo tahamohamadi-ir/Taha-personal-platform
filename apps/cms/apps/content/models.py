@@ -360,7 +360,7 @@ class Article(LocalizedContentMixin, LifecycleMixin):
     body = RichTextField(features=ARTICLE_RICHTEXT_FEATURES, blank=True)
     excerpt = models.TextField(blank=True)
     featured_image = models.ForeignKey(
-        "wagtailimages.Image",
+        "media.Media",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
@@ -825,7 +825,7 @@ class ProjectDiagram(models.Model):
     alt_text = models.TextField(blank=True)
     long_description = models.TextField(blank=True)
     diagram_image = models.ForeignKey(
-        "wagtailimages.Image",
+        "media.Media",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
@@ -866,7 +866,7 @@ class ProjectScreenshot(models.Model):
     alt_text = models.TextField(blank=True)
     external_url = models.URLField(blank=True)
     screenshot_image = models.ForeignKey(
-        "wagtailimages.Image",
+        "media.Media",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,

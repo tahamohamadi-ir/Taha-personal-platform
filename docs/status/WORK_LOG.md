@@ -1,5 +1,20 @@
 # Work Log
 
+## LOG-0187 — 2026-08-21 — Featured/diagram/screenshot FKs → Media library
+
+- Outcome: Rewired `Article.featured_image`, `ProjectDiagram.diagram_image`, and `ProjectScreenshot.screenshot_image` from `wagtailimages.Image` to `media.Media`. Additive data-copy migration `content.0011_rewire_image_fks_to_media` depends on `content.0010_entity_stories` (branch rebased onto `feat/slice-5-entity-stories` / PR #63). Public article/project projections expose active Media URLs only; admin schema type `media` + MediaPicker on article featured image; project case-media assign endpoints; `MEDIA_REFERENCE_FIELDS` registers the three FKs for orphan/usage counting. Wagtail remains installed (`DEBT-0003` — RichText + `/admin-wagtail/`).
+- Why: Close Media-library rewire for content image FKs without uninstalling Wagtail; unblock accurate orphan counting.
+- Scope / files: `apps/cms/apps/content/models.py` + migration `0011_*`, `apps/media/public_urls.py`, `apps/api/api.py`, `admin_content.py`, `admin_media.py`, admin SPA MediaPicker wiring, `apps/web` article DTO, tests, ledgers.
+- Commands or actions actually performed: rebase onto `origin/feat/slice-5-entity-stories`; rename colliding WIP `0009_rewire_*` → `0011_rewire_*`; move `_parse_positive_int` to `admin_common` (break circular import); pytest + ruff.
+- Verification actually performed and result:
+  - `uv run ruff check apps/content apps/media apps/api tests/test_media_image_rewire.py tests/test_admin_media_api.py tests/test_admin_workflow_api.py` — All checks passed
+  - `uv run pytest -q tests/test_media_image_rewire.py tests/test_admin_media_api.py tests/test_admin_workflow_api.py` — 43 passed
+  - `uv run python manage.py makemigrations --check --dry-run` — No changes detected
+  - `npx tsc -b --noEmit` in `apps/cms/admin-frontend` — PASS
+  - `uv run pytest -q tests/test_public_media.py tests/test_media.py` — 31 passed
+- Deferred or risk IDs: `RISK-0010` — owner must `dumpdata` + backup before applying `0011` on production; do **not** enable `CMS_CD_AUTO_MIGRATE`. Depends on PR #63 (`0010`) merge/order. `DEBT-0003` remains OPEN (RichText/Wagtail).
+- Rollback / recovery: revert PR / previous CMS image; reverse migration clears Media FKs (Wagtail Image bytes are not reconstructed).
+
 ## LOG-0186 — 2026-08-20 — Slice 5 / DEFER-0030: entity story bodies
 
 - Outcome: Additive `story` FK on `Project`, `ResearchTopic`, `ResearchStatement`, and `ProfileExperience` (migration `content.0010_entity_stories`). Public APIs project published-only story via `public_story_document`; admin `storyId` on content entities; `ArticleStoryEditor` generalized to `EntityStoryEditor` (content + profile experience attach). Astro detail pages reuse `StoryBody.astro` with existing field fallbacks. `DEFER-0030` CLOSED in ledger.

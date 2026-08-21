@@ -31,6 +31,12 @@ export interface ArticleListDto {
   updated_at: string | null;
   topic_tags: TopicTagDto[];
   series: SeriesDto[];
+  featured_image?: {
+    url: string;
+    alt: string;
+    mime?: string;
+    title?: string;
+  } | null;
 }
 
 export interface ArticleDetailDto extends ArticleListDto {

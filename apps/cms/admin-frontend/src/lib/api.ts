@@ -93,7 +93,7 @@ export interface ContentListParams {
 export interface ContentFieldSpec {
   key: string;
   label: string;
-  type: "text" | "textarea" | "number" | "date" | "boolean";
+  type: "text" | "textarea" | "number" | "date" | "boolean" | "media";
 }
 
 export interface ContentEntitySchema {
@@ -110,14 +110,14 @@ export interface ContentPayload {
   slug: string;
   title: string;
   status?: ContentStatus;
-  fields: Record<string, string | number | boolean>;
+  fields: Record<string, string | number | boolean | null>;
 }
 
 export interface ContentUpdatePayload {
   title?: string;
   slug?: string;
   status?: ContentStatus;
-  fields?: Record<string, string | number | boolean>;
+  fields?: Record<string, string | number | boolean | null>;
 }
 
 export interface TransitionPayload {
@@ -1088,4 +1088,64 @@ export async function disableMfa(otpToken: string): Promise<{ ok: boolean }> {
     method: "POST",
     body: JSON.stringify({ otpToken }),
   });
+}
+
+export interface ProjectDiagramRow {
+  id: number;
+  title: string;
+  version: string;
+  diagramDate: string;
+  altText: string;
+  longDescription: string;
+  visibility: string;
+  diagramImageId: number | null;
+}
+
+export interface ProjectScreenshotRow {
+  id: number;
+  caption: string;
+  altText: string;
+  externalUrl: string;
+  visibility: string;
+  screenshotImageId: number | null;
+}
+
+export interface ProjectCaseMedia {
+  projectId: number;
+  diagrams: ProjectDiagramRow[];
+  screenshots: ProjectScreenshotRow[];
+}
+
+export async function fetchProjectCaseMedia(
+  projectId: number
+): Promise<ProjectCaseMedia> {
+  return request<ProjectCaseMedia>(`/content/project/${projectId}/case-media`);
+}
+
+export async function setProjectDiagramImage(
+  projectId: number,
+  diagramId: number,
+  diagramImageId: number | null
+): Promise<ProjectDiagramRow> {
+  return request<ProjectDiagramRow>(
+    `/content/project/${projectId}/diagrams/${diagramId}`,
+    {
+      method: "PUT",
+      body: JSON.stringify({ diagramImageId }),
+    }
+  );
+}
+
+export async function setProjectScreenshotImage(
+  projectId: number,
+  screenshotId: number,
+  screenshotImageId: number | null
+): Promise<ProjectScreenshotRow> {
+  return request<ProjectScreenshotRow>(
+    `/content/project/${projectId}/screenshots/${screenshotId}`,
+    {
+      method: "PUT",
+      body: JSON.stringify({ screenshotImageId }),
+    }
+  );
 }

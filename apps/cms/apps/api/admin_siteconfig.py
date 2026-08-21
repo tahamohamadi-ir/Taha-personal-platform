@@ -23,9 +23,10 @@ from ninja.responses import Status
 from apps.api.admin_common import (
     AdminError,
     _check_csrf,
+    _parse_positive_int,
     _require_admin_otp,
 )
-from apps.api.admin_content import ENTITY_MODELS, _parse_positive_int
+from apps.api.admin_content import ENTITY_MODELS
 from apps.content.models import Article, TopicTag
 from apps.siteconfig.models import FeaturedItem, SiteSettings
 
