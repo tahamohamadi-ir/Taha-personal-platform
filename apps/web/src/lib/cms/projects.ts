@@ -1,6 +1,7 @@
 /** CMS public project/case-study DTOs consumed by Astro at build time (optional CMS_API_BASE). */
 
-import { cmsFetchJson } from "./client";
+import { cmsFetchJson, CmsOriginError, throwIfCmsError } from "./client";
+import type { CmsFetchResult } from "./client";
 import type {
   CollaboratorDto,
   EvidenceDto,
@@ -52,25 +53,50 @@ export type { CollaboratorDto, EvidenceDto, FundingDto, RelatedSlugDto };
 
 type Locale = "fa" | "en";
 
-async function fetchJson<T>(path: string): Promise<T | null> {
-  return cmsFetchJson<T>(path);
-}
-
-function unwrapItems<T>(payload: T[] | { items: T[] } | null): T[] {
-  if (!payload) return [];
+function unwrapItems<T>(payload: T[] | { items: T[] }): T[] {
   if (Array.isArray(payload)) return payload;
   if (Array.isArray(payload.items)) return payload.items;
   return [];
 }
 
-async function paginateAll<T>(pathPrefix: string): Promise<T[]> {
+function requireListPayload<T>(
+  result: CmsFetchResult<T[] | { items: T[] }>,
+  context: string,
+): T[] | null {
+  throwIfCmsError(result, context);
+  if (result.kind === "unset") return null;
+  if (result.kind === "http") {
+    throw new CmsOriginError(
+      `${context}: unexpected HTTP ${result.status}`,
+      result.status,
+    );
+  }
+  return unwrapItems(result.data);
+}
+
+async function fetchDetail<T>(path: string, context: string): Promise<T | null> {
+  const result = await cmsFetchJson<T>(path);
+  throwIfCmsError(result, context);
+  if (result.kind === "unset") return null;
+  if (result.kind === "http") {
+    if (result.status === 404) return null;
+    throw new CmsOriginError(
+      `${context}: unexpected HTTP ${result.status}`,
+      result.status,
+    );
+  }
+  return result.data;
+}
+
+async function paginateAll<T>(pathPrefix: string, context: string): Promise<T[]> {
   const pages: T[] = [];
   let page = 1;
   while (page <= 50) {
-    const payload = await fetchJson<T[] | { items: T[] }>(
+    const payload = await cmsFetchJson<T[] | { items: T[] }>(
       `${pathPrefix}?page=${page}`,
     );
-    const items = unwrapItems(payload);
+    const items = requireListPayload(payload, `${context} page ${page}`);
+    if (items === null) return [];
     if (items.length === 0) break;
     pages.push(...items);
     if (items.length < 10) break;
@@ -79,14 +105,14 @@ async function paginateAll<T>(pathPrefix: string): Promise<T[]> {
   return pages;
 }
 
-/** Empty when CMS_API_BASE is unset or unreachable. */
+/** Empty when CMS_API_BASE is unset or the API returns an empty list. Outage fails the build. */
 export async function getProjects(locale: Locale): Promise<ProjectListDto[]> {
-  return paginateAll(`/api/projects/${locale}`);
+  return paginateAll(`/api/projects/${locale}`, `projects/${locale}`);
 }
 
 export async function getProject(
   locale: Locale,
   slug: string,
 ): Promise<ProjectDetailDto | null> {
-  return fetchJson(`/api/projects/${locale}/${slug}`);
+  return fetchDetail(`/api/projects/${locale}/${slug}`, `project ${locale}/${slug}`);
 }

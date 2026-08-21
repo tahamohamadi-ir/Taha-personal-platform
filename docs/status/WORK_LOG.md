@@ -9,6 +9,15 @@
 - Verification actually performed and result: `uv run pytest tests/test_rebuild.py -q` -> 10 passed; `uv run ruff check apps/rebuild tests/test_rebuild.py` -> All checks passed.
 - Deferred or risk IDs: `DEFER-0027` OPEN (owner enable + smoke); no new risk.
 - Rollback / recovery: revert branch; keep trigger disabled; manual `bash infra/deploy/rebuild-web.sh` after publish.
+## LOG-0182 — 2026-08-20 — ADR-0027 Slice 3: CMS origin honesty (fail-build on outage)
+
+- Outcome: Astro build-time CMS fetch is typed (`unset` / `ok` / `http` / `error`). When `CMS_API_BASE` is set, transport/timeout/5xx throws and fails `npm run build`. Committed `profile.snapshot.json` is used only when the base is unset (local/offline). Successful empty published lists are not overridden by the snapshot. Articles/projects/research share the same outage policy. QA asserts snapshot dist + fail-build on unreachable base.
+- Why: ADR-0027 Slice 3 / locked plan policy — silent snapshot-as-live CMS was dishonest when the origin was configured but down.
+- Scope / files: `apps/web/src/lib/cms/{client,articles,projects,research}.ts`, `apps/web/src/data/cmsProfile.ts`, `apps/web/qa/cms-profile-build.spec.mjs`, `docs/governance/DEPLOY_RUNBOOK.md`, `AGENTS.md`, `docs/README.md`, CHANGELOG/BACKLOG, this entry (plan file left untouched).
+- Commands or actions actually performed: isolated worktree `feat/adr-0027-slice-3-cms-origin` from `origin/main`; `npm run check` + `npm run build` without base; build with `CMS_API_BASE=http://127.0.0.1:9` expected fail; `node qa/cms-profile-build.spec.mjs`.
+- Verification actually performed and result: `npm run check` → 0 errors; `npm run build` without `CMS_API_BASE` → 40 pages; `CMS_API_BASE=http://127.0.0.1:9 npm run build` fails with `CMS … unreachable`; `node qa/cms-profile-build.spec.mjs` PASS (snapshot + fail-build + restore).
+- Deferred or risk IDs: Slice 4 `DEFER-0031` / Slice 5 `DEFER-0030` unchanged; `DEFER-0022` local HTTP preview unchanged; `RISK-0012` CLOSED on PR #57 (attended migrate PASS evidence LOG-0179 / Actions 32407698471); auto migrate remains unset.
+- Rollback / recovery: revert this branch/PR; previous web image continues prior silent-null behavior until rebuilt.
 ## LOG-0180 — 2026-08-20 — Phase 0: Slice 2 owner checklist + RISK-0012 CLOSED
 
 - Outcome: Documented short owner attended CD CMS migrate checklist in `DEPLOY_RUNBOOK`. Independently re-verified Actions [32407698471](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32407698471) job **CMS image migrate (gated)** success with log lines `backup_ok`, `CMS smoke PASS`, `cd-cms-migrate PASS`. Closed `RISK-0012` on that evidence. Fixed `docs/plan/README.md` handoff (was wrongly saying “Slice 2 CD auto-migrate”). Did **not** enable or recommend `CMS_CD_AUTO_MIGRATE=true`.
