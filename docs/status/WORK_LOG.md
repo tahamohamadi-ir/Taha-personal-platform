@@ -1,5 +1,14 @@
 # Work Log
 
+## LOG-0185 — 2026-08-20 — ADM-6: primaryColor inject + current CV/resume
+
+- Outcome: Wired site-settings `primaryColor` into Astro `--color-brand` at build via public `GET /api/site`. Added one-current-document CV + industry resume slots on `SiteSettings` (PDF media FKs), admin Settings MediaPicker, and Downloads/cv pages that prefer active CMS downloads (markdown fallback when CMS unset/empty). Contact inbox not reopened.
+- Why: Close `DEFER-0029` / CV half of `DEBT-0006` without inventing tokens beyond the site-settings field.
+- Scope / files: `apps/cms/apps/siteconfig/` (+ migration `0002`), `admin_siteconfig.py`, `api.py` public `/site`, `admin_media.py` usage registry, admin `SettingsPage.tsx`/`api.ts`, `apps/web` BaseLayout/Downloads/cvDownloads/siteSettings, ledgers, ADM-6 task spec.
+- Commands or actions actually performed: implemented on `feat/adm6-primarycolor-cv` worktree from `origin/main`.
+- Verification actually performed and result: `uv run ruff check` (touched CMS modules) PASS; `uv run pytest -q` 319 passed; `makemigrations --check --dry-run` No changes detected; `npm run check` + `build` in `apps/web` PASS (40 pages); `npm run check` + `build` in `admin-frontend` PASS.
+- Deferred or risk IDs: `DEFER-0029` CLOSED; `DEBT-0006` RESOLVED (CV done; contact stays out of scope under closed `DEFER-0007`); `DEFER-0026`/`DEFER-0027`/`DEFER-0030` unchanged; owner must migrate `siteconfig.0002` + `rebuild-web.sh` on VPS.
+- Rollback / recovery: revert PR; previous CMS image without `0002` FKs; static markdown CV downloads remain as offline fallback.
 ## LOG-0183 — 2026-08-20 — HMAC rebuild trigger rewired to rebuild-web.sh (DEFER-0027)
 
 - Outcome: Default script for signed `/rebuild-trigger/` is now `infra/deploy/rebuild-web.sh` (Compose web image + loopback smoke). `REBUILD_TRIGGER_ENABLED` remains False. Tests assert `rebuild-web.sh` path. `DEFER-0027` stays OPEN until owner VPS smoke + enable.
