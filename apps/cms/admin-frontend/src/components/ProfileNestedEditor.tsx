@@ -4,8 +4,12 @@ import {
   isApiError,
   updateAdminProfile,
   type AdminProfileDocument,
+  type ContentLocale,
+  type ProfileExperienceRow,
   type ProfileSkillRow,
 } from "../lib/api";
+import { isContentLocale } from "../lib/entities";
+import EntityStoryEditor from "./ArticleStoryEditor";
 
 interface Props {
   locale: string;
@@ -91,6 +95,35 @@ export default function ProfileNestedEditor({
       )
     );
   }
+
+  async function attachExperienceStory(
+    experienceIndex: number,
+    storyId: number
+  ): Promise<{ updatedAt?: string }> {
+    if (document === null) {
+      throw new Error("Profile document is not loaded.");
+    }
+    const experience = document.experience.map((row, index) =>
+      index === experienceIndex ? { ...row, storyId } : row
+    );
+    const cleanedSkills = skills.filter(
+      (row) => row.category.trim() && row.name.trim() && row.source.trim()
+    );
+    const next = await updateAdminProfile(
+      locale,
+      slug,
+      { ...document, skills: cleanedSkills, experience },
+      document.revision
+    );
+    setDocument(next);
+    setSkills(next.skills.length > 0 ? next.skills : [emptySkill()]);
+    return {};
+  }
+
+  const contentLocale: ContentLocale | null = isContentLocale(locale)
+    ? locale
+    : null;
+  const experienceRows: ProfileExperienceRow[] = document?.experience ?? [];
 
   return (
     <section className="mt-8 border-t border-[var(--admin-border)] pt-6">
@@ -180,6 +213,61 @@ export default function ProfileNestedEditor({
               {saving ? "در حال ذخیره…" : "ذخیره مهارت‌ها"}
             </button>
           </div>
+
+          {contentLocale !== null && experienceRows.length > 0 ? (
+            <div className="mt-8 space-y-4">
+              <h3 className="text-base font-bold">داستان تجربه</h3>
+              <p className="admin-muted text-sm">
+                برای ردیف‌هایی که slug دارند می‌توانید داستان ترکیبی بسازید. بدون
+                slug ابتدا در ویرایشگر پروفایل slug و جزئیات را ذخیره کنید.
+              </p>
+              {experienceRows.map((row, index) => {
+                const experienceSlug = (row.slug ?? "").trim();
+                const storyId =
+                  typeof row.storyId === "number" && Number.isFinite(row.storyId)
+                    ? row.storyId
+                    : null;
+                if (!experienceSlug) {
+                  return (
+                    <p key={`exp-story-${index}`} className="admin-muted text-sm">
+                      {row.role} @ {row.organization}: بدون slug — داستان در دسترس
+                      نیست.
+                    </p>
+                  );
+                }
+                return (
+                  <EntityStoryEditor
+                    key={`exp-story-${index}-${storyId ?? "new"}`}
+                    entity="article"
+                    entityId={index + 1}
+                    locale={contentLocale}
+                    title={`${row.role} — ${row.organization}`}
+                    storyId={storyId}
+                    entityUpdatedAt={String(document?.revision ?? 0)}
+                    compositionKey={`profile-${locale}-experience-${experienceSlug}-story`}
+                    heading={`داستان تجربه: ${row.role}`}
+                    description="بدنهٔ عمومی تجربه از بلوک‌های تک‌زبانه؛ در غیر این صورت detailBody نمایش داده می‌شود."
+                    attachStory={(nextStoryId) =>
+                      attachExperienceStory(index, nextStoryId)
+                    }
+                    onEntityUpdated={(next) => {
+                      setDocument((current) => {
+                        if (current === null) return current;
+                        return {
+                          ...current,
+                          experience: current.experience.map((item, itemIndex) =>
+                            itemIndex === index
+                              ? { ...item, storyId: next.storyId }
+                              : item
+                          ),
+                        };
+                      });
+                    }}
+                  />
+                );
+              })}
+            </div>
+          ) : null}
         </>
       )}
     </section>

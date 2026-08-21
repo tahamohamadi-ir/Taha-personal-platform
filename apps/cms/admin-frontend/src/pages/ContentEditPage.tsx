@@ -40,7 +40,20 @@ import {
 } from "../lib/workflow";
 import { formatDateTime } from "../lib/format";
 import ProfileNestedEditor from "../components/ProfileNestedEditor";
-import ArticleStoryEditor from "../components/ArticleStoryEditor";
+import EntityStoryEditor, {
+  type StoryContentEntity,
+} from "../components/ArticleStoryEditor";
+
+const STORY_ENTITIES = new Set<StoryContentEntity>([
+  "article",
+  "project",
+  "research-topic",
+  "research-statement",
+]);
+
+function isStoryEntity(entity: string): entity is StoryContentEntity {
+  return STORY_ENTITIES.has(entity as StoryContentEntity);
+}
 
 type LoadState = "loading" | "ready" | "error" | "invalid" | "not-found";
 
@@ -953,14 +966,15 @@ export default function ContentEditPage(): ReactElement {
       {isEditing && entity === "profile" && form !== null ? (
         <ProfileNestedEditor locale={form.locale} slug={form.slug} />
       ) : null}
-      {isEditing && entity === "article" && form !== null ? (
-        <ArticleStoryEditor
-          articleId={id}
+      {isEditing && entity !== null && isStoryEntity(entity) && form !== null ? (
+        <EntityStoryEditor
+          entity={entity}
+          entityId={id}
           locale={form.locale}
           title={form.title}
           storyId={Number.isFinite(storyId) ? storyId : null}
-          articleUpdatedAt={updatedAt}
-          onArticleUpdated={(next) => {
+          entityUpdatedAt={updatedAt}
+          onEntityUpdated={(next) => {
             setStoryId(next.storyId);
             setUpdatedAt(next.updatedAt);
           }}

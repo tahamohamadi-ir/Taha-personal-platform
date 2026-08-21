@@ -30,6 +30,7 @@ export interface AboutSectionItem {
   detailSlug?: string;
   detailBody?: string;
   translationKey?: string;
+  story?: ExperienceEntry["story"];
 }
 
 export interface AboutSection {
@@ -57,6 +58,16 @@ function detailBodyFor(value: { detailBody?: string; detail_body?: string }): st
   return detailBody || undefined;
 }
 
+export function hasDetailContent(item: {
+  detailSlug?: string;
+  detailBody?: string;
+  story?: ExperienceEntry["story"];
+}): boolean {
+  if (!item.detailSlug) return false;
+  if (item.detailBody?.trim()) return true;
+  return Boolean(item.story && item.story.sections.length > 0);
+}
+
 function mapExperience(entry: ExperienceEntry, index: number): AboutSectionItem {
   return {
     id: `experience-${index}`,
@@ -70,6 +81,7 @@ function mapExperience(entry: ExperienceEntry, index: number): AboutSectionItem 
     detailSlug: entry.slug,
     detailBody: detailBodyFor(entry),
     translationKey: entry.translationKey,
+    story: entry.story ?? null,
   };
 }
 
@@ -200,8 +212,7 @@ export function getDetailAlternateHref(
   const alternateItem = alternateSection?.items.find(
     (candidate) =>
       candidate.translationKey === item.translationKey &&
-      candidate.detailSlug &&
-      candidate.detailBody,
+      hasDetailContent(candidate),
   );
 
   if (!alternateItem?.detailSlug) {

@@ -4,6 +4,8 @@ import Breadcrumbs from "../../../components/blog/Breadcrumbs.astro";
 import { content } from "../../../data/content";
 import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../data/structured";
 import { getResearchStatement } from "../../../lib/cms/research";
+import StoryBody from "../../../components/StoryBody.astro";
+import { hasPublishedStory } from "../../../lib/cms/story";
 
 const locale = "en" as const;
 const pageContent = content[locale];
@@ -23,6 +25,7 @@ const title = statement?.title ?? research.statementHeading;
 const description = statement
   ? statement.body.replace(/<[^>]+>/g, " ").trim().slice(0, 160)
   : research.statementEmpty;
+const statementHasStory = hasPublishedStory(statement?.story);
 ---
 
 <BaseLayout
@@ -45,7 +48,13 @@ const description = statement
       statement ? (
         <>
           <h1>{statement.title}</h1>
-          <div class="body" set:html={statement.body} />
+          {
+            statementHasStory && statement.story ? (
+              <StoryBody locale={locale} story={statement.story} />
+            ) : (
+              <div class="body" set:html={statement.body} />
+            )
+          }
         </>
       ) : (
         <>

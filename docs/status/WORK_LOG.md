@@ -1,5 +1,22 @@
 # Work Log
 
+## LOG-0186 — 2026-08-20 — Slice 5 / DEFER-0030: entity story bodies
+
+- Outcome: Additive `story` FK on `Project`, `ResearchTopic`, `ResearchStatement`, and `ProfileExperience` (migration `content.0010_entity_stories`). Public APIs project published-only story via `public_story_document`; admin `storyId` on content entities; `ArticleStoryEditor` generalized to `EntityStoryEditor` (content + profile experience attach). Astro detail pages reuse `StoryBody.astro` with existing field fallbacks. `DEFER-0030` CLOSED in ledger.
+
+- Note: Renumbered from colliding LOG-0181 (PRs #60/#62 also claimed it) to LOG-0186 (open PRs #57–#63; highest was LOG-0185 on #62). Migration is `content.0010_entity_stories` depending on PR #60 `content.0009_scheduled_for_and_contentrevision` (merged into this branch) so the graph is linear: `0008_article_story` → `0009_scheduled_for_and_contentrevision` → `0010_entity_stories`.
+- Why: Close Slice 5 after blog story reference implementation.
+- Scope / files: `apps/cms/**` (models/migration/API/admin SPA/tests), `apps/web/**` (DTOs + detail pages), `docs/status/**`, `docs/plan/**`.
+- Commands or actions actually performed: isolated worktree `feat/slice-5-entity-stories`; pytest/ruff/npm check.
+- Verification actually performed and result:
+  - `uv run pytest -q tests/test_story_composition.py` — 10 passed
+  - `uv run ruff check apps/content apps/api tests/test_story_composition.py` — All checks passed
+  - `uv run python manage.py makemigrations --check --dry-run` — No changes detected
+  - `npm run check` in `apps/web` — 0 errors (73 files)
+  - `npm run check` in `apps/cms/admin-frontend` — PASS
+- Deferred or risk IDs: `DEFER-0030` CLOSED (code); owner attended migrate for `0010` still required before production use. Do not enable `CMS_CD_AUTO_MIGRATE`.
+- Rollback / recovery: revert PR; nullable FKs are backward compatible.
+
 ## LOG-0181 — 2026-08-20 — DEBT-0005: revisions + scheduled publish
 
 - Outcome: Added immutable `ContentRevision` snapshots with restore-as-draft, `scheduled` lifecycle + `scheduled_for`, extended `ALLOWED_TRANSITIONS`, management command `publish_scheduled_content` (no Celery), and optional systemd timer units under `infra/cms/`. Admin SPA can schedule, snapshot, and restore.

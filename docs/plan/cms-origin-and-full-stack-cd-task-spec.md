@@ -59,9 +59,10 @@ False smoke: `smoke-cms.sh` probed `/admin-wagtail/accounts/login/` (302). Real 
 
 - Mount certs; single public 80/443; host Caddy disabled for this site. Separate rollback rehearsal.
 
-### Slice 5 — `DEFER-0030` story bodies (project, research, experience)
+### Slice 5 — `DEFER-0030` story bodies (project, research, experience) (**done in repo**)
 
 - Reuse `StoryBody.astro`. Independent of Slice 4.
+- Code: `content.0010_entity_stories`; public/admin wiring; LOG-0181. Owner migrate before production.
 
 ## Non-goals
 

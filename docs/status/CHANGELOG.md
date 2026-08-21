@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-20 — Slice 5 / DEFER-0030: entity story bodies
+
+- Nullable `story` → `CompositionPage` on Project, ResearchTopic, ResearchStatement, ProfileExperience (`content.0010`).
+- Public JSON + Astro `StoryBody` with field fallbacks; admin story editor generalized beyond articles.
+- **Owner VPS:** attended CD migrate for `0010` (do not set `CMS_CD_AUTO_MIGRATE`); then `rebuild-web.sh`.
+
 ## 2026-08-20 — ADM-4 follow-up: revisions + scheduled publish (DEBT-0005)
 
 Immutable `ContentRevision` snapshots with restore-as-draft; `scheduled` status +
