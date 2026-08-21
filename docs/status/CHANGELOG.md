@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-08-20 — HMAC rebuild trigger to rebuild-web.sh
+
+- Signed CMS rebuild hook default script is `infra/deploy/rebuild-web.sh` (not disk `rebuild-static.sh`).
+- `REBUILD_TRIGGER_ENABLED` remains False (`DEFER-0027` OPEN until owner VPS smoke + enable).
+- **Owner VPS (enable path):** smoke `bash infra/deploy/rebuild-web.sh` then set `REBUILD_SCRIPT_PATH` to that script, set `REBUILD_TRIGGER_ENABLED=true` plus secret, recreate CMS, and confirm post-publish web updates.
 ## 2026-08-20 — ADR-0027 Slice 3: CMS origin honesty
 
 - Typed CMS fetch (`unset` / `ok` / `http` / `error`); outage with `CMS_API_BASE` set fails `npm run build`.

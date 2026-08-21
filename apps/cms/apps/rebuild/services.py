@@ -5,8 +5,9 @@ timestamp so a caller can prove freshness without server-side state; validation
 compares with ``hmac.compare_digest`` to stay constant-time.
 
 When ``REBUILD_TRIGGER_ENABLED`` is true, ``invoke_static_rebuild`` starts
-``infra/deploy/rebuild-static.sh`` in the background. The CMS image does not
-ship that host script; production enablement is owner-gated (DEFER-0027).
+``infra/deploy/rebuild-web.sh`` in the background (Compose ``web`` image rebuild
+after Caddy cutover to ``127.0.0.1:13080``). The CMS image does not ship that
+host script; production enablement stays owner-gated (DEFER-0027).
 """
 
 from __future__ import annotations
@@ -57,12 +58,12 @@ def rebuild_script_path() -> Path:
     # Repo checkout: apps/cms/apps/rebuild/services.py → parents[4] is repo root.
     # CMS image copies apps/cms to /app, so parents[4] does not exist; fail closed.
     if len(here.parents) > 4:
-        return here.parents[4] / "infra" / "deploy" / "rebuild-static.sh"
-    return Path("/nonexistent-rebuild-static.sh")
+        return here.parents[4] / "infra" / "deploy" / "rebuild-web.sh"
+    return Path("/nonexistent-rebuild-web.sh")
 
 
 def invoke_static_rebuild(*, enabled: bool | None = None) -> bool:
-    """Start the loopback static rebuild script in the background.
+    """Start the loopback web rebuild script in the background.
 
     Returns True only when a process was started. Never raises to the caller
     (publish must succeed even if the hook cannot run). Default-disabled.
