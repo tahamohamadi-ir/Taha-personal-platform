@@ -6,6 +6,11 @@
 - Astro injects `--color-brand` from CMS at build; CV pages prefer media-library PDFs (fallback: committed markdown).
 - Admin Settings: MediaPicker slots for academic CV + industry resume (one PDF each).
 - `DEFER-0029` CLOSED; `DEBT-0006` CV RESOLVED (contact inbox not reopened).
+## 2026-08-20 — ADR-0027 Slice 3: CMS origin honesty
+
+- Typed CMS fetch (`unset` / `ok` / `http` / `error`); outage with `CMS_API_BASE` set fails `npm run build`.
+- `profile.snapshot.json` is local/offline only (base unset); successful empty CMS lists stay empty.
+- QA: `cms-profile-build.spec.mjs` asserts fail-build on unreachable base.
 ## 2026-08-20 — Phase 0: owner CD migrate checklist + RISK-0012 CLOSED
 
 - `DEPLOY_RUNBOOK`: numbered attended checklist (Actions → `migrate_cms=true` + GHCR `cms_image_tag` → confirm job PASS + `smoke-cms.sh` / `cd-cms-migrate PASS` in logs).
