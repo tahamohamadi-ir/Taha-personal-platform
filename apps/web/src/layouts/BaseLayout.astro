@@ -6,6 +6,7 @@ import type { LocaleContent } from "../data/content";
 import { site } from "../data/site";
 import type { JsonLdBlock } from "../data/structured";
 import { websiteJsonLd, personJsonLd, validateStructuredData, jsonLdScriptContent } from "../data/structured";
+import { getPrimaryColorOverride } from "../lib/cms/siteSettings";
 
 interface Props {
   content: LocaleContent;
@@ -25,6 +26,7 @@ const {
 const canonical = new URL(Astro.url.pathname, site.url).href;
 const altLang = content.lang === "fa" ? "en" : "fa";
 validateStructuredData(...structured);
+const primaryColor = await getPrimaryColorOverride();
 ---
 
 <!doctype html>
@@ -50,6 +52,11 @@ validateStructuredData(...structured);
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta name="robots" content="index,follow" />
+    {
+      primaryColor && (
+        <style is:inline set:html={`:root { --color-brand: ${primaryColor}; }`} />
+      )
+    }
     {
       structured.map((block) => (
         <script

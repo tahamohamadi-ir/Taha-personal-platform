@@ -6,8 +6,8 @@ upload, ``GET /orphans`` (rows with zero usage references), ``GET /{id}``
 detail and ``PUT /{id}`` optimistically-locked update (``If-Match``). Unsafe
 methods additionally enforce the same-origin CSRF baseline.
 
-The orphan/usage registry (``MEDIA_REFERENCE_FIELDS``) is empty today, so every
-row counts as an orphan; it will be wired to content composition in ADM-3.
+The orphan/usage registry (``MEDIA_REFERENCE_FIELDS``) includes site-settings
+CV/resume current-document slots; composition/featured_image rewires add more.
 """
 
 from __future__ import annotations
@@ -32,10 +32,12 @@ from apps.media.sniff import mime_family, sniff_mime
 
 media_router = Router()
 
-# ("app.Model", "field") pairs referencing a Media row — extended when content
-# composition (ADM-3) adds fields that point at the media library. Empty today,
-# so every row counts as an orphan.
-MEDIA_REFERENCE_FIELDS: list[tuple[str, str]] = []
+# ("app.Model", "field") pairs referencing a Media row — site settings CV/resume
+# slots plus future composition/featured_image rewires.
+MEDIA_REFERENCE_FIELDS: list[tuple[str, str]] = [
+    ("siteconfig.SiteSettings", "current_cv_media"),
+    ("siteconfig.SiteSettings", "current_resume_media"),
+]
 
 
 def media_usage_count(media) -> int:

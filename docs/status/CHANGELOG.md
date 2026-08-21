@@ -5,6 +5,12 @@
 Immutable `ContentRevision` snapshots with restore-as-draft; `scheduled` status +
 `scheduled_for`; `publish_scheduled_content` management command and optional
 systemd timer (no Celery). Admin API/SPA updated. LOG-0181; DEBT-0005 CLOSED.
+## 2026-08-20 — ADM-6: primaryColor + current CV/resume from admin
+
+- Public `GET /api/site` exposes `primaryColor` and active current CV/resume downloads.
+- Astro injects `--color-brand` from CMS at build; CV pages prefer media-library PDFs (fallback: committed markdown).
+- Admin Settings: MediaPicker slots for academic CV + industry resume (one PDF each).
+- `DEFER-0029` CLOSED; `DEBT-0006` CV RESOLVED (contact inbox not reopened).
 ## 2026-08-20 — HMAC rebuild trigger to rebuild-web.sh
 
 - Signed CMS rebuild hook default script is `infra/deploy/rebuild-web.sh` (not disk `rebuild-static.sh`).
