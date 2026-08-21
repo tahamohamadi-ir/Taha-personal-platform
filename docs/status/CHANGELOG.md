@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-08-21 — DEBT-0003 PARTIAL: RichText→TextField + local sanitizer
+
+- `Article.body` / `ResearchStatement.body` / `ProjectCaseStudyDetails.technical_decisions` are `TextField` (`content.0012`); HTML bytes unchanged.
+- Public/preview/story sanitization uses `apps.content.html_sanitize` (no `wagtail.whitelist`). Content Wagtail snippet/viewsets retired (SPA CRUD).
+- SPA `/admin/security` is primary TOTP enrollment; `/admin-wagtail/` kept (LOGIN_URL, preview, MFA HTML rollback). Wagtail stays in `INSTALLED_APPS` (`DEBT-0003` PARTIAL).
+- **Owner VPS:** dumpdata + backup (`RISK-0010`) before attended migrate for `0011` then `0012` (merge order #60→#63→#64→this); do not set `CMS_CD_AUTO_MIGRATE`. LOG-0188.
+
 ## 2026-08-21 — Featured/diagram/screenshot → Media library
 
 - `Article.featured_image`, `ProjectDiagram.diagram_image`, `ProjectScreenshot.screenshot_image` now FK to `media.Media` (`content.0011_rewire_image_fks_to_media`, depends on `0010_entity_stories`).

@@ -55,6 +55,7 @@ ARTICLE_LIST_FIELDS = {
     "slug",
     "title",
     "excerpt",
+    "featured_image",
     "license",
     "reading_time_minutes",
     "published_at",
@@ -320,7 +321,8 @@ def test_detail_article_body_is_sanitized(api_client, db):
     assert "ok" in data["body"]
 
 
-def test_snippet_modules_importable():
-    from apps.content import admin as content_admin
+def test_snippet_modules_retired():
+    """Wagtail snippet ViewSets are no longer registered (SPA owns CRUD)."""
+    import apps.content.admin as content_admin
 
-    assert content_admin.ArticleViewSet.model is Article
+    assert not hasattr(content_admin, "ArticleViewSet")

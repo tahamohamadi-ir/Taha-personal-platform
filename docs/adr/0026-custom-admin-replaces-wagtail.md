@@ -79,8 +79,11 @@ site — pages, layouts, tabs, tags, filters and content:
 ## Cutover (2026-08-18)
 
 The custom React admin SPA is now served at `/admin/` in production.  Wagtail admin
-has been moved to `/admin-wagtail/` as a fallback path for TOTP enrollment, staff
-preview (`/admin-wagtail/preview/`), profile admin, and rollback.
+has been moved to `/admin-wagtail/` as a fallback path for staff
+preview (`/admin-wagtail/preview/`), profile HTML admin, LOGIN_URL, and MFA HTML
+rollback. SPA TOTP enrollment (`/admin/security` + `/api/v1/admin/auth/mfa/*`) is
+the primary path (LOG-0165 / LOG-0188); Wagtail HTML MFA is rollback-only until
+`DEBT-0003` fully closes.
 
 - `Dockerfile.cms` multi-stage build includes a Node.js stage that builds the admin
   frontend and bakes the dist into the CMS image.
@@ -90,3 +93,5 @@ preview (`/admin-wagtail/preview/`), profile admin, and rollback.
 - Smoke script checks both `/admin/` (SPA 200) and `/admin-wagtail/login/` (Wagtail 200).
 - Rollback: re-point `/admin/` to `include(wagtail_admin_urls)` and remove the SPA
   serving route; Wagtail is still installed and functional.
+- Uninstall progress (LOG-0188): RichTextField → TextField; local HTML sanitizer;
+  content snippet viewsets retired. Wagtail remains in `INSTALLED_APPS` (`DEBT-0003` PARTIAL).

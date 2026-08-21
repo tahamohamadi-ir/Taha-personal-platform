@@ -15,11 +15,11 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 from django.utils.html import strip_tags
-from wagtail.fields import RichTextField
 
 READING_WPM = 200
 
-# Keep in sync with WAGTAIL_RICHTEXT_FEATURES in config.settings.base (ADR-0022).
+# ADR-0022 allowlist — editor/docs contract; storage is plain TextField HTML.
+# Keep in sync with RICHTEXT_ALLOWED_FEATURES in config.settings.base.
 ARTICLE_RICHTEXT_FEATURES = [
     "h2",
     "h3",
@@ -357,7 +357,7 @@ class Series(LocalizedContentMixin, LifecycleMixin):
 class Article(LocalizedContentMixin, LifecycleMixin):
     """Published writing unit — rich text body, tags, series, license (P4)."""
 
-    body = RichTextField(features=ARTICLE_RICHTEXT_FEATURES, blank=True)
+    body = models.TextField(blank=True)
     excerpt = models.TextField(blank=True)
     featured_image = models.ForeignKey(
         "media.Media",
@@ -498,9 +498,9 @@ class ResearchTopic(LocalizedContentMixin, LifecycleMixin):
 
 
 class ResearchStatement(LocalizedContentMixin, LifecycleMixin):
-    """Independent research agenda statement (rich text; PDF deferred)."""
+    """Independent research agenda statement (HTML text; PDF deferred)."""
 
-    body = RichTextField(features=ARTICLE_RICHTEXT_FEATURES, blank=True)
+    body = models.TextField(blank=True)
     story = models.ForeignKey(
         "composition.CompositionPage",
         null=True,
@@ -745,10 +745,7 @@ class ProjectCaseStudyDetails(models.Model):
     )
     problem = models.TextField(blank=True)
     constraints = models.TextField(blank=True)
-    technical_decisions = RichTextField(
-        features=ARTICLE_RICHTEXT_FEATURES,
-        blank=True,
-    )
+    technical_decisions = models.TextField(blank=True)
     trade_offs = models.TextField(blank=True)
     outcomes_summary = models.TextField(blank=True)
     lessons_learned = models.TextField(blank=True)

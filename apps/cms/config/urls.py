@@ -19,8 +19,9 @@ urlpatterns = [
     # Custom React admin SPA (ADR-0026, ADM-1 cutover).
     path("admin/", serve_admin_ui, name="admin_spa"),
     path("admin/<path:spa_path>", serve_admin_ui, name="admin_spa_path"),
-    # Legacy Wagtail admin preserved at /admin-wagtail/ for TOTP enrollment,
-    # staff preview, profile admin, and rollback.  Will be removed in ADM-0.
+    # Legacy Wagtail admin preserved at /admin-wagtail/ for staff preview,
+    # LOGIN_URL, profile HTML, and MFA HTML rollback (SPA TOTP is primary).
+    # Removed when DEBT-0003 fully closes.
     path("admin-wagtail/", include(wagtail_admin_urls)),
     path("api/v1/admin/", admin_api.urls),
     path("api/profiles/<str:locale>", public_profile_list, name="public_profile_list"),
