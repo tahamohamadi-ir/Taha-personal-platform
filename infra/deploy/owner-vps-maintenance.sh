@@ -118,14 +118,26 @@ phase2_caddy_cutover() {
   sudo systemctl disable --now caddy
   systemctl is-active caddy 2>/dev/null && die "host caddy still active" || echo "host caddy: stopped"
 
-  info "2.3 — Confirm 80/443 free (or bound only by upcoming compose caddy)"
+  info "2.3 — Seed Compose ACME volume from host /var/lib/caddy (avoids Cloudflare 525 on first cutover)"
+  CADDY_VOL="${COMPOSE_PROJECT_NAME:-taha-cms}_caddy_data"
+  if [ -d /var/lib/caddy ] && [ -n "$(ls -A /var/lib/caddy 2>/dev/null)" ]; then
+    docker run --rm \
+      -v /var/lib/caddy:/src:ro \
+      -v "${CADDY_VOL}:/dest" \
+      alpine sh -c 'cp -a /src/. /dest/'
+    echo "Seeded ${CADDY_VOL} from /var/lib/caddy"
+  else
+    warn "/var/lib/caddy empty or missing — Compose will obtain fresh certs (525/TLS gap possible)"
+  fi
+
+  info "2.4 — Confirm 80/443 free (or bound only by upcoming compose caddy)"
   sudo ss -lntp | grep -E ':80\b|:443\b' || echo "80/443: no listeners yet (OK)"
 
-  info "2.4 — Start Compose edge caddy + reload"
+  info "2.5 — Start Compose edge caddy + reload"
   docker compose -f "$COMPOSE_FILE" --profile edge up -d caddy
   bash "${REPO}/infra/deploy/caddy-compose-reload.sh"
 
-  info "2.5 — Smoke (must PASS before CADDY_EDGE=compose)"
+  info "2.6 — Smoke (must PASS before CADDY_EDGE=compose)"
   bash "${REPO}/infra/deploy/smoke-cms.sh" "$SITE"
   bash "${REPO}/infra/deploy/smoke.sh" "$SITE"
 }
