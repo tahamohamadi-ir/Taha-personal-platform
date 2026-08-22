@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-08-22 — Attended CD migrate+smoke PASS (`65d6c91`)
+
+- workflow_dispatch [32554382271](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32554382271): `CMS smoke PASS` + `cd-cms-migrate PASS` after #71 smoke fix.
+- `RISK-0010` CLOSED. `DEFER-0027` / `DEFER-0031` remain OPEN. Never `CMS_CD_AUTO_MIGRATE`. LOG-0196.
+
 ## 2026-08-22 — Attended migrate FAIL (SPA smoke) + smoke fix
 
 - CD workflow_dispatch [32554028708](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32554028708) (`cms_image_tag=65d6c91`): schema `content.0009`–`0012` + `siteconfig.0002` applied; job **FAILED** smoke (`/admin/login/` SPA `#root` only). Not invent PASS.

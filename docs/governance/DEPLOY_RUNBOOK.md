@@ -232,16 +232,15 @@ rewire, Slice 4 Compose Caddy in repo, **Wagtail uninstall PR #69** /
 | Gate | Ledger | Status | Evidence |
 |---|---|---|---|
 | Slice 2 attended CD migrate **path** | `RISK-0012` | **CLOSED** | workflow_dispatch [32407698471](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32407698471) job **CMS image migrate (gated)** success (`cms_image_tag=2e200fe`, LOG-0179 / LOG-0180). Auto-migrate stays **unset**. |
-| Wagtail package removed (repo) | `DEBT-0003` | **CLOSED** | PR [#69](https://github.com/tahamohamadi-ir/Taha-personal-platform/pull/69); LOG-0193; SPA `/admin/` + Django `/staff/`. Production image swap is still owner (`RISK-0010`). |
-| Production schema `content.0009`–`0012` (+ `siteconfig.0002`) | `RISK-0010` | **OPEN** (schema applied; smoke FAIL) | Attended dispatch [32554028708](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32554028708) (`cms_image_tag=65d6c91`): `backup_ok`, migrations `0009`–`0012` + `siteconfig.0002` **OK**, live image `taha-cms:65d6c91`. Job **FAILED** — `smoke-cms.sh` rejected SPA `/admin/login/` shell (`#root` only). Not invent PASS. `/staff/login/` was PASS. Re-dispatch after SPA-aware smoke fix (LOG-0195). |
+| Wagtail package removed (repo+prod image) | `DEBT-0003` / `RISK-0010` | **CLOSED** | PR [#69](https://github.com/tahamohamadi-ir/Taha-personal-platform/pull/69); LOG-0193; live `taha-cms:65d6c91` + migrate/smoke PASS [32554382271](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32554382271) (LOG-0196). |
+| Production schema `content.0009`–`0012` (+ `siteconfig.0002`) | `RISK-0010` | **CLOSED** | Attended re-dispatch [32554382271](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32554382271) (`cms_image_tag=65d6c91`): `backup_ok`, `CMS smoke PASS`, `cd-cms-migrate PASS`. Prior attempt [32554028708](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32554028708) applied schema then failed SPA smoke (fixed in #71 / LOG-0195). Live image `taha-cms:65d6c91`. |
 | HMAC rebuild enable | `DEFER-0027` | **OPEN** | Code targets `rebuild-web.sh`; `REBUILD_TRIGGER_ENABLED` remains False until owner smoke + enable. |
 | Compose Caddy TLS edge | `DEFER-0031` / `RISK-0013` | **OPEN** | Repo Slice 4 ready; live edge remains host systemd Caddy until owner cutover below. Caddy must already proxy `/staff/*` before no-Wagtail image is live. |
 | Scheduled-publish timer | (ops; `DEBT-0005` code CLOSED) | **OPEN** | Units in `infra/cms/taha-publish-scheduled-content.*`; no install attestation on VPS. |
 
-Suggested CMS image for attended re-dispatch / smoke recheck: `65d6c91`
+Suggested CMS image pin remains `65d6c91`
 ([CMS image run 32552758418](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32552758418)).
-`origin/main` HEAD `da3d329` is docs-only (#70) — no `taha-cms:da3d329` tag.
-Do **not** deploy a pre-#69 image that still expects `/admin-wagtail/`.
+Later `main` commits that are docs/smoke-only (e.g. #70/#71) may lack a matching `taha-cms:<sha>` tag — pin the last green **CMS image** sha.
 
 ### Required sequence (owner)
 

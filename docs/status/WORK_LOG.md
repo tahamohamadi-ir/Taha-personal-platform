@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0196 — 2026-08-22 — Attended CD migrate+smoke PASS (65d6c91)
+
+- Outcome: After SPA-aware smoke fix (#71 / LOG-0195), re-dispatched CD `migrate_cms=true` `cms_image_tag=65d6c91` → [32554382271](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32554382271). Job **CMS image migrate (gated)** **success** with `backup_ok`, `CMS smoke PASS`, `cd-cms-migrate PASS`. Closed `RISK-0010` for image+schema+smoke. `DEFER-0027` / `DEFER-0031` / `RISK-0013` remain **OPEN**. Did **not** set `CMS_CD_AUTO_MIGRATE`. Owner still owes `rebuild-web.sh`, scheduled-publish timer, optional HMAC/Caddy, interactive SPA MFA check.
+- Why: Record honest PASS after smoke false-negative was fixed; unblock OWNER_CUTOVER evidence without inventing later owner steps.
+- Scope / files: DEPLOY_RUNBOOK § OWNER_CUTOVER evidence, RISK-0010, CHANGELOG, BACKLOG, this entry.
+- Commands or actions actually performed: `gh workflow run` + `gh run watch` on 32554382271; worktree `docs/attended-migrate-pass-evidence` from `origin/main`.
+- Verification actually performed and result: run conclusion **success**; migrate log shows `CMS smoke PASS` and `cd-cms-migrate PASS`.
+- Deferred or risk IDs: `RISK-0010` CLOSED; `DEFER-0027` OPEN; `DEFER-0031`/`RISK-0013` OPEN; `RISK-0012` CLOSED (path).
+- Rollback / recovery: pin previous CMS image via `update-cms.sh` (prior tag before first fail was `2e200fe`).
+
 ## LOG-0195 — 2026-08-22 — Attended CD migrate FAIL (SPA smoke) + smoke fix
 
 - Outcome: Dispatched CD `migrate_cms=true` `cms_image_tag=65d6c91` → [32554028708](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32554028708). VPS pulled image, `backup_ok`, applied `content.0009`–`0012` + `siteconfig.0002`, CMS healthy, `/staff/login/` PASS — but job **FAILED** on `FAIL /admin/login/ is not a sign-in page` because SPA HTML is `#root` only (no password text). **Not** a migrate PASS. Fixed `smoke-cms.sh` to accept SPA `#root` shell for `/admin/login/` while still requiring form markers on `/staff/login/`. Host + compose Caddy already proxy `/staff/*` on `origin/main` (#70). `DEFER-0027` / `DEFER-0031` stay **OPEN**. Did **not** set `CMS_CD_AUTO_MIGRATE`.
