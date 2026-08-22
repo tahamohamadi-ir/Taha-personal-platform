@@ -9,6 +9,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   createContent,
   createContentRevision,
+  createPreviewLink,
   fetchContentDetail,
   fetchContentRevisions,
   fetchContentSchema,
@@ -20,6 +21,7 @@ import {
   updateContent,
   type ApiError,
   type ContentDetail,
+  type ContentEntity,
   type ContentEntitySchema,
   type ContentFieldSpec,
   type ContentLocale,
@@ -54,6 +56,12 @@ const STORY_ENTITIES = new Set<StoryContentEntity>([
   "project",
   "research-topic",
   "research-statement",
+]);
+
+const PREVIEW_LINK_ENTITIES = new Set<ContentEntity>([
+  "landing",
+  "profile",
+  "article",
 ]);
 
 function isStoryEntity(entity: string): entity is StoryContentEntity {
@@ -353,6 +361,11 @@ export default function ContentEditPage(): ReactElement {
   const [revisions, setRevisions] = useState<ContentRevision[]>([]);
   const [revisionsError, setRevisionsError] = useState<unknown>(null);
   const [revisionsBusy, setRevisionsBusy] = useState(false);
+  const [previewLinkBusy, setPreviewLinkBusy] = useState(false);
+  const [previewLinkMessage, setPreviewLinkMessage] = useState<string | null>(
+    null
+  );
+  const [previewLinkError, setPreviewLinkError] = useState<unknown>(null);
 
   const listUrl = entity === null ? "/content" : `/content/${entity}`;
 
@@ -585,6 +598,27 @@ export default function ContentEditPage(): ReactElement {
     }
   }
 
+  async function handleCopyPreviewLink(): Promise<void> {
+    if (entity === null || !isEditing || previewLinkBusy) {
+      return;
+    }
+    setPreviewLinkBusy(true);
+    setPreviewLinkError(null);
+    setPreviewLinkMessage(null);
+    try {
+      const link = await createPreviewLink(entity, id);
+      await navigator.clipboard.writeText(link.url);
+      const minutes = Math.round(link.ttlSeconds / 60);
+      setPreviewLinkMessage(
+        `لینک پیش‌نمایش (${minutes} دقیقه) در کلیپ‌بورد کپی شد.`
+      );
+    } catch (err) {
+      setPreviewLinkError(err);
+    } finally {
+      setPreviewLinkBusy(false);
+    }
+  }
+
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>
   ): Promise<void> {
@@ -771,7 +805,33 @@ export default function ContentEditPage(): ReactElement {
         <Link to={listUrl} className="admin-btn">
           بازگشت
         </Link>
+        {isEditing && PREVIEW_LINK_ENTITIES.has(entity) ? (
+          <button
+            type="button"
+            className="admin-btn"
+            disabled={previewLinkBusy || saving}
+            onClick={() => void handleCopyPreviewLink()}
+          >
+            {previewLinkBusy ? "در حال ساخت…" : "کپی لینک پیش‌نمایش"}
+          </button>
+        ) : null}
       </div>
+
+      {previewLinkError !== null ? (
+        <div className="admin-banner-error mb-4" role="alert">
+          <p>
+            {toErrorMessage(
+              previewLinkError,
+              "ساخت لینک پیش‌نمایش با خطا مواجه شد."
+            )}
+          </p>
+        </div>
+      ) : null}
+      {previewLinkMessage !== null ? (
+        <div className="admin-banner-success mb-4" role="status">
+          <p>{previewLinkMessage}</p>
+        </div>
+      ) : null}
 
       {isEditing ? (
         <dl className="admin-card mb-4 flex flex-wrap gap-x-8 gap-y-2 text-sm">

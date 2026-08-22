@@ -17,9 +17,13 @@ preview and public render. Preview must never be indexed or cached publicly.
   sanitization is applied in preview and public output (single source of
   truth).
 - Preview pages carry `noindex, noarchive` and `no-cache`/`no-store` semantics.
-  Staff-session preview is implemented under `/admin/preview/<kind>/<pk>/`
-  (Landing/Profile/Article; MFA-gated). Public share-token preview is deferred
-  (`DEFER-0016`).
+  Staff-session preview is implemented under `/staff/preview/<kind>/<pk>/`
+  (Landing/Profile/Article; MFA-gated).
+- **Public share-token preview (DEFER-0016, closed 2026-08-22):** stateless
+  HMAC-SHA256 token (`preview:{kind}:{pk}:{exp}`), 15-minute TTL, route
+  `GET /preview/share/<token>/` with the same sanitization and
+  `noindex,nofollow,noarchive` + `Cache-Control: no-store`. Staff generate
+  links from the admin SPA; secret via `PREVIEW_SHARE_SECRET`.
 - The allowlist is pinned by a pytest that fails if it drifts.
 
 ## Consequences
@@ -27,4 +31,5 @@ preview and public render. Preview must never be indexed or cached publicly.
 - Stored-XSS surface is limited to the allowlist; further tightening (per-slice
   entity rules) can extend the list only through a new Task Spec.
 - A future frontend-faithful preview (P7) does not relax this minimum.
-- Public tokenized preview remains out of the staff-only minimum (DEFER-0016).
+- Public share links are secret URLs with time-bound access; no server-side
+  revocation before expiry.

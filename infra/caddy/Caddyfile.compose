@@ -75,6 +75,15 @@ tahamohamadi.ir {
 		}
 	}
 
+	redir /preview/share /preview/share/ 308
+
+	handle /preview/share/* {
+		reverse_proxy cms:8000 {
+			header_down X-Robots-Tag "noindex, nofollow, noarchive"
+			header_down Cache-Control "no-store, no-cache, must-revalidate"
+		}
+	}
+
 	# Django staff HTML after Wagtail removal (DEBT-0003 CLOSED / PR #69).
 	# `/admin/*` does not match `/staff/*` — both must be proxied.
 	redir /staff /staff/ 308

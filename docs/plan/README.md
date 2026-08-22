@@ -16,6 +16,7 @@ Last reconciled: 2026-08-21.
 | Spec | State | Who runs it | Notes |
 |---|---|---|---|
 | `cms-origin-and-full-stack-cd-task-spec.md` | IN_PROGRESS | agent | ADR-0027. Slice 0–2 + Slice 5 code done. Next: Slice 3 honesty / Slice 4 Caddy; owner migrate `0009`. |
+| `P3-public-preview-token-task-spec.md` | DONE | agent | DEFER-0016 CLOSED 2026-08-22 (LOG-0204). Owner: set `PREVIEW_SHARE_SECRET`, CMS rebuild, Caddy sync. |
 | `blog-story-composition-task-spec.md` | PARTIAL | agent | Blog story live; entity stories Slice 5 (`DEFER-0030` CLOSED in ledger). Owner migrate + rebuild. |
 | `rich-blocks-v2-task-spec.md` | DONE | agent | Six no-JS story blocks (accordion/tabs/timeline/counters/before_after/slider). Owner static rebuild after merge. |
 | `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | Featured→Media (`0011`, LOG-0187); Wagtail uninstall **CLOSED** (`DEBT-0003` / LOG-0193); HMAC `DEFER-0027`; Playwright `DEFER-0026`. |
@@ -86,6 +87,7 @@ panels with `display: none` may not.
 `P3-mfa-totp-enrollment-task-spec.md`,
 `P3-mfa-totp-recovery-codes-task-spec.md`,
 `P3-preview-boundary-task-spec.md`,
+`P3-public-preview-token-task-spec.md` — DONE; DEFER-0016 CLOSED (`LOG-0204`).
 `P3-public-api-caddy-task-spec.md` — DONE; `DEFER-0017` CLOSED (`LOG-0143`).
 
 **P4–P6 public routes**

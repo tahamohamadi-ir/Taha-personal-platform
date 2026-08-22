@@ -120,6 +120,13 @@ export interface ContentUpdatePayload {
   fields?: Record<string, string | number | boolean | null>;
 }
 
+export interface PreviewLink {
+  url: string;
+  path: string;
+  expiresAt: string;
+  ttlSeconds: number;
+}
+
 export interface TransitionPayload {
   to: ContentStatus;
   reason?: string;
@@ -387,6 +394,16 @@ export async function restoreContentRevision(
     `/content/${entity}/${id}/revisions/${revisionId}/restore`,
     { method: "POST", body: "{}" }
   );
+}
+
+export async function createPreviewLink(
+  entity: ContentEntity,
+  id: number
+): Promise<PreviewLink> {
+  return request<PreviewLink>(`/content/${entity}/${id}/preview-link`, {
+    method: "POST",
+    body: "{}",
+  });
 }
 
 export async function fetchTranslationQueue(): Promise<TranslationQueue> {
