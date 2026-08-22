@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0200 — 2026-08-22 — CD timer install FAIL (NOPASSWD) + wrapper fix
+
+- Outcome: First `install_scheduled_timer=true` dispatch → [32556305961](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32556305961) **FAILED**: deploy user lacks NOPASSWD for `bash infra/deploy/install-scheduled-publish-timer.sh`. Added root-owned wrapper `opt-taha-bin-install-scheduled-publish-timer.sh` → `/opt/taha/bin/install-scheduled-publish-timer.sh`, owner one-time `install-scheduled-publish-timer-sudo.sh`, and updated `cd-install-scheduled-publish-timer.sh` to `sudo -n /opt/taha/bin/install-scheduled-publish-timer.sh`. Re-dispatch pending merge + owner VPS prereq. Did **not** set `CMS_CD_AUTO_MIGRATE`.
+- Why: CD timer install must use the same scoped sudoers pattern as `update-release.sh` / `caddy-apply.sh`.
+- Scope / files: `infra/deploy/opt-taha-bin-install-scheduled-publish-timer.sh`, `infra/deploy/install-scheduled-publish-timer-sudo.sh`, `infra/deploy/cd-install-scheduled-publish-timer.sh`, SERVER_ACCESS_RUNBOOK, DEPLOY_RUNBOOK, cms README, CHANGELOG, this entry.
+- Commands or actions actually performed: analyzed run 32556305961; branch `fix/cd-timer-nopasswd-wrapper`.
+- Verification actually performed and result: repo-only; failed run confirms missing NOPASSWD grant.
+- Deferred or risk IDs: scheduled timer install **OPEN** (owner VPS prereq + re-dispatch); `DEFER-0027` OPEN; `DEFER-0031`/`RISK-0013` OPEN.
+- Rollback / recovery: revert PR; manual `sudo bash infra/deploy/install-scheduled-publish-timer.sh` on VPS.
+
 ## LOG-0199 — 2026-08-22 — Attended CD rebuild-web PASS
 
 - Outcome: Re-dispatched CD `rebuild_web=true` after #74 Docker CMS origin fix → [32555455704](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32555455704). Job **Web container rebuild (gated)** **success** with `PASS loopback /health.json`, `rebuild-web PASS`, `cd-rebuild-web PASS`. Public HTML now rebuilt from live CMS via Docker build (`CMS_API_BASE=https://tahamohamadi.ir` inside build; host preflight loopback). Slice 3/5 production applicability evidenced for post-migrate publish path. `DEFER-0027` / scheduled timer / `DEFER-0031` remain **OPEN**. Did **not** set `CMS_CD_AUTO_MIGRATE`.

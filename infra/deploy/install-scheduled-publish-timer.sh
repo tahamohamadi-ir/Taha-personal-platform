@@ -6,7 +6,8 @@
 #   git pull --ff-only origin main
 #   sudo bash infra/deploy/install-scheduled-publish-timer.sh
 #
-# Agents cannot SSH to production; this script is for owner-attended install only.
+# CD path (passwordless): owner installs wrapper first via
+# install-scheduled-publish-timer-sudo.sh, then dispatches install_scheduled_timer=true.
 
 set -euo pipefail
 
