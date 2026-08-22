@@ -49,6 +49,7 @@ False smoke: `smoke-cms.sh` probed `/admin-wagtail/accounts/login/` (302). Real 
 - `infra/deploy/cd-cms-migrate.sh`: `pg_dumpall` → pin `CMS_IMAGE` → `update-cms.sh` → `smoke-cms.sh`.
 - CD job `cms-migrate` (`.github/workflows/cd.yml`): **off** on ordinary pushes. Owner runs Actions → CD → **Run workflow** → `migrate_cms=true` (optional `cms_image_tag`). Unattended later only if repo var `CMS_CD_AUTO_MIGRATE=true` (skips when GHCR tag missing).
 - First attended production CD migrate **PASS** 2026-08-20 (`2e200fe`, Actions 32407698471). `RISK-0012` CLOSED on that evidence. Leave `CMS_CD_AUTO_MIGRATE` unset. HMAC still off (`DEFER-0027`).
+- Attended web rebuild path (Slice 1+): `infra/deploy/cd-rebuild-web.sh` + CD job `rebuild-web` gated by `workflow_dispatch` `rebuild_web=true` only (LOG-0197). No auto var. Production PASS not recorded until owner dispatch succeeds.
 
 ### Slice 3 — CMS origin honesty
 

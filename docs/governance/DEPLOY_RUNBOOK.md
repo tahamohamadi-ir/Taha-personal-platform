@@ -182,6 +182,35 @@ preview, MFA fallback after Wagtail removal / PR #69). Do **not** rely on
   `CMS_CD_AUTO_MIGRATE` unset** (`RISK-0012` CLOSED for the attended path only;
   do not enable unattended migrate). See § OWNER_CUTOVER for the post-merge
   schema sequence (`content.0009`–`0012`).
+- **CD web rebuild (ADR-0027 Slice 1+):** not on every push. Ordinary `main`
+  pushes must not rebuild the web container on the VPS. There is no repository
+  variable that enables unattended rebuild (unlike the optional
+  `CMS_CD_AUTO_MIGRATE` path for CMS).
+
+  **Owner checklist — attended web rebuild**
+
+  1. Confirm CMS is healthy on loopback (`curl -fsS http://127.0.0.1:18000/health/`).
+  2. GitHub → Actions → **CD — Deploy to production** → **Run workflow**.
+  3. Set `rebuild_web` = `true` (leave `migrate_cms` = `false` unless schema
+     migrate is also required in the same dispatch).
+  4. Wait for job **Web container rebuild (gated)** to finish **success**.
+  5. In that job’s log, confirm both lines: `rebuild-web PASS` and
+     `cd-rebuild-web PASS` (loopback `/health.json` smoke is inside
+     `rebuild-web.sh`).
+
+  No production attended PASS recorded yet — do not invent PASS until a dispatch
+  job succeeds.
+
+  Manual equivalent (SSH as `deploy`):
+
+  ```bash
+  cd /home/deploy/cms-repo
+  git pull --ff-only origin main
+  bash infra/deploy/cd-rebuild-web.sh
+  ```
+
+  Rollback: previous `taha-web:local` build or re-run with a pinned git ref.
+  See § OWNER_CUTOVER step 5.
 - Superuser (owner interactive only):
   `docker compose -f infra/cms/docker-compose.cms.yml exec cms python manage.py createsuperuser`
   (`python` inside the image is the venv — Django is on `PATH`).
@@ -235,8 +264,9 @@ rewire, Slice 4 Compose Caddy in repo, **Wagtail uninstall PR #69** /
 | Wagtail package removed (repo+prod image) | `DEBT-0003` / `RISK-0010` | **CLOSED** | PR [#69](https://github.com/tahamohamadi-ir/Taha-personal-platform/pull/69); LOG-0193; live `taha-cms:65d6c91` + migrate/smoke PASS [32554382271](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32554382271) (LOG-0196). |
 | Production schema `content.0009`–`0012` (+ `siteconfig.0002`) | `RISK-0010` | **CLOSED** | Attended re-dispatch [32554382271](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32554382271) (`cms_image_tag=65d6c91`): `backup_ok`, `CMS smoke PASS`, `cd-cms-migrate PASS`. Prior attempt [32554028708](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32554028708) applied schema then failed SPA smoke (fixed in #71 / LOG-0195). Live image `taha-cms:65d6c91`. |
 | HMAC rebuild enable | `DEFER-0027` | **OPEN** | Code targets `rebuild-web.sh`; `REBUILD_TRIGGER_ENABLED` remains False until owner smoke + enable. |
+| Attended CD web rebuild | (ops) | **OPEN** | `cd-rebuild-web.sh` + CD job **Web container rebuild (gated)** (`rebuild_web=true`); no production PASS yet. |
 | Compose Caddy TLS edge | `DEFER-0031` / `RISK-0013` | **OPEN** | Repo Slice 4 ready; live edge remains host systemd Caddy until owner cutover below. Caddy must already proxy `/staff/*` before no-Wagtail image is live. |
-| Scheduled-publish timer | (ops; `DEBT-0005` code CLOSED) | **OPEN** | Units in `infra/cms/taha-publish-scheduled-content.*`; no install attestation on VPS. |
+| Scheduled-publish timer | (ops; `DEBT-0005` code CLOSED) | **OPEN** | Units in `infra/cms/taha-publish-scheduled-content.*`; optional install script `infra/deploy/install-scheduled-publish-timer.sh`; no install attestation on VPS. |
 
 Suggested CMS image pin remains `65d6c91`
 ([CMS image run 32552758418](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32552758418)).
@@ -270,15 +300,31 @@ Later `main` commits that are docs/smoke-only (e.g. #70/#71) may lack a matching
    (`content.0009`…`0012`, `siteconfig.0002` as applicable); SPA `/admin/`
    login + `/staff/login/` + `smoke-cms.sh` PASS; no dependency on
    `/admin-wagtail/`.
-5. **`rebuild-web.sh`** so public HTML picks up new schema/projections:
+5. **`rebuild-web.sh`** so public HTML picks up new schema/projections
+   (preferred: attended CD path above):
+
+   - Actions → **CD — Deploy to production** → **Run workflow**
+   - `rebuild_web=true` (leave `migrate_cms=false` unless migrate is also needed)
+   - Confirm job **Web container rebuild (gated)** **success** and log lines
+     `rebuild-web PASS` + `cd-rebuild-web PASS`
+   - Or manual SSH as `deploy`:
 
    ```bash
    cd /home/deploy/cms-repo
    git pull --ff-only origin main
-   bash infra/deploy/rebuild-web.sh
+   bash infra/deploy/cd-rebuild-web.sh
    ```
 
-6. **Install scheduled-publish timer** (needed for `scheduled` → published):
+6. **Install scheduled-publish timer** (needed for `scheduled` → published).
+   Owner-attended only (requires root on VPS):
+
+   ```bash
+   cd /home/deploy/cms-repo
+   git pull --ff-only origin main
+   sudo bash infra/deploy/install-scheduled-publish-timer.sh
+   ```
+
+   Manual equivalent:
 
    ```bash
    sudo install -m 755 infra/cms/publish-scheduled-content.sh /usr/local/sbin/taha-publish-scheduled-content
