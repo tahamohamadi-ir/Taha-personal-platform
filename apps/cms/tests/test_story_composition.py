@@ -158,6 +158,109 @@ def test_story_page_rejects_hero_block(admin_api_client):
     assert response.status_code == 400
 
 
+def test_story_schema_includes_rich_blocks_v2(admin_api_client):
+    response = admin_api_client.get("/api/v1/admin/composition/schema?kind=story")
+    assert response.status_code == 200
+    types = {item["type"] for item in response.json()["blockTypes"]}
+    assert {"accordion", "tabs", "timeline", "counters", "before_after", "slider"} <= types
+
+
+def test_story_accordion_validates_items(db):
+    validate_block_settings(
+        "accordion",
+        {"items": [{"title": "One", "body": "<p>Body</p>"}]},
+        kind=KIND_STORY,
+    )
+    with pytest.raises(BlockValidationError):
+        validate_block_settings("accordion", {"items": []}, kind=KIND_STORY)
+    with pytest.raises(BlockValidationError):
+        validate_block_settings(
+            "accordion",
+            {"items": [{"title": "One", "body": "<p>x</p>", "extra": "nope"}]},
+            kind=KIND_STORY,
+        )
+
+
+def test_story_tabs_requires_two_panels(db):
+    validate_block_settings(
+        "tabs",
+        {
+            "items": [
+                {"label": "A", "body": "<p>1</p>"},
+                {"label": "B", "body": "<p>2</p>"},
+            ]
+        },
+        kind=KIND_STORY,
+    )
+    with pytest.raises(BlockValidationError):
+        validate_block_settings(
+            "tabs",
+            {"items": [{"label": "Only", "body": "<p>1</p>"}]},
+            kind=KIND_STORY,
+        )
+
+
+def test_story_timeline_and_counters(db):
+    validate_block_settings(
+        "timeline",
+        {"items": [{"date": "2024", "title": "Event", "body": "<p>Detail</p>"}]},
+        kind=KIND_STORY,
+    )
+    validate_block_settings(
+        "counters",
+        {"items": [{"value": "42", "label": "Projects"}]},
+        kind=KIND_STORY,
+    )
+    with pytest.raises(BlockValidationError):
+        validate_block_settings(
+            "counters",
+            {"items": [{"value": "42"}]},
+            kind=KIND_STORY,
+        )
+
+
+def test_story_before_after_requires_image_media(db, media_root):
+    before = Media.objects.create(
+        file=SimpleUploadedFile("before.png", PNG_1X1, content_type="image/png"),
+        title="Before",
+        is_active=True,
+    )
+    after = Media.objects.create(
+        file=SimpleUploadedFile("after.png", PNG_1X1, content_type="image/png"),
+        title="After",
+        is_active=True,
+    )
+    validate_block_settings(
+        "before_after",
+        {"beforeMediaId": before.pk, "afterMediaId": after.pk},
+        kind=KIND_STORY,
+    )
+    with pytest.raises(BlockValidationError):
+        validate_block_settings(
+            "before_after",
+            {"beforeMediaId": before.pk, "afterMediaId": before.pk, "unknown": "x"},
+            kind=KIND_STORY,
+        )
+
+
+def test_story_slider_allows_up_to_twelve_images(db, media_root):
+    images = [
+        Media.objects.create(
+            file=SimpleUploadedFile(f"slide-{i}.png", PNG_1X1, content_type="image/png"),
+            title=f"Slide {i}",
+            is_active=True,
+        )
+        for i in range(12)
+    ]
+    validate_block_settings(
+        "slider",
+        {"mediaIds": [image.pk for image in images]},
+        kind=KIND_STORY,
+    )
+    with pytest.raises(BlockValidationError):
+        validate_block_settings("slider", {"mediaIds": []}, kind=KIND_STORY)
+
+
 def test_public_article_story_published_only(db, media_root):
     image = Media.objects.create(
         file=SimpleUploadedFile("photo.png", PNG_1X1, content_type="image/png"),

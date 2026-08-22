@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0203 — 2026-08-22 — Rich blocks v2 (story catalog)
+
+- Outcome: Added six story-only composition blocks — `accordion`, `tabs`, `timeline`, `counters`, `before_after`, `slider` — with fail-closed validators (`blocks.py`), public projection sanitization (`projection.py`), admin SPA `itemList` editor + before/after media fields, and no-JS Astro render in `StoryBody.astro`. Spec `docs/plan/rich-blocks-v2-task-spec.md` **DONE**; Task-list §14 U3 ticked.
+- Why: Close backlog PR4 / §14 U3 rich block catalog without JavaScript on the public site.
+- Scope / files: `apps/cms/apps/composition/blocks.py`, `projection.py`, `tests/test_story_composition.py`, `apps/cms/admin-frontend/**`, `apps/web/src/components/StoryBody.astro`, `docs/plan/rich-blocks-v2-task-spec.md`, `Task-list.md`, `CHANGELOG.md`.
+- Commands or actions actually performed: branch `feat/rich-blocks-v2` from `origin/main`.
+- Verification actually performed and result: `uv run pytest -q tests/test_story_composition.py` — 16 passed; `uv run ruff check .` — pass; `npm run check` + `npm run build` in `apps/web` — 0 errors; `npm run check` in `admin-frontend` — pass.
+- Deferred or risk IDs: none new; owner static rebuild after merge.
+- Rollback / recovery: revert PR; no migrations.
+
 ## LOG-0202 — 2026-08-22 — ADM-1 / Staff-gated admin OpenAPI docs
 
 - Outcome: Enabled django-ninja Swagger UI and OpenAPI schema on the custom admin API at `/api/v1/admin/docs` and `/api/v1/admin/openapi.json`. Anonymous and staff-without-OTP sessions receive **404** (not redirect). Verified staff+OTP sessions receive 200. Responses include `X-Robots-Tag: noindex, nofollow` and `Cache-Control: no-store`. Caddy unchanged — admin docs ride existing `/api/*` reverse proxy to CMS loopback.

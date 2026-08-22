@@ -665,8 +665,16 @@ export interface CompositionDetail {
 export interface CompositionFieldSpec {
   key: string;
   label: string;
-  type: "text" | "textarea" | "number" | "select" | "media" | "mediaList";
+  type: "text" | "textarea" | "number" | "select" | "media" | "mediaList" | "itemList";
   options?: string[];
+  minItems?: number;
+  maxItems?: number;
+  itemFields?: Array<{
+    key: string;
+    label: string;
+    type: "text" | "textarea";
+    required?: boolean;
+  }>;
 }
 
 export interface CompositionBlockType {

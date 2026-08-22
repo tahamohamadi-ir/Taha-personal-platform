@@ -14,7 +14,7 @@ from apps.media.models import Media
 
 _MATH_TAG = re.compile(r"<\s*math\b", re.IGNORECASE)
 
-_MEDIA_KEYS = ("mediaId", "mediaIds")
+_MEDIA_KEYS = ("mediaId", "mediaIds", "beforeMediaId", "afterMediaId")
 
 
 def sanitize_story_text(raw: str) -> str:
@@ -61,6 +61,12 @@ def _collect_media_ids(page: CompositionPage) -> set[int]:
                         ids.add(item)
                     elif isinstance(item, str) and item.isdigit():
                         ids.add(int(item))
+            for media_key in ("beforeMediaId", "afterMediaId"):
+                media_id = settings.get(media_key)
+                if isinstance(media_id, int):
+                    ids.add(media_id)
+                elif isinstance(media_id, str) and media_id.isdigit():
+                    ids.add(int(media_id))
     return ids
 
 
@@ -87,18 +93,34 @@ def _project_settings(block_type: str, settings: dict, media_map: dict[int, dict
     for key, value in settings.items():
         if key == "html" and block_type == "math":
             projected[key] = sanitize_math_html(value if isinstance(value, str) else "")
+        elif key == "items" and isinstance(value, list):
+            items = []
+            for item in value:
+                if not isinstance(item, dict):
+                    continue
+                projected_item = dict(item)
+                body = projected_item.get("body")
+                if isinstance(body, str):
+                    projected_item["body"] = sanitize_story_text(body)
+                items.append(projected_item)
+            projected[key] = items
         elif key in ("body", "text", "caption", "source", "label") and isinstance(value, str):
             projected[key] = sanitize_story_text(value) if key in ("body",) else value
         elif key not in _MEDIA_KEYS:
             projected[key] = value
-    media_id = settings.get("mediaId")
-    pk = None
-    if isinstance(media_id, int):
-        pk = media_id
-    elif isinstance(media_id, str) and media_id.isdigit():
-        pk = int(media_id)
-    if pk is not None and pk in media_map:
-        projected["media"] = media_map[pk]
+    for media_key, out_key in (
+        ("mediaId", "media"),
+        ("beforeMediaId", "beforeMedia"),
+        ("afterMediaId", "afterMedia"),
+    ):
+        media_id = settings.get(media_key)
+        pk = None
+        if isinstance(media_id, int):
+            pk = media_id
+        elif isinstance(media_id, str) and media_id.isdigit():
+            pk = int(media_id)
+        if pk is not None and pk in media_map:
+            projected[out_key] = media_map[pk]
     media_ids = settings.get("mediaIds")
     if isinstance(media_ids, list):
         items = []

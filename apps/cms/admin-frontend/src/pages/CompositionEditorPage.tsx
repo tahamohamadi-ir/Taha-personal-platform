@@ -23,6 +23,7 @@ import {
   type MediaItem,
 } from "../lib/api";
 import MediaPicker from "../components/MediaPicker";
+import ItemListField, { itemsOf } from "../components/ItemListField";
 import {
   blockLabel,
   emptyBlock,
@@ -337,15 +338,16 @@ export default function CompositionEditorPage(): ReactElement {
     const { sectionIndex, blockIndex, key } = pendingMediaFor;
     setMediaById((prev) => ({ ...prev, [media.id]: media }));
     const block = sections[sectionIndex].blocks[blockIndex];
-    if (key === "mediaId") {
-      setFieldValue(sectionIndex, blockIndex, "mediaId", media.id);
-    } else if (key === "mediaIds") {
+    if (key === "mediaIds") {
+      const maxItems = block.blockType === "slider" ? 12 : 8;
       const current = mediaIdsOf(block);
-      if (current.length >= 8 || current.includes(media.id)) {
+      if (current.length >= maxItems || current.includes(media.id)) {
         setPendingMediaFor(null);
         return;
       }
       setFieldValue(sectionIndex, blockIndex, "mediaIds", [...current, media.id]);
+    } else if (key === "mediaId" || key === "beforeMediaId" || key === "afterMediaId") {
+      setFieldValue(sectionIndex, blockIndex, key, media.id);
     }
     setPendingMediaFor(null);
   }
@@ -375,9 +377,13 @@ export default function CompositionEditorPage(): ReactElement {
           const missing =
             fieldKey === "mediaIds"
               ? !(Array.isArray(value) && value.length >= 1)
-              : fieldKey === "mediaId"
+              : fieldKey === "mediaId" ||
+                  fieldKey === "beforeMediaId" ||
+                  fieldKey === "afterMediaId"
                 ? typeof value !== "number"
-                : typeof value !== "string" || value.trim() === "";
+                : fieldKey === "items"
+                  ? !(Array.isArray(value) && value.length >= 1)
+                  : typeof value !== "string" || value.trim() === "";
           if (missing) {
             errors[path] = [`فیلد «${fieldKey}» الزامی است.`];
             break;
@@ -536,8 +542,12 @@ export default function CompositionEditorPage(): ReactElement {
       );
     }
     if (spec.type === "media" || spec.type === "mediaList") {
-      const mediaId = spec.type === "media" ? (block.settings.mediaId as number | undefined) : undefined;
+      const mediaId =
+        spec.type === "media"
+          ? (block.settings[spec.key] as number | undefined)
+          : undefined;
       const ids = spec.type === "mediaList" ? mediaIdsOf(block) : [];
+      const maxItems = block.blockType === "slider" ? 12 : 8;
       return (
         <div key={spec.key} className="admin-form-row">
           <label className="admin-label">{spec.label}</label>
@@ -553,7 +563,7 @@ export default function CompositionEditorPage(): ReactElement {
               <button
                 type="button"
                 className="admin-btn"
-                onClick={() => openMediaPicker(sectionIndex, blockIndex, "mediaId")}
+                onClick={() => openMediaPicker(sectionIndex, blockIndex, spec.key)}
               >
                 انتخاب رسانه
               </button>
@@ -561,7 +571,7 @@ export default function CompositionEditorPage(): ReactElement {
                 <button
                   type="button"
                   className="admin-btn"
-                  onClick={() => setFieldValue(sectionIndex, blockIndex, "mediaId", null)}
+                  onClick={() => setFieldValue(sectionIndex, blockIndex, spec.key, null)}
                 >
                   حذف
                 </button>
@@ -588,14 +598,32 @@ export default function CompositionEditorPage(): ReactElement {
                 type="button"
                 className="admin-btn mt-1"
                 onClick={() => openMediaPicker(sectionIndex, blockIndex, "mediaIds")}
-                disabled={ids.length >= 8}
+                disabled={ids.length >= maxItems}
               >
-                افزودن تصویر ({ids.length}/8)
+                افزودن تصویر ({ids.length}/{maxItems})
               </button>
             </div>
           )}
           {error !== undefined && <p className="admin-field-error">{error}</p>}
         </div>
+      );
+    }
+    if (spec.type === "itemList") {
+      const listItems = itemsOf(block.settings, spec.key);
+      const seeded =
+        listItems.length > 0
+          ? listItems
+          : spec.minItems === 2
+            ? [{ label: "", body: "" }, { label: "", body: "" }]
+            : [{ title: "", body: "" }];
+      return (
+        <ItemListField
+          key={spec.key}
+          spec={spec}
+          items={seeded}
+          error={error}
+          onChange={(next) => setFieldValue(sectionIndex, blockIndex, spec.key, next)}
+        />
       );
     }
     return (

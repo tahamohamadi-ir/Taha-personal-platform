@@ -16,6 +16,7 @@ import {
   type MediaItem,
 } from "../lib/api";
 import MediaPicker from "./MediaPicker";
+import ItemListField, { itemsOf } from "./ItemListField";
 import {
   blockLabel,
   emptyBlock,
@@ -271,14 +272,16 @@ export default function EntityStoryEditor({
     }
     const { sectionIndex, blockIndex, key } = pendingMediaFor;
     setMediaById((prev) => ({ ...prev, [media.id]: media }));
-    if (key === "mediaId") {
-      setFieldValue(sectionIndex, blockIndex, "mediaId", media.id);
-    } else if (key === "mediaIds") {
-      const current = sections[sectionIndex].blocks[blockIndex].settings.mediaIds;
+    const block = sections[sectionIndex].blocks[blockIndex];
+    if (key === "mediaIds") {
+      const maxItems = block.blockType === "slider" ? 12 : 8;
+      const current = block.settings.mediaIds;
       const ids = Array.isArray(current) ? (current as number[]) : [];
-      if (ids.length < 8 && !ids.includes(media.id)) {
+      if (ids.length < maxItems && !ids.includes(media.id)) {
         setFieldValue(sectionIndex, blockIndex, "mediaIds", [...ids, media.id]);
       }
+    } else if (key === "mediaId" || key === "beforeMediaId" || key === "afterMediaId") {
+      setFieldValue(sectionIndex, blockIndex, key, media.id);
     }
     setPendingMediaFor(null);
   }
@@ -296,9 +299,13 @@ export default function EntityStoryEditor({
           const missing =
             fieldKey === "mediaIds"
               ? !(Array.isArray(value) && value.length >= 1)
-              : fieldKey === "mediaId"
+              : fieldKey === "mediaId" ||
+                  fieldKey === "beforeMediaId" ||
+                  fieldKey === "afterMediaId"
                 ? typeof value !== "number"
-                : typeof value !== "string" || value.trim() === "";
+                : fieldKey === "items"
+                  ? !(Array.isArray(value) && value.length >= 1)
+                  : typeof value !== "string" || value.trim() === "";
           if (missing) {
             errors.push(`بخش ${i + 1} بلوک ${j + 1}: ${fieldKey}`);
           }
@@ -388,10 +395,15 @@ export default function EntityStoryEditor({
       );
     }
     if (spec.type === "media" || spec.type === "mediaList") {
-      const mediaId = spec.type === "media" ? (block.settings.mediaId as number | undefined) : undefined;
-      const ids = spec.type === "mediaList" && Array.isArray(block.settings.mediaIds)
-        ? (block.settings.mediaIds as number[])
-        : [];
+      const mediaId =
+        spec.type === "media"
+          ? (block.settings[spec.key] as number | undefined)
+          : undefined;
+      const ids =
+        spec.type === "mediaList" && Array.isArray(block.settings.mediaIds)
+          ? (block.settings.mediaIds as number[])
+          : [];
+      const maxItems = block.blockType === "slider" ? 12 : 8;
       return (
         <div key={spec.key} className="admin-form-row">
           <label className="admin-label">{spec.label}</label>
@@ -406,7 +418,7 @@ export default function EntityStoryEditor({
                 type="button"
                 className="admin-btn"
                 onClick={() =>
-                  setPendingMediaFor({ sectionIndex, blockIndex, key: "mediaId" })
+                  setPendingMediaFor({ sectionIndex, blockIndex, key: spec.key })
                 }
               >
                 انتخاب رسانه
@@ -428,12 +440,30 @@ export default function EntityStoryEditor({
                 onClick={() =>
                   setPendingMediaFor({ sectionIndex, blockIndex, key: "mediaIds" })
                 }
+                disabled={ids.length >= maxItems}
               >
-                افزودن رسانه
+                افزودن رسانه ({ids.length}/{maxItems})
               </button>
             </div>
           )}
         </div>
+      );
+    }
+    if (spec.type === "itemList") {
+      const listItems = itemsOf(block.settings, spec.key);
+      const seeded =
+        listItems.length > 0
+          ? listItems
+          : spec.minItems === 2
+            ? [{ label: "", body: "" }, { label: "", body: "" }]
+            : [{ title: "", body: "" }];
+      return (
+        <ItemListField
+          key={spec.key}
+          spec={spec}
+          items={seeded}
+          onChange={(next) => setFieldValue(sectionIndex, blockIndex, spec.key, next)}
+        />
       );
     }
     return (
