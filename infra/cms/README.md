@@ -96,7 +96,15 @@ bash infra/deploy/cd-rebuild-web.sh
 Scheduled publish timer (owner root): Actions → **CD — Deploy to production** →
 Run workflow → `install_scheduled_timer=true`, then confirm job **Scheduled
 publish timer install (gated)** PASS and log lines `install-scheduled-publish-timer PASS`
-/ `cd-install-scheduled-publish-timer PASS`. Manual:
+/ `cd-install-scheduled-publish-timer PASS`. **One-time VPS prereq** (before first CD dispatch):
+
+```bash
+cd /home/deploy/cms-repo
+git pull --ff-only origin main
+sudo bash infra/deploy/install-scheduled-publish-timer-sudo.sh
+```
+
+Manual (interactive sudo):
 
 ```bash
 cd /home/deploy/cms-repo

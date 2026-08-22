@@ -112,7 +112,7 @@ those containers (RISK-0004, closed 2026-08-16).
 
 - The step-by-step runbook is `infra/deploy/decommission-old-stack.md`.
 - The OWNER executes the sudo steps (the `deploy` user's NOPASSWD sudo covers
-  only `/opt/taha/bin/update-release.sh` and `/opt/taha/bin/caddy-apply.sh`).
+  fixed scripts under `/opt/taha/bin/` — see `SERVER_ACCESS_RUNBOOK.md`).
 - `docker compose down` runs WITHOUT `-v`: postgres volumes are preserved and
   the restic backups under `/opt/taha/backups` are never touched.
 - This section is informational; it does not change the production deploy or
@@ -269,7 +269,7 @@ rewire, Slice 4 Compose Caddy in repo, **Wagtail uninstall PR #69** /
 | HMAC rebuild enable | `DEFER-0027` | **OPEN** | Code targets `rebuild-web.sh`; `REBUILD_TRIGGER_ENABLED` remains False until owner smoke + enable. |
 | Attended CD web rebuild | (ops) | **CLOSED** | workflow_dispatch [32555455704](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32555455704) job **Web container rebuild (gated)** success: `rebuild-web PASS` + `cd-rebuild-web PASS` (LOG-0199). First attempt [32555108949](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32555108949) failed Docker loopback (#74 / LOG-0198). Live web image `taha-web:local`. |
 | Compose Caddy TLS edge | `DEFER-0031` / `RISK-0013` | **OPEN** | Repo Slice 4 ready; live edge remains host systemd Caddy until owner cutover below. Caddy must already proxy `/staff/*` before no-Wagtail image is live. |
-| Scheduled-publish timer | (ops; `DEBT-0005` code CLOSED) | **OPEN** | Units in `infra/cms/taha-publish-scheduled-content.*`; optional install script `infra/deploy/install-scheduled-publish-timer.sh`; no install attestation on VPS. |
+| Scheduled-publish timer | (ops; `DEBT-0005` code CLOSED) | **OPEN** | Units in `infra/cms/taha-publish-scheduled-content.*`; install via `/opt/taha/bin/install-scheduled-publish-timer.sh` (owner one-time sudoers prereq); no install attestation on VPS. |
 
 Suggested CMS image pin remains `65d6c91`
 ([CMS image run 32552758418](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32552758418)).
@@ -335,7 +335,15 @@ Later `main` commits that are docs/smoke-only (e.g. #70/#71) may lack a matching
 
    No production attended PASS recorded yet — do not invent PASS until a dispatch
    job succeeds. CD path requires deploy user **passwordless sudo** for
-   `install-scheduled-publish-timer.sh` (`sudo -n`).
+   `/opt/taha/bin/install-scheduled-publish-timer.sh` (`sudo -n`).
+
+   **Owner one-time VPS prereq** (before first CD timer dispatch; run as root):
+
+   ```bash
+   cd /home/deploy/cms-repo
+   git pull --ff-only origin main
+   sudo bash infra/deploy/install-scheduled-publish-timer-sudo.sh
+   ```
 
    Manual equivalent (SSH; interactive sudo OK):
 

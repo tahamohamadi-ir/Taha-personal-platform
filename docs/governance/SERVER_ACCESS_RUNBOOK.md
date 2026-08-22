@@ -153,14 +153,17 @@ This does not change the existing root `A` or `www` CNAME. Current Cloudflare mo
 
 Before the audit, create a dedicated Google Drive folder named `taha-personal-platform-backups` under the owner's account. Do not share its OAuth code or credentials. After secure server access is audited, the owner will complete interactive OAuth consent locally and the implementation will configure encrypted restic/rclone, scheduled retention and a staging restore rehearsal according to `docs/governance/BACKUP_POLICY.md`.
 
-## Scoped agent operations (passwordless sudo for two fixed scripts)
+## Scoped agent operations (passwordless sudo for fixed root-owned scripts)
 
-To let an agent perform the documented release switch and the 404 Caddy fix
-without the interactive sudo password, the owner may install a scoped sudoers
-grant. The grant covers ONLY two root-owned scripts; it does NOT give general
-sudo, and the scripts cannot be modified by the deploy user.
+To let an agent perform the documented release switch, Caddy sync/apply, CMS
+update, and scheduled-publish timer install without the interactive sudo
+password, the owner may install scoped sudoers grants. Each grant covers ONLY
+root-owned scripts in `/opt/taha/bin`; it does NOT give general sudo, and the
+scripts cannot be modified by the deploy user.
 
 ### Owner one-time setup (run as root on the VPS)
+
+Base scripts (release switch + Caddy 404 fix):
 
 ```bash
 install -d -m 0755 /opt/taha/bin
@@ -172,17 +175,37 @@ chmod 0440 /etc/sudoers.d/taha-deploy
 visudo -c
 ```
 
+CMS update wrapper (extends sudoers — run from synced cms-repo):
+
+```bash
+cd /home/deploy/cms-repo
+git pull --ff-only origin main
+sudo bash infra/deploy/install-update-cms-sudo.sh
+```
+
+Scheduled-publish timer wrapper (extends sudoers — required before CD
+`install_scheduled_timer=true` dispatch):
+
+```bash
+cd /home/deploy/cms-repo
+git pull --ff-only origin main
+sudo bash infra/deploy/install-scheduled-publish-timer-sudo.sh
+```
+
 ### What the agent may then run (and nothing else)
 
 ```text
-sudo -n /opt/taha/bin/update-release.sh <absolute-release-path>   # atomic current switch
-sudo -n /opt/taha/bin/caddy-apply.sh                              # fixed 404 handle_errors fix
+sudo -n /opt/taha/bin/update-release.sh <absolute-release-path>              # atomic current switch
+sudo -n /opt/taha/bin/caddy-apply.sh                                         # fixed 404 handle_errors fix
+sudo -n /opt/taha/bin/update-cms.sh <CMS_IMAGE>                              # CMS image pull + up
+sudo -n /opt/taha/bin/caddy-sync.sh <Caddyfile-path>                         # deploy repo Caddyfile
+sudo -n /opt/taha/bin/install-scheduled-publish-timer.sh [repo-dir]     # systemd timer install
 ```
 
 ### Security properties and revocation
 
-- The two scripts are `root:root 0755` in `/opt/taha/bin`; the deploy user
-  cannot edit them, so the grant cannot be escalated to arbitrary root code.
+- Scripts are `root:root 0755` in `/opt/taha/bin`; the deploy user cannot edit
+  them, so the grant cannot be escalated to arbitrary root code.
 - `caddy-apply.sh` applies a fixed, idempotent transformation (no patch-file
   argument), with `caddy validate` gate and automatic backup restore on failure.
 - Every run is auditable: `/var/log/auth.log` (sudo), `systemctl status caddy`
