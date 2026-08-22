@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0208 — 2026-08-22 — Goal completion audit (VPS re-attestation)
+
+- Outcome: Completion audit for ADR-0027 Slice 3 / DEFER-0027 / DEFER-0031 / DEFER-0016 / rich blocks v2 / OpenAPI / RISK-0005-0006. **Repo:** `main` at `3572230`; PRs #79–#84 merged. **VPS SSH** `deploy@85.192.29.196:2222` (key `taha-cd-deploy`): CMS health `{"status":"ok","db":"ok"}`; image `ghcr.io/tahamohamadi-ir/taha-cms:e2cd1b6`; `smoke-cms.sh` → **PASS**; `REBUILD_TRIGGER_ENABLED=true` in container; `REBUILD_TRIGGER_SECRET` length 44; bad rebuild token → **403**. **`PREVIEW_SHARE_SECRET` empty** (length 0). Host Caddy **active**; no Compose `caddy`; `sudo -n` → password required; apt upgradable **14**; SSH listens **22+2222**. Live `/en/about/` meta `cms-build-origin=cms`; anonymous `/api/v1/admin/openapi.json` → **404**.
+- Why: Independent attestation before closing the multi-item goal; confirm LOG-0207 state still holds.
+- Scope / files: VPS read-only checks; `DEPLOY_RUNBOOK.md` HMAC row sync; this entry.
+- Commands or actions actually performed: SSH attestation; `curl` public probes from agent host.
+- Verification actually performed and result: Evidence matches LOG-0207 for HMAC/CMS; blockers unchanged for Caddy cutover, preview secret, apt, SSH ports.
+- Deferred or risk IDs: `DEFER-0027` **CLOSED**; `DEFER-0031`/`RISK-0013` **OPEN** (sudo); `DEFER-0016` repo **CLOSED** / production secret **OPEN**; `RISK-0005` **OPEN** (14 packages); `RISK-0006` **OPEN** (22+2222).
+- Rollback / recovery: No VPS changes this session.
+
 ## LOG-0207 — 2026-08-22 — Wave 3 VPS complete (HMAC PASS; Caddy/apt blocked)
 
 - Outcome: **3a CMS:** No new migrations `65d6c91`→`e2cd1b6`; CMS recreated on `ghcr.io/tahamohamadi-ir/taha-cms:e2cd1b6`; `smoke-cms.sh` → **PASS**. **3b HMAC (`DEFER-0027`):** `rebuild-web.sh` → **PASS**; `REBUILD_TRIGGER_ENABLED=true` + `REBUILD_SCRIPT_PATH` in `infra/cms/.env`; VPS-only `infra/cms/docker-compose.override.yml` (repo mount + docker.sock); signed POST `/rebuild-trigger/` with `X-Forwarded-Proto: https` → **HTTP 200** `triggered:true`; bad token → **403**. **3c rebuild-web:** `git pull` → `2dedd5c`; `rebuild-web.sh` + public smoke → **PASS**. **3d Caddy (`DEFER-0031`):** **BLOCKED** — `sudo -n` requires interactive password; host Caddy **active** on 80/443; `CADDY_EDGE=compose` not set. **3e:** `apt list --upgradable` → **15** packages; no upgrade (sudo); SSH **22+2222** (decision deferred). **`PREVIEW_SHARE_SECRET`** on VPS empty — preview tokens not production-ready.
