@@ -11,7 +11,7 @@ SKIP_PREFIXES = ("/health/", "/static/", "/media/")
 LOGIN_RATE_LIMIT = 5
 LOGIN_RATE_WINDOW_SECONDS = 300
 NOINDEX_PREFIXES = ("/admin/", "/staff/", "/api/", "/rebuild-trigger/")
-PREVIEW_PREFIX = "/staff/preview/"
+PREVIEW_PREFIXES = ("/staff/preview/", "/preview/share/")
 ADMIN_OPENAPI_DOCS_PREFIX = "/api/v1/admin/docs"
 ADMIN_OPENAPI_SCHEMA_PATH = "/api/v1/admin/openapi.json"
 PREVIEW_ROBOTS = "noindex, nofollow, noarchive"
@@ -132,8 +132,9 @@ class LoginRateLimitMiddleware:
 class NoIndexMiddleware:
     """Keep machine-facing paths out of search indexes via X-Robots-Tag.
 
-    Staff preview under ``/staff/preview/`` also gets ``noarchive`` and
-    ``Cache-Control: no-store`` (P3-07 / ADR-0022).
+    Staff preview under ``/staff/preview/`` and public share tokens under
+    ``/preview/share/`` also get ``noarchive`` and ``Cache-Control: no-store``
+    (P3-07 / ADR-0022 / DEFER-0016).
     """
 
     def __init__(self, get_response):
@@ -142,7 +143,7 @@ class NoIndexMiddleware:
     def __call__(self, request):
         response = self.get_response(request)
         path = request.path
-        if path.startswith(PREVIEW_PREFIX):
+        if path.startswith(PREVIEW_PREFIXES):
             response.headers["X-Robots-Tag"] = PREVIEW_ROBOTS
             response.headers["Cache-Control"] = PREVIEW_CACHE_CONTROL
         elif is_admin_openapi_path(path):

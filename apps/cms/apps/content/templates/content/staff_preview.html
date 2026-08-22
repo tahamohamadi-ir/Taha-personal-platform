@@ -6,9 +6,15 @@
 {% block content %}
 <main id="main">
   <p class="help">
+    {% if is_public_share %}
+    {% blocktrans with kind=kind status=status content_locale=content_locale %}
+    Shared preview link ({{ kind }} · {{ status }} · {{ content_locale }}). Expires soon. Not indexed.
+    {% endblocktrans %}
+    {% else %}
     {% blocktrans with kind=kind status=status content_locale=content_locale %}
     Staff-only preview ({{ kind }} · {{ status }} · {{ content_locale }}). Not public. Not indexed.
     {% endblocktrans %}
+    {% endif %}
   </p>
   <h1>{{ title }}</h1>
   <p class="help"><code>{{ slug }}</code></p>

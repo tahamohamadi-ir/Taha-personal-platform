@@ -251,6 +251,23 @@ class TestNoIndexMiddleware:
         assert response.headers["X-Robots-Tag"] == "noindex, nofollow, noarchive"
         assert response.headers["Cache-Control"] == "no-store"
 
+    def test_public_share_path_adds_noarchive_and_no_store(self, db, admin_user):
+        from apps.content.models import Landing, LifecycleStatus, Locale
+        from apps.content.preview_token import build_preview_token
+
+        landing = Landing.objects.create(
+            locale=Locale.EN,
+            slug="share-headers",
+            title="Share headers",
+            body="body",
+            status=LifecycleStatus.DRAFT,
+        )
+        token = build_preview_token("landing", landing.pk)
+        response = Client().get(f"/preview/share/{token}/")
+        assert response.status_code == 200
+        assert response.headers["X-Robots-Tag"] == "noindex, nofollow, noarchive"
+        assert response.headers["Cache-Control"] == "no-store"
+
 
 class TestRichTextAllowlist:
     def test_features_equal_exact_settings_allowlist(self, settings):

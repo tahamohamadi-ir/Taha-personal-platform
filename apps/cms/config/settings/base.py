@@ -74,6 +74,10 @@ REBUILD_TRIGGER_ENABLED = False
 REBUILD_TRIGGER_SECRET = ""
 REBUILD_SCRIPT_PATH = ""
 
+# Public preview share tokens (DEFER-0016). Falls back to SECRET_KEY when unset.
+PREVIEW_SHARE_SECRET = ""
+PREVIEW_SHARE_TTL_SECONDS = 900
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
