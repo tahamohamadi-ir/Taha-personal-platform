@@ -55,9 +55,13 @@ fi
 # Custom React admin SPA (ADM-1 cutover) — should return the SPA shell.
 check "/admin/" "200"
 # SPA login (primary) + Django staff login (LOGIN_URL / preview / HTML MFA).
+# /admin/login/ is a React route: SSR HTML is often only the #root shell (no
+# password field until JS). Accept the SPA mount; require real form markers on
+# /staff/login/ (server-rendered Django).
 check "/admin/login/" "200"
-if ! grep -qiE "password|ورود|sign.in|login|email" "$PUBLIC_BODY"; then
-  echo "FAIL /admin/login/ is not a sign-in page" >&2
+if ! grep -qiE 'id=["'\'']root["'\'']' "$PUBLIC_BODY" \
+  && ! grep -qiE "password|ورود|sign.in|login|email" "$PUBLIC_BODY"; then
+  echo "FAIL /admin/login/ is neither SPA shell (#root) nor a sign-in page" >&2
   fail=1
 fi
 check "/staff/login/" "200"
