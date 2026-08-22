@@ -4,10 +4,10 @@ from django.http import Http404
 from django.middleware.csrf import get_token
 from django.shortcuts import render
 from django.urls import reverse
-from apps.security.decorators import staff_otp_required
 
 from apps.content.models import Locale, Profile
 from apps.content.profile_api import resolve_translation_status, serialize_profile_detail
+from apps.security.decorators import staff_otp_required
 
 PROFILE_PREFETCH = (
     "skills",
