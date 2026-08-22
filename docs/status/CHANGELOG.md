@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-08-22 — rebuild-web Docker CMS origin fix
+
+- `rebuild-web.sh`: Docker build uses `https://tahamohamadi.ir` when host preflight uses loopback (build container cannot reach host `127.0.0.1:18000`).
+- First attended `rebuild_web=true` dispatch [32555108949](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32555108949) **FAILED** on that loopback mismatch — no invent PASS. LOG-0198.
+
 ## 2026-08-22 — Gated CD rebuild-web + timer install script
 
 - New `infra/deploy/cd-rebuild-web.sh` and CD job **Web container rebuild (gated)** (`rebuild_web=true` on workflow_dispatch only).

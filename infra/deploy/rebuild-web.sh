@@ -14,7 +14,8 @@
 #
 # Env:
 #   CMS_REPO_DIR       default /home/deploy/cms-repo (or repo root when script lives there)
-#   CMS_API_BASE       default http://127.0.0.1:18000 (loopback; override to https://tahamohamadi.ir if needed)
+#   CMS_API_BASE       default http://127.0.0.1:18000 (loopback preflight on host;
+#                      Docker build auto-uses https://tahamohamadi.ir when loopback)
 #   WEB_IMAGE          default taha-web:local (local rebuild tag)
 #   WEB_PULL_POLICY    default never (do not pull GHCR over a fresh local build)
 #   SKIP_PUBLIC_SMOKE  set to 1 to skip https://tahamohamadi.ir checks
@@ -56,12 +57,30 @@ echo "CMS health OK"
 
 export WEB_IMAGE WEB_PULL_POLICY CMS_API_BASE
 
-build_args=(--build-arg "CMS_API_BASE=${CMS_API_BASE}")
+# Loopback preflight runs on the VPS host, but `docker compose build` executes
+# npm run build inside an isolated build container where 127.0.0.1 is not the
+# host CMS. Match CI (ci-web-image.yml) and use the public origin for Docker.
+resolve_docker_build_cms_api_base() {
+  case "${CMS_API_BASE}" in
+    http://127.0.0.1:*|http://localhost:*)
+      echo "https://tahamohamadi.ir"
+      ;;
+    *)
+      echo "${CMS_API_BASE}"
+      ;;
+  esac
+}
+
+DOCKER_CMS_API_BASE="$(resolve_docker_build_cms_api_base)"
+build_args=(--build-arg "CMS_API_BASE=${DOCKER_CMS_API_BASE}")
+if [[ "$DOCKER_CMS_API_BASE" != "$CMS_API_BASE" ]]; then
+  echo "==> [rebuild-web] docker build uses ${DOCKER_CMS_API_BASE} (host preflight ${CMS_API_BASE})"
+fi
 if [[ "${WEB_BUILD_NO_CACHE:-0}" == "1" ]]; then
   build_args+=(--no-cache)
 fi
 
-echo "==> [rebuild-web] building web image ${WEB_IMAGE} (CMS_API_BASE=${CMS_API_BASE})"
+echo "==> [rebuild-web] building web image ${WEB_IMAGE} (docker CMS_API_BASE=${DOCKER_CMS_API_BASE})"
 docker compose -f "$COMPOSE_FILE" build "${build_args[@]}" web
 
 echo "==> [rebuild-web] restarting web service"
