@@ -1,6 +1,6 @@
 # Task Specification — Unified Compose + CMS origin + CD
 
-**Status:** `IN_PROGRESS` (ADR-0027 accepted). Slice 0–2 done in production evidence (Slice 2 attended CD migrate PASS 2026-08-20, LOG-0179). Slice 4 Compose Caddy **in repo** (LOG-0191); live TLS cutover owner-gated (`DEFER-0031` / `RISK-0013` OPEN). Slice 3+ separate. `RISK-0012` OPEN (auto migrate still off).
+**Status:** `IN_PROGRESS` (ADR-0027 accepted). Slice 0–3 done in repo; Slice 2 attended CD migrate PASS 2026-08-20 (LOG-0179). Slice 4 Compose Caddy **in repo** (LOG-0191); live TLS cutover owner-gated (`DEFER-0031` / `RISK-0013` OPEN). `RISK-0012` CLOSED (LOG-0179).
 
 ## Task: One Compose network; CMS origin; CD updates cms and web
 
