@@ -1,6 +1,6 @@
 # Work Log
 
-## LOG-0200 — 2026-08-22 — Owner attestation: scheduled-publish timer PASS
+## LOG-0201 — 2026-08-22 — Owner attestation: scheduled-publish timer PASS
 
 - Outcome: Owner attestation on production VPS (2026-08-22): `cd /home/deploy/cms-repo && git pull --ff-only origin main` (already up to date); `sudo bash infra/deploy/install-scheduled-publish-timer.sh` → `install-scheduled-publish-timer PASS`; `systemctl list-timers 'taha-publish-scheduled-content*'` shows `taha-publish-scheduled-content.timer` **active** (NEXT Sat 2026-08-22 06:41:00 UTC). Closes OWNER_CUTOVER step 6 (manual owner-attended path). Required post-merge gates complete; optional HMAC (`DEFER-0027`) and Compose Caddy edge (`DEFER-0031` / `RISK-0013`) remain **OPEN**. Did **not** set `CMS_CD_AUTO_MIGRATE`. **GOAL_COMPLETE=yes** for `full_backlog_completion` required gates (coordinator: UpdateGoal).
 - Why: Record honest VPS evidence for scheduled `scheduled` → published without inventing a CD job PASS.
@@ -9,6 +9,16 @@
 - Verification actually performed and result: owner attestation lines match `install-scheduled-publish-timer.sh` success output and active timer unit.
 - Deferred or risk IDs: scheduled-publish timer install **CLOSED**; `DEFER-0027` OPEN (optional step 7); `DEFER-0031`/`RISK-0013` OPEN (optional step 8).
 - Rollback / recovery: `systemctl disable --now taha-publish-scheduled-content.timer`; revert unit files under `/etc/systemd/system/`.
+
+## LOG-0200 — 2026-08-22 — CD timer install FAIL (NOPASSWD) + wrapper fix
+
+- Outcome: First `install_scheduled_timer=true` dispatch → [32556305961](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32556305961) **FAILED**: deploy user lacks NOPASSWD for `bash infra/deploy/install-scheduled-publish-timer.sh`. Added root-owned wrapper `opt-taha-bin-install-scheduled-publish-timer.sh` → `/opt/taha/bin/install-scheduled-publish-timer.sh`, owner one-time `install-scheduled-publish-timer-sudo.sh`, and updated `cd-install-scheduled-publish-timer.sh` to `sudo -n /opt/taha/bin/install-scheduled-publish-timer.sh`. Re-dispatch pending merge + owner VPS prereq. Did **not** set `CMS_CD_AUTO_MIGRATE`.
+- Why: CD timer install must use the same scoped sudoers pattern as `update-release.sh` / `caddy-apply.sh`.
+- Scope / files: `infra/deploy/opt-taha-bin-install-scheduled-publish-timer.sh`, `infra/deploy/install-scheduled-publish-timer-sudo.sh`, `infra/deploy/cd-install-scheduled-publish-timer.sh`, SERVER_ACCESS_RUNBOOK, DEPLOY_RUNBOOK, cms README, CHANGELOG, this entry.
+- Commands or actions actually performed: analyzed run 32556305961; branch `fix/cd-timer-nopasswd-wrapper`.
+- Verification actually performed and result: repo-only; failed run confirms missing NOPASSWD grant.
+- Deferred or risk IDs: scheduled timer install **OPEN** (owner VPS prereq + re-dispatch); `DEFER-0027` OPEN; `DEFER-0031`/`RISK-0013` OPEN.
+- Rollback / recovery: revert PR; manual `sudo bash infra/deploy/install-scheduled-publish-timer.sh` on VPS.
 
 ## LOG-0199 — 2026-08-22 — Attended CD rebuild-web PASS
 

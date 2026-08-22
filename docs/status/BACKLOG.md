@@ -4,13 +4,13 @@
 
 | ID | Phase | Item | Blocked by / prerequisite | Owner | Evidence |
 |---|---|---|---|---|---|
-| OWNER_CUTOVER | OPS | **Required gates CLOSED** — migrate [32554382271](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32554382271); rebuild-web [32555455704](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32555455704); scheduled-publish timer (owner attestation 2026-08-22, LOG-0200). Optional: HMAC (`DEFER-0027`) / Caddy edge (`DEFER-0031`) | Keep `CMS_CD_AUTO_MIGRATE` unset; owner interactive SPA MFA | Project owner | LOG-0200; LOG-0199; LOG-0196 |
+| OWNER_CUTOVER | OPS | **Required gates CLOSED** — migrate [32554382271](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32554382271); rebuild-web [32555455704](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32555455704); scheduled-publish timer (owner attestation 2026-08-22, LOG-0201). Optional: HMAC (`DEFER-0027`) / Caddy edge (`DEFER-0031`) | Keep `CMS_CD_AUTO_MIGRATE` unset; owner interactive SPA MFA | Project owner | LOG-0201; LOG-0199; LOG-0196 |
 | ADR-0027 | OPS | Slice 2 attended path **PASS** (`RISK-0012` CLOSED); Slice 4 Caddy cutover still owner (`DEFER-0031`) | Keep `CMS_CD_AUTO_MIGRATE` unset | Project owner | LOG-0179; LOG-0180; LOG-0191 |
 | QA-playwright | QA | Playwright lifecycle CLOSED (`DEFER-0026`); remaining matrix → `DEFER-0032` | — | Project owner | LOG-0184 |
-| ADM-0 | ADM | Wagtail uninstall **CLOSED** (`DEBT-0003` / PR #69); SPA `/admin/` + Django `/staff/` | Owner cutover required gates **CLOSED** (LOG-0200); optional HMAC/Caddy remain | Project owner | LOG-0193; LOG-0200; Task-list §17 |
+| ADM-0 | ADM | Wagtail uninstall **CLOSED** (`DEBT-0003` / PR #69); SPA `/admin/` + Django `/staff/` | Owner cutover required gates **CLOSED** (LOG-0201); optional HMAC/Caddy remain | Project owner | LOG-0193; LOG-0201; Task-list §17 |
 | ADM-1 | ADM | Custom admin foundation + cutover | DONE (LOG-0156..0158, LOG-0163); `DEFER-0023` CLOSED | Project owner | Task-list §17 |
 | ADM-2 | ADM | Media library + alt-by-locale | DONE (LOG-0159); `DEFER-0014` CLOSED | Project owner | Task-list §17 |
-| ADM-6 | ADM | Astro wiring + rebuild trigger + E2E JSON | PARTIAL — primaryColor/CV + entity stories repo CLOSED; featured→Media shipped; production rebuild-web PASS (LOG-0199); HMAC `DEFER-0027` OPEN (optional) | Project owner | Task-list §17; LOG-0185–0190; LOG-0200 |
+| ADM-6 | ADM | Astro wiring + rebuild trigger + E2E JSON | PARTIAL — primaryColor/CV + entity stories repo CLOSED; featured→Media shipped; production rebuild-web PASS (LOG-0199); HMAC `DEFER-0027` OPEN (optional) | Project owner | Task-list §17; LOG-0185–0190; LOG-0201 |
 | P4-reading | P4 | Reading time real + TOC + JSON-LD additions as needed (F1/F6/F2 — partially DONE on main) | P4 follow-up | Project owner | custom-admin-rebuild-fa.md §14.1 |
 | P6-gallery | P6 | گالری lightbox پروژه‌ها (F7) + فیلترهای URL-driven (F3) | P6 start | Project owner | custom-admin-rebuild-fa.md §14.1 |
 | ADM-5-featured | ADM | Featured spotlight با پنجره‌ی زمانی (F4) + CV «یک سند جاری» از ادمین (F5) | F4 DONE (LOG-0162); F5 DONE (LOG-0185) | Project owner | custom-admin-rebuild-fa.md §14.1 |

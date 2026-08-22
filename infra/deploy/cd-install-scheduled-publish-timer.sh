@@ -39,9 +39,9 @@ fi
 echo "repo_head=$(git rev-parse --short HEAD)"
 
 echo "==> [cd-install-scheduled-publish-timer] install-scheduled-publish-timer.sh"
-if ! sudo -n bash "${SCRIPT_DIR}/install-scheduled-publish-timer.sh" "$CMS_REPO_DIR"; then
-  echo "error: passwordless sudo required for CD path (sudo -n bash install-scheduled-publish-timer.sh)" >&2
-  echo "hint: run manually as root or extend deploy NOPASSWD for this script" >&2
+if ! sudo -n /opt/taha/bin/install-scheduled-publish-timer.sh "$CMS_REPO_DIR"; then
+  echo "error: passwordless sudo required for CD path (sudo -n /opt/taha/bin/install-scheduled-publish-timer.sh)" >&2
+  echo "hint: owner one-time on VPS: cd /home/deploy/cms-repo && git pull --ff-only origin main && sudo bash infra/deploy/install-scheduled-publish-timer-sudo.sh" >&2
   exit 1
 fi
 
