@@ -23,6 +23,12 @@ export const BLOCK_TYPE_LABELS: Record<string, string> = {
   video: "ویدیو",
   audio: "صوت",
   math: "فرمول",
+  accordion: "آکاردئون",
+  tabs: "زبانه‌ها",
+  timeline: "خط زمانی",
+  counters: "شمارنده‌ها",
+  before_after: "قبل/بعد",
+  slider: "اسلایدر",
 };
 
 export function isValidKey(value: string): boolean {
@@ -34,7 +40,20 @@ export function emptySection(): CompositionSectionDoc {
 }
 
 export function emptyBlock(blockType: string): CompositionBlockDoc {
-  return { blockType, settings: {}, enabled: true };
+  const settings: Record<string, unknown> = {};
+  if (blockType === "accordion") {
+    settings.items = [{ title: "", body: "" }];
+  } else if (blockType === "tabs") {
+    settings.items = [
+      { label: "", body: "" },
+      { label: "", body: "" },
+    ];
+  } else if (blockType === "timeline") {
+    settings.items = [{ date: "", title: "", body: "" }];
+  } else if (blockType === "counters") {
+    settings.items = [{ value: "", label: "" }];
+  }
+  return { blockType, settings, enabled: true };
 }
 
 export function ratioOptionsFor(
@@ -82,6 +101,12 @@ export const STORY_REQUIRED_BLOCK_FIELDS: Record<string, string[]> = {
   video: ["mediaId"],
   audio: ["mediaId"],
   math: ["html"],
+  accordion: ["items"],
+  tabs: ["items"],
+  timeline: ["items"],
+  counters: ["items"],
+  before_after: ["beforeMediaId", "afterMediaId"],
+  slider: ["mediaIds"],
 };
 
 export function requiredFieldsFor(

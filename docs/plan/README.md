@@ -17,6 +17,7 @@ Last reconciled: 2026-08-21.
 |---|---|---|---|
 | `cms-origin-and-full-stack-cd-task-spec.md` | IN_PROGRESS | agent | ADR-0027. Slice 0–2 + Slice 5 code done. Next: Slice 3 honesty / Slice 4 Caddy; owner migrate `0009`. |
 | `blog-story-composition-task-spec.md` | PARTIAL | agent | Blog story live; entity stories Slice 5 (`DEFER-0030` CLOSED in ledger). Owner migrate + rebuild. |
+| `rich-blocks-v2-task-spec.md` | DONE | agent | Six no-JS story blocks (accordion/tabs/timeline/counters/before_after/slider). Owner static rebuild after merge. |
 | `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | Featured→Media (`0011`, LOG-0187); Wagtail uninstall **CLOSED** (`DEBT-0003` / LOG-0193); HMAC `DEFER-0027`; Playwright `DEFER-0026`. |
 | `P0-A-stack-inventory-task-spec.md` | BLOCKED (owner) | owner | Read-only VPS inventory. Not an agent task. |
 

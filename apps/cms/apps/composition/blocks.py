@@ -33,6 +33,12 @@ STORY_BLOCK_TYPES: list[str] = [
     "video",
     "audio",
     "math",
+    "accordion",
+    "tabs",
+    "timeline",
+    "counters",
+    "before_after",
+    "slider",
     "divider",
 ]
 # Backward-compatible alias: landing catalog (existing admin tests).
@@ -50,6 +56,12 @@ BLOCK_TYPE_LABELS_FA: dict[str, str] = {
     "video": "ویدیو",
     "audio": "صوت",
     "math": "فرمول",
+    "accordion": "آکاردئون",
+    "tabs": "زبانه‌ها",
+    "timeline": "خط زمانی",
+    "counters": "شمارنده‌ها",
+    "before_after": "قبل/بعد",
+    "slider": "اسلایدر",
 }
 
 LANDING_BLOCK_FIELD_SPECS: list[dict] = [
@@ -197,6 +209,96 @@ STORY_BLOCK_FIELD_SPECS: list[dict] = [
         ],
     },
     {
+        "type": "accordion",
+        "required": ["items"],
+        "fields": [
+            {
+                "key": "items",
+                "label": "آیتم‌ها",
+                "type": "itemList",
+                "minItems": 1,
+                "maxItems": 12,
+                "itemFields": [
+                    {"key": "title", "label": "عنوان", "type": "text", "required": True},
+                    {"key": "body", "label": "متن", "type": "textarea", "required": True},
+                ],
+            },
+        ],
+    },
+    {
+        "type": "tabs",
+        "required": ["items"],
+        "fields": [
+            {
+                "key": "items",
+                "label": "زبانه‌ها",
+                "type": "itemList",
+                "minItems": 2,
+                "maxItems": 8,
+                "itemFields": [
+                    {"key": "label", "label": "برچسب", "type": "text", "required": True},
+                    {"key": "body", "label": "متن", "type": "textarea", "required": True},
+                ],
+            },
+        ],
+    },
+    {
+        "type": "timeline",
+        "required": ["items"],
+        "fields": [
+            {
+                "key": "items",
+                "label": "رویدادها",
+                "type": "itemList",
+                "minItems": 1,
+                "maxItems": 20,
+                "itemFields": [
+                    {"key": "date", "label": "تاریخ", "type": "text", "required": True},
+                    {"key": "title", "label": "عنوان", "type": "text", "required": True},
+                    {"key": "body", "label": "متن", "type": "textarea", "required": False},
+                ],
+            },
+        ],
+    },
+    {
+        "type": "counters",
+        "required": ["items"],
+        "fields": [
+            {
+                "key": "items",
+                "label": "شمارنده‌ها",
+                "type": "itemList",
+                "minItems": 1,
+                "maxItems": 6,
+                "itemFields": [
+                    {"key": "value", "label": "مقدار", "type": "text", "required": True},
+                    {"key": "label", "label": "برچسب", "type": "text", "required": True},
+                ],
+            },
+        ],
+    },
+    {
+        "type": "before_after",
+        "required": ["beforeMediaId", "afterMediaId"],
+        "fields": [
+            {"key": "beforeMediaId", "label": "تصویر قبل", "type": "media"},
+            {"key": "afterMediaId", "label": "تصویر بعد", "type": "media"},
+            {"key": "beforeLabel", "label": "برچسب قبل", "type": "text"},
+            {"key": "afterLabel", "label": "برچسب بعد", "type": "text"},
+            {"key": "beforeCaption", "label": "شرح قبل", "type": "text"},
+            {"key": "afterCaption", "label": "شرح بعد", "type": "text"},
+        ],
+        "mediaFamily": "image",
+    },
+    {
+        "type": "slider",
+        "required": ["mediaIds"],
+        "fields": [
+            {"key": "mediaIds", "label": "تصاویر", "type": "mediaList"},
+        ],
+        "mediaFamily": "image",
+    },
+    {
         "type": "divider",
         "required": [],
         "fields": [],
@@ -218,7 +320,9 @@ SECTION_LAYOUT_LABELS_FA: dict[str, str] = {
 }
 
 GALLERY_MAX_MEDIA = 8
+SLIDER_MAX_MEDIA = 12
 MATH_HTML_MAX_LENGTH = 8000
+ITEM_BODY_MAX_LENGTH = 16000
 
 
 class BlockValidationError(Exception):
@@ -276,6 +380,59 @@ def _check_media_pk(key: str, value, family: str | None = None) -> None:
         )
 
 
+def _validate_item_list(key: str, value, field: dict) -> None:
+    min_items = int(field.get("minItems", 1))
+    max_items = int(field.get("maxItems", 12))
+    item_fields: list[dict] = field.get("itemFields") or []
+    if not isinstance(value, list):
+        raise BlockValidationError(f"Setting '{key}' must be a list.")
+    if not (min_items <= len(value) <= max_items):
+        raise BlockValidationError(
+            f"Setting '{key}' must contain {min_items} to {max_items} items."
+        )
+    allowed_item_keys = {item_field["key"] for item_field in item_fields}
+    required_item_keys = [
+        item_field["key"]
+        for item_field in item_fields
+        if item_field.get("required")
+    ]
+    for index, item in enumerate(value):
+        if not isinstance(item, dict):
+            raise BlockValidationError(
+                f"Setting '{key}[{index}]' must be an object."
+            )
+        extra = sorted(item_key for item_key in item if item_key not in allowed_item_keys)
+        if extra:
+            raise BlockValidationError(
+                f"Unknown item key(s) in '{key}[{index}]': {', '.join(extra)}."
+            )
+        for item_key in required_item_keys:
+            if item_key not in item:
+                raise BlockValidationError(
+                    f"Missing required item field '{key}[{index}].{item_key}'."
+                )
+        for item_field in item_fields:
+            item_key = item_field["key"]
+            if item_key not in item:
+                continue
+            item_value = item[item_key]
+            item_type = item_field["type"]
+            if item_type in ("text", "textarea"):
+                if not isinstance(item_value, str):
+                    raise BlockValidationError(
+                        f"Item '{key}[{index}].{item_key}' must be a string."
+                    )
+                if item_field.get("required") and not item_value.strip():
+                    raise BlockValidationError(
+                        f"Item '{key}[{index}].{item_key}' must not be empty."
+                    )
+                if item_type == "textarea" and len(item_value) > ITEM_BODY_MAX_LENGTH:
+                    raise BlockValidationError(
+                        f"Item '{key}[{index}].{item_key}' must be at most "
+                        f"{ITEM_BODY_MAX_LENGTH} characters."
+                    )
+
+
 def validate_block_settings(block_type: str, settings, kind: str = KIND_LANDING) -> None:
     """Fail-closed validation of a block's ``settings`` dict (raises on error)."""
     if kind not in VALID_KINDS:
@@ -323,12 +480,15 @@ def validate_block_settings(block_type: str, settings, kind: str = KIND_LANDING)
             if value is not None:
                 _check_media_pk(key, value, family=media_fam)
         elif ftype == "mediaList":
-            if not isinstance(value, list) or not (1 <= len(value) <= GALLERY_MAX_MEDIA):
+            max_media = SLIDER_MAX_MEDIA if block_type == "slider" else GALLERY_MAX_MEDIA
+            if not isinstance(value, list) or not (1 <= len(value) <= max_media):
                 raise BlockValidationError(
-                    f"Setting '{key}' must be a list of 1 to {GALLERY_MAX_MEDIA} media ids."
+                    f"Setting '{key}' must be a list of 1 to {max_media} media ids."
                 )
             for pk in value:
                 _check_media_pk(key, pk, family=media_fam)
+        elif ftype == "itemList":
+            _validate_item_list(key, value, field)
 
     if block_type == "divider" and settings:
         raise BlockValidationError("divider block must have empty settings.")

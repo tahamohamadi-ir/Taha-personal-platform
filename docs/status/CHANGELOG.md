@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-08-22 — Rich blocks v2 (story catalog)
+
+- Story composition catalog adds `accordion`, `tabs`, `timeline`, `counters`, `before_after`, `slider` with fail-closed CMS validation, admin SPA editors, and no-JS Astro render (`StoryBody.astro`).
+- Spec `rich-blocks-v2-task-spec.md` **DONE**; Task-list §14 U3 ticked. No migrations — owner static rebuild after merge. LOG-0203.
+
 ## 2026-08-22 — ADM-1: staff-gated admin OpenAPI docs
 
 - Enabled Ninja Swagger UI at `/api/v1/admin/docs` and schema at `/api/v1/admin/openapi.json`.

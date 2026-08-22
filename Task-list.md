@@ -823,7 +823,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 
 - [x] Page → Section → Block با اعتبارسنجی fail-closed سمت سرور (کلیدهای مجاز، الزامی، bounds، ارجاع media دقیق)؛ layout presets: ۱/۲/۳ ستون + نسبت ستون‌ها + ترتیب (کنار/زیر هم). *(2026-08-18: `apps/composition/` + `/api/v1/admin/composition/*` — LOG-0160)*
 - [x] ویرایشگر ساخت‌یافته‌ی سکشن/بلوک با پیش‌نمایش؛ کاتالوگ بلوک‌ها (hero/text/heading/quote/cta/gallery/divider). *(2026-08-18: ویرایشگر schema-driven در SPA با MediaPicker + پیش‌نمایش grid — LOG-0160)*
-- [ ] کاتالوگ بلوک‌های غنی v2 (اختیاری پس از v1): accordion، tabs، timeline، counters، before/after، slider — از کاتالوگ ماژول Divi 5. *(§14 U3 — بعدی)*
+- [x] کاتالوگ بلوک‌های غنی v2 (اختیاری پس از v1): accordion، tabs، timeline، counters، before/after، slider — از کاتالوگ ماژول Divi 5. *(§14 U3 — LOG-0203; spec `rich-blocks-v2-task-spec.md`)*
 - [x] داده‌های عمومی به‌صورت published-only پروژه می‌شوند؛ مدل‌های موجود تغییر نمی‌کنند (افزودن مدل Composition به‌صورت additive). *(projection عمومی داستان بلاگ — LOG-0167؛ انواع دیگر → `DEFER-0030`)*
 
 ### Task ADM-4 — Workflow + revisions + translation queue

@@ -42,6 +42,15 @@ function mediaOf(settings: Record<string, unknown>): StoryMedia | StoryMedia[] |
   return null;
 }
 
+function itemsOf(settings: Record<string, unknown>): Array<Record<string, unknown>> {
+  const items = settings.items;
+  return Array.isArray(items) ? (items as Array<Record<string, unknown>>) : [];
+}
+
+function stringOf(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
 function altFor(locale: "fa" | "en", item: StoryMedia): string {
   if (locale === "fa" && item.altFa) return item.altFa;
   if (locale === "en" && item.altEn) return item.altEn;
@@ -64,16 +73,17 @@ const { locale, story } = Astro.props;
 ---
 
 {
-  story.sections.map((section: StorySection) => (
+  story.sections.map((section: StorySection, sectionIndex: number) => (
     <section
       class="story-section"
       style={`display:grid;gap:1rem;grid-template-columns:${columnStyle(section.layout, section.ratio)}`}
     >
       {
-        section.blocks.map((block: StoryBlock) => {
+        section.blocks.map((block: StoryBlock, blockIndex: number) => {
           const s = block.settings;
           const media = mediaOf(s);
           const caption = typeof s.caption === "string" ? s.caption : "";
+          const blockKey = `${sectionIndex}-${blockIndex}`;
           if (block.blockType === "heading") {
             const text = typeof s.text === "string" ? s.text : "";
             if (s.level === "h3") {
@@ -127,6 +137,17 @@ const { locale, story } = Astro.props;
               </div>
             );
           }
+          if (block.blockType === "slider" && Array.isArray(media)) {
+            return (
+              <div class="story-slider" role="region" aria-label="Gallery">
+                {media.map((item: StoryMedia) => (
+                  <figure class="story-slider-slide">
+                    <img src={item.url} alt={altFor(locale, item)} loading="lazy" />
+                  </figure>
+                ))}
+              </div>
+            );
+          }
           if (block.blockType === "video" && media && !Array.isArray(media)) {
             return (
               <figure>
@@ -153,6 +174,120 @@ const { locale, story } = Astro.props;
                 class="story-math"
                 set:html={typeof s.html === "string" ? s.html : ""}
               />
+            );
+          }
+          if (block.blockType === "accordion") {
+            const items = itemsOf(s);
+            return (
+              <div class="story-accordion">
+                {items.map((item) => (
+                  <details class="story-accordion-item">
+                    <summary>{stringOf(item.title)}</summary>
+                    <div class="story-accordion-body" set:html={stringOf(item.body)} />
+                  </details>
+                ))}
+              </div>
+            );
+          }
+          if (block.blockType === "tabs") {
+            const items = itemsOf(s);
+            const groupName = `story-tabs-${blockKey}`;
+            return (
+              <div class="story-tabs">
+                {items.map((_item, index) => (
+                  <input
+                    type="radio"
+                    name={groupName}
+                    id={`${groupName}-${index}`}
+                    checked={index === 0}
+                    class="story-tabs-input"
+                  />
+                ))}
+                <div class="story-tabs-labels" role="tablist">
+                  {items.map((item, index) => (
+                    <label
+                      class="story-tabs-label"
+                      for={`${groupName}-${index}`}
+                      role="tab"
+                    >
+                      {stringOf(item.label)}
+                    </label>
+                  ))}
+                </div>
+                <div class="story-tabs-panels">
+                  {items.map((item, index) => (
+                    <div
+                      class="story-tab-panel"
+                      role="tabpanel"
+                      aria-labelledby={`${groupName}-${index}`}
+                    >
+                      <div set:html={stringOf(item.body)} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          }
+          if (block.blockType === "timeline") {
+            const items = itemsOf(s);
+            return (
+              <ol class="story-timeline">
+                {items.map((item) => (
+                  <li class="story-timeline-item">
+                    <time class="story-timeline-date" datetime={stringOf(item.date)}>
+                      {stringOf(item.date)}
+                    </time>
+                    <h3 class="story-timeline-title">{stringOf(item.title)}</h3>
+                    {stringOf(item.body) && (
+                      <div class="story-timeline-body" set:html={stringOf(item.body)} />
+                    )}
+                  </li>
+                ))}
+              </ol>
+            );
+          }
+          if (block.blockType === "counters") {
+            const items = itemsOf(s);
+            return (
+              <dl class="story-counters">
+                {items.map((item) => (
+                  <div class="story-counter">
+                    <dt class="story-counter-label">{stringOf(item.label)}</dt>
+                    <dd class="story-counter-value">{stringOf(item.value)}</dd>
+                  </div>
+                ))}
+              </dl>
+            );
+          }
+          if (block.blockType === "before_after") {
+            const beforeMedia =
+              s.beforeMedia && typeof s.beforeMedia === "object" && "url" in s.beforeMedia
+                ? (s.beforeMedia as StoryMedia)
+                : null;
+            const afterMedia =
+              s.afterMedia && typeof s.afterMedia === "object" && "url" in s.afterMedia
+                ? (s.afterMedia as StoryMedia)
+                : null;
+            if (!beforeMedia || !afterMedia) {
+              return null;
+            }
+            const beforeLabel = stringOf(s.beforeLabel) || (locale === "fa" ? "قبل" : "Before");
+            const afterLabel = stringOf(s.afterLabel) || (locale === "fa" ? "بعد" : "After");
+            const beforeCaption = stringOf(s.beforeCaption);
+            const afterCaption = stringOf(s.afterCaption);
+            return (
+              <div class="story-before-after">
+                <figure class="story-before-after-figure">
+                  <figcaption class="story-before-after-label">{beforeLabel}</figcaption>
+                  <img src={beforeMedia.url} alt={altFor(locale, beforeMedia)} />
+                  {beforeCaption && <figcaption>{beforeCaption}</figcaption>}
+                </figure>
+                <figure class="story-before-after-figure">
+                  <figcaption class="story-before-after-label">{afterLabel}</figcaption>
+                  <img src={afterMedia.url} alt={altFor(locale, afterMedia)} />
+                  {afterCaption && <figcaption>{afterCaption}</figcaption>}
+                </figure>
+              </div>
             );
           }
           if (block.blockType === "divider") {
@@ -205,5 +340,189 @@ const { locale, story } = Astro.props;
 
   .story-math {
     overflow-x: auto;
+  }
+
+  .story-accordion {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .story-accordion-item {
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 0.25rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .story-accordion-item summary {
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  .story-accordion-body {
+    margin-block-start: 0.5rem;
+    line-height: 1.7;
+  }
+
+  .story-tabs-input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .story-tabs-labels {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  .story-tabs-label {
+    cursor: pointer;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid transparent;
+    border-bottom: none;
+    margin-bottom: -1px;
+  }
+
+  .story-tabs {
+    display: grid;
+    gap: 0;
+  }
+
+  .story-tabs-panels {
+    padding-block-start: 0.75rem;
+  }
+
+  .story-tab-panel {
+    display: none;
+    line-height: 1.7;
+  }
+
+  .story-tabs-input:nth-of-type(1):checked ~ .story-tabs-panels .story-tab-panel:nth-child(1),
+  .story-tabs-input:nth-of-type(2):checked ~ .story-tabs-panels .story-tab-panel:nth-child(2),
+  .story-tabs-input:nth-of-type(3):checked ~ .story-tabs-panels .story-tab-panel:nth-child(3),
+  .story-tabs-input:nth-of-type(4):checked ~ .story-tabs-panels .story-tab-panel:nth-child(4),
+  .story-tabs-input:nth-of-type(5):checked ~ .story-tabs-panels .story-tab-panel:nth-child(5),
+  .story-tabs-input:nth-of-type(6):checked ~ .story-tabs-panels .story-tab-panel:nth-child(6),
+  .story-tabs-input:nth-of-type(7):checked ~ .story-tabs-panels .story-tab-panel:nth-child(7),
+  .story-tabs-input:nth-of-type(8):checked ~ .story-tabs-panels .story-tab-panel:nth-child(8) {
+    display: block;
+  }
+
+  .story-tabs-input:nth-of-type(1):checked ~ .story-tabs-labels .story-tabs-label:nth-child(1),
+  .story-tabs-input:nth-of-type(2):checked ~ .story-tabs-labels .story-tabs-label:nth-child(2),
+  .story-tabs-input:nth-of-type(3):checked ~ .story-tabs-labels .story-tabs-label:nth-child(3),
+  .story-tabs-input:nth-of-type(4):checked ~ .story-tabs-labels .story-tabs-label:nth-child(4),
+  .story-tabs-input:nth-of-type(5):checked ~ .story-tabs-labels .story-tabs-label:nth-child(5),
+  .story-tabs-input:nth-of-type(6):checked ~ .story-tabs-labels .story-tabs-label:nth-child(6),
+  .story-tabs-input:nth-of-type(7):checked ~ .story-tabs-labels .story-tabs-label:nth-child(7),
+  .story-tabs-input:nth-of-type(8):checked ~ .story-tabs-labels .story-tabs-label:nth-child(8) {
+    border-color: var(--color-border-subtle);
+    background: var(--color-surface-raised, transparent);
+    font-weight: 600;
+  }
+
+  .story-timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-inline-start: 2px solid var(--color-border-subtle);
+    padding-inline-start: 1rem;
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .story-timeline-item {
+    position: relative;
+  }
+
+  .story-timeline-item::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: -1.35rem;
+    top: 0.35rem;
+    width: 0.65rem;
+    height: 0.65rem;
+    border-radius: 50%;
+    background: var(--color-accent, currentColor);
+  }
+
+  .story-timeline-date {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--color-ink-muted);
+  }
+
+  .story-timeline-title {
+    margin: 0.25rem 0 0;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+  }
+
+  .story-timeline-body {
+    margin-block-start: 0.35rem;
+    line-height: 1.7;
+  }
+
+  .story-counters {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    margin: 0;
+  }
+
+  .story-counter {
+    text-align: center;
+    padding: 0.75rem;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 0.25rem;
+  }
+
+  .story-counter-label {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--color-ink-muted);
+  }
+
+  .story-counter-value {
+    margin: 0.25rem 0 0;
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 700;
+  }
+
+  .story-before-after {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  }
+
+  .story-before-after-figure {
+    margin: 0;
+  }
+
+  .story-before-after-label {
+    font-weight: 600;
+    margin-block-end: 0.35rem;
+  }
+
+  .story-slider {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-block-end: 0.5rem;
+  }
+
+  .story-slider-slide {
+    flex: 0 0 min(85%, 24rem);
+    scroll-snap-align: start;
+    margin: 0;
+  }
+
+  .story-slider-slide img {
+    width: 100%;
+    height: auto;
+    display: block;
   }
 </style>
