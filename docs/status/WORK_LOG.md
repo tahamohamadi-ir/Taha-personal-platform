@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0192 — 2026-08-21 — OWNER_CUTOVER checklist + post-merge gate evidence
+
+- Outcome: Added DEPLOY_RUNBOOK § **OWNER_CUTOVER** (dumpdata → attended CD migrate for `content.0009`–`0012` → `rebuild-web.sh` → scheduled-publish timer → optional HMAC → optional Caddy edge). Re-checked Actions: only pre-merge attended migrate PASS is [32407698471](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32407698471) (`2e200fe`); all inspected post-merge `main` CD runs left **CMS image migrate (gated)** **skipped** — no invent PASS for `0009`–`0012`. Aligned `RISK-0012` status column to **CLOSED** (already claimed in LOG-0180 / runbook). Closed ledger drift for `DEFER-0029` / `DEFER-0030` (repo CLOSED per LOG-0185/0186). Left `DEFER-0027`, `DEFER-0031`, `RISK-0010`, `RISK-0013` OPEN. Did **not** enable or recommend `CMS_CD_AUTO_MIGRATE`.
+- Why: Owner needs one accurate post-merge cutover order after merges #58–#67 without mistaking CD “success” (migrate skipped) for schema apply.
+- Scope / files: `docs/governance/DEPLOY_RUNBOOK.md`, `docs/status/RISK_REGISTER.md`, `docs/status/deferred-validation.md`, CHANGELOG, BACKLOG, this entry.
+- Commands or actions actually performed: `gh run list` / `gh run view` on CD jobs; worktree `docs/owner-gates-post-merge` from `origin/main`.
+- Verification actually performed and result: job **CMS image migrate (gated)** success only on dispatch 32407698471; recent CD runs 32474338830 / 32474046690 / 32473739254 / 32473166772 / 32471717968 / 32470814675 show migrate **skipped**.
+- Deferred or risk IDs: `RISK-0012` CLOSED (path); `RISK-0010` OPEN (schema); `DEFER-0027` OPEN; `DEFER-0031`/`RISK-0013` OPEN; `DEFER-0029`/`DEFER-0030` CLOSED (repo).
+- Rollback / recovery: revert this docs PR.
+
 ## LOG-0190 — 2026-08-21 — DEBT-0003: RichText→TextField + local sanitizer + retire viewsets
 - Note: Renumbered from colliding LOG-0188 (PR #61 Playwright CI fix) to LOG-0190.
 
