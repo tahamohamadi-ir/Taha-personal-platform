@@ -33,6 +33,10 @@ function listNestedDirectories(directory) {
 
 const aboutEn = readHtml("en/about/index.html");
 assert(
+  aboutEn.includes('name="cms-build-origin" content="snapshot"'),
+  "English About page is missing cms-build-origin snapshot meta.",
+);
+assert(
   aboutEn.includes("Software engineer and applied AI researcher focused on local LLM systems"),
   "English About page did not render the profile short bio from the CMS/snapshot adapter.",
 );
@@ -146,6 +150,16 @@ try {
 // Restore offline snapshot dist for later CI specs (projects-catalog, smoke).
 const restoreEnv = { ...process.env };
 delete restoreEnv.CMS_API_BASE;
+for (const cacheDir of [
+  join(webRoot, "node_modules", ".vite"),
+  join(webRoot, "node_modules", ".astro"),
+]) {
+  try {
+    rmSync(cacheDir, { recursive: true, force: true });
+  } catch {
+    /* best-effort cache bust so restore build ignores prior CMS_API_BASE */
+  }
+}
 const restore = spawnSync(
   process.platform === "win32" ? "cmd.exe" : npmCmd,
   process.platform === "win32" ? ["/c", "npm", "run", "build"] : ["run", "build"],

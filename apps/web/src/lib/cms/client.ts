@@ -24,6 +24,11 @@ export function cmsBase(): string | null {
   return raw.replace(/\/$/, "");
 }
 
+/** True when this build must use live CMS origin (no snapshot fallback). */
+export function isCmsOriginBuild(): boolean {
+  return cmsBase() !== null;
+}
+
 /**
  * Production gunicorn is HTTP on loopback with SECURE_SSL_REDIRECT.
  * Caddy sets X-Forwarded-Proto; local/tunnel builds must send it too or

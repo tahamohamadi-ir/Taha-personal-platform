@@ -3,11 +3,12 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import Downloads from "../../components/Downloads.astro";
 import { content } from "../../data/content";
 import { resolveCvDownloadFiles } from "../../data/cvDownloads";
+import { isCmsOriginBuild } from "../../lib/cms/client";
 
 const fa = content.fa;
 const files = await resolveCvDownloadFiles("fa");
 ---
 
-<BaseLayout content={fa} alternateHref="/en/cv/">
+<BaseLayout content={fa} alternateHref="/en/cv/" cmsBuildOrigin={isCmsOriginBuild() ? "cms" : "snapshot"}>
   <Downloads content={fa} files={files} />
 </BaseLayout>

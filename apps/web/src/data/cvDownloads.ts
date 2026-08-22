@@ -1,6 +1,7 @@
 /** Shared CV download file lists for `/fa/cv/` and `/en/cv/`. */
 
 import type { DownloadFile } from "../components/Downloads.astro";
+import { cmsBase } from "../lib/cms/client";
 import {
   getCurrentCvDownloads,
   type PublicDownloadDto,
@@ -81,13 +82,17 @@ function fromCmsDownload(item: PublicDownloadDto): DownloadFile {
 }
 
 /**
- * Prefer admin-managed current documents from `/api/site` when present;
- * otherwise keep the committed markdown downloads (local/offline builds).
+ * Prefer admin-managed current documents from `/api/site` when present.
+ * When CMS_API_BASE is set and CMS returns no downloads, return [] (honest empty).
+ * Committed markdown downloads apply only when CMS_API_BASE is unset (local/offline).
  */
 export async function resolveCvDownloadFiles(locale: Locale): Promise<DownloadFile[]> {
   const cms = await getCurrentCvDownloads();
   if (cms.length > 0) {
     return cms.map(fromCmsDownload);
+  }
+  if (cmsBase()) {
+    return [];
   }
   return STATIC_FILES[locale];
 }
