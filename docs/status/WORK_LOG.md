@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0209 — 2026-08-22 — DEFER-0016 production preview secret
+
+- Outcome: **Task A (`DEFER-0016` production):** VPS `deploy@85.192.29.196:2222` (key `taha-cd-deploy`); `infra/cms/.env` **writable** by deploy. `PREVIEW_SHARE_SECRET` was empty (length 1); generated 64-char hex secret (value not logged), updated `.env`, recreated CMS with `docker compose -f infra/cms/docker-compose.cms.yml -f infra/cms/docker-compose.override.yml up -d cms`; loopback health OK attempt 2; container `PREVIEW_SHARE_SECRET` length **64**. Public `/preview/share/badtoken/` → **404** + `Cache-Control: no-store` (**PASS**). **`DEFER-0016` production CLOSED.**
+- Why: Close the last production gap for public preview share tokens after repo merge (LOG-0204).
+- Scope / files: VPS `/home/deploy/cms-repo/infra/cms/.env` (secret only on VPS); this entry; deferred-validation evidence sync.
+- Commands or actions actually performed: SSH attestation script; `openssl rand -hex 32`; CMS recreate; `curl -sI` public preview probe; `caddy-sync.sh` (passwordless) after recreate.
+- Verification actually performed and result: **Task B re-attest:** `smoke-cms.sh` → **PASS**; loopback POST `/rebuild-trigger/` bad token → **403** (public path not proxied in host Caddyfile — expected); `/en/about/` `cms-build-origin=cms`; anonymous `/api/v1/admin/openapi.json` → **404**; apt upgradable **14**; SSH **22+2222**; host Caddy **active**; Compose `caddy` **none**; `sudo -n` → password required (general sudo blocked).
+- Deferred or risk IDs: `DEFER-0016` **CLOSED** (repo + production); `DEFER-0027` **CLOSED**; `DEFER-0031`/`RISK-0013` **OPEN** (owner interactive sudo); `RISK-0005` **OPEN** (14 packages); `RISK-0006` **OPEN** (22+2222).
+- Rollback / recovery: Restore prior empty/missing `PREVIEW_SHARE_SECRET` in `.env` + CMS recreate (invalidates issued share links); timestamped Caddy backups unchanged.
+
 ## LOG-0208 — 2026-08-22 — Goal completion audit (VPS re-attestation)
 
 - Outcome: Completion audit for ADR-0027 Slice 3 / DEFER-0027 / DEFER-0031 / DEFER-0016 / rich blocks v2 / OpenAPI / RISK-0005-0006. **Repo:** `main` at `3572230`; PRs #79–#84 merged. **VPS SSH** `deploy@85.192.29.196:2222` (key `taha-cd-deploy`): CMS health `{"status":"ok","db":"ok"}`; image `ghcr.io/tahamohamadi-ir/taha-cms:e2cd1b6`; `smoke-cms.sh` → **PASS**; `REBUILD_TRIGGER_ENABLED=true` in container; `REBUILD_TRIGGER_SECRET` length 44; bad rebuild token → **403**. **`PREVIEW_SHARE_SECRET` empty** (length 0). Host Caddy **active**; no Compose `caddy`; `sudo -n` → password required; apt upgradable **14**; SSH listens **22+2222**. Live `/en/about/` meta `cms-build-origin=cms`; anonymous `/api/v1/admin/openapi.json` → **404**.
