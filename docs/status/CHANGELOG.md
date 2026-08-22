@@ -3,8 +3,10 @@
 ## 2026-08-22 — Compose Caddy edge cutover PASS (LOG-0210)
 
 - Production TLS edge moved from host systemd Caddy to Compose `caddy` (profile `edge`) after owner recovery: first cutover **525** → rollback → ACME seed `/var/lib/caddy` → `taha-cms_caddy_data` → second cutover **PASS**.
-- `smoke-cms.sh` **PASS**; host Caddy **inactive/disabled**; apt backlog reduced to **3** phased packages; SSH **22+2222** accepted (2222 canonical).
-- **`DEFER-0031` CLOSED**; **`RISK-0013`**, **`RISK-0005`**, **`RISK-0006` CLOSED**. Owner follow-up: set GitHub variable **`CADDY_EDGE=compose`**; investigate `smoke.sh` `/nonexistent-qa` 404 via Compose nginx.
+- Agent follow-up: `rebuild-web.sh` **PASS** (live web nginx `=404` deployed); `smoke.sh` **PASS**; GitHub **`CADDY_EDGE=compose`** set.
+- Compose caddy healthcheck: probe admin `:2019/config/` instead of `:80/` (avoids redirect-to-HTTPS TLS mismatch).
+- `smoke-cms.sh` **PASS**; host Caddy **inactive/disabled**; apt backlog **3** phased packages; SSH **22+2222** (2222 canonical).
+- **`DEFER-0031` CLOSED**; **`RISK-0013`**, **`RISK-0005`**, **`RISK-0006` CLOSED**. **GOAL_COMPLETE=yes** for Slice 4 edge gates.
 
 ## 2026-08-22 — ADR-0027 Slice 3 CMS origin honesty (repo)
 
