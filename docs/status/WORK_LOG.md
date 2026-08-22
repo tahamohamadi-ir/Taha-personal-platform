@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0200 — 2026-08-22 — Owner attestation: scheduled-publish timer PASS
+
+- Outcome: Owner attestation on production VPS (2026-08-22): `cd /home/deploy/cms-repo && git pull --ff-only origin main` (already up to date); `sudo bash infra/deploy/install-scheduled-publish-timer.sh` → `install-scheduled-publish-timer PASS`; `systemctl list-timers 'taha-publish-scheduled-content*'` shows `taha-publish-scheduled-content.timer` **active** (NEXT Sat 2026-08-22 06:41:00 UTC). Closes OWNER_CUTOVER step 6 (manual owner-attended path). Required post-merge gates complete; optional HMAC (`DEFER-0027`) and Compose Caddy edge (`DEFER-0031` / `RISK-0013`) remain **OPEN**. Did **not** set `CMS_CD_AUTO_MIGRATE`. **GOAL_COMPLETE=yes** for `full_backlog_completion` required gates (coordinator: UpdateGoal).
+- Why: Record honest VPS evidence for scheduled `scheduled` → published without inventing a CD job PASS.
+- Scope / files: DEPLOY_RUNBOOK § OWNER_CUTOVER evidence, CHANGELOG, BACKLOG, RISK_REGISTER, this entry.
+- Commands or actions actually performed: owner terminal attestation forwarded; branch `docs/record-timer-pass` from `origin/main`.
+- Verification actually performed and result: owner attestation lines match `install-scheduled-publish-timer.sh` success output and active timer unit.
+- Deferred or risk IDs: scheduled-publish timer install **CLOSED**; `DEFER-0027` OPEN (optional step 7); `DEFER-0031`/`RISK-0013` OPEN (optional step 8).
+- Rollback / recovery: `systemctl disable --now taha-publish-scheduled-content.timer`; revert unit files under `/etc/systemd/system/`.
+
 ## LOG-0199 — 2026-08-22 — Attended CD rebuild-web PASS
 
 - Outcome: Re-dispatched CD `rebuild_web=true` after #74 Docker CMS origin fix → [32555455704](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32555455704). Job **Web container rebuild (gated)** **success** with `PASS loopback /health.json`, `rebuild-web PASS`, `cd-rebuild-web PASS`. Public HTML now rebuilt from live CMS via Docker build (`CMS_API_BASE=https://tahamohamadi.ir` inside build; host preflight loopback). Slice 3/5 production applicability evidenced for post-migrate publish path. `DEFER-0027` / scheduled timer / `DEFER-0031` remain **OPEN**. Did **not** set `CMS_CD_AUTO_MIGRATE`.
