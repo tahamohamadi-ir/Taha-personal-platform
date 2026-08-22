@@ -321,21 +321,36 @@ Later `main` commits that are docs/smoke-only (e.g. #70/#71) may lack a matching
 6. **Install scheduled-publish timer** (needed for `scheduled` → published).
    Owner-attended only (requires root on VPS):
 
+   **Owner checklist — attended timer install (CD)**
+
+   1. Confirm CMS is healthy on loopback (`curl -fsS http://127.0.0.1:18000/health/`).
+   2. GitHub → Actions → **CD — Deploy to production** → **Run workflow**.
+   3. Set `install_scheduled_timer` = `true` (leave `migrate_cms` / `rebuild_web` =
+      `false` unless those steps are also required in the same dispatch).
+   4. Wait for job **Scheduled publish timer install (gated)** to finish
+      **success**.
+   5. In that job’s log, confirm lines: `install-scheduled-publish-timer PASS`
+      and `cd-install-scheduled-publish-timer PASS`, plus `systemctl list-timers`
+      output showing `taha-publish-scheduled-content.timer`.
+
+   No production attended PASS recorded yet — do not invent PASS until a dispatch
+   job succeeds. CD path requires deploy user **passwordless sudo** for
+   `install-scheduled-publish-timer.sh` (`sudo -n`).
+
+   Manual equivalent (SSH; interactive sudo OK):
+
    ```bash
    cd /home/deploy/cms-repo
    git pull --ff-only origin main
    sudo bash infra/deploy/install-scheduled-publish-timer.sh
    ```
 
-   Manual equivalent:
+   Or via CD wrapper as `deploy`:
 
    ```bash
-   sudo install -m 755 infra/cms/publish-scheduled-content.sh /usr/local/sbin/taha-publish-scheduled-content
-   sudo install -m 644 infra/cms/taha-publish-scheduled-content.service /etc/systemd/system/
-   sudo install -m 644 infra/cms/taha-publish-scheduled-content.timer /etc/systemd/system/
-   sudo systemctl daemon-reload
-   sudo systemctl enable --now taha-publish-scheduled-content.timer
-   systemctl list-timers 'taha-publish-scheduled-content*'
+   cd /home/deploy/cms-repo
+   git pull --ff-only origin main
+   bash infra/deploy/cd-install-scheduled-publish-timer.sh
    ```
 
 7. **Optional — HMAC enable** (`DEFER-0027`): only after loopback

@@ -18,6 +18,10 @@ on:
         description: "Owner-attended web container rebuild via rebuild-web.sh (post-migrate publish path)"
         type: boolean
         default: false
+      install_scheduled_timer:
+        description: "Owner-attended systemd timer install for publish_scheduled_content (requires root sudo on VPS)"
+        type: boolean
+        default: false
 
 concurrency:
   group: production-deploy
@@ -289,5 +293,37 @@ jobs:
              git pull --ff-only origin main
              export SKIP_GIT_PULL=1
              bash infra/deploy/cd-rebuild-web.sh"
+
+          rm -f ~/.ssh_deploy_key
+
+  # OWNER_CUTOVER step 6: scheduled-publish timer is NOT on every push.
+  # Owner-attended: Actions → CD → Run workflow → install_scheduled_timer = true.
+  install-scheduled-timer:
+    name: Scheduled publish timer install (gated)
+    needs: deploy
+    runs-on: ubuntu-latest
+    environment: production
+    if: >
+      github.event_name == 'workflow_dispatch' && inputs.install_scheduled_timer == true
+    steps:
+      - name: Pull repo + install timer + verify
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ vars.DEPLOY_USER || 'deploy' }}
+        run: |
+          set -euo pipefail
+          install -m 600 /dev/null ~/.ssh_deploy_key
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh_deploy_key
+          SSH_OPTS="-i ~/.ssh_deploy_key -o StrictHostKeyChecking=accept-new"
+
+          ssh $SSH_OPTS "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "set -euo pipefail
+             cd /home/deploy/cms-repo
+             git fetch origin
+             git checkout main
+             git pull --ff-only origin main
+             export SKIP_GIT_PULL=1
+             bash infra/deploy/cd-install-scheduled-publish-timer.sh"
 
           rm -f ~/.ssh_deploy_key
