@@ -12,9 +12,34 @@ LOGIN_RATE_LIMIT = 5
 LOGIN_RATE_WINDOW_SECONDS = 300
 NOINDEX_PREFIXES = ("/admin/", "/staff/", "/api/", "/rebuild-trigger/")
 PREVIEW_PREFIX = "/staff/preview/"
+ADMIN_OPENAPI_DOCS_PREFIX = "/api/v1/admin/docs"
+ADMIN_OPENAPI_SCHEMA_PATH = "/api/v1/admin/openapi.json"
 PREVIEW_ROBOTS = "noindex, nofollow, noarchive"
 DEFAULT_ROBOTS = "noindex, nofollow"
 PREVIEW_CACHE_CONTROL = "no-store"
+
+
+def is_admin_openapi_path(path: str) -> bool:
+    """True for staff-gated Ninja Swagger UI and OpenAPI schema under the admin API."""
+    return path == ADMIN_OPENAPI_SCHEMA_PATH or path.startswith(ADMIN_OPENAPI_DOCS_PREFIX)
+
+
+class AdminOpenAPIGateMiddleware:
+    """Return 404 (not redirect) for unauthenticated access to admin OpenAPI docs."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if is_admin_openapi_path(request.path) and not self._allowed(request):
+            return HttpResponse(status=404)
+        return self.get_response(request)
+
+    @staticmethod
+    def _allowed(request) -> bool:
+        if not request.user.is_authenticated or not request.user.is_staff:
+            return False
+        return getattr(request.user, "otp_device", None) is not None
 
 
 class AuditMiddleware:
@@ -119,6 +144,9 @@ class NoIndexMiddleware:
         path = request.path
         if path.startswith(PREVIEW_PREFIX):
             response.headers["X-Robots-Tag"] = PREVIEW_ROBOTS
+            response.headers["Cache-Control"] = PREVIEW_CACHE_CONTROL
+        elif is_admin_openapi_path(path):
+            response.headers["X-Robots-Tag"] = DEFAULT_ROBOTS
             response.headers["Cache-Control"] = PREVIEW_CACHE_CONTROL
         elif path.startswith(NOINDEX_PREFIXES):
             response.headers["X-Robots-Tag"] = DEFAULT_ROBOTS

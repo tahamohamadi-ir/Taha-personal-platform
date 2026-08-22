@@ -54,8 +54,8 @@ admin_api = NinjaAPI(
     title="Taha Custom Admin API",
     version="0.1.0",
     urls_namespace="admin_api",
-    docs_url=None,
-    openapi_url=None,
+    docs_url="/docs",
+    openapi_url="/openapi.json",
 )
 admin_api.exception_handler(AdminError)(_api_error_handler)
 

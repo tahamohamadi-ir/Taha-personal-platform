@@ -808,7 +808,7 @@ P0-B hardening، تست‌های گستردهٔ visual/browser/screen-reader، d
 - [x] پوسته‌ی React SPA: لاگین، سایدبار گروه‌بندی‌شده، داشبورد action-oriented (کارت‌های شمارش از `/dashboard/summary`), RTL/فارسی (Vazirmatn). *(2026-08-18: اسکفولد `apps/cms/admin-frontend/`، build و type-check در CI — LOG-0156؛ هنوز لیست/فرم entity ندارد)*
 - [ ] سرویسلایه: logic در service ها (transactional)، views نازک، schema سمت سرور — الگوی conventions نمونه. *(§14 S1)*
 - [x] خطاهای یکنواخت Problem Details: `{status, code, message, fields[]}` + کدهای AUTH_REQUIRED/FORBIDDEN/OTP_REQUIRED/AUTH_FAILED/CSRF_FAILED/RATE_LIMITED. *(بخش auth — LOG-0156)*
-- [ ] OpenAPI/Swagger داخلی Ninja فقط admin-only (در معرض عمومی نباشد). *(§14 S7 — فعلاً docs/OpenAPI غیرفعال است)*
+- [x] OpenAPI/Swagger داخلی Ninja فقط admin-only (در معرض عمومی نباشد). *(§14 S7 — `/api/v1/admin/docs` + `/openapi.json` staff+OTP gated; anonymous 404 — LOG-0202)*
 - [ ] feature flags (adminNewShell، mediaPickerV2 و…) برای rollback کنترل‌شده. *(§14 S4)*
 - [x] انتقال nested profile editor (مهارت‌ها + آرایه‌های هم‌سطح) به SPA از مسیر موجود `GET/PUT /api/admin/profiles/<locale>/<slug>`. *(LOG-0165)* Site-content Wagtail-session PR #24 قبلاً در SPA است.
 - [x] Cutover: SPA جایگزین Wagtail در /admin/. Wagtail به /admin-wagtail/ منتقل شد (TOTP enrollment + preview + rollback). *(2026-08-18 — LOG-0163; DEFER-0023 CLOSED)*
