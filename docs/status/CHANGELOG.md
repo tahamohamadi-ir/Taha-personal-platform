@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-22 — Compose Caddy edge cutover PASS (LOG-0210)
+
+- Production TLS edge moved from host systemd Caddy to Compose `caddy` (profile `edge`) after owner recovery: first cutover **525** → rollback → ACME seed `/var/lib/caddy` → `taha-cms_caddy_data` → second cutover **PASS**.
+- `smoke-cms.sh` **PASS**; host Caddy **inactive/disabled**; apt backlog reduced to **3** phased packages; SSH **22+2222** accepted (2222 canonical).
+- **`DEFER-0031` CLOSED**; **`RISK-0013`**, **`RISK-0005`**, **`RISK-0006` CLOSED**. Owner follow-up: set GitHub variable **`CADDY_EDGE=compose`**; investigate `smoke.sh` `/nonexistent-qa` 404 via Compose nginx.
+
 ## 2026-08-22 — ADR-0027 Slice 3 CMS origin honesty (repo)
 
 - `apps/web`: when `CMS_API_BASE` is set, empty CMS CV downloads return `[]` (no static markdown fallback); About/CV pages emit `<meta name="cms-build-origin">`; `isCmsOriginBuild()` helper; QA specs for 503 fail-build (articles + profile) and snapshot origin meta.
