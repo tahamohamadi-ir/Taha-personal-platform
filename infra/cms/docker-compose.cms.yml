@@ -129,6 +129,9 @@ services:
     mem_limit: 128m
     cpus: "0.25"
     restart: unless-stopped
+    # BusyBox wget in caddy:alpine has no --max-redirect=0. Probing :80 follows 308
+    # to https://127.0.0.1/ and fails TLS (cert is for the public hostname, not
+    # localhost). Default admin listener on :2019 responds over plain HTTP.
     healthcheck:
       test:
         [
@@ -137,7 +140,7 @@ services:
           "--quiet",
           "--tries=1",
           "--spider",
-          "http://127.0.0.1:80/",
+          "http://127.0.0.1:2019/config/",
         ]
       interval: 30s
       timeout: 5s

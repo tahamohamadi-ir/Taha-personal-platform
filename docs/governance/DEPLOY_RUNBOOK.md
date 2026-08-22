@@ -2,8 +2,7 @@
 
 > Status: Active for production. Staging is decommissioned (ADR-0025, 2026-08-15); the
 > mechanics below implement ADR-0017 as amended by **ADR-0027** (`web` nginx image
-> is the target artifact; host Caddy until owner completes `DEFER-0031` cutover —
-> Compose `caddy` + profile `edge` is in repo). Production deploys
+> is the target artifact; **Compose `caddy`** (profile `edge`) owns live public TLS on production since LOG-0210 (2026-08-22); host systemd Caddy remains documented rollback only). Production deploys
 > require owner approval, a documented rollback path and a passing release gate
 > (CI web + cms workflows + production smoke; see `RELEASE_POLICY.md`). No deploy
 > is performed by this file.
@@ -120,16 +119,16 @@ those containers (RISK-0004, closed 2026-08-16).
 
 ## CMS runtime (Caddy + versioned image + Compose)
 
-Canonical topology (host Caddy — default until DEFER-0031 live cutover):
+Canonical topology (Compose edge — **live** since LOG-0210; host systemd Caddy inactive):
 
 ```text
-Caddy (TLS, systemd)
-  ├── public HTML (Slice 1+) → 127.0.0.1:13080 (nginx `web`; rollback: file_server on /opt/taha/site/current)
-  ├── /admin* + /static*     → 127.0.0.1:18000
-  └── /health/               → 127.0.0.1:18000   (NOT /health* — that steals /health.json)
+Compose caddy (TLS, profile edge, ports 80/443)
+  ├── public HTML → web:8080 (nginx)
+  ├── /admin* /staff* /api* /media* /preview* → cms:8000
+  └── /health.json → web; /health/ → cms
 ```
 
-Canonical topology (Compose edge — after owner cutover, profile `edge`):
+Legacy topology (host Caddy — rollback only):
 
 ```text
 Compose caddy (TLS, ports 80/443)
@@ -271,7 +270,7 @@ Attended apt upgrade + Caddy edge cutover: `bash infra/deploy/owner-vps-maintena
 | Production schema `content.0009`–`0012` (+ `siteconfig.0002`) | `RISK-0010` | **CLOSED** | Attended re-dispatch [32554382271](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32554382271) (`cms_image_tag=65d6c91`): `backup_ok`, `CMS smoke PASS`, `cd-cms-migrate PASS`. Prior attempt [32554028708](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32554028708) applied schema then failed SPA smoke (fixed in #71 / LOG-0195). Live image `taha-cms:65d6c91`. |
 | HMAC rebuild enable | `DEFER-0027` | **CLOSED** | VPS 2026-08-22: `REBUILD_TRIGGER_ENABLED=true`; signed POST `/rebuild-trigger/` → HTTP 200 `triggered:true`; bad token → 403 (LOG-0207). Recreate CMS with override compose when toggling. |
 | Attended CD web rebuild | (ops) | **CLOSED** | workflow_dispatch [32555455704](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32555455704) job **Web container rebuild (gated)** success: `rebuild-web PASS` + `cd-rebuild-web PASS` (LOG-0199). First attempt [32555108949](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32555108949) failed Docker loopback (#74 / LOG-0198). Live web image `taha-web:local`. |
-| Compose Caddy TLS edge | `DEFER-0031` / `RISK-0013` | **OPEN** | Repo Slice 4 ready; live edge remains host systemd Caddy until owner cutover below. Caddy must already proxy `/staff/*` before no-Wagtail image is live. |
+| Compose Caddy TLS edge | `DEFER-0031` / `RISK-0013` | **CLOSED** | Live edge on Compose `caddy` since LOG-0210 (525 rollback + ACME seed → second cutover PASS). Owner follow-up: set GitHub `CADDY_EDGE=compose` so CD reloads Compose Caddy. |
 | Scheduled-publish timer | (ops; `DEBT-0005` code CLOSED) | **CLOSED** | Owner attestation 2026-08-22: `sudo bash infra/deploy/install-scheduled-publish-timer.sh` → `install-scheduled-publish-timer PASS`; `taha-publish-scheduled-content.timer` active (NEXT 2026-08-22 06:41:00 UTC). LOG-0201. CD path optional (`install_scheduled_timer=true` after sudoers prereq). |
 
 Suggested CMS image pin remains `65d6c91`
