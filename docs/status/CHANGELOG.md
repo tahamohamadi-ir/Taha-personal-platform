@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-08-22 — ADR-0027 Slice 3 CMS origin honesty (repo)
+
+- `apps/web`: when `CMS_API_BASE` is set, empty CMS CV downloads return `[]` (no static markdown fallback); About/CV pages emit `<meta name="cms-build-origin">`; `isCmsOriginBuild()` helper; QA specs for 503 fail-build (articles + profile) and snapshot origin meta.
+- Slice 3 marked **done in repo** in `cms-origin-and-full-stack-cd-task-spec.md`. LOG-0205.
+
 ## 2026-08-22 — Rich blocks v2 (story catalog)
 
 - Story composition catalog adds `accordion`, `tabs`, `timeline`, `counters`, `before_after`, `slider` with fail-closed CMS validation, admin SPA editors, and no-JS Astro render (`StoryBody.astro`).

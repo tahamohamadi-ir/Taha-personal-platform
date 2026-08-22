@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0205 — 2026-08-22 — ADR-0027 Slice 3 CMS origin honesty (repo)
+
+- Outcome: PR `feat/slice3-cms-origin-honesty` closes Slice 3 gaps in `apps/web`: honest empty CV downloads when CMS returns none; `isCmsOriginBuild()`; `<meta name="cms-build-origin">` on About/CV pages; fixed misleading `siteSettings` comment; new `qa/cms-origin-honesty.spec.mjs` (mock 503 for articles + profile fail-build); extended `cms-profile-build.spec.mjs` for snapshot meta. Slice 3 → **done in repo** in task spec. `DEFER-0027` / `DEFER-0031` remain OPEN.
+- Why: ADR-0027 Slice 3 requires fail-build on CMS outage and no silent snapshot/static fallback when origin is configured.
+- Scope / files: `apps/web/src/data/cvDownloads.ts`, `apps/web/src/lib/cms/client.ts`, `apps/web/src/layouts/BaseLayout.astro`, `apps/web/src/pages/{en,fa}/{about,cv}.astro`, `apps/web/src/lib/cms/siteSettings.ts`, `apps/web/qa/cms-origin-honesty.spec.mjs`, `apps/web/qa/cms-profile-build.spec.mjs`, `docs/plan/cms-origin-and-full-stack-cd-task-spec.md`, `docs/plan/README.md`, CHANGELOG, this entry.
+- Commands or actions actually performed: branch `feat/slice3-cms-origin-honesty` from `origin/main`; worktree `.worktrees/feat-slice3-cms-origin-honesty`.
+- Verification actually performed and result: `npm run check` PASS; `npm run build` PASS; `node qa/cms-profile-build.spec.mjs` PASS; `node qa/cms-origin-honesty.spec.mjs` PASS; `node qa/projects-catalog.spec.mjs` PASS.
+- Deferred or risk IDs: Slice 3 repo **CLOSED**; production HMAC (`DEFER-0027`) and Compose Caddy edge (`DEFER-0031` / `RISK-0013`) unchanged.
+- Rollback / recovery: revert PR; snapshot builds unaffected when `CMS_API_BASE` unset.
+
 ## LOG-0204 — 2026-08-22 — DEFER-0016 public preview share token
 
 - Outcome: Stateless HMAC public preview at `/preview/share/<token>/` (landing/profile/article, 15-minute TTL, no session). Same HTML sanitization as staff preview; `noindex,nofollow,noarchive` + `Cache-Control: no-store`. Admin SPA copy-link button; `POST .../preview-link` with audit `preview.share_link`. Caddy host + Compose proxy. DEFER-0016 CLOSED; Task-list ADM-4 preview tick; ADR-0022 addendum.

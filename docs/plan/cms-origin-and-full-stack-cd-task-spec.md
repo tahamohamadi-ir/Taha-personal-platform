@@ -51,10 +51,12 @@ False smoke: `smoke-cms.sh` probed `/admin-wagtail/accounts/login/` (302). Real 
 - First attended production CD migrate **PASS** 2026-08-20 (`2e200fe`, Actions 32407698471). `RISK-0012` CLOSED on that evidence. Leave `CMS_CD_AUTO_MIGRATE` unset. HMAC still off (`DEFER-0027`).
 - Attended web rebuild path (Slice 1+): `infra/deploy/cd-rebuild-web.sh` + CD job `rebuild-web` gated by `workflow_dispatch` `rebuild_web=true` only (LOG-0197). No auto var. Production attended **PASS** 2026-08-22 (Actions [32555455704](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32555455704), LOG-0199).
 
-### Slice 3 — CMS origin honesty
+### Slice 3 — CMS origin honesty (**done in repo**)
 
-- Build fails or emits explicit stale-cache headers/pages when API errors; do not silently prefer committed `profile.snapshot.json` over a successful empty published list.
+- Build fails when `CMS_API_BASE` is set and the CMS origin returns transport errors or HTTP 5xx; do not silently prefer committed `profile.snapshot.json` or static CV downloads over a successful empty published list.
+- `<meta name="cms-build-origin" content="snapshot|cms">` on About pages marks build origin for operators (not visitor copy).
 - Production applicability: attended `rebuild-web` Docker build uses live `https://tahamohamadi.ir` CMS origin (LOG-0199); loopback preflight on VPS host only.
+- QA: `apps/web/qa/cms-profile-build.spec.mjs`, `apps/web/qa/cms-origin-honesty.spec.mjs`.
 - No invented copy.
 
 ### Slice 4 — Caddy in Compose (`DEFER-0031`) — **repo done; live cutover owner-gated**

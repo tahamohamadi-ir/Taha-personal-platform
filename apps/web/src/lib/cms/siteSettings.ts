@@ -19,7 +19,7 @@ export interface PublicSiteSettingsDto {
   downloads: PublicDownloadDto[];
 }
 
-/** Defaults when CMS_API_BASE is unset or `/api/site` is unreachable. */
+/** Default primary color when CMS_API_BASE is unset (offline builds). */
 export const FALLBACK_PRIMARY_COLOR = "#087c73";
 
 /** Published site settings. Null when CMS_API_BASE is unset. Outage fails the build. */
