@@ -259,6 +259,9 @@ rewire, Slice 4 Compose Caddy in repo, **Wagtail uninstall PR #69** /
 `DEBT-0003` CLOSED). Agents must not invent PASS for VPS steps.
 **Never set `CMS_CD_AUTO_MIGRATE=true`.**
 
+Attended apt upgrade + Caddy edge cutover: `bash infra/deploy/owner-vps-maintenance.sh`
+(see `infra/caddy/HOST-CADDY-DISABLE.md`).
+
 ### Evidence snapshot (checked against Actions, not assumed)
 
 | Gate | Ledger | Status | Evidence |
