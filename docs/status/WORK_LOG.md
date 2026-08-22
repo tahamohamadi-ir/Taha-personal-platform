@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0198 — 2026-08-22 — Attended CD rebuild-web FAIL (Docker loopback) + fix
+
+- Outcome: First dispatch `rebuild_web=true` → [32555108949](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32555108949) job **Web container rebuild (gated)** **FAILED**: Astro build inside `docker compose build` could not reach `http://127.0.0.1:18000` (`series/en: CMS /api/series/en unreachable: fetch failed`). Root cause: build container loopback ≠ host CMS. Fixed `rebuild-web.sh` to pass `CMS_API_BASE=https://tahamohamadi.ir` to Docker build when host preflight uses loopback (matches CI). **Not** a PASS — re-dispatch required after merge.
+- Why: Unblock OWNER_CUTOVER step 5 without inventing PASS on the failed run.
+- Scope / files: `infra/deploy/rebuild-web.sh`, this entry, CHANGELOG.
+- Commands or actions actually performed: `gh run watch` 32555108949; `--log-failed`; worktree `fix/rebuild-web-docker-cms-api`.
+- Verification actually performed and result: failed run log shows Docker build fetch failed; fix is repo-only pending re-dispatch.
+- Deferred or risk IDs: rebuild-web production PASS **OPEN**; `DEFER-0027` OPEN; `DEFER-0031`/`RISK-0013` OPEN.
+- Rollback / recovery: revert fix PR; manual build with `CMS_API_BASE=https://tahamohamadi.ir bash infra/deploy/rebuild-web.sh`.
+
 ## LOG-0197 — 2026-08-22 — Gated CD rebuild-web + scheduled timer install script
 
 - Outcome: Added `infra/deploy/cd-rebuild-web.sh` (git sync + `rebuild-web.sh` + `cd-rebuild-web PASS` evidence) and CD job **Web container rebuild (gated)** (`workflow_dispatch` `rebuild_web=true` only; no auto var). Added `infra/deploy/install-scheduled-publish-timer.sh` for owner-attended systemd timer install. Updated DEPLOY_RUNBOOK § OWNER_CUTOVER + attended web rebuild checklist. No production rebuild PASS invented; `DEFER-0027` / `DEFER-0031` / `RISK-0013` remain **OPEN**. Did **not** set `CMS_CD_AUTO_MIGRATE`.
