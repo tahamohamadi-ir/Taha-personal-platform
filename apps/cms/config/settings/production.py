@@ -42,6 +42,7 @@ _rebuild_enabled = os.environ.get("REBUILD_TRIGGER_ENABLED", "false").strip().lo
 REBUILD_TRIGGER_ENABLED = _rebuild_enabled in {"1", "true", "yes"}
 REBUILD_TRIGGER_SECRET = os.environ.get("REBUILD_TRIGGER_SECRET", "")
 REBUILD_SCRIPT_PATH = os.environ.get("REBUILD_SCRIPT_PATH", "").strip()
+PREVIEW_SHARE_SECRET = os.environ.get("PREVIEW_SHARE_SECRET", "").strip()
 
 DATABASES = {
     "default": {

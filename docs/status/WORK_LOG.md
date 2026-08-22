@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0204 — 2026-08-22 — DEFER-0016 public preview share token
+
+- Outcome: Stateless HMAC public preview at `/preview/share/<token>/` (landing/profile/article, 15-minute TTL, no session). Same HTML sanitization as staff preview; `noindex,nofollow,noarchive` + `Cache-Control: no-store`. Admin SPA copy-link button; `POST .../preview-link` with audit `preview.share_link`. Caddy host + Compose proxy. DEFER-0016 CLOSED; Task-list ADM-4 preview tick; ADR-0022 addendum.
+- Why: External draft review without shared staff credentials (DEFER-0016).
+- Scope / files: `apps/cms/apps/content/preview_token.py`, `views_preview.py`, `urls_public_preview.py`, `admin_content.py`, admin SPA, `infra/caddy/Caddyfile*`, tests, docs.
+- Commands or actions actually performed: `uv run pytest -q tests/test_preview.py tests/test_preview_share.py`; `uv run ruff check .`; `npm run check` in admin-frontend.
+- Verification actually performed and result: preview share tests PASS; ruff clean; admin-frontend check PASS.
+- Deferred or risk IDs: DEFER-0016 **CLOSED**; production needs `PREVIEW_SHARE_SECRET` in `infra/cms/.env` + CMS image rebuild + Caddy sync (owner).
+- Rollback / recovery: revert PR; remove Caddy `/preview/share/*` handle if deployed.
+
 ## LOG-0203 — 2026-08-22 — Rich blocks v2 (story catalog)
 
 - Outcome: Added six story-only composition blocks — `accordion`, `tabs`, `timeline`, `counters`, `before_after`, `slider` — with fail-closed validators (`blocks.py`), public projection sanitization (`projection.py`), admin SPA `itemList` editor + before/after media fields, and no-JS Astro render in `StoryBody.astro`. Spec `docs/plan/rich-blocks-v2-task-spec.md` **DONE**; Task-list §14 U3 ticked.

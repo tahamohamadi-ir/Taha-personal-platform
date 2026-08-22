@@ -35,6 +35,7 @@ from apps.content.models import (
     ResearchStatement,
     ResearchTopic,
 )
+from apps.content.preview_token import build_preview_share_path, preview_ttl_seconds
 from apps.content.revisions import create_revision, restore_revision_as_draft
 from apps.rebuild.services import invoke_static_rebuild
 from apps.security.models import AuditLog
@@ -49,6 +50,12 @@ ENTITY_MODELS = {
     "research-statement": ResearchStatement,
     "project": Project,
     "publication": Publication,
+}
+
+PREVIEW_SHARE_ENTITIES = {
+    "landing": "landing",
+    "profile": "profile",
+    "article": "article",
 }
 
 VALID_LOCALES = ("fa", "en")
@@ -390,6 +397,15 @@ class ContentDetailOut(Schema):
     createdAt: datetime
     updatedAt: datetime
     fields: dict[str, object]
+
+
+class PreviewLinkOut(Schema):
+    """Short-lived public preview share URL."""
+
+    url: str
+    path: str
+    expiresAt: str
+    ttlSeconds: int
 
 
 class ContentFieldSpecOut(Schema):
@@ -1060,6 +1076,48 @@ def project_screenshot_set_image(
     )
     row.save(update_fields=["screenshot_image"])
     return _serialize_screenshot(row)
+
+
+@content_router.post(
+    "/{entity}/{id}/preview-link",
+    response=PreviewLinkOut,
+    summary="Generate a short-lived public preview share link.",
+)
+def content_preview_link(request, entity: str, id: int):
+    _require_admin_otp(request)
+    _check_csrf(request)
+    kind = PREVIEW_SHARE_ENTITIES.get(entity)
+    if kind is None:
+        raise AdminError(
+            404,
+            "NOT_FOUND",
+            "Preview links are not supported for this entity.",
+        )
+    model = ENTITY_MODELS.get(entity)
+    if model is None:
+        raise AdminError(404, "NOT_FOUND", "Unknown content entity.")
+    item = model.objects.filter(pk=id).first()
+    if item is None:
+        raise AdminError(404, "NOT_FOUND", "Content not found.")
+    path = build_preview_share_path(kind, item.pk)
+    ttl = preview_ttl_seconds()
+    expires_at = datetime.fromtimestamp(
+        int(timezone.now().timestamp()) + ttl, tz=UTC
+    ).isoformat()
+    AuditLog.objects.create(
+        user=request.user,
+        action="preview.share_link",
+        model_name=entity,
+        object_id=str(item.pk),
+        ip=_client_ip(request),
+        detail=f"preview link created ttl={ttl}s",
+    )
+    return PreviewLinkOut(
+        url=request.build_absolute_uri(path),
+        path=path,
+        expiresAt=expires_at,
+        ttlSeconds=ttl,
+    )
 
 
 from apps.api.admin_api import admin_api  # noqa: E402

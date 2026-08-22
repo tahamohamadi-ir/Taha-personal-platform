@@ -76,6 +76,15 @@ tahamohamadi.ir {
 		}
 	}
 
+	redir /preview/share /preview/share/ 308
+
+	handle /preview/share/* {
+		reverse_proxy 127.0.0.1:18000 {
+			header_down X-Robots-Tag "noindex, nofollow, noarchive"
+			header_down Cache-Control "no-store, no-cache, must-revalidate"
+		}
+	}
+
 	redir /staff /staff/ 308
 
 	handle /staff/* {

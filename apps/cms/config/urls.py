@@ -12,6 +12,7 @@ from apps.media.views import serve_public_media
 from apps.rebuild.views import rebuild_trigger
 
 urlpatterns = [
+    path("preview/", include("apps.content.urls_public_preview")),
     path("health/", health, name="health"),
     path("media/<path:name>", serve_public_media, name="public_media"),
     # Custom React admin SPA (ADR-0026, ADM-1 cutover). More specific staff

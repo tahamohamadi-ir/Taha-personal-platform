@@ -23,7 +23,7 @@
 | P3-07 preview | P3 | Staff draft preview + noindex/no-store | DONE in repo — optional CMS rebuild | Project owner | LOG-0132 |
 | RISK-0003 | P0-A | CMS-aware backup + isolated restore | DONE — CLOSED 2026-08-17 | Project owner | LOG-0140 |
 | DEFER-0015 | P3 | TOTP recovery codes + disable/re-enroll | DONE in repo — owner CMS rebuild to use on production | Project owner | LOG-0131 |
-| DEFER-0016 | P3-07 | Public preview share-token | Deferred — staff session is access boundary | Project owner | deferred-validation.md |
+| DEFER-0016 | P3-07 | Public preview share-token | Closed 2026-08-22 — HMAC share URL | Project owner | deferred-validation.md |
 | P3 deploy | P3 | CMS runtime hygiene (password + TOTP) | DONE — RISK-0009 CLOSED 2026-08-16 | Project owner | LOG-0129 |
 | Old-stack decommission | ops | Shutdown of pre-existing compose stack (`taha-prod-frontend`/`backend`/`postgres` at `/opt/taha/repository`) — AUTHORIZED 2026-08-16; execution is owner-sudo | owner-sudo execution + runbook | Project owner | infra/deploy/decommission-old-stack.md |
 | B2 | P0-B | Canonical SSH port decision | owner | Project owner | S-PLAN-STATE B2 |

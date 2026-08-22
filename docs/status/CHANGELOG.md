@@ -11,6 +11,13 @@
 - Anonymous and unverified sessions get **404**; verified staff+OTP get 200 with `X-Robots-Tag: noindex, nofollow` and `Cache-Control: no-store`.
 - Caddy unchanged (`/api/*` already proxied to CMS loopback). LOG-0202.
 
+## 2026-08-22 ? DEFER-0016 public preview share token
+
+- Stateless HMAC preview token (`preview:{kind}:{pk}:{exp}`, 15-minute TTL) at `GET /preview/share/<token>/` for landing/profile/article drafts.
+- Admin API `POST /api/v1/admin/content/{entity}/{id}/preview-link` + SPA «کپی لینک پیش‌نمایش» on edit pages.
+- Caddy host + Compose proxy `/preview/share/*`; `PREVIEW_SHARE_SECRET` in `.env.example`.
+- pytest: valid draft, expired 410, tampered 404, XSS stripped, noindex/no-store headers. DEFER-0016 CLOSED. LOG-0204.
+
 ## 2026-08-22 ? Owner attestation: scheduled-publish timer PASS
 
 - Owner VPS (2026-08-22): `sudo bash infra/deploy/install-scheduled-publish-timer.sh` ? `install-scheduled-publish-timer PASS`; `taha-publish-scheduled-content.timer` active (NEXT 2026-08-22 06:41:00 UTC).
