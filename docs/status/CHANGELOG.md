@@ -1,15 +1,20 @@
 # Changelog
 
-## 2026-08-21 — DEBT-0003 CLOSED: Wagtail package removed
+## 2026-08-21 â€” OWNER_CUTOVER post-Wagtail (docs)
+
+- DEPLOY_RUNBOOK Â§ OWNER_CUTOVER: deploy no-Wagtail CMS image (PR #69); Caddy must proxy `/staff/*`; dumpdata before deploy; attended migrate for `content.0009`â€“`0012` if not applied; never `CMS_CD_AUTO_MIGRATE`.
+- `infra/caddy/Caddyfile.compose`: `/admin-wagtail/` â†’ `/staff/*`. LOG-0194.
+
+## 2026-08-21 ï¿½ DEBT-0003 CLOSED: Wagtail package removed
 
 - Wagtail dropped from `INSTALLED_APPS` / `pyproject.toml` / `uv.lock`.
 - Django `/staff/` replaces `/admin-wagtail/` (login, preview, HTML MFA, profile HTML fallback). SPA `/admin/` remains primary.
 - Historical content migrations no longer import wagtail; fresh migrate works without the package.
 - **Owner VPS:** dumpdata + backup (`RISK-0010`) before deploying no-Wagtail image; update Caddy to `/staff/*`; never `CMS_CD_AUTO_MIGRATE`. LOG-0193.
 
-## 2026-08-21 — OWNER_CUTOVER post-merge gates (docs)
+## 2026-08-21 ï¿½ OWNER_CUTOVER post-merge gates (docs)
 
-- DEPLOY_RUNBOOK § OWNER_CUTOVER: dumpdata ? attended CD migrate `content.0009`–`0012` ? `rebuild-web.sh` ? scheduled-publish timer ? optional HMAC / Caddy edge; never `CMS_CD_AUTO_MIGRATE`.
+- DEPLOY_RUNBOOK ï¿½ OWNER_CUTOVER: dumpdata ? attended CD migrate `content.0009`ï¿½`0012` ? `rebuild-web.sh` ? scheduled-publish timer ? optional HMAC / Caddy edge; never `CMS_CD_AUTO_MIGRATE`.
 - Evidence: no post-merge cms-migrate PASS (gated job skipped on recent CD). `RISK-0012` CLOSED (attended path); `RISK-0010` / `DEFER-0027` / `DEFER-0031` / `RISK-0013` remain OPEN. LOG-0192.
 
 ## 2026-08-21 â€” DEBT-0003 PARTIAL: RichTextâ†’TextField + local sanitizer

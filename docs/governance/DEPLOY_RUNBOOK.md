@@ -134,9 +134,15 @@ Canonical topology (Compose edge — after owner cutover, profile `edge`):
 ```text
 Compose caddy (TLS, ports 80/443)
   ├── public HTML → web:8080
-  ├── /admin* /static* /api* /media* /health/ /admin-wagtail* → cms:8000
+  ├── /admin* /staff* /static* /api* /media* /health/ → cms:8000
   └── ACME data in Docker volume `caddy_data`
 ```
+
+Host and Compose Caddy must proxy **`/staff/*`** (Django staff HTML: login,
+preview, MFA fallback after Wagtail removal / PR #69). Do **not** rely on
+`/admin-wagtail/` — that path is retired. Canonical files:
+`infra/caddy/Caddyfile`, `infra/caddy/Caddyfile.compose`,
+`infra/cms/Caddyfile.cms.snippet`.
 
 - Image source of truth: `ghcr.io/<owner>/taha-cms:<git-sha>` (CI:
   `.github/workflows/ci-cms-image.yml`). Pin `CMS_IMAGE` to a sha for deploy and
@@ -217,44 +223,55 @@ Compose caddy (TLS, ports 80/443)
 
 Single ordered owner checklist after the 2026-08-20/21 merges on `main`
 (revisions/schedule, entity stories, Media rewire, RichText→TextField, HMAC
-rewire, Slice 4 Compose Caddy in repo). Agents must not invent PASS for VPS
-steps. **Never set `CMS_CD_AUTO_MIGRATE=true`.**
+rewire, Slice 4 Compose Caddy in repo, **Wagtail uninstall PR #69** /
+`DEBT-0003` CLOSED). Agents must not invent PASS for VPS steps.
+**Never set `CMS_CD_AUTO_MIGRATE=true`.**
 
 ### Evidence snapshot (checked against Actions, not assumed)
 
 | Gate | Ledger | Status | Evidence |
 |---|---|---|---|
 | Slice 2 attended CD migrate **path** | `RISK-0012` | **CLOSED** | workflow_dispatch [32407698471](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32407698471) job **CMS image migrate (gated)** success (`cms_image_tag=2e200fe`, LOG-0179 / LOG-0180). Auto-migrate stays **unset**. |
-| Production schema `content.0009`–`0012` (+ `siteconfig.0002`) | `RISK-0010` | **OPEN** | After merges #58–#67, every inspected `main` CD run left **CMS image migrate (gated)** as **skipped**. No post-merge migrate PASS. Last known live CMS schema: `content.0008` / `composition.0002` on `b6bea6a` (2026-08-19). |
+| Wagtail package removed (repo) | `DEBT-0003` | **CLOSED** | PR [#69](https://github.com/tahamohamadi-ir/Taha-personal-platform/pull/69); LOG-0193; SPA `/admin/` + Django `/staff/`. Production image swap is still owner (`RISK-0010`). |
+| Production schema `content.0009`–`0012` (+ `siteconfig.0002`) | `RISK-0010` | **OPEN** | After merges #58–#69, every inspected `main` CD run left **CMS image migrate (gated)** as **skipped**. No post-merge migrate PASS. Last known live CMS schema: `content.0008` / `composition.0002` on `b6bea6a` (2026-08-19) — still a Wagtail-era image until owner rebuild. |
 | HMAC rebuild enable | `DEFER-0027` | **OPEN** | Code targets `rebuild-web.sh`; `REBUILD_TRIGGER_ENABLED` remains False until owner smoke + enable. |
-| Compose Caddy TLS edge | `DEFER-0031` / `RISK-0013` | **OPEN** | Repo Slice 4 ready; live edge remains host systemd Caddy until owner cutover below. |
+| Compose Caddy TLS edge | `DEFER-0031` / `RISK-0013` | **OPEN** | Repo Slice 4 ready; live edge remains host systemd Caddy until owner cutover below. Caddy must already proxy `/staff/*` before no-Wagtail image is live. |
 | Scheduled-publish timer | (ops; `DEBT-0005` code CLOSED) | **OPEN** | Units in `infra/cms/taha-publish-scheduled-content.*`; no install attestation on VPS. |
 
-Suggested CMS image for the next attended migrate: GHCR sha matching `origin/main`
-HEAD after a green **CMS image** run (example: `25ffc1b` from
-[32474338980](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32474338980)).
-Confirm the tag exists in GHCR before dispatching.
+Suggested CMS image for the next attended migrate / no-Wagtail deploy: GHCR sha
+matching `origin/main` HEAD after a green **CMS image** run (post-#69). Confirm
+the tag exists in GHCR before dispatching. Do **not** deploy a pre-#69 image
+that still expects `/admin-wagtail/`.
 
 ### Required sequence (owner)
 
-1. **dumpdata + backup** (`RISK-0010`): before any schema migrate, take a
-   content dump and confirm restic/daily backup posture. Prefer also letting
-   `cd-cms-migrate.sh` write its pre-migrate `pg_dumpall` under the deploy-writable
-   backup root.
-2. **Attended CD migrate** for `content.0009` → `0010` → `0011` → `0012` (and
-   `siteconfig.0002` if not yet applied) in one pinned image that contains the
-   full chain:
+1. **dumpdata + backup** (`RISK-0010`): **before** deploying the no-Wagtail CMS
+   image and before any schema migrate. Take a content `dumpdata` and confirm
+   restic/daily backup posture. Prefer also letting `cd-cms-migrate.sh` write
+   its pre-migrate `pg_dumpall` under the deploy-writable backup root.
+2. **Caddy `/staff/*` proxy** (required for PR #69 runtime): ensure live host
+   Caddy includes `handle /staff/*` → `127.0.0.1:18000` (same pattern as
+   `/admin/*`). `/admin-wagtail/` alone is **not** sufficient after the
+   no-Wagtail image. Apply from `infra/caddy/Caddyfile` /
+   `infra/cms/Caddyfile.cms.snippet` with timestamped backup +
+   `caddy validate` + reload. Smoke expects `/staff/login/` (`smoke-cms.sh`).
+3. **Deploy no-Wagtail CMS image** (pin GHCR sha from post-#69 `main`) **and**,
+   if not already applied, **attended CD migrate** for `content.0009` → `0010`
+   → `0011` → `0012` (and `siteconfig.0002` if not yet applied) in that same
+   pinned image:
    - Actions → **CD — Deploy to production** → **Run workflow**
-   - `migrate_cms=true`
+   - `migrate_cms=true` when schema is still behind (skip inventing PASS if
+     migrate was left skipped on ordinary pushes)
    - `cms_image_tag=<exact GHCR sha>` (do not invent)
    - Confirm job **CMS image migrate (gated)** **success** and log lines
-     `cd-cms-migrate PASS` + `CMS smoke PASS`
+     `cd-cms-migrate PASS` + `CMS smoke PASS` when migrate was requested
    - Or manual: `CMS_IMAGE=ghcr.io/tahamohamadi-ir/taha-cms:<sha>` +
      `bash infra/deploy/cd-cms-migrate.sh` as `deploy`
-3. **Verify** inside CMS: migrations applied
-   (`content.0009`…`0012`, `siteconfig.0002` as applicable); SPA admin login +
-   smoke-cms still PASS.
-4. **`rebuild-web.sh`** so public HTML picks up new schema/projections:
+4. **Verify** inside CMS: migrations applied
+   (`content.0009`…`0012`, `siteconfig.0002` as applicable); SPA `/admin/`
+   login + `/staff/login/` + `smoke-cms.sh` PASS; no dependency on
+   `/admin-wagtail/`.
+5. **`rebuild-web.sh`** so public HTML picks up new schema/projections:
 
    ```bash
    cd /home/deploy/cms-repo
@@ -262,7 +279,7 @@ Confirm the tag exists in GHCR before dispatching.
    bash infra/deploy/rebuild-web.sh
    ```
 
-5. **Install scheduled-publish timer** (needed for `scheduled` → published):
+6. **Install scheduled-publish timer** (needed for `scheduled` → published):
 
    ```bash
    sudo install -m 755 infra/cms/publish-scheduled-content.sh /usr/local/sbin/taha-publish-scheduled-content
@@ -273,12 +290,13 @@ Confirm the tag exists in GHCR before dispatching.
    systemctl list-timers 'taha-publish-scheduled-content*'
    ```
 
-6. **Optional — HMAC enable** (`DEFER-0027`): only after loopback
+7. **Optional — HMAC enable** (`DEFER-0027`): only after loopback
    `rebuild-web.sh` smoke PASS and a rehearsal that CMS can invoke the signed
    `/rebuild-trigger/` path. Keep trigger disabled until then.
-7. **Optional — Caddy edge cutover** (`DEFER-0031` / `RISK-0013`): follow the
-   section below; set `CADDY_EDGE=compose` only after smoke PASS.
-8. **Never enable `CMS_CD_AUTO_MIGRATE`.** Leave the variable unset; use
+8. **Optional — Caddy edge cutover** (`DEFER-0031` / `RISK-0013`): follow the
+   section below; set `CADDY_EDGE=compose` only after smoke PASS. Compose
+   Caddyfile must proxy `/staff/*` (not `/admin-wagtail/`).
+9. **Never enable `CMS_CD_AUTO_MIGRATE`.** Leave the variable unset; use
    `workflow_dispatch` `migrate_cms=true` for each production schema change.
 
 Detail sections for migrate mechanics, HMAC, and Caddy cutover remain below/above;
