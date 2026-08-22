@@ -1,5 +1,16 @@
 # Work Log
 
+## LOG-0202 — 2026-08-22 — ADM-1 / Staff-gated admin OpenAPI docs
+
+- Outcome: Enabled django-ninja Swagger UI and OpenAPI schema on the custom admin API at `/api/v1/admin/docs` and `/api/v1/admin/openapi.json`. Anonymous and staff-without-OTP sessions receive **404** (not redirect). Verified staff+OTP sessions receive 200. Responses include `X-Robots-Tag: noindex, nofollow` and `Cache-Control: no-store`. Caddy unchanged — admin docs ride existing `/api/*` reverse proxy to CMS loopback.
+- Why: Close ADM-1 §14 S7 (internal OpenAPI for admin API) without exposing schema to anonymous crawlers or public edge cache.
+- Scope / files: `apps/cms/apps/api/admin_api.py`, `apps/cms/apps/security/middleware.py` (`AdminOpenAPIGateMiddleware` + NoIndex no-store for docs paths), `apps/cms/config/settings/base.py`, `apps/cms/tests/test_admin_openapi.py` (new), `Task-list.md` (§17 ADM-1 OpenAPI tick), `docs/status/CHANGELOG.md`, this entry.
+- Commands or actions actually performed: branch `feat/admin-openapi-docs` from `origin/main` in worktree `.worktrees/feat-admin-openapi-docs`.
+- Verification actually performed and result: `uv run ruff check .` PASS; `uv run pytest -q tests/test_admin_openapi.py` PASS (8 tests).
+- Decisions / assumptions: Gate requires staff **and** verified OTP session (same baseline as protected admin endpoints); 404 instead of 401/403 to avoid advertising internal docs surface.
+- Documentation impact: Task-list §17 ADM-1 OpenAPI tick; CHANGELOG entry; Caddy verified — no new public route.
+- Deferred or risk IDs: none new.
+
 ## LOG-0201 — 2026-08-22 — Owner attestation: scheduled-publish timer PASS
 
 - Outcome: Owner attestation on production VPS (2026-08-22): `cd /home/deploy/cms-repo && git pull --ff-only origin main` (already up to date); `sudo bash infra/deploy/install-scheduled-publish-timer.sh` → `install-scheduled-publish-timer PASS`; `systemctl list-timers 'taha-publish-scheduled-content*'` shows `taha-publish-scheduled-content.timer` **active** (NEXT Sat 2026-08-22 06:41:00 UTC). Closes OWNER_CUTOVER step 6 (manual owner-attended path). Required post-merge gates complete; optional HMAC (`DEFER-0027`) and Compose Caddy edge (`DEFER-0031` / `RISK-0013`) remain **OPEN**. Did **not** set `CMS_CD_AUTO_MIGRATE`. **GOAL_COMPLETE=yes** for `full_backlog_completion` required gates (coordinator: UpdateGoal).

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-22 — ADM-1: staff-gated admin OpenAPI docs
+
+- Enabled Ninja Swagger UI at `/api/v1/admin/docs` and schema at `/api/v1/admin/openapi.json`.
+- Anonymous and unverified sessions get **404**; verified staff+OTP get 200 with `X-Robots-Tag: noindex, nofollow` and `Cache-Control: no-store`.
+- Caddy unchanged (`/api/*` already proxied to CMS loopback). LOG-0202.
+
 ## 2026-08-22 ? Owner attestation: scheduled-publish timer PASS
 
 - Owner VPS (2026-08-22): `sudo bash infra/deploy/install-scheduled-publish-timer.sh` ? `install-scheduled-publish-timer PASS`; `taha-publish-scheduled-content.timer` active (NEXT 2026-08-22 06:41:00 UTC).
