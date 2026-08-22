@@ -119,12 +119,17 @@ phase2_caddy_cutover() {
   systemctl is-active caddy 2>/dev/null && die "host caddy still active" || echo "host caddy: stopped"
 
   info "2.3 — Seed Compose ACME volume from host /var/lib/caddy (avoids Cloudflare 525 on first cutover)"
+  # Host systemd Caddy stores issued certificates under /var/lib/caddy (default).
+  # Compose `caddy` mounts Docker volume `taha-cms_caddy_data` at /data. Starting
+  # edge caddy with an empty volume leaves origin TLS broken (525) until ACME
+  # re-issues. Copy host data after host caddy stops and before Compose binds 443.
   CADDY_VOL="${COMPOSE_PROJECT_NAME:-taha-cms}_caddy_data"
-  if [ -d /var/lib/caddy ] && [ -n "$(ls -A /var/lib/caddy 2>/dev/null)" ]; then
+  if [ -d /var/lib/caddy ] && sudo find /var/lib/caddy -mindepth 1 -print -quit 2>/dev/null | grep -q .; then
+    docker volume inspect "$CADDY_VOL" >/dev/null 2>&1 || docker volume create "$CADDY_VOL"
     docker run --rm \
-      -v /var/lib/caddy:/src:ro \
-      -v "${CADDY_VOL}:/dest" \
-      alpine sh -c 'cp -a /src/. /dest/'
+      -v /var/lib/caddy:/host:ro \
+      -v "${CADDY_VOL}:/data" \
+      alpine sh -c 'rm -rf /data/* /data/.[!.]* 2>/dev/null; cp -a /host/. /data/; find /data -name "*.crt" | head -3'
     echo "Seeded ${CADDY_VOL} from /var/lib/caddy"
   else
     warn "/var/lib/caddy empty or missing — Compose will obtain fresh certs (525/TLS gap possible)"
