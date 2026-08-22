@@ -253,15 +253,14 @@ def test_admin_profile_create_sibling_creates_missing_locale(
     )
     assert response.status_code == 201
     data = response.json()
-    assert data["editorUrl"] == "/admin-wagtail/profiles/fa/about/"
+    created = Profile.objects.get(locale=Locale.FA, slug="about")
+    assert data["editorUrl"] == f"/admin/content/profile/{created.pk}"
     assert data["profile"]["locale"] == "fa"
     assert data["profile"]["slug"] == "about"
     assert data["profile"]["status"] == "draft"
     assert data["profile"]["revision"] == 1
     assert data["profile"]["title"] == ""
     assert data["profile"]["translationStatus"]["status"] == "COMPLETE"
-
-    created = Profile.objects.get(locale=Locale.FA, slug="about")
     assert created.translation_key == seeded_profile.translation_key
     assert created.status == LifecycleStatus.DRAFT
 

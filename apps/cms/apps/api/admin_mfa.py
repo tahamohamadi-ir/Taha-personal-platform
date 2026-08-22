@@ -1,9 +1,8 @@
 """SPA TOTP enrollment API — ``/api/v1/admin/auth/mfa/*`` (ADM-0).
 
 Primary enrollment path for staff is the React Security page (``/admin/security``)
-backed by these endpoints. Wagtail HTML at ``/admin-wagtail/account/two-factor/``
-remains installed for one more cycle as rollback only — do not use it for new
-enrollments once SPA MFA is verified on the deployed image.
+backed by these endpoints. Django HTML fallback lives under
+``/staff/account/two-factor/`` (no Wagtail).
 """
 
 from __future__ import annotations

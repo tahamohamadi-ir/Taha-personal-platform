@@ -1,15 +1,15 @@
-# SUPERSEDED — this file is replaced by infra/caddy/Caddyfile which is the
+# SUPERSEDED ? this file is replaced by infra/caddy/Caddyfile which is the
 # single source of truth for the full production Caddyfile. Kept as a
 # documentation reference only. Do not use for deployment.
 #
 # Caddy reverse-proxy snippet for the CMS runtime (same origin as the static site).
 #
 # Architecture:
-#   Internet → Caddy (TLS)
-#     handle /admin/*         → reverse_proxy 127.0.0.1:18000   (React admin SPA, ADR-0026)
-#     handle /admin-wagtail/* → reverse_proxy 127.0.0.1:18000   (legacy Wagtail admin, rollback)
-#     handle /static/*        → reverse_proxy 127.0.0.1:18000   (Wagtail admin assets)
-#     handle /health/*        → reverse_proxy 127.0.0.1:18000   (NOT /health* — that would steal /health.json)
+#   Internet ? Caddy (TLS)
+#     handle /admin/*         ? reverse_proxy 127.0.0.1:18000   (React admin SPA, ADR-0026)
+#     handle /staff/*         ? reverse_proxy 127.0.0.1:18000   (Django staff HTML: login/preview/MFA)
+#     handle /static/*        ? reverse_proxy 127.0.0.1:18000   (Django/SPA static assets)
+#     handle /health/*        ? reverse_proxy 127.0.0.1:18000   (NOT /health* ? that would steal /health.json)
 #     import taha_application_routes / file_server
 #
 # Insert these `handle` blocks INSIDE the tahamohamadi.ir site block, BEFORE
@@ -37,12 +37,11 @@ handle /admin/* {
 	}
 }
 
-# Legacy Wagtail admin (ADR-0026 cutover, /admin-wagtail/): TOTP enrollment,
-# staff preview and rollback.  Matched explicitly because `/admin/*` does not
-# match `/admin-wagtail/*` and the file_server would otherwise 404 these paths.
-redir /admin-wagtail /admin-wagtail/ 308
+# Django staff HTML (DEBT-0003): LOGIN_URL, staff preview, MFA fallback.
+# Matched explicitly because `/admin/*` does not match `/staff/*`.
+redir /staff /staff/ 308
 
-handle /admin-wagtail/* {
+handle /staff/* {
 	reverse_proxy 127.0.0.1:18000 {
 		header_up X-Forwarded-Proto {scheme}
 		header_up X-Forwarded-Host {host}

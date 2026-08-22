@@ -1,11 +1,10 @@
 [project]
 name = "taha-cms"
 version = "0.1.0"
-description = "Taha Mohammadi personal platform — Django/Wagtail/Ninja CMS (code-first P3)"
+description = "Taha Mohammadi personal platform — Django/Ninja CMS (code-first P3)"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "django==5.2.9",
-    "wagtail==7.4.2",
     "django-ninja==1.6.2",
     "psycopg[binary]==3.3.4",
     "uvicorn==0.52.3",

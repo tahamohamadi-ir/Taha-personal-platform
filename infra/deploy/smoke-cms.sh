@@ -54,11 +54,15 @@ fi
 
 # Custom React admin SPA (ADM-1 cutover) — should return the SPA shell.
 check "/admin/" "200"
-# Legacy Wagtail admin at /admin-wagtail/ (TOTP HTML, preview, rollback).
-# LOGIN_URL is /admin-wagtail/login/ — not Django's /accounts/login/ (that 302s).
-check "/admin-wagtail/login/" "200"
-if ! grep -qiE "Wagtail|password|ورود|sign.in|login" "$PUBLIC_BODY"; then
-  echo "FAIL /admin-wagtail/login/ is not a sign-in page" >&2
+# SPA login (primary) + Django staff login (LOGIN_URL / preview / HTML MFA).
+check "/admin/login/" "200"
+if ! grep -qiE "password|ورود|sign.in|login|email" "$PUBLIC_BODY"; then
+  echo "FAIL /admin/login/ is not a sign-in page" >&2
+  fail=1
+fi
+check "/staff/login/" "200"
+if ! grep -qiE "password|ورود|sign.in|login|Staff" "$PUBLIC_BODY"; then
+  echo "FAIL /staff/login/ is not a sign-in page" >&2
   fail=1
 fi
 check "/health/" "200"

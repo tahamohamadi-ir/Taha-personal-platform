@@ -14,7 +14,7 @@ from .base import MIDDLEWARE as BASE_MIDDLEWARE
 
 DEBUG = False
 
-# Serve Wagtail/Django static files from gunicorn (Caddy proxies /static*).
+# Serve Django static files from gunicorn (Caddy proxies /static*).
 _middleware = list(BASE_MIDDLEWARE)
 if "whitenoise.middleware.WhiteNoiseMiddleware" not in _middleware:
     _middleware.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
@@ -104,8 +104,5 @@ LOGGING = {
         "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
         "django.security": {"handlers": ["console"], "level": "WARNING", "propagate": False},
         "django.request": {"handlers": ["console"], "level": "ERROR", "propagate": False},
-        "wagtail": {"handlers": ["console"], "level": "INFO", "propagate": False},
     },
 }
-
-WAGTAILADMIN_BASE_URL = os.environ.get("WAGTAILADMIN_BASE_URL", f"https://{ALLOWED_HOSTS[0]}")

@@ -1,15 +1,15 @@
 """Staff-only draft preview for existing content models (P3-07).
 
-There are no Wagtail Page subclasses in this repo. Preview targets the plain
-Django models Landing / Profile / Article under ``/admin/preview/``.
+There are no CMS Page subclasses in this repo. Preview targets the plain
+Django models Landing / Profile / Article under ``/staff/preview/``.
 """
 
 from django.http import Http404
 from django.shortcuts import get_object_or_404, render
-from wagtail.admin.auth import require_admin_access
 
 from apps.content.html_sanitize import sanitize_html
 from apps.content.models import Article, Landing, Profile
+from apps.security.decorators import staff_otp_required
 
 PREVIEW_KINDS = {
     "landing": Landing,
@@ -23,7 +23,7 @@ def sanitize_preview_body(raw: str) -> str:
     return sanitize_html(raw)
 
 
-@require_admin_access
+@staff_otp_required
 def staff_content_preview(request, kind: str, pk: int):
     """Read-only staff preview of a content row (any lifecycle status, including draft)."""
     model = PREVIEW_KINDS.get(kind)

@@ -15,19 +15,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "wagtail.contrib.forms",
-    "wagtail.contrib.redirects",
-    "wagtail.embeds",
-    "wagtail.sites",
-    "wagtail.users",
-    "wagtail.snippets",
-    "wagtail.documents",
-    "wagtail.images",
-    "wagtail.search",
-    "wagtail.admin",
-    "wagtail",
-    "modelcluster",
-    "taggit",
     "apps.users",
     "apps.health",
     "apps.admin",
@@ -55,7 +42,6 @@ MIDDLEWARE = [
     "apps.security.middleware.AuditMiddleware",
     "apps.security.middleware.LoginRateLimitMiddleware",
     "apps.security.middleware.NoIndexMiddleware",
-    "wagtail.contrib.redirects.middleware.RedirectMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -79,8 +65,8 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 AUTH_USER_MODEL = "users.User"
-# HTML TOTP + staff preview still use Wagtail login. SPA enrollment is /admin/login.
-LOGIN_URL = "/admin-wagtail/login/"
+# Django staff HTML + preview use /staff/login/; SPA primary UX is /admin/login/.
+LOGIN_URL = "/staff/login/"
 LOGIN_REDIRECT_URL = "/admin/"
 
 REBUILD_TRIGGER_ENABLED = False
@@ -114,12 +100,8 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-WAGTAILADMIN_BASE_URL = "http://localhost:8000"
-WAGTAIL_SITE_NAME = "Taha Personal Platform"
-WAGTAILADMIN_USER_LOGIN_FORM = "apps.security.forms.OTPLoginForm"
-
 # ADR-0022 allowlist (docs/editor contract). Storage is TextField; sanitizer is
-# apps.content.html_sanitize. Alias kept for older tests/settings readers.
+# apps.content.html_sanitize.
 RICHTEXT_ALLOWED_FEATURES = [
     "h2",
     "h3",
@@ -134,7 +116,6 @@ RICHTEXT_ALLOWED_FEATURES = [
     "blockquote",
     "code",
 ]
-WAGTAIL_RICHTEXT_FEATURES = RICHTEXT_ALLOWED_FEATURES
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"

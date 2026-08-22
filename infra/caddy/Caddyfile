@@ -76,9 +76,9 @@ tahamohamadi.ir {
 		}
 	}
 
-	redir /admin-wagtail /admin-wagtail/ 308
+	redir /staff /staff/ 308
 
-	handle /admin-wagtail/* {
+	handle /staff/* {
 		reverse_proxy 127.0.0.1:18000 {
 			header_down X-Robots-Tag "noindex, nofollow"
 			header_down Cache-Control "no-store, no-cache, must-revalidate"

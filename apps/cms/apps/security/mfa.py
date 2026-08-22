@@ -1,26 +1,24 @@
-"""MFA enforcement middleware for legacy Wagtail admin (TOTP enrollment + session).
+"""MFA enforcement middleware for Django staff HTML under ``/staff/``.
 
-Policy for authenticated staff on ``/admin-wagtail/`` paths:
+Policy for authenticated staff on ``/staff/`` paths:
 
-- No confirmed TOTP device: allow login/logout, ``/admin-wagtail/account/`` (password),
-  and TOTP enrollment; redirect all other admin paths to setup.
+- No confirmed TOTP device: allow login/logout and TOTP enrollment; redirect
+  other ``/staff/`` paths to setup.
 - Confirmed device but session not OTP-verified: allow only login/logout;
   enrollment/QR paths are NOT exempt (prevents secret leakage via stale sessions).
 - Confirmed device and ``request.user.otp_device`` set: allow.
-- Non-``/admin-wagtail/`` paths are never affected.
+- Non-``/staff/`` paths are never affected (SPA ``/admin/`` uses Ninja OTP).
 
-The custom React admin SPA at ``/admin/`` handles its own OTP via the Ninja
-``/api/v1/admin/auth/login`` endpoint and is NOT intercepted by this middleware.
+SPA enrollment remains ``/admin/security`` + ``/api/v1/admin/auth/mfa/*``.
 """
 
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 
-ADMIN_PREFIX = "/admin-wagtail/"
-LOGIN_PATH = "/admin-wagtail/login/"
-LOGOUT_PATH = "/admin-wagtail/logout/"
-ACCOUNT_PREFIX = "/admin-wagtail/account/"
-MFA_SETUP_PATH = "/admin-wagtail/account/two-factor/"
+STAFF_PREFIX = "/staff/"
+LOGIN_PATH = "/staff/login/"
+LOGOUT_PATH = "/staff/logout/"
+MFA_SETUP_PATH = "/staff/account/two-factor/"
 
 
 def _mfa_setup_url() -> str:
@@ -31,13 +29,13 @@ def _mfa_setup_url() -> str:
 
 
 class MFAEnforcementMiddleware:
-    """Require TOTP enrollment and verified OTP session for Wagtail admin."""
+    """Require TOTP enrollment and verified OTP session for ``/staff/`` HTML."""
 
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        if not request.path.startswith(ADMIN_PREFIX):
+        if not request.path.startswith(STAFF_PREFIX):
             return self.get_response(request)
 
         if not request.user.is_authenticated or not request.user.is_staff:
@@ -53,7 +51,7 @@ class MFAEnforcementMiddleware:
         otp_ok = getattr(request.user, "otp_device", None) is not None
 
         if not has_device:
-            if path.startswith(MFA_SETUP_PATH) or path.startswith(ACCOUNT_PREFIX):
+            if path.startswith(MFA_SETUP_PATH):
                 return self.get_response(request)
             return HttpResponseRedirect(_mfa_setup_url())
 
