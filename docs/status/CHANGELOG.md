@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-08-22 — Attended CD rebuild-web PASS
+
+- workflow_dispatch [32555455704](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32555455704): `rebuild_web=true` → `rebuild-web PASS` + `cd-rebuild-web PASS` after #74 Docker CMS origin fix.
+- Prior attempt [32555108949](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32555108949) failed (LOG-0198). Never `CMS_CD_AUTO_MIGRATE`. LOG-0199.
+
 ## 2026-08-22 — rebuild-web Docker CMS origin fix
 
 - `rebuild-web.sh`: Docker build uses `https://tahamohamadi.ir` when host preflight uses loopback (build container cannot reach host `127.0.0.1:18000`).

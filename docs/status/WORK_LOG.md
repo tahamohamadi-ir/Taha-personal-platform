@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0199 — 2026-08-22 — Attended CD rebuild-web PASS
+
+- Outcome: Re-dispatched CD `rebuild_web=true` after #74 Docker CMS origin fix → [32555455704](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32555455704). Job **Web container rebuild (gated)** **success** with `PASS loopback /health.json`, `rebuild-web PASS`, `cd-rebuild-web PASS`. Public HTML now rebuilt from live CMS via Docker build (`CMS_API_BASE=https://tahamohamadi.ir` inside build; host preflight loopback). Slice 3/5 production applicability evidenced for post-migrate publish path. `DEFER-0027` / scheduled timer / `DEFER-0031` remain **OPEN**. Did **not** set `CMS_CD_AUTO_MIGRATE`.
+- Why: Close OWNER_CUTOVER step 5 with honest Actions evidence after loopback fix.
+- Scope / files: DEPLOY_RUNBOOK § OWNER_CUTOVER evidence, CHANGELOG, BACKLOG, cms-origin task spec, this entry.
+- Commands or actions actually performed: `gh workflow run` + `gh run watch` 32555455704; log grep for PASS lines; worktree `docs/rebuild-web-pass-evidence`.
+- Verification actually performed and result: run conclusion **success**; job log shows `rebuild-web PASS` and `cd-rebuild-web PASS`.
+- Deferred or risk IDs: attended rebuild-web **CLOSED**; scheduled timer install **OPEN** (owner); `DEFER-0027` OPEN; `DEFER-0031`/`RISK-0013` OPEN.
+- Rollback / recovery: previous `ghcr.io/tahamohamadi-ir/taha-web:main` container or re-run with pinned git ref.
+
 ## LOG-0198 — 2026-08-22 — Attended CD rebuild-web FAIL (Docker loopback) + fix
 
 - Outcome: First dispatch `rebuild_web=true` → [32555108949](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32555108949) job **Web container rebuild (gated)** **FAILED**: Astro build inside `docker compose build` could not reach `http://127.0.0.1:18000` (`series/en: CMS /api/series/en unreachable: fetch failed`). Root cause: build container loopback ≠ host CMS. Fixed `rebuild-web.sh` to pass `CMS_API_BASE=https://tahamohamadi.ir` to Docker build when host preflight uses loopback (matches CI). **Not** a PASS — re-dispatch required after merge.
