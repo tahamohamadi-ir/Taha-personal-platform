@@ -14,6 +14,10 @@ on:
         type: string
         required: false
         default: ""
+      rebuild_web:
+        description: "Owner-attended web container rebuild via rebuild-web.sh (post-migrate publish path)"
+        type: boolean
+        default: false
 
 concurrency:
   group: production-deploy
@@ -253,5 +257,37 @@ jobs:
              export CMS_IMAGE=\"${CMS_IMAGE}\"
              export SKIP_GIT_PULL=1
              bash infra/deploy/cd-cms-migrate.sh"
+
+          rm -f ~/.ssh_deploy_key
+
+  # ADR-0027 Slice 1+: web container rebuild is NOT on every push.
+  # Owner-attended: Actions → CD → Run workflow → rebuild_web = true.
+  rebuild-web:
+    name: Web container rebuild (gated)
+    needs: deploy
+    runs-on: ubuntu-latest
+    environment: production
+    if: >
+      github.event_name == 'workflow_dispatch' && inputs.rebuild_web == true
+    steps:
+      - name: Pull repo + rebuild-web.sh + smoke
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ vars.DEPLOY_USER || 'deploy' }}
+        run: |
+          set -euo pipefail
+          install -m 600 /dev/null ~/.ssh_deploy_key
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh_deploy_key
+          SSH_OPTS="-i ~/.ssh_deploy_key -o StrictHostKeyChecking=accept-new"
+
+          ssh $SSH_OPTS "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "set -euo pipefail
+             cd /home/deploy/cms-repo
+             git fetch origin
+             git checkout main
+             git pull --ff-only origin main
+             export SKIP_GIT_PULL=1
+             bash infra/deploy/cd-rebuild-web.sh"
 
           rm -f ~/.ssh_deploy_key

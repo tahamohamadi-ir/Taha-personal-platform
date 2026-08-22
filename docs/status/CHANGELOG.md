@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-22 — Gated CD rebuild-web + timer install script
+
+- New `infra/deploy/cd-rebuild-web.sh` and CD job **Web container rebuild (gated)** (`rebuild_web=true` on workflow_dispatch only).
+- Optional owner install: `infra/deploy/install-scheduled-publish-timer.sh`.
+- DEPLOY_RUNBOOK § OWNER_CUTOVER updated; no production rebuild PASS yet. Never `CMS_CD_AUTO_MIGRATE`. LOG-0197.
+
 ## 2026-08-22 — Attended CD migrate+smoke PASS (`65d6c91`)
 
 - workflow_dispatch [32554382271](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32554382271): `CMS smoke PASS` + `cd-cms-migrate PASS` after #71 smoke fix.

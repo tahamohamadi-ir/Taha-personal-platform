@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0197 — 2026-08-22 — Gated CD rebuild-web + scheduled timer install script
+
+- Outcome: Added `infra/deploy/cd-rebuild-web.sh` (git sync + `rebuild-web.sh` + `cd-rebuild-web PASS` evidence) and CD job **Web container rebuild (gated)** (`workflow_dispatch` `rebuild_web=true` only; no auto var). Added `infra/deploy/install-scheduled-publish-timer.sh` for owner-attended systemd timer install. Updated DEPLOY_RUNBOOK § OWNER_CUTOVER + attended web rebuild checklist. No production rebuild PASS invented; `DEFER-0027` / `DEFER-0031` / `RISK-0013` remain **OPEN**. Did **not** set `CMS_CD_AUTO_MIGRATE`.
+- Why: Mirror attended CMS migrate path for post-migrate public HTML rebuild; document timer install without agent SSH.
+- Scope / files: `infra/deploy/cd-rebuild-web.sh`, `infra/deploy/install-scheduled-publish-timer.sh`, `.github/workflows/cd.yml`, DEPLOY_RUNBOOK, CHANGELOG, BACKLOG, this entry.
+- Commands or actions actually performed: worktree `feat/cd-rebuild-web` from `origin/main`; implement + docs.
+- Verification actually performed and result: repo-only (no VPS SSH); attended dispatch pending merge.
+- Deferred or risk IDs: rebuild-web production PASS **OPEN**; scheduled timer install **OPEN** (owner); `DEFER-0027` OPEN; `DEFER-0031`/`RISK-0013` OPEN.
+- Rollback / recovery: revert PR; manual `bash infra/deploy/rebuild-web.sh` on VPS.
+
 ## LOG-0196 — 2026-08-22 — Attended CD migrate+smoke PASS (65d6c91)
 
 - Outcome: After SPA-aware smoke fix (#71 / LOG-0195), re-dispatched CD `migrate_cms=true` `cms_image_tag=65d6c91` → [32554382271](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32554382271). Job **CMS image migrate (gated)** **success** with `backup_ok`, `CMS smoke PASS`, `cd-cms-migrate PASS`. Closed `RISK-0010` for image+schema+smoke. `DEFER-0027` / `DEFER-0031` / `RISK-0013` remain **OPEN**. Did **not** set `CMS_CD_AUTO_MIGRATE`. Owner still owes `rebuild-web.sh`, scheduled-publish timer, optional HMAC/Caddy, interactive SPA MFA check.

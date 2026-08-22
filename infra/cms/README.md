@@ -78,6 +78,23 @@ export CMS_IMAGE=ghcr.io/tahamohamadi-ir/taha-cms:<sha>
 bash infra/deploy/cd-cms-migrate.sh
 ```
 
+## CD web rebuild (ADR-0027 Slice 1+)
+
+Owner checklist: `docs/governance/DEPLOY_RUNBOOK.md` — Actions → **CD —
+Deploy to production** → Run workflow → `rebuild_web=true`, then confirm job
+**Web container rebuild (gated)** PASS and log lines `rebuild-web PASS` /
+`cd-rebuild-web PASS`. No repository variable enables this on ordinary pushes.
+
+Manual on VPS:
+
+```bash
+cd /home/deploy/cms-repo
+git pull --ff-only origin main
+bash infra/deploy/cd-rebuild-web.sh
+```
+
+Scheduled publish timer (owner root): `sudo bash infra/deploy/install-scheduled-publish-timer.sh`
+
 ## Deploy (operator)
 
 Copy-paste safe (no angle-bracket placeholders):
