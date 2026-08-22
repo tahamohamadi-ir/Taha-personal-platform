@@ -4,10 +4,10 @@
 
 | ID | Phase | Item | Blocked by / prerequisite | Owner | Evidence |
 |---|---|---|---|---|---|
-| OWNER_CUTOVER | OPS | Post-merge VPS: dumpdata → attended migrate `0009`–`0012` → `rebuild-web.sh` → schedule timer → optional HMAC/Caddy | Keep `CMS_CD_AUTO_MIGRATE` unset; no invent PASS | Project owner | DEPLOY_RUNBOOK § OWNER_CUTOVER; LOG-0192 |
+| OWNER_CUTOVER | OPS | Post-#69 VPS: dumpdata → Caddy `/staff/*` → no-Wagtail CMS image → attended migrate `0009`–`0012` if needed → `rebuild-web.sh` → timer → optional HMAC/Caddy | Keep `CMS_CD_AUTO_MIGRATE` unset; no invent PASS | Project owner | DEPLOY_RUNBOOK § OWNER_CUTOVER; LOG-0194 |
 | ADR-0027 | OPS | Slice 2 attended path **PASS** (`RISK-0012` CLOSED); Slice 4 Caddy cutover still owner (`DEFER-0031`) | Keep `CMS_CD_AUTO_MIGRATE` unset | Project owner | LOG-0179; LOG-0180; LOG-0191 |
 | QA-playwright | QA | Playwright lifecycle CLOSED (`DEFER-0026`); remaining matrix → `DEFER-0032` | — | Project owner | LOG-0184 |
-| ADM-0 | ADM | Wagtail uninstall PARTIAL (`DEBT-0003`): RichText→TextField + local sanitizer + viewsets retired; SPA TOTP primary | dumpdata before `0012`; keep `/admin-wagtail/` until MFA proven; do not drop wagtail deps yet | Project owner | LOG-0190; Task-list §17 |
+| ADM-0 | ADM | Wagtail uninstall **CLOSED** (`DEBT-0003` / PR #69); SPA `/admin/` + Django `/staff/` | Owner: dumpdata + `/staff/*` Caddy + no-Wagtail image + migrate `0009`–`0012` if needed (`RISK-0010`) | Project owner | LOG-0193; LOG-0194; Task-list §17 |
 | ADM-1 | ADM | Custom admin foundation + cutover | DONE (LOG-0156..0158, LOG-0163); `DEFER-0023` CLOSED | Project owner | Task-list §17 |
 | ADM-2 | ADM | Media library + alt-by-locale | DONE (LOG-0159); `DEFER-0014` CLOSED | Project owner | Task-list §17 |
 | ADM-6 | ADM | Astro wiring + rebuild trigger + E2E JSON | PARTIAL — primaryColor/CV + entity stories repo CLOSED; featured→Media shipped; HMAC `DEFER-0027` OPEN; owner dumpdata+migrate `0009`–`0012` | Project owner | Task-list §17; LOG-0185–0190; OWNER_CUTOVER |

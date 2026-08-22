@@ -1,19 +1,29 @@
 # Work Log
 
-## LOG-0193 — 2026-08-21 — DEBT-0003 CLOSED: remove Wagtail package
+## LOG-0194 â€” 2026-08-21 â€” OWNER_CUTOVER post-Wagtail (PR #69)
+
+- Outcome: Updated `DEPLOY_RUNBOOK` Â§ **OWNER_CUTOVER** for no-Wagtail CMS deploy after merged PR #69: dumpdata + backup first; Caddy must proxy `/staff/*` (not `/admin-wagtail/` alone); attended migrate still required for `content.0009`â€“`0012` if not applied; never `CMS_CD_AUTO_MIGRATE`. Compose topology + `infra/caddy/Caddyfile.compose` now use `/staff/*`. Confirmed `TECH_DEBT.md` already shows `DEBT-0003` **CLOSED** on `origin/main` (LOG-0193). No production PASS invented.
+- Why: Owner cutover checklist still referenced Wagtail-era proxy paths after uninstall landed on main.
+- Scope / files: `docs/governance/DEPLOY_RUNBOOK.md`, `infra/caddy/Caddyfile.compose`, CHANGELOG, BACKLOG, this entry.
+- Commands or actions actually performed: `git fetch origin/main`; worktree `docs/post-wagtail-owner-cutover` from `65d6c91` (PR #69 merge).
+- Verification actually performed and result: ledger read â€” `DEBT-0003` CLOSED; host `infra/caddy/Caddyfile` already had `/staff/*`; Compose file was stale (`/admin-wagtail/`) and corrected.
+- Deferred or risk IDs: `RISK-0010` OPEN (prod image + schema); `DEFER-0027` OPEN; `DEFER-0031`/`RISK-0013` OPEN; `RISK-0012` CLOSED (path only).
+- Rollback / recovery: revert this docs PR.
+
+## LOG-0193 ï¿½ 2026-08-21 ï¿½ DEBT-0003 CLOSED: remove Wagtail package
 
 - Outcome: Removed Wagtail from runtime and install. Dropped `wagtail` (and transitive modelcluster/taggit/etc.) from `pyproject.toml`/`uv.lock` and `INSTALLED_APPS`. Replaced `/admin-wagtail/` with Django `/staff/` (LOGIN_URL `/staff/login/` + OTPLoginForm, staff preview `/staff/preview/`, HTML MFA `/staff/account/two-factor/`, legacy profile HTML `/staff/profiles/`). SPA remains primary at `/admin/` + `/api/v1/admin/auth/mfa/*`. Historical migrations rewritten to TextField + `media.Media` (no `import wagtail`); `0011` is a no-op for fresh installs (production already applied original rewire). Caddy + smoke check `/staff/login/`. `DEBT-0003` ? **CLOSED**.
 - Why: Finish ADM-0 uninstall after RichText/Media slices so the CMS image no longer ships Wagtail.
 - Scope / files: `apps/cms/config/{urls,settings}`, `apps/security/{decorators,urls,mfa,middleware,templates}`, `apps/content/{urls_staff,views_preview,migrations/0002-0004,0011}`, `apps/admin` templates/views, Caddy/smoke, tests, ledgers.
 - Commands or actions actually performed: worktree `feat/wagtail-uninstall-complete` from `origin/main`; `uv lock`/`uv sync`; pytest.
-- Verification actually performed and result: `uv run pytest -q` — **337 passed** (no wagtail installed; `find_spec("wagtail") is None`).
-- Deferred or risk IDs: `DEBT-0003` CLOSED; `RISK-0010` — owner `dumpdata` + backup before production image that drops Wagtail tables/apps (legacy Wagtail DB tables may remain until optional cleanup); never `CMS_CD_AUTO_MIGRATE`. `DEFER-0016` preview path is now `/staff/preview/`.
+- Verification actually performed and result: `uv run pytest -q` ï¿½ **337 passed** (no wagtail installed; `find_spec("wagtail") is None`).
+- Deferred or risk IDs: `DEBT-0003` CLOSED; `RISK-0010` ï¿½ owner `dumpdata` + backup before production image that drops Wagtail tables/apps (legacy Wagtail DB tables may remain until optional cleanup); never `CMS_CD_AUTO_MIGRATE`. `DEFER-0016` preview path is now `/staff/preview/`.
 - Rollback / recovery: previous CMS image that still includes Wagtail; restore Caddy `admin-wagtail` handles if needed.
 
-## LOG-0192 — 2026-08-21 — OWNER_CUTOVER checklist + post-merge gate evidence
+## LOG-0192 ï¿½ 2026-08-21 ï¿½ OWNER_CUTOVER checklist + post-merge gate evidence
 
-- Outcome: Added DEPLOY_RUNBOOK § **OWNER_CUTOVER** (dumpdata ? attended CD migrate for `content.0009`–`0012` ? `rebuild-web.sh` ? scheduled-publish timer ? optional HMAC ? optional Caddy edge). Re-checked Actions: only pre-merge attended migrate PASS is [32407698471](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32407698471) (`2e200fe`); all inspected post-merge `main` CD runs left **CMS image migrate (gated)** **skipped** — no invent PASS for `0009`–`0012`. Aligned `RISK-0012` status column to **CLOSED** (already claimed in LOG-0180 / runbook). Closed ledger drift for `DEFER-0029` / `DEFER-0030` (repo CLOSED per LOG-0185/0186). Left `DEFER-0027`, `DEFER-0031`, `RISK-0010`, `RISK-0013` OPEN. Did **not** enable or recommend `CMS_CD_AUTO_MIGRATE`.
-- Why: Owner needs one accurate post-merge cutover order after merges #58–#67 without mistaking CD “success” (migrate skipped) for schema apply.
+- Outcome: Added DEPLOY_RUNBOOK ï¿½ **OWNER_CUTOVER** (dumpdata ? attended CD migrate for `content.0009`ï¿½`0012` ? `rebuild-web.sh` ? scheduled-publish timer ? optional HMAC ? optional Caddy edge). Re-checked Actions: only pre-merge attended migrate PASS is [32407698471](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32407698471) (`2e200fe`); all inspected post-merge `main` CD runs left **CMS image migrate (gated)** **skipped** ï¿½ no invent PASS for `0009`ï¿½`0012`. Aligned `RISK-0012` status column to **CLOSED** (already claimed in LOG-0180 / runbook). Closed ledger drift for `DEFER-0029` / `DEFER-0030` (repo CLOSED per LOG-0185/0186). Left `DEFER-0027`, `DEFER-0031`, `RISK-0010`, `RISK-0013` OPEN. Did **not** enable or recommend `CMS_CD_AUTO_MIGRATE`.
+- Why: Owner needs one accurate post-merge cutover order after merges #58ï¿½#67 without mistaking CD ï¿½successï¿½ (migrate skipped) for schema apply.
 - Scope / files: `docs/governance/DEPLOY_RUNBOOK.md`, `docs/status/RISK_REGISTER.md`, `docs/status/deferred-validation.md`, CHANGELOG, BACKLOG, this entry.
 - Commands or actions actually performed: `gh run list` / `gh run view` on CD jobs; worktree `docs/owner-gates-post-merge` from `origin/main`.
 - Verification actually performed and result: job **CMS image migrate (gated)** success only on dispatch 32407698471; recent CD runs 32474338830 / 32474046690 / 32473739254 / 32473166772 / 32471717968 / 32470814675 show migrate **skipped**.
