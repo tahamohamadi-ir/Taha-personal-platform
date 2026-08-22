@@ -4,7 +4,7 @@ from django.http import Http404
 from django.middleware.csrf import get_token
 from django.shortcuts import render
 from django.urls import reverse
-from wagtail.admin.auth import require_admin_access
+from apps.security.decorators import staff_otp_required
 
 from apps.content.models import Locale, Profile
 from apps.content.profile_api import resolve_translation_status, serialize_profile_detail
@@ -144,7 +144,7 @@ def _profile_summary_row(profile: Profile) -> dict[str, object]:
     }
 
 
-@require_admin_access
+@staff_otp_required
 def profile_index(request):
     profiles = Profile.objects.order_by("locale", "slug")
     rows = [_profile_summary_row(profile) for profile in profiles]
@@ -162,7 +162,7 @@ def profile_index(request):
     )
 
 
-@require_admin_access
+@staff_otp_required
 def profile_detail_page(request, locale: str, slug: str):
     profile = _profile_queryset().filter(locale=locale, slug=slug).first()
     if profile is None:
@@ -170,7 +170,7 @@ def profile_detail_page(request, locale: str, slug: str):
 
     toggle = _locale_toggle(profile.locale)
     breadcrumbs_items = [
-        {"url": reverse("wagtailadmin_home"), "label": "Admin"},
+        {"url": "/admin/", "label": "Admin"},
         {"url": reverse("admin_profile_index"), "label": "Profiles"},
         {"label": f"{profile.slug} ({toggle['code']})"},
     ]

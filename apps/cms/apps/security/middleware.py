@@ -5,13 +5,13 @@ from django.http import HttpResponse
 
 from apps.security.models import AuditLog
 
-LOGIN_PATH = "/admin-wagtail/login/"
-ADMIN_PREFIX = "/admin-wagtail/"
+LOGIN_PATH = "/staff/login/"
+STAFF_PREFIX = "/staff/"
 SKIP_PREFIXES = ("/health/", "/static/", "/media/")
 LOGIN_RATE_LIMIT = 5
 LOGIN_RATE_WINDOW_SECONDS = 300
-NOINDEX_PREFIXES = ("/admin/", "/admin-wagtail/", "/api/", "/rebuild-trigger/")
-PREVIEW_PREFIX = "/admin-wagtail/preview/"
+NOINDEX_PREFIXES = ("/admin/", "/staff/", "/api/", "/rebuild-trigger/")
+PREVIEW_PREFIX = "/staff/preview/"
 PREVIEW_ROBOTS = "noindex, nofollow, noarchive"
 DEFAULT_ROBOTS = "noindex, nofollow"
 PREVIEW_CACHE_CONTROL = "no-store"
@@ -32,7 +32,7 @@ class AuditMiddleware:
             return response
         if path == LOGIN_PATH:
             self._record_login(request, response)
-        elif path.startswith(ADMIN_PREFIX) and request.user.is_authenticated:
+        elif path.startswith(STAFF_PREFIX) and request.user.is_authenticated:
             self._record_mutation(request, response)
         return response
 
@@ -59,7 +59,7 @@ class AuditMiddleware:
         )
 
     def _record_mutation(self, request, response):
-        segments = request.path[len(ADMIN_PREFIX) :].strip("/").split("/")
+        segments = request.path[len(STAFF_PREFIX) :].strip("/").split("/")
         model_name = segments[0] if segments else ""
         object_id = next((segment for segment in segments[1:] if segment.isdigit()), "")
         AuditLog.objects.create(
@@ -77,7 +77,7 @@ class AuditMiddleware:
 
 
 class LoginRateLimitMiddleware:
-    """Cache-backed per-IP limit on admin login posts; the limit+1th attempt gets a 429."""
+    """Cache-backed per-IP limit on staff login posts; the limit+1th attempt gets a 429."""
 
     def __init__(self, get_response):
         self.get_response = get_response
@@ -107,7 +107,7 @@ class LoginRateLimitMiddleware:
 class NoIndexMiddleware:
     """Keep machine-facing paths out of search indexes via X-Robots-Tag.
 
-    Staff preview under ``/admin/preview/`` also gets ``noarchive`` and
+    Staff preview under ``/staff/preview/`` also gets ``noarchive`` and
     ``Cache-Control: no-store`` (P3-07 / ADR-0022).
     """
 

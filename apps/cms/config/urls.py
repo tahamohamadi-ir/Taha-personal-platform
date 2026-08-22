@@ -1,8 +1,6 @@
-"""URL configuration — /admin/ React SPA, /admin-wagtail/ legacy Wagtail, /health/."""
+"""URL configuration — /admin/ React SPA, /staff/ Django staff HTML, /health/."""
 
 from django.urls import include, path
-from wagtail import urls as wagtail_urls
-from wagtail.admin import urls as wagtail_admin_urls
 
 from apps.api.admin_api import admin_api
 from apps.api.admin_spa import serve_admin_ui
@@ -16,13 +14,13 @@ from apps.rebuild.views import rebuild_trigger
 urlpatterns = [
     path("health/", health, name="health"),
     path("media/<path:name>", serve_public_media, name="public_media"),
-    # Custom React admin SPA (ADR-0026, ADM-1 cutover).
+    # Custom React admin SPA (ADR-0026, ADM-1 cutover). More specific staff
+    # paths under /staff/ — not under /admin/ — so the SPA catch-all stays simple.
     path("admin/", serve_admin_ui, name="admin_spa"),
     path("admin/<path:spa_path>", serve_admin_ui, name="admin_spa_path"),
-    # Legacy Wagtail admin preserved at /admin-wagtail/ for staff preview,
-    # LOGIN_URL, profile HTML, and MFA HTML rollback (SPA TOTP is primary).
-    # Removed when DEBT-0003 fully closes.
-    path("admin-wagtail/", include(wagtail_admin_urls)),
+    # Django staff HTML: login/MFA fallback + preview + legacy profile editor.
+    path("staff/", include("apps.security.urls")),
+    path("staff/", include("apps.content.urls_staff")),
     path("api/v1/admin/", admin_api.urls),
     path("api/profiles/<str:locale>", public_profile_list, name="public_profile_list"),
     path(
@@ -42,5 +40,4 @@ urlpatterns = [
     ),
     path("api/", api.urls),
     path("rebuild-trigger/", rebuild_trigger, name="rebuild_trigger"),
-    path("", include(wagtail_urls)),
 ]

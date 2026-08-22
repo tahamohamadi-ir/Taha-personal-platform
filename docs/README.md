@@ -45,12 +45,12 @@ Do not infer current state from a plan file. Plans describe intent.
 | Question | Answer as of 2026-08-19 | Source of truth |
 |---|---|---|
 | What is live publicly? | Language Gateway `/`, `/fa/`, `/en/`, About, CV, blog, research, projects, 404, robots, sitemap | `apps/web/src/pages/`; LOG-0143; LOG-0150 |
-| Is the CMS live? | Yes — React SPA `/admin/`, Wagtail fallback `/admin-wagtail/`, `/static/*`, `/health/` | `infra/cms/Caddyfile.cms.snippet`; LOG-0163 |
+| Is the CMS live? | Yes — React SPA `/admin/`, Django staff `/staff/`, `/static/*`, `/health/` | `infra/cms/Caddyfile.cms.snippet`; LOG-0163; LOG-0193 |
 | Is `/api/` public? | Yes — published-only Ninja JSON for articles, research, and projects | `DEFER-0017` CLOSED; LOG-0143 |
 | Is `/media/` public? | Proxied; upload unpublished. This branch serves files only when `is_active` (anonymous). | LOG-0143; LOG-0167 |
 | Is contact published? | No — honest "not published" copy | `DEFER-0007` CLOSED |
 | Is About CMS-managed? | Yes on `main` (PR #31). Public About uses CMS when the build has `CMS_API_BASE`; `profile.snapshot.json` only when base is unset (local/offline). With base set, API outage fails the build (no silent snapshot). | LOG-0150; LOG-0182; ADR-0027 Slice 3; `DEFER-0022` |
-| Where is the custom admin? | SPA at `/admin/` (cutover done). Wagtail at `/admin-wagtail/` until uninstall (`DEBT-0003`). | LOG-0163; `DEFER-0023` CLOSED |
+| Where is the custom admin? | SPA at `/admin/` (cutover done). Wagtail package removed (`DEBT-0003` CLOSED); staff HTML at `/staff/`. | LOG-0163; LOG-0193; `DEFER-0023` CLOSED |
 | Is there search? | No. Pagefind remains later | `PROJECT_MANIFEST.md` |
 | Is React the public shell? | No | `apps/web/package.json` |
 | Is staging alive? | No — decommissioned | `docs/adr/0025-staging-decommission.md` |

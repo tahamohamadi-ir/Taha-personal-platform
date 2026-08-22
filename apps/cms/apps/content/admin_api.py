@@ -142,7 +142,7 @@ def admin_profile_create_sibling(request, locale: str, slug: str, target_locale:
             409,
             "PROFILE_LOCALE_EXISTS",
             "The sibling locale already exists for this profile family.",
-            editorUrl=f"/admin-wagtail/profiles/{existing_sibling.locale}/{existing_sibling.slug}/",
+            editorUrl=f"/admin/content/profile/{existing_sibling.pk}",
         )
 
     conflicting_slug = Profile.objects.filter(
@@ -197,10 +197,7 @@ def admin_profile_create_sibling(request, locale: str, slug: str, target_locale:
 
     return JsonResponse(
         {
-            "editorUrl": (
-                f"/admin-wagtail/profiles/"
-                f"{created_profile.locale}/{created_profile.slug}/"
-            ),
+            "editorUrl": f"/admin/content/profile/{created_profile.pk}",
             "profile": _serialize_admin_profile(
                 Profile.objects.filter(pk=created_profile.pk).prefetch_related(*PROFILE_PREFETCH).get()
             ),
