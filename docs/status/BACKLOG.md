@@ -4,7 +4,7 @@
 
 | ID | Phase | Item | Blocked by / prerequisite | Owner | Evidence |
 |---|---|---|---|---|---|
-| OWNER_CUTOVER | OPS | Schema `0009`–`0012` applied (`65d6c91`); attended migrate job still FAIL until smoke PASS → then `rebuild-web.sh` → timer → optional HMAC/Caddy | Keep `CMS_CD_AUTO_MIGRATE` unset; no invent PASS; re-dispatch after smoke fix | Project owner | DEPLOY_RUNBOOK § OWNER_CUTOVER; LOG-0195; Actions 32554028708 |
+| OWNER_CUTOVER | OPS | Schema+smoke PASS on `65d6c91`; remaining: `rebuild-web.sh` → scheduled-publish timer → optional HMAC (`DEFER-0027`) / Caddy edge (`DEFER-0031`) | Keep `CMS_CD_AUTO_MIGRATE` unset; owner interactive SPA MFA | Project owner | LOG-0196; Actions 32554382271 |
 | ADR-0027 | OPS | Slice 2 attended path **PASS** (`RISK-0012` CLOSED); Slice 4 Caddy cutover still owner (`DEFER-0031`) | Keep `CMS_CD_AUTO_MIGRATE` unset | Project owner | LOG-0179; LOG-0180; LOG-0191 |
 | QA-playwright | QA | Playwright lifecycle CLOSED (`DEFER-0026`); remaining matrix → `DEFER-0032` | — | Project owner | LOG-0184 |
 | ADM-0 | ADM | Wagtail uninstall **CLOSED** (`DEBT-0003` / PR #69); SPA `/admin/` + Django `/staff/` | Owner: dumpdata + `/staff/*` Caddy + no-Wagtail image + migrate `0009`–`0012` if needed (`RISK-0010`) | Project owner | LOG-0193; LOG-0194; Task-list §17 |
