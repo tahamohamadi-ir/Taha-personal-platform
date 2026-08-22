@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-22 — Attended migrate FAIL (SPA smoke) + smoke fix
+
+- CD workflow_dispatch [32554028708](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32554028708) (`cms_image_tag=65d6c91`): schema `content.0009`–`0012` + `siteconfig.0002` applied; job **FAILED** smoke (`/admin/login/` SPA `#root` only). Not invent PASS.
+- `smoke-cms.sh` accepts SPA `#root` for `/admin/login/`; `/staff/login/` still requires form markers.
+- `RISK-0010` remains OPEN; `DEFER-0027` / `DEFER-0031` OPEN. Never `CMS_CD_AUTO_MIGRATE`. LOG-0195.
+
 ## 2026-08-21 — OWNER_CUTOVER post-Wagtail (docs)
 
 - DEPLOY_RUNBOOK § OWNER_CUTOVER: deploy no-Wagtail CMS image (PR #69); Caddy must proxy `/staff/*`; dumpdata before deploy; attended migrate for `content.0009`–`0012` if not applied; never `CMS_CD_AUTO_MIGRATE`.

@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0195 — 2026-08-22 — Attended CD migrate FAIL (SPA smoke) + smoke fix
+
+- Outcome: Dispatched CD `migrate_cms=true` `cms_image_tag=65d6c91` → [32554028708](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32554028708). VPS pulled image, `backup_ok`, applied `content.0009`–`0012` + `siteconfig.0002`, CMS healthy, `/staff/login/` PASS — but job **FAILED** on `FAIL /admin/login/ is not a sign-in page` because SPA HTML is `#root` only (no password text). **Not** a migrate PASS. Fixed `smoke-cms.sh` to accept SPA `#root` shell for `/admin/login/` while still requiring form markers on `/staff/login/`. Host + compose Caddy already proxy `/staff/*` on `origin/main` (#70). `DEFER-0027` / `DEFER-0031` stay **OPEN**. Did **not** set `CMS_CD_AUTO_MIGRATE`.
+- Why: Unblock OWNER_CUTOVER evidence honesty and prevent false smoke FAIL blocking attended re-dispatch after schema already applied.
+- Scope / files: `infra/deploy/smoke-cms.sh`, DEPLOY_RUNBOOK § OWNER_CUTOVER evidence, RISK-0010, CHANGELOG, BACKLOG, this entry.
+- Commands or actions actually performed: `gh workflow run` CD with migrate; `gh run watch` / `--log-failed`; public curl of `/admin/login/` vs `/staff/login/`; worktree `fix/cms-smoke-spa-admin-login` from `origin/main`.
+- Verification actually performed and result: Actions job **CMS image migrate (gated)** conclusion **failure**; migrate log lines show schema OK then smoke FAIL; live `/admin/login/` is SPA shell with `id="root"`.
+- Deferred or risk IDs: `RISK-0010` OPEN (schema applied, smoke/MFA not PASS); `DEFER-0027` OPEN; `DEFER-0031`/`RISK-0013` OPEN; `RISK-0012` CLOSED (path unchanged).
+- Rollback / recovery: previous image was `taha-cms:2e200fe` (logged in migrate); smoke fix is forward-compatible.
+
 ## LOG-0194 — 2026-08-21 — OWNER_CUTOVER post-Wagtail (PR #69)
 
 - Outcome: Updated `DEPLOY_RUNBOOK` § **OWNER_CUTOVER** for no-Wagtail CMS deploy after merged PR #69: dumpdata + backup first; Caddy must proxy `/staff/*` (not `/admin-wagtail/` alone); attended migrate still required for `content.0009`–`0012` if not applied; never `CMS_CD_AUTO_MIGRATE`. Compose topology + `infra/caddy/Caddyfile.compose` now use `/staff/*`. Confirmed `TECH_DEBT.md` already shows `DEBT-0003` **CLOSED** on `origin/main` (LOG-0193). No production PASS invented.
