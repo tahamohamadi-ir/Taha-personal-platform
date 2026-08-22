@@ -49,11 +49,12 @@ False smoke: `smoke-cms.sh` probed `/admin-wagtail/accounts/login/` (302). Real 
 - `infra/deploy/cd-cms-migrate.sh`: `pg_dumpall` → pin `CMS_IMAGE` → `update-cms.sh` → `smoke-cms.sh`.
 - CD job `cms-migrate` (`.github/workflows/cd.yml`): **off** on ordinary pushes. Owner runs Actions → CD → **Run workflow** → `migrate_cms=true` (optional `cms_image_tag`). Unattended later only if repo var `CMS_CD_AUTO_MIGRATE=true` (skips when GHCR tag missing).
 - First attended production CD migrate **PASS** 2026-08-20 (`2e200fe`, Actions 32407698471). `RISK-0012` CLOSED on that evidence. Leave `CMS_CD_AUTO_MIGRATE` unset. HMAC still off (`DEFER-0027`).
-- Attended web rebuild path (Slice 1+): `infra/deploy/cd-rebuild-web.sh` + CD job `rebuild-web` gated by `workflow_dispatch` `rebuild_web=true` only (LOG-0197). No auto var. Production PASS not recorded until owner dispatch succeeds.
+- Attended web rebuild path (Slice 1+): `infra/deploy/cd-rebuild-web.sh` + CD job `rebuild-web` gated by `workflow_dispatch` `rebuild_web=true` only (LOG-0197). No auto var. Production attended **PASS** 2026-08-22 (Actions [32555455704](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32555455704), LOG-0199).
 
 ### Slice 3 — CMS origin honesty
 
 - Build fails or emits explicit stale-cache headers/pages when API errors; do not silently prefer committed `profile.snapshot.json` over a successful empty published list.
+- Production applicability: attended `rebuild-web` Docker build uses live `https://tahamohamadi.ir` CMS origin (LOG-0199); loopback preflight on VPS host only.
 - No invented copy.
 
 ### Slice 4 — Caddy in Compose (`DEFER-0031`) — **repo done; live cutover owner-gated**
@@ -77,6 +78,7 @@ False smoke: `smoke-cms.sh` probed `/admin-wagtail/accounts/login/` (302). Real 
 
 - Reuse `StoryBody.astro`. Independent of Slice 4.
 - Code: `content.0010_entity_stories`; public/admin wiring; LOG-0181. Owner migrate before production.
+- Production applicability: post-migrate attended `rebuild-web` PASS (LOG-0199) rebuilds public HTML from live CMS projections including entity stories.
 
 ## Non-goals
 
