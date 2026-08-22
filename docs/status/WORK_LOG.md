@@ -1,5 +1,15 @@
 # Work Log
 
+## LOG-0207 — 2026-08-22 — Wave 3 VPS complete (HMAC PASS; Caddy/apt blocked)
+
+- Outcome: **3a CMS:** No new migrations `65d6c91`→`e2cd1b6`; CMS recreated on `ghcr.io/tahamohamadi-ir/taha-cms:e2cd1b6`; `smoke-cms.sh` → **PASS**. **3b HMAC (`DEFER-0027`):** `rebuild-web.sh` → **PASS**; `REBUILD_TRIGGER_ENABLED=true` + `REBUILD_SCRIPT_PATH` in `infra/cms/.env`; VPS-only `infra/cms/docker-compose.override.yml` (repo mount + docker.sock); signed POST `/rebuild-trigger/` with `X-Forwarded-Proto: https` → **HTTP 200** `triggered:true`; bad token → **403**. **3c rebuild-web:** `git pull` → `2dedd5c`; `rebuild-web.sh` + public smoke → **PASS**. **3d Caddy (`DEFER-0031`):** **BLOCKED** — `sudo -n` requires interactive password; host Caddy **active** on 80/443; `CADDY_EDGE=compose` not set. **3e:** `apt list --upgradable` → **15** packages; no upgrade (sudo); SSH **22+2222** (decision deferred). **`PREVIEW_SHARE_SECRET`** on VPS empty — preview tokens not production-ready.
+- Why: Close backlog Wave 3 with honest VPS evidence (SSH session `ab19368f`).
+- Scope / files: VPS `/home/deploy/cms-repo`; this entry; ledger sync in same PR.
+- Commands or actions actually performed: SSH `deploy@85.192.29.196:2222`; CMS recreate with `-f docker-compose.cms.yml -f docker-compose.override.yml`; HMAC signed trigger rehearsal; smokes.
+- Verification actually performed and result: Linked smokes PASS; invalid rebuild token 403; `/preview/share/badtoken/` → 404 + no-store headers.
+- Deferred or risk IDs: `DEFER-0027` **CLOSED**; `DEFER-0031`/`RISK-0013` **OPEN**; `DEFER-0016` production secret **OPEN**; `RISK-0005` **OPEN** (15 pending); `RISK-0006` **OPEN**.
+- Rollback / recovery: CMS `65d6c91`; `REBUILD_TRIGGER_ENABLED=false`; remove override compose file.
+
 ## LOG-0206 — 2026-08-22 — Wave 3 VPS (PR #79–#82 post-merge)
 
 - Outcome: Attended production steps after merge of PRs #79–#82. **CMS image migrate PASS** via CD [32561769850](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32561769850) (`migrate_cms=true`, `cms_image_tag=957e3af`): `backup_ok`, `cd-cms-migrate PASS`, `CMS smoke PASS` (incl. `/staff/login/`). No pending Django migrations on live DB. **Web rebuild PASS** via CD [32561898693](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32561898693) (`rebuild_web=true`): `rebuild-web PASS`, `cd-rebuild-web PASS`. Live `/en/about/` shows `<meta name="cms-build-origin" content="cms">`. Set `REBUILD_TRIGGER_ENABLED=true` in `infra/cms/.env` and recreated CMS; container `printenv REBUILD_TRIGGER_ENABLED` → `true`. **Did not** complete signed POST rehearsal to `/rebuild-trigger/`. **Did not** cut over Compose Caddy edge: `sudo -n systemctl disable --now caddy` requires interactive password (unlike `sudo -n /opt/taha/bin/caddy-sync.sh`, which restored `/staff/login/` after post-recreate 404). **`PREVIEW_SHARE_SECRET` absent** from VPS `.env` — public preview tokens not production-ready. **Did not** run `apt upgrade` (requires interactive sudo). SSH listens on **22 and 2222** (canonical port decision deferred). Did **not** set `CMS_CD_AUTO_MIGRATE` or `CADDY_EDGE=compose`.
