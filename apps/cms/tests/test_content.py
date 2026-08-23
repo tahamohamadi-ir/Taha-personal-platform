@@ -167,6 +167,76 @@ def test_article_empty_body_reading_time_zero():
     assert article.reading_time_minutes == 0
 
 
+def test_reading_wpm_for_locale():
+    from apps.content.models import reading_wpm_for_locale
+
+    assert reading_wpm_for_locale("fa") == 180
+    assert reading_wpm_for_locale("en") == 230
+    assert reading_wpm_for_locale(None) == 200
+    assert reading_wpm_for_locale("xx") == 200
+
+
+@pytest.mark.django_db
+def test_article_reading_time_uses_per_locale_wpm():
+    words = " ".join(f"w{i}" for i in range(460))
+    fa = Article.objects.create(
+        locale=Locale.FA,
+        slug="fa-post",
+        title="نوشته",
+        body=f"<p>{words}</p>",
+        status=LifecycleStatus.DRAFT,
+    )
+    en = Article.objects.create(
+        locale=Locale.EN,
+        slug="en-post",
+        title="Post",
+        body=f"<p>{words}</p>",
+        status=LifecycleStatus.DRAFT,
+    )
+    assert fa.reading_time_minutes == 3  # 460 / 180 → ceil 2.56
+    assert en.reading_time_minutes == 2  # 460 / 230 = 2 exactly
+
+
+def test_compute_reading_time_explicit_wpm_overrides_locale():
+    from apps.content.models import compute_reading_time_minutes
+
+    body = "<p>" + " ".join(["word"] * 400) + "</p>"
+    assert compute_reading_time_minutes(body, locale="fa", wpm=200) == 2
+    assert compute_reading_time_minutes(body, locale="fa") == 3
+    assert compute_reading_time_minutes("", locale="fa") == 0
+
+
+@pytest.mark.django_db
+def test_recompute_reading_time_backfill_command():
+    from django.core.management import call_command
+
+    words = " ".join(f"w{i}" for i in range(460))
+    stale = Article.objects.create(
+        locale=Locale.FA,
+        slug="stale-reading-time",
+        title="Stale",
+        body=f"<p>{words}</p>",
+        status=LifecycleStatus.PUBLISHED,
+        published_at=past(),
+    )
+    fresh_en = Article.objects.create(
+        locale=Locale.EN,
+        slug="fresh-reading-time",
+        title="Fresh",
+        body=f"<p>{words}</p>",
+        status=LifecycleStatus.PUBLISHED,
+        published_at=past(),
+    )
+    Article.objects.filter(pk=stale.pk).update(reading_time_minutes=99)
+
+    call_command("recompute_reading_time", verbosity=0)
+
+    stale.refresh_from_db()
+    fresh_en.refresh_from_db()
+    assert stale.reading_time_minutes == 3
+    assert fresh_en.reading_time_minutes == 2
+
+
 @pytest.mark.django_db
 def test_series_locale_slug_unique():
     Series.objects.create(

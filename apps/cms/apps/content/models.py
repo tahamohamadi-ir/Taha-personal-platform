@@ -17,6 +17,8 @@ from django.utils import timezone
 from django.utils.html import strip_tags
 
 READING_WPM = 200
+# Per-locale reading speed (custom-admin-rebuild-fa §14.1 F1); unknown locales fall back.
+READING_WPM_BY_LOCALE = {"fa": 180, "en": 230}
 
 # ADR-0022 allowlist — editor/docs contract; storage is plain TextField HTML.
 # Keep in sync with RICHTEXT_ALLOWED_FEATURES in config.settings.base.
@@ -107,8 +109,20 @@ class LocalizedContentMixin(models.Model):
         abstract = True
 
 
-def compute_reading_time_minutes(body_html: str, *, wpm: int = READING_WPM) -> int:
-    """Estimate reading time from rich-text body (~200 wpm). Empty body → 0."""
+def reading_wpm_for_locale(locale: str | None) -> int:
+    """Words-per-minute for a locale (fa=180, en=230); unknown locales → 200."""
+    return READING_WPM_BY_LOCALE.get(str(locale or "").lower(), READING_WPM)
+
+
+def compute_reading_time_minutes(
+    body_html: str, *, wpm: int | None = None, locale: str | None = None
+) -> int:
+    """Estimate reading time from rich-text body using per-locale WPM.
+
+    Empty body → 0. An explicit ``wpm`` overrides the locale lookup.
+    """
+    if wpm is None:
+        wpm = reading_wpm_for_locale(locale)
     text = strip_tags(body_html or "")
     words = re.findall(r"\S+", text)
     if not words:
@@ -404,7 +418,9 @@ class Article(LocalizedContentMixin, LifecycleMixin):
         return f"{self.title} ({self.locale})"
 
     def save(self, *args, **kwargs) -> None:
-        self.reading_time_minutes = compute_reading_time_minutes(str(self.body or ""))
+        self.reading_time_minutes = compute_reading_time_minutes(
+            str(self.body or ""), locale=self.locale
+        )
         super().save(*args, **kwargs)
 
 
