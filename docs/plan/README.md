@@ -44,6 +44,9 @@ Owner remaining work that is **not** a new spec: demo allowlist before CSP enfor
 | `SMALL-MODEL-EXECUTION-PLAN.md` | Operating playbook for small models. See ?5 caveat. |
 | `S-PLAN-STATE.md` | Task state tracker for the S-Plan phases. |
 | `B5-VISUAL-INTERACTION-ADOPTION.md` | Proposal only. Nothing in it is implemented or authorized (Candidate 4 research graph adopted via ADR-0028). |
+| `DESIGN-UI-UX-IMPROVEMENT-REVIEW.md` | Index (2026-08-22). Points at the two files below. Nothing implemented or authorized. |
+| `DESIGN-UI-CURRENT-PROBLEMS.md` | Current public UI defects (`P1`?`P19`): undefined tokens, contrast, a11y, IA drift. Ledger IDs not allocated. |
+| `DESIGN-UI-UX-IMPROVEMENT-PROPOSALS.md` | Suggestions (`S1`?`S37`) including for rules already in `design.md` / contract cards. Proposals only. |
 | `P0-G0-content-pack-proposal.md` | Content proposal record. |
 | `LICENSES.md` | Third-party licence notes. |
 
