@@ -2,8 +2,10 @@
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Breadcrumbs from "../../../components/blog/Breadcrumbs.astro";
 import ResearchCatalog from "../../../components/ResearchCatalog.astro";
+import ResearchGraphSection from "../../../components/research/ResearchGraphSection.astro";
 import { content } from "../../../data/content";
 import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../data/structured";
+import { getResearchGraph } from "../../../lib/cms/research-graph";
 import {
   getResearchProjects,
   getResearchPublications,
@@ -18,6 +20,7 @@ const topics = await getResearchTopics(locale);
 const projects = await getResearchProjects(locale);
 const publications = await getResearchPublications(locale);
 const statement = await getResearchStatement(locale);
+const graph = await getResearchGraph(locale);
 const empty =
   topics.length === 0 &&
   projects.length === 0 &&
@@ -53,6 +56,7 @@ validateStructuredData(...structured);
     />
     <h1>{research.heading}</h1>
     <p class="lead">{research.intro}</p>
+    {graph ? <ResearchGraphSection graph={graph} content={pageContent} /> : null}
     {
       empty ? (
         <p class="empty">{research.empty}</p>

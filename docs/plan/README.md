@@ -18,6 +18,7 @@ Last reconciled: 2026-08-22.
 | `wave1-web-polish-task-spec.md` | DONE (merged) | agent | Writing-canonical + RSS + OG + catalog URL filters (Wave 1). LOG-0211. |
 | `wave2-cms-web-addons-task-spec.md` | DONE (merged) | agent | Statement PDF, lightbox, CSP Report-Only demos. LOG-0212. Owner migrate `content.0013`. |
 | `P8-publications-books-talks-downloads-task-spec.md` | DONE (merged, migrate pending) | agent ? owner | Wave 3 LOG-0213. Migration `content.0014` (depends on `0013`). Attended migrate + rebuild-web required. |
+| `wave4-research-graph-island-task-spec.md` | DONE (merged) | agent | ADR-0028 research graph island (SVG + motion). LOG-0214. |
 | `cms-origin-and-full-stack-cd-task-spec.md` | DONE (repo + edge) | agent | ADR-0027 Slices 0?5; Compose Caddy live (`DEFER-0031`/`RISK-0013` CLOSED, LOG-0210); HMAC `DEFER-0027` CLOSED. |
 | `P3-public-preview-token-task-spec.md` | DONE | agent | DEFER-0016 CLOSED 2026-08-22 (LOG-0204 repo; LOG-0209 production secret + CMS recreate). |
 | `blog-story-composition-task-spec.md` | PARTIAL | agent | Blog story live; entity stories Slice 5 (`DEFER-0030` CLOSED in ledger). Owner migrate + rebuild. |
@@ -25,7 +26,7 @@ Last reconciled: 2026-08-22.
 | `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | Featured?Media + Wagtail uninstall closed; HMAC `DEFER-0027` CLOSED. Remaining: §18 QA matrix only (`DEFER-0032`). |
 | `P0-A-stack-inventory-task-spec.md` | BLOCKED (owner) | owner | Read-only VPS inventory. Not an agent task. |
 
-Owner remaining work that is **not** a new spec: attended migrate `content.0013` then `content.0014` + Caddy reload + `rebuild-web.sh`; demo allowlist before CSP enforce (`DEFER-0021`); merge Waves 4?5 then rebuild. HMAC (`DEFER-0027`) and Compose Caddy (`DEFER-0031`) are **CLOSED** (LOG-0210). Do **not** set `CMS_CD_AUTO_MIGRATE`.
+Owner remaining work that is **not** a new spec: attended migrate `content.0013` then `content.0014` + Caddy reload + `rebuild-web.sh`; demo allowlist before CSP enforce (`DEFER-0021`); merge Wave 5 then rebuild. HMAC (`DEFER-0027`) and Compose Caddy (`DEFER-0031`) are **CLOSED** (LOG-0210). Do **not** set `CMS_CD_AUTO_MIGRATE`.
 
 ## 2. Queued ? do not start yet
 
@@ -41,7 +42,7 @@ Owner remaining work that is **not** a new spec: attended migrate `content.0013`
 | `SAMPLES-TRANSFER-RECOMMENDATIONS.md` | Analysis catalog of `SAMP-*` IDs. Bound into `Task-list.md`. Do not create a second spec from it. |
 | `SMALL-MODEL-EXECUTION-PLAN.md` | Operating playbook for small models. See §5 caveat. |
 | `S-PLAN-STATE.md` | Task state tracker for the S-Plan phases. |
-| `B5-VISUAL-INTERACTION-ADOPTION.md` | Proposal only. Nothing in it is implemented or authorized. |
+| `B5-VISUAL-INTERACTION-ADOPTION.md` | Proposal only. Nothing in it is implemented or authorized (Candidate 4 research graph adopted via ADR-0028). |
 | `P0-G0-content-pack-proposal.md` | Content proposal record. |
 | `LICENSES.md` | Third-party licence notes. |
 
