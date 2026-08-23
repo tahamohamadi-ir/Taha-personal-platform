@@ -10,37 +10,18 @@
 
 # Work Log
 
-<<<<<<< HEAD
 ## LOG-0212 — 2026-08-22 — Wave 2: statement PDF, lightbox, CSP Report-Only demo embed
 
-- Outcome: Implemented Wave 2 on branch `feat/wave2-cms-web-addons` (worktree `.worktrees/feat-wave2-cms-web-addons`) from `origin/main`. (1) **DEFER-0019:** additive `statement_pdf` FK on `ResearchStatement` + migration `content.0013_researchstatement_statement_pdf`; public API projects via `public_media_ref` only when Media `is_active` (title/mime/size); admin `statementPdfId` MediaPicker + orphan registry; Astro `/fa|en/research/statement/` download link. (2) **F7:** CaseStudyDetail/DiagramBlock render active screenshot/diagram images; shared native `<dialog>` lightbox (~2KB inline JS) with focus trap/Esc/restore/`prefers-reduced-motion`; StoryBody figure/gallery same pattern; no-JS = direct file links. (3) **DEFER-0021 PARTIAL:** `Content-Security-Policy-Report-Only` on `infra/caddy/Caddyfile` + `Caddyfile.compose` (script/style `'unsafe-inline'` so JSON-LD/About do not falsely block on future enforce); click-to-load sandboxed iframe gated by empty `demoEmbedAllowlist.ts` placeholders — no invented demo URLs; seed data has no public demos. Enforce mode left as documented follow-up. Did **not** set `CMS_CD_AUTO_MIGRATE`. Uncommitted for parent review.
-- Why: Close statement PDF deferral; ship progressive-enhancement gallery UX; start CSP/demo embed safely.
-- Scope / files: `apps/cms/apps/content/models.py`, `migrations/0013_*`, `apps/media/public_urls.py`, `apps/api/api.py`, `admin_content.py`, `admin_media.py`, `tests/test_statement_pdf.py`, `apps/web` statement pages + CaseStudyDetail/DiagramBlock/AvailabilityBar/DemoEmbed/Lightbox/StoryBody + `demoEmbedAllowlist.ts`, `infra/caddy/Caddyfile*`, docs/plan + ledgers, Task-list F7.
-- Commands or actions actually performed: isolated worktree from `origin/main`; targeted pytest/ruff/web check+build (see verification).
-- Verification actually run and result:
-  - `uv run pytest tests/test_statement_pdf.py tests/test_media_image_rewire.py -q` → **9 passed**
-  - `uv run ruff check .` (apps/cms) → **All checks passed**
-  - `npm run check` (apps/web) → **0 errors**
-  - `npm run build` (apps/web) → **PASS** (40 pages)
-- Deferred or risk IDs: `DEFER-0019` **CLOSED** (repo; prod migrate+upload pending); `DEFER-0021` **PARTIAL** (Report-Only + click-to-load UI; enforce + owner allowlist open); Wave 3+ not started.
-- Rollback / recovery: reverse `0013`; remove CSP Report-Only header; remove lightbox/DemoEmbed; prior image.
-- Owner migrate (attended; never `CMS_CD_AUTO_MIGRATE`):
-  1. `dumpdata` + DB backup
-  2. Attended migrate through `content.0013` (workflow_dispatch `migrate_cms=true` or VPS)
-  3. Reload Caddy (Compose `edge` or host) for CSP Report-Only
-  4. Admin: upload PDF → attach on research-statement → activate Media → rebuild web
-  5. Confirm demo hosts before expanding allowlist / `frame-src` and before CSP enforce
-=======
+- Outcome: Wave 2 merged to main. DEFER-0019 repo CLOSED (`content.0013_researchstatement_statement_pdf`); F7 lightbox; DEFER-0021 PARTIAL (CSP Report-Only + click-to-load). Production migrate/upload still owner. Never `CMS_CD_AUTO_MIGRATE`.
+- Evidence: pytest statement_pdf + media rewire 9 passed; ruff clean; web check/build PASS.
+- Rollback / recovery: reverse `0013`; remove CSP Report-Only / lightbox / DemoEmbed.
+
 ## LOG-0213 — 2026-08-22 — Wave 3 P8 publications / books / talks / downloads (repo)
 
-- Outcome: Implemented Wave 3 (P8) on branch `feat/wave3-p8-publications` in worktree `.worktrees/feat-wave3-p8-publications` from `origin/main`. IA-CONTRACT gains §4b URL tree. CMS models + admin registry + public API + Astro routes + citation/download ACL tests. Migration `content.0013` additive only — **not** applied to production. Left **uncommitted** for parent review. Did **not** start Wave 4/5 or owner decommission. Did **not** set `CMS_CD_AUTO_MIGRATE`.
-- Why: Ship P8 product phase (Task-list §13) with one-canonical-URL publications and Media-backed downloads.
-- Scope / files: `docs/contracts/IA-CONTRACT.md`; `docs/plan/P8-publications-books-talks-downloads-task-spec.md`; `apps/cms/apps/content/models.py` + `0013_p8_*`; `apps/cms/apps/api/{api,admin_content,admin_api}.py`; admin-frontend `entities.ts` / `api.ts`; `apps/web` catalog pages + `lib/cms/publications.ts`; tests `test_api_p8.py`; ledgers.
-- Commands or actions actually performed: isolated worktree; `makemigrations`; `uv run ruff check` (targeted); `uv run pytest tests/test_api_p8.py tests/test_admin_content_write.py tests/test_api_research.py` → **25 passed**; `apps/web` `npm run check` → **0 errors**; `npm run build` → **PASS**; admin-frontend `npm run check` → **PASS**.
-- Verification actually performed and result: as above. Production migrate/rebuild **not** run.
-- Deferred or risk IDs: Wave 4 blockers unchanged (35KB island budget vs three.js; GSAP license; ADR-0028). No new DEFER opened for P8 empty catalogs (honest empty states).
-- Rollback / recovery: discard worktree branch; migration reverse is additive field/table adds only after owner dumpdata.
->>>>>>> feat/wave3-p8-publications
+- Outcome: Wave 3 merged to main. IA §4b; Book/Talk/Download + Publication extensions; admin + public API + Astro; migration `content.0014_p8_publications_books_talks_downloads` depends on `content.0013_researchstatement_statement_pdf`. Not applied to production yet.
+- Evidence: pytest P8/admin/research 25 passed; web check/build PASS; admin-frontend check PASS.
+- Owner: attended migrate through `0014` then `rebuild-web.sh`. Never `CMS_CD_AUTO_MIGRATE`.
+- Rollback / recovery: reverse additive `0014` after dumpdata; discard branch history only if needed.
 
 ## LOG-0210 — 2026-08-22 — Compose Caddy edge cutover PASS (525 rollback + ACME seed)
 

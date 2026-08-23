@@ -7,21 +7,19 @@
 
 # Changelog
 
-<<<<<<< HEAD
 ## 2026-08-22 — Wave 2 CMS/web add-ons (LOG-0212)
 
 - **DEFER-0019 CLOSED (repo):** nullable `ResearchStatement.statement_pdf` → Media (`content.0013`); public projection via `public_media_ref` (active only; title/mime/size); admin MediaPicker; Astro statement download (fa/en).
 - **F7 lightbox:** case-study screenshots/diagrams render active Media images; native `<dialog>` lightbox (focus trap, Esc, restore focus, `prefers-reduced-motion`) on CaseStudyDetail + StoryBody figure/gallery; no-JS keeps direct file links.
 - **DEFER-0021 PARTIAL:** CSP Report-Only on Compose + host Caddyfiles (inline JSON-LD/About scripts allowed for future enforce); click-to-load sandboxed demo iframe behind empty owner allowlist placeholders — no invented demo hosts; enforce deferred.
 - Owner: dumpdata + backup, attended migrate `content.0013`, Caddy reload; never `CMS_CD_AUTO_MIGRATE`. Spec: `docs/plan/wave2-cms-web-addons-task-spec.md`.
-=======
+
 ## 2026-08-22 — P8 publications / books / talks / downloads (LOG-0213)
 
 - IA-CONTRACT §4b: canonical bilingual URL tree for publications, books, talks, downloads; research-nested publication detail permanently redirects.
-- CMS: extend `Publication`; add `Book`, `Talk`, `Download` (Media-backed); register Series + new entities in admin `ENTITY_MODELS` / SPA; migration `content.0013_p8_publications_books_talks_downloads` (additive; owner attended migrate).
+- CMS: extend `Publication`; add `Book`, `Talk`, `Download` (Media-backed); register Series + new entities in admin `ENTITY_MODELS` / SPA; migration `content.0014_p8_publications_books_talks_downloads` (depends on `content.0013_researchstatement_statement_pdf`).
 - Public Ninja `/api/{publications,books,talks,downloads}/` + safe download file stream; Astro list/detail + sitemap; citation export only when editor-supplied with authors+title; inactive/restricted media never projected.
-- Spec: `docs/plan/P8-publications-books-talks-downloads-task-spec.md`. Validation: cms ruff + pytest P8/admin; web `check`+`build`; admin-frontend `check`. Uncommitted on `feat/wave3-p8-publications`.
->>>>>>> feat/wave3-p8-publications
+- Spec: `docs/plan/P8-publications-books-talks-downloads-task-spec.md`.
 
 ## 2026-08-22 — Compose Caddy edge cutover PASS (LOG-0210)
 
