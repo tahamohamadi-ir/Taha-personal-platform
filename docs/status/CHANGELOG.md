@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-08-22 — Wave 2 CMS/web add-ons (LOG-0212)
+
+- **DEFER-0019 CLOSED (repo):** nullable `ResearchStatement.statement_pdf` → Media (`content.0013`); public projection via `public_media_ref` (active only; title/mime/size); admin MediaPicker; Astro statement download (fa/en).
+- **F7 lightbox:** case-study screenshots/diagrams render active Media images; native `<dialog>` lightbox (focus trap, Esc, restore focus, `prefers-reduced-motion`) on CaseStudyDetail + StoryBody figure/gallery; no-JS keeps direct file links.
+- **DEFER-0021 PARTIAL:** CSP Report-Only on Compose + host Caddyfiles (inline JSON-LD/About scripts allowed for future enforce); click-to-load sandboxed demo iframe behind empty owner allowlist placeholders — no invented demo hosts; enforce deferred.
+- Owner: dumpdata + backup, attended migrate `content.0013`, Caddy reload; never `CMS_CD_AUTO_MIGRATE`. Spec: `docs/plan/wave2-cms-web-addons-task-spec.md`.
+
 ## 2026-08-22 — Compose Caddy edge cutover PASS (LOG-0210)
 
 - Production TLS edge moved from host systemd Caddy to Compose `caddy` (profile `edge`) after owner recovery: first cutover **525** → rollback → ACME seed `/var/lib/caddy` → `taha-cms_caddy_data` → second cutover **PASS**.

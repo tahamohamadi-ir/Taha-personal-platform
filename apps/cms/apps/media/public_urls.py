@@ -33,4 +33,5 @@ def public_media_ref(
         "alt": alt,
         "mime": media.mime or "",
         "title": media.title or "",
+        "size": int(media.size or 0),
     }

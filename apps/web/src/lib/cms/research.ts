@@ -53,6 +53,13 @@ export interface ResearchStatementDto {
   slug: string;
   title: string;
   body: string;
+  statement_pdf?: {
+    url: string;
+    alt?: string;
+    mime?: string;
+    title?: string;
+    size?: number;
+  } | null;
   story?: StoryDocumentDto | null;
   published_at: string | null;
   updated_at: string | null;
@@ -104,11 +111,25 @@ export interface ProjectDetailDto extends ProjectListDto {
     diagram_date: string;
     alt_text: string;
     long_description: string;
+    image?: {
+      url: string;
+      alt?: string;
+      mime?: string;
+      title?: string;
+      size?: number;
+    } | null;
   }>;
   screenshots: Array<{
     caption: string;
     alt_text: string;
     external_url: string;
+    image?: {
+      url: string;
+      alt?: string;
+      mime?: string;
+      title?: string;
+      size?: number;
+    } | null;
   }>;
 }
 

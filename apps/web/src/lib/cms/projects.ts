@@ -28,12 +28,26 @@ export interface DiagramDto {
   diagram_date: string;
   alt_text: string;
   long_description: string;
+  image?: {
+    url: string;
+    alt?: string;
+    mime?: string;
+    title?: string;
+    size?: number;
+  } | null;
 }
 
 export interface ScreenshotDto {
   caption: string;
   alt_text: string;
   external_url: string;
+  image?: {
+    url: string;
+    alt?: string;
+    mime?: string;
+    title?: string;
+    size?: number;
+  } | null;
 }
 
 export interface ProjectListDto extends ResearchProjectListDto {

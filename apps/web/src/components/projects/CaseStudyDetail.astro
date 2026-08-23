@@ -2,6 +2,7 @@
 import type { ProjectDetailDto } from "../../lib/cms/projects";
 import AvailabilityBar from "./AvailabilityBar.astro";
 import DiagramBlock from "./DiagramBlock.astro";
+import Lightbox from "../Lightbox.astro";
 
 interface Props {
   locale: "en" | "fa";
@@ -34,6 +35,9 @@ interface Props {
 
 const { locale, project, copy } = Astro.props;
 const caseStudy = project.case_study;
+const hasLightboxable =
+  project.screenshots.some((s) => Boolean(s.image?.url)) ||
+  project.diagrams.some((d) => Boolean(d.image?.url));
 ---
 
 <article class="case-study-detail">
@@ -134,6 +138,7 @@ const caseStudy = project.case_study;
   }
 
   <AvailabilityBar
+    locale={locale}
     project={project}
     labels={{
       availabilityLabel: copy.availabilityLabel,
@@ -147,17 +152,55 @@ const caseStudy = project.case_study;
     project.screenshots.length > 0 && (
       <>
         <h2>{copy.screenshotsHeading}</h2>
-        <ul>
+        <ul class="screenshot-list">
           {project.screenshots.map((shot) => (
-            <li>
-              <strong>{shot.caption}</strong> — {shot.alt_text}
+            <li class="screenshot-item">
               {
-                shot.external_url ? (
+                shot.image?.url ? (
+                  <figure class="screenshot-figure">
+                    <a
+                      href={shot.image.url}
+                      data-lightbox
+                      data-lightbox-alt={shot.alt_text || shot.image.alt || shot.caption}
+                    >
+                      <img
+                        src={shot.image.url}
+                        alt={shot.alt_text || shot.image.alt || shot.caption}
+                        loading="lazy"
+                      />
+                    </a>
+                    <figcaption>
+                      <strong>{shot.caption}</strong>
+                      {
+                        shot.external_url ? (
+                          <>
+                            {" "}
+                            —{" "}
+                            <a href={shot.external_url} rel="noopener noreferrer">
+                              {shot.external_url}
+                            </a>
+                          </>
+                        ) : null
+                      }
+                    </figcaption>
+                  </figure>
+                ) : (
                   <>
-                    {" "}
-                    (<a href={shot.external_url} rel="noopener noreferrer">{shot.external_url}</a>)
+                    <strong>{shot.caption}</strong> — {shot.alt_text}
+                    {
+                      shot.external_url ? (
+                        <>
+                          {" "}
+                          (
+                          <a href={shot.external_url} rel="noopener noreferrer">
+                            {shot.external_url}
+                          </a>
+                          )
+                        </>
+                      ) : null
+                    }
                   </>
-                ) : null
+                )
               }
             </li>
           ))}
@@ -207,6 +250,8 @@ const caseStudy = project.case_study;
   </ul>
 </article>
 
+{hasLightboxable && <Lightbox />}
+
 <style>
   .case-study-detail h2 {
     font-family: var(--font-display);
@@ -223,6 +268,17 @@ const caseStudy = project.case_study;
   }
   li {
     margin-bottom: 0.5rem;
+  }
+  .screenshot-list {
+    display: grid;
+    gap: 1rem;
+  }
+  .screenshot-figure {
+    margin: 0;
+  }
+  .screenshot-figure img {
+    max-width: 100%;
+    height: auto;
   }
   .richtext :global(p) {
     margin: 0 0 0.75rem;

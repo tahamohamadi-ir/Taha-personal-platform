@@ -498,9 +498,17 @@ class ResearchTopic(LocalizedContentMixin, LifecycleMixin):
 
 
 class ResearchStatement(LocalizedContentMixin, LifecycleMixin):
-    """Independent research agenda statement (HTML text; PDF deferred)."""
+    """Independent research agenda statement (HTML text + optional PDF)."""
 
     body = models.TextField(blank=True)
+    statement_pdf = models.ForeignKey(
+        "media.Media",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        help_text="Optional downloadable PDF (Media library; public only when active).",
+    )
     story = models.ForeignKey(
         "composition.CompositionPage",
         null=True,

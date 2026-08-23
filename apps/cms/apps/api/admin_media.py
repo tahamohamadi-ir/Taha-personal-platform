@@ -38,6 +38,7 @@ MEDIA_REFERENCE_FIELDS: list[tuple[str, str]] = [
     ("content.Article", "featured_image"),
     ("content.ProjectDiagram", "diagram_image"),
     ("content.ProjectScreenshot", "screenshot_image"),
+    ("content.ResearchStatement", "statement_pdf"),
 ]
 
 

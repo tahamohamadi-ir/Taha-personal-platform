@@ -1,7 +1,9 @@
 ---
 import type { ProjectDetailDto } from "../../lib/cms/projects";
+import DemoEmbed from "./DemoEmbed.astro";
 
 interface Props {
+  locale: "en" | "fa";
   project: ProjectDetailDto;
   labels: {
     codeLabel: string;
@@ -11,7 +13,7 @@ interface Props {
   };
 }
 
-const { project, labels } = Astro.props;
+const { locale, project, labels } = Astro.props;
 ---
 
 <section class="availability-bar" aria-label={labels.availabilityLabel}>
@@ -45,7 +47,12 @@ const { project, labels } = Astro.props;
         project.demo_url ? (
           <>
             {" "}
-            — <a href={project.demo_url} rel="noopener noreferrer">{project.demo_url}</a>
+            —{" "}
+            <DemoEmbed
+              demoUrl={project.demo_url}
+              locale={locale}
+              demoLabel={labels.demoLabel}
+            />
           </>
         ) : null
       }

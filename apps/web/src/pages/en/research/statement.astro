@@ -26,6 +26,14 @@ const description = statement
   ? statement.body.replace(/<[^>]+>/g, " ").trim().slice(0, 160)
   : research.statementEmpty;
 const statementHasStory = hasPublishedStory(statement?.story);
+const pdf = statement?.statement_pdf ?? null;
+
+function formatBytes(n: number | undefined): string {
+  if (!n || n <= 0) return "";
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+}
 ---
 
 <BaseLayout
@@ -48,6 +56,24 @@ const statementHasStory = hasPublishedStory(statement?.story);
       statement ? (
         <>
           <h1>{statement.title}</h1>
+          {
+            pdf?.url ? (
+              <p class="statement-pdf">
+                <a href={pdf.url} download rel="noopener">
+                  {pageContent.downloads.downloadLabel}
+                  {pdf.title ? `: ${pdf.title}` : ""}
+                </a>
+                {
+                  (pdf.mime || pdf.size) && (
+                    <span class="statement-pdf-meta">
+                      {" "}
+                      ({[pdf.mime, formatBytes(pdf.size)].filter(Boolean).join(" · ")})
+                    </span>
+                  )
+                }
+              </p>
+            ) : null
+          }
           {
             statementHasStory && statement.story ? (
               <StoryBody locale={locale} story={statement.story} />
@@ -76,6 +102,13 @@ const statementHasStory = hasPublishedStory(statement?.story);
     font-family: var(--font-display);
     font-size: clamp(1.75rem, 4vw, 2.4rem);
     margin: 0 0 1rem;
+  }
+  .statement-pdf {
+    margin: 0 0 1.25rem;
+  }
+  .statement-pdf-meta {
+    color: var(--color-ink-muted);
+    font-size: 0.9rem;
   }
   .empty { color: var(--color-ink-muted); }
   .body :global(p) { margin: 0 0 1rem; line-height: 1.7; }
