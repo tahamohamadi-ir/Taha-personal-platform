@@ -43,13 +43,10 @@ test("LTR content fields use dir=ltr on English slug", async ({ page }) => {
   await expect(slug).toHaveAttribute("dir", "ltr");
 });
 
-test("bulk archive shows count confirm and writes audit", async ({
-  page,
-  request,
-}) => {
+test("bulk archive shows count confirm and writes audit", async ({ page }) => {
   await loginAsE2eAdmin(page);
 
-  const me = await request.get("/api/v1/admin/auth/me");
+  const me = await page.request.get("/api/v1/admin/auth/me");
   expect(me.status()).toBe(200);
   const meBody = await me.json();
   expect(meBody.featureFlags?.admin_bulk_archive).toBe(true);

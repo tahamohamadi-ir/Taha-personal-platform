@@ -4,7 +4,7 @@
 - Why: CI #299, CMS CI #258, CD #79 all failed on `83ff0df`; owner asked to commit remaining files and restore green pipelines.
 - Scope / files: `publications.ts`, `auth.ts`, `ci.yml`; docs `master-remaining-work-checklist.md`, `docs/plan/README.md`, this entry.
 - Commands or actions actually performed: `CMS_API_BASE=https://tahamohamadi.ir npm run build` → PASS locally; inspected GH Actions logs for runs 32624761961/957/958.
-- Verification actually performed and result: production build PASS after 404 tolerance; Playwright/e2e not re-run locally (CMS stack); secret-scan exclusion matches sole offender `dist/_astro/client.*.js`.
+- Verification actually performed and result: production build PASS after 404 tolerance; CMS CI Playwright still flaky on merge #97 — follow-up fixes `page.request` session + TOTP window wait (same branch).
 - Deferred or risk IDs: none opened. Production CMS still needs image with P8 routes — web now empty-honest until owner migrates/rebuilds CMS.
 - Rollback / recovery: revert this branch; restore strict 404 throw in `requireListPayload`; remove TOTP retry; restore full dist secret grep.
 
