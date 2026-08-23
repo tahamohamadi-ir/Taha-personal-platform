@@ -27,13 +27,17 @@ from apps.api.admin_common import (
 )
 from apps.content.models import (
     Article,
+    Book,
     ContentRevision,
+    Download,
     Landing,
     Profile,
     Project,
     Publication,
     ResearchStatement,
     ResearchTopic,
+    Series,
+    Talk,
 )
 from apps.content.preview_token import build_preview_share_path, preview_ttl_seconds
 from apps.content.revisions import create_revision, restore_revision_as_draft
@@ -46,10 +50,14 @@ ENTITY_MODELS = {
     "landing": Landing,
     "profile": Profile,
     "article": Article,
+    "series": Series,
     "research-topic": ResearchTopic,
     "research-statement": ResearchStatement,
     "project": Project,
     "publication": Publication,
+    "book": Book,
+    "talk": Talk,
+    "download": Download,
 }
 
 PREVIEW_SHARE_ENTITIES = {
@@ -101,6 +109,10 @@ DETAIL_FIELD_MAPS: dict[str, dict[str, str]] = {
         "featured_image": "featuredImageId",
         "story": "storyId",
     },
+    "series": {
+        "description": "description",
+        "ordering": "ordering",
+    },
     "research-topic": {
         "summary": "summary",
         "motivation": "motivation",
@@ -135,6 +147,55 @@ DETAIL_FIELD_MAPS: dict[str, dict[str, str]] = {
         "doi": "doi",
         "url": "url",
         "pdf_url": "pdfUrl",
+        "abstract": "abstract",
+        "publication_type": "publicationType",
+        "academic_stage": "academicStage",
+        "isbn": "isbn",
+        "preprint_url": "preprintUrl",
+        "code_url": "codeUrl",
+        "dataset_url": "datasetUrl",
+        "access_state": "accessState",
+        "accessibility_notes": "accessibilityNotes",
+        "citation_text": "citationText",
+        "pdf_media": "pdfMediaId",
+        "license": "license",
+        "citation_count": "citationCount",
+        "citation_source": "citationSource",
+        "citation_last_verified": "citationLastVerified",
+        "citation_visibility": "citationVisibility",
+    },
+    "book": {
+        "authors": "authors",
+        "isbn": "isbn",
+        "publisher": "publisher",
+        "publication_date": "publicationDate",
+        "description": "description",
+        "url": "url",
+        "license": "license",
+        "access_state": "accessState",
+        "accessibility_notes": "accessibilityNotes",
+        "cover_media": "coverMediaId",
+    },
+    "talk": {
+        "speakers": "speakers",
+        "event_name": "eventName",
+        "event_date": "eventDate",
+        "location": "location",
+        "abstract": "abstract",
+        "video_url": "videoUrl",
+        "slides_url": "slidesUrl",
+        "license": "license",
+        "access_state": "accessState",
+        "accessibility_notes": "accessibilityNotes",
+        "slides_media": "slidesMediaId",
+    },
+    "download": {
+        "description": "description",
+        "media": "mediaId",
+        "download_type": "downloadType",
+        "language": "language",
+        "access_state": "accessState",
+        "accessibility_notes": "accessibilityNotes",
         "license": "license",
     },
 }
@@ -245,7 +306,7 @@ def _coerce_field_value(field, attr: str, key: str, value) -> object:
                     "storyId must reference a story composition.",
                     fields={"fields": [key]},
                 )
-        if attr in {"featured_image", "diagram_image", "screenshot_image"}:
+        if attr in {"featured_image", "diagram_image", "screenshot_image", "cover_media"}:
             mime = getattr(related, "mime", "") or ""
             if mime and not str(mime).startswith("image/"):
                 raise AdminError(

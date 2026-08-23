@@ -44,14 +44,37 @@ When an entity is published in one locale and absent in the requested locale:
 - Inactive routes MUST NOT appear as live header or footer links.
 - Do not create empty category pages or placeholder shells for future content.
 - A header link that 404s is a defect, not progressive disclosure.
-- Current live routes: `/`, `/{locale}/`, `/{locale}/about/`, `/{locale}/about/{section}/`, `/{locale}/about/{section}/{slug}/` when detail content exists, `/{locale}/cv/`, `404`.
+- Current live routes: `/`, `/{locale}/`, `/{locale}/about/`, `/{locale}/about/{section}/`, `/{locale}/about/{section}/{slug}/` when detail content exists, `/{locale}/cv/`, `/{locale}/blog/` (shipped writing tree until writing-canonical redirect), `/{locale}/research/` (+ topics/statement/projects), `/{locale}/projects/`, P8 catalog routes below when those pages ship, `404`.
 - `KI-0002` is CLOSED in this checkout and must not regress.
+
+## 4b. P8 catalog URL tree (Publications / Books / Talks / Downloads)
+
+Locale roots remain `/fa/` (RTL) and `/en/` (LTR). Content, slug, SEO, and status are independent per locale.
+
+Canonical public paths (list + detail):
+
+```text
+/{locale}/publications/
+/{locale}/publications/{slug}/
+/{locale}/books/
+/{locale}/books/{slug}/
+/{locale}/talks/
+/{locale}/talks/{slug}/
+/{locale}/downloads/
+/{locale}/downloads/{slug}/
+```
+
+- Publication detail canonical is `/{locale}/publications/{slug}/` only.
+- `/{locale}/research/publications/{slug}/` MUST permanently redirect to the canonical publication URL (research may list or link; it MUST NOT own a duplicate detail).
+- Do not invent metrics, citation counts, or catalog entries. Empty lists MUST be honest.
+- Restricted or metadata-only downloads MUST NOT expose a public file URL.
 
 ## 5. Canonical URLs
 
 - One canonical detail URL per entity per locale.
 - Other sections link to it; they do not duplicate it.
 - Public writing tree is `/{locale}/writing/`. `/{locale}/blog/` MAY exist only as a redirect.
+- Publication detail is `/{locale}/publications/{slug}/` (see §4b).
 - A slug change MUST leave a permanent redirect.
 
 ## 6. Dead ends

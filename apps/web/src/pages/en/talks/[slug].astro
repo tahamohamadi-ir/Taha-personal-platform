@@ -1,0 +1,80 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../../components/blog/Breadcrumbs.astro";
+import { content } from "../../../data/content";
+import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../data/structured";
+import { getTalks, getTalk } from "../../../lib/cms/publications";
+
+export async function getStaticPaths() {
+  const locale = "en" as const;
+  const items = await getTalks(locale);
+  return items.map((item) => ({ params: { slug: item.slug } }));
+}
+
+const locale = "en" as const;
+const pageContent = content[locale];
+const catalog = pageContent.catalog;
+const slug = Astro.params.slug as string;
+const item = await getTalk(locale, slug);
+if (!item) {
+  return Astro.redirect(`/${locale}/talks/`, 302);
+}
+const alt = "fa" as const;
+const alternateExists = (await getTalk(alt, item.slug)) !== null;
+
+const structured = [
+  breadcrumbJsonLd([
+    { name: pageContent.name, path: `/${locale}/` },
+    { name: catalog.talksHeading, path: `/${locale}/talks/` },
+    { name: item.title, path: `/${locale}/talks/${item.slug}/` },
+  ]),
+];
+validateStructuredData(...structured);
+---
+
+<BaseLayout
+  content={{
+    ...pageContent,
+    meta: {
+      title: `${item.title} — ${pageContent.name}`,
+      description: catalog.talksIntro,
+    },
+  }}
+  alternateHref={alternateExists ? `/${alt}/talks/${item.slug}/` : null}
+>
+  {structured.map((block) => (
+    <script type="application/ld+json" is:inline set:html={jsonLdScriptContent(block)} />
+  ))}
+  <section class="catalog-page">
+    <Breadcrumbs items={[
+      { label: pageContent.name, href: `/${locale}/` },
+      { label: catalog.talksHeading, href: `/${locale}/talks/` },
+      { label: item.title },
+    ]} />
+    {!alternateExists && <p class="missing">{catalog.missingTranslation}</p>}
+    <h1>{item.title}</h1>
+    
+    {item.speakers && <p class="meta">{item.speakers}</p>}
+    {(item.event_name || item.event_date) && (
+      <p class="meta">{[item.event_name, item.event_date].filter(Boolean).join(" · ")}</p>
+    )}
+    {item.location && <p class="meta">{item.location}</p>}
+    <p class="meta">{catalog.licenseLabel}: {item.license}</p>
+    {item.abstract && (<><h2>{catalog.abstractHeading}</h2><p>{item.abstract}</p></>)}
+    {item.video_url && <p><a href={item.video_url} rel="noopener noreferrer">{item.video_url}</a></p>}
+    {(item.slides?.url || item.slides_url) ? (
+      <p><a href={item.slides?.url || item.slides_url} rel="noopener noreferrer">{catalog.downloadLabel}</a></p>
+    ) : item.access_state !== "public" ? (
+      <p class="meta">{catalog.restrictedNote}</p>
+    ) : null}
+
+    <p><a href={`/${locale}/talks/`}>{catalog.talksHeading}</a></p>
+  </section>
+</BaseLayout>
+
+<style>
+  .catalog-page { max-width: 44rem; margin-inline: auto; padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem; }
+  .catalog-page h1 { font-family: var(--font-display); font-size: clamp(1.75rem, 4vw, 2.4rem); margin: 0 0 0.5rem; }
+  .catalog-page h2 { font-family: var(--font-display); font-size: 1.2rem; margin: 1.5rem 0 0.5rem; }
+  .meta, .missing { color: var(--color-ink-muted); }
+</style>

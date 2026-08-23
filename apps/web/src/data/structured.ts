@@ -80,7 +80,7 @@ export function scholarlyArticleJsonLd(input: {
     return null;
   }
   const pageUrl = new URL(
-    `/${input.locale}/research/publications/${input.slug}/`,
+    `/${input.locale}/publications/${input.slug}/`,
     site.url,
   ).href;
   const block: JsonLdBlock = {

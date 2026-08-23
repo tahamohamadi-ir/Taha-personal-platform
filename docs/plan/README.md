@@ -7,7 +7,7 @@ Rule:
 Execute a spec only if it appears under **Active** below.
 Everything under **Archived** is history. Read it for context; never execute it.
 
-Last reconciled: 2026-08-21.
+Last reconciled: 2026-08-22.
 
 ---
 
@@ -15,14 +15,15 @@ Last reconciled: 2026-08-21.
 
 | Spec | State | Who runs it | Notes |
 |---|---|---|---|
-| `cms-origin-and-full-stack-cd-task-spec.md` | IN_PROGRESS | agent | ADR-0027. Slice 0–3 + Slice 5 code done in repo (Slice 3 LOG-0205). Next: Slice 4 Caddy live cutover (`DEFER-0031`); owner HMAC (`DEFER-0027`). |
+| `P8-publications-books-talks-downloads-task-spec.md` | IN_PROGRESS (repo) | agent → owner migrate | Wave 3 LOG-0213. Migration `content.0013`; attended migrate + rebuild-web required. |
+| `cms-origin-and-full-stack-cd-task-spec.md` | IN_PROGRESS | agent | ADR-0027. Slice 0–3 + Slice 5 code done; Slice 4 Caddy cutover **PASS** (LOG-0210; `DEFER-0031` CLOSED). |
 | `P3-public-preview-token-task-spec.md` | DONE | agent | DEFER-0016 CLOSED 2026-08-22 (LOG-0204 repo; LOG-0209 production secret + CMS recreate). |
 | `blog-story-composition-task-spec.md` | PARTIAL | agent | Blog story live; entity stories Slice 5 (`DEFER-0030` CLOSED in ledger). Owner migrate + rebuild. |
 | `rich-blocks-v2-task-spec.md` | DONE | agent | Six no-JS story blocks (accordion/tabs/timeline/counters/before_after/slider). Owner static rebuild after merge. |
 | `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | Featured→Media (`0011`, LOG-0187); Wagtail uninstall **CLOSED** (`DEBT-0003` / LOG-0193); HMAC `DEFER-0027`; Playwright `DEFER-0026`. |
 | `P0-A-stack-inventory-task-spec.md` | BLOCKED (owner) | owner | Read-only VPS inventory. Not an agent task. |
 
-Owner remaining work that is **not** a new spec: HMAC enable (`DEFER-0027`); apt/SSH (`RISK-0005`/`0006`); Compose Caddy cutover (`DEFER-0031`). CMS migrate through `0008` is **done** on production (`b6bea6a`). Do **not** set `CMS_CD_AUTO_MIGRATE`.
+Owner remaining work that is **not** a new spec: HMAC enable (`DEFER-0027` may already be closed — check ledger); apt/SSH if reopened; P8 attended migrate `content.0013`. CMS migrate through `0008` is **done** on production (`b6bea6a`); **0013 pending**. Do **not** set `CMS_CD_AUTO_MIGRATE`.
 
 ## 2. Queued — do not start yet
 

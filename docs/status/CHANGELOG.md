@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-08-22 — P8 publications / books / talks / downloads (LOG-0213)
+
+- IA-CONTRACT §4b: canonical bilingual URL tree for publications, books, talks, downloads; research-nested publication detail permanently redirects.
+- CMS: extend `Publication`; add `Book`, `Talk`, `Download` (Media-backed); register Series + new entities in admin `ENTITY_MODELS` / SPA; migration `content.0013_p8_publications_books_talks_downloads` (additive; owner attended migrate).
+- Public Ninja `/api/{publications,books,talks,downloads}/` + safe download file stream; Astro list/detail + sitemap; citation export only when editor-supplied with authors+title; inactive/restricted media never projected.
+- Spec: `docs/plan/P8-publications-books-talks-downloads-task-spec.md`. Validation: cms ruff + pytest P8/admin; web `check`+`build`; admin-frontend `check`. Uncommitted on `feat/wave3-p8-publications`.
+
 ## 2026-08-22 — Compose Caddy edge cutover PASS (LOG-0210)
 
 - Production TLS edge moved from host systemd Caddy to Compose `caddy` (profile `edge`) after owner recovery: first cutover **525** → rollback → ACME seed `/var/lib/caddy` → `taha-cms_caddy_data` → second cutover **PASS**.

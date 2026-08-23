@@ -35,12 +35,16 @@ from apps.api.admin_common import (
 )
 from apps.content.models import (
     Article,
+    Book,
+    Download,
     Landing,
     Profile,
     Project,
     Publication,
     ResearchStatement,
     ResearchTopic,
+    Series,
+    Talk,
 )
 from apps.security.models import AuditLog
 from apps.security.recovery import consume_recovery_code
@@ -91,10 +95,14 @@ _CONTENT_MODELS = {
     "landing": Landing,
     "profile": Profile,
     "article": Article,
+    "series": Series,
     "researchTopic": ResearchTopic,
     "researchStatement": ResearchStatement,
     "project": Project,
     "publication": Publication,
+    "book": Book,
+    "talk": Talk,
+    "download": Download,
 }
 
 

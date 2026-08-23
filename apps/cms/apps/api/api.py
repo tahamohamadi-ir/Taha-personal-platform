@@ -9,7 +9,9 @@ for in-process and optional build-time ``CMS_API_BASE`` consumers only.
 
 import re
 from datetime import date, datetime
+from pathlib import PurePosixPath
 
+from django.http import FileResponse
 from ninja import Field, NinjaAPI, Schema
 from ninja.errors import HttpError
 from ninja.pagination import PageNumberPagination, paginate
@@ -19,6 +21,8 @@ from apps.content.html_sanitize import sanitize_html
 from apps.content.models import (
     Article,
     ArticleSlugRedirect,
+    Book,
+    Download,
     Landing,
     Profile,
     Project,
@@ -26,6 +30,7 @@ from apps.content.models import (
     ResearchStatement,
     ResearchTopic,
     Series,
+    Talk,
     TopicTag,
 )
 from apps.media.models import Media
@@ -675,7 +680,7 @@ def _get_public_project(locale: str, slug: str) -> Project:
 
 
 class PublicationListOut(Schema):
-    """Public publication list card (minimal P5 core)."""
+    """Public publication list card (P5 core + P8 type/stage)."""
 
     locale: str
     slug: str
@@ -685,20 +690,154 @@ class PublicationListOut(Schema):
     date: date | None
     doi: str
     license: str
+    publication_type: str
+    academic_stage: str
+    access_state: str
     published_at: datetime | None
     updated_at: datetime | None
 
 
 class PublicationDetailOut(PublicationListOut):
-    """Public publication detail with citation gate."""
+    """Public publication detail with citation and access gates."""
 
     url: str
     pdf_url: str
+    abstract: str
+    isbn: str
+    preprint_url: str
+    code_url: str
+    dataset_url: str
+    accessibility_notes: str
     citation_count: int | None
+    citation_text: str | None
+    pdf: dict | None = None
+
+    @staticmethod
+    def resolve_url(obj: Publication) -> str:
+        return obj.public_external_url()
+
+    @staticmethod
+    def resolve_pdf_url(obj: Publication) -> str:
+        return obj.public_pdf_url()
 
     @staticmethod
     def resolve_citation_count(obj: Publication) -> int | None:
         return obj.public_citation_count()
+
+    @staticmethod
+    def resolve_citation_text(obj: Publication) -> str | None:
+        return obj.public_citation_text()
+
+    @staticmethod
+    def resolve_pdf(obj: Publication, context) -> dict | None:
+        if not obj.allows_public_file():
+            return None
+        request = context.get("request") if context else None
+        return public_media_ref(obj.pdf_media, request, locale=obj.locale)
+
+
+class BookListOut(Schema):
+    locale: str
+    slug: str
+    title: str
+    authors: str
+    isbn: str
+    publisher: str
+    publication_date: date | None
+    license: str
+    access_state: str
+    published_at: datetime | None
+    updated_at: datetime | None
+
+
+class BookDetailOut(BookListOut):
+    description: str
+    url: str
+    accessibility_notes: str
+    cover: dict | None = None
+
+    @staticmethod
+    def resolve_cover(obj: Book, context) -> dict | None:
+        if not obj.allows_public_file():
+            return None
+        request = context.get("request") if context else None
+        return public_media_ref(obj.cover_media, request, locale=obj.locale)
+
+
+class TalkListOut(Schema):
+    locale: str
+    slug: str
+    title: str
+    speakers: str
+    event_name: str
+    event_date: date | None
+    location: str
+    license: str
+    access_state: str
+    published_at: datetime | None
+    updated_at: datetime | None
+
+
+class TalkDetailOut(TalkListOut):
+    abstract: str
+    video_url: str
+    slides_url: str
+    accessibility_notes: str
+    slides: dict | None = None
+
+    @staticmethod
+    def resolve_video_url(obj: Talk) -> str:
+        return obj.public_video_url()
+
+    @staticmethod
+    def resolve_slides_url(obj: Talk) -> str:
+        return obj.public_slides_url()
+
+    @staticmethod
+    def resolve_slides(obj: Talk, context) -> dict | None:
+        if not obj.allows_public_file():
+            return None
+        request = context.get("request") if context else None
+        return public_media_ref(obj.slides_media, request, locale=obj.locale)
+
+
+class DownloadListOut(Schema):
+    locale: str
+    slug: str
+    title: str
+    description: str
+    download_type: str
+    language: str
+    license: str
+    access_state: str
+    published_at: datetime | None
+    updated_at: datetime | None
+
+
+class DownloadDetailOut(DownloadListOut):
+    accessibility_notes: str
+    file: dict | None = None
+    mime: str | None = None
+    size_bytes: int | None = None
+
+    @staticmethod
+    def resolve_file(obj: Download, context) -> dict | None:
+        if not obj.public_media_is_downloadable():
+            return None
+        request = context.get("request") if context else None
+        return public_media_ref(obj.media, request, locale=obj.locale)
+
+    @staticmethod
+    def resolve_mime(obj: Download) -> str | None:
+        if not obj.public_media_is_downloadable():
+            return None
+        return obj.media.mime or None
+
+    @staticmethod
+    def resolve_size_bytes(obj: Download) -> int | None:
+        if not obj.public_media_is_downloadable():
+            return None
+        return obj.media.size
 
 
 @api.get(
@@ -840,8 +979,142 @@ def list_research_publications(request, locale: str):
 )
 def get_research_publication(request, locale: str, slug: str) -> Publication:
     publication = (
-        Publication.objects.public().filter(locale=locale, slug=slug).first()
+        Publication.objects.public()
+        .filter(locale=locale, slug=slug)
+        .select_related("pdf_media")
+        .first()
     )
     if publication is None:
         raise HttpError(404, "publication not found")
     return publication
+
+
+@api.get(
+    "/publications/{locale}",
+    response=list[PublicationListOut],
+    summary="List published publications for a locale (paginated)",
+)
+@paginate(PageNumberPagination, page_size=10)
+def list_publications(request, locale: str):
+    return (
+        Publication.objects.public()
+        .filter(locale=locale)
+        .order_by("-date", "slug")
+    )
+
+
+@api.get(
+    "/publications/{locale}/{slug}",
+    response=PublicationDetailOut,
+    summary="Get one published publication by slug (canonical)",
+)
+def get_publication(request, locale: str, slug: str) -> Publication:
+    return get_research_publication(request, locale, slug)
+
+
+@api.get(
+    "/books/{locale}",
+    response=list[BookListOut],
+    summary="List published books for a locale (paginated)",
+)
+@paginate(PageNumberPagination, page_size=10)
+def list_books(request, locale: str):
+    return Book.objects.public().filter(locale=locale).order_by("-publication_date", "slug")
+
+
+@api.get(
+    "/books/{locale}/{slug}",
+    response=BookDetailOut,
+    summary="Get one published book by slug",
+)
+def get_book(request, locale: str, slug: str) -> Book:
+    book = (
+        Book.objects.public()
+        .filter(locale=locale, slug=slug)
+        .select_related("cover_media")
+        .first()
+    )
+    if book is None:
+        raise HttpError(404, "book not found")
+    return book
+
+
+@api.get(
+    "/talks/{locale}",
+    response=list[TalkListOut],
+    summary="List published talks for a locale (paginated)",
+)
+@paginate(PageNumberPagination, page_size=10)
+def list_talks(request, locale: str):
+    return Talk.objects.public().filter(locale=locale).order_by("-event_date", "slug")
+
+
+@api.get(
+    "/talks/{locale}/{slug}",
+    response=TalkDetailOut,
+    summary="Get one published talk by slug",
+)
+def get_talk(request, locale: str, slug: str) -> Talk:
+    talk = (
+        Talk.objects.public()
+        .filter(locale=locale, slug=slug)
+        .select_related("slides_media")
+        .first()
+    )
+    if talk is None:
+        raise HttpError(404, "talk not found")
+    return talk
+
+
+@api.get(
+    "/downloads/{locale}",
+    response=list[DownloadListOut],
+    summary="List published downloads for a locale (paginated)",
+)
+@paginate(PageNumberPagination, page_size=10)
+def list_downloads(request, locale: str):
+    return Download.objects.public().filter(locale=locale).order_by("-published_at", "slug")
+
+
+@api.get(
+    "/downloads/{locale}/{slug}",
+    response=DownloadDetailOut,
+    summary="Get one published download by slug",
+)
+def get_download(request, locale: str, slug: str) -> Download:
+    download = (
+        Download.objects.public()
+        .filter(locale=locale, slug=slug)
+        .select_related("media")
+        .first()
+    )
+    if download is None:
+        raise HttpError(404, "download not found")
+    return download
+
+
+@api.get(
+    "/downloads/{locale}/{slug}/file",
+    summary="Stream a published public download file (active media only)",
+)
+def download_file(request, locale: str, slug: str):
+    download = (
+        Download.objects.public()
+        .filter(locale=locale, slug=slug)
+        .select_related("media")
+        .first()
+    )
+    if download is None or not download.public_media_is_downloadable():
+        raise HttpError(404, "download not found")
+    media = download.media
+    filename = PurePosixPath(media.file.name).name or "download"
+    response = FileResponse(
+        media.file.open("rb"),
+        as_attachment=True,
+        filename=filename,
+        content_type=media.mime or "application/octet-stream",
+    )
+    response["X-Content-Type-Options"] = "nosniff"
+    response["Cache-Control"] = "private, no-store"
+    response["X-Robots-Tag"] = "noindex, nofollow"
+    return response

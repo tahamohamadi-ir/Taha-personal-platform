@@ -460,6 +460,43 @@ class EvidenceVisibility(models.TextChoices):
     INTERNAL = "internal", "Internal"
 
 
+class AccessState(models.TextChoices):
+    """Public file/link access for P8 publications, books, talks, downloads."""
+
+    PUBLIC = "public", "Public"
+    RESTRICTED = "restricted", "Restricted"
+    METADATA_ONLY = "metadata_only", "Metadata only"
+
+
+class PublicationType(models.TextChoices):
+    """Bibliographic kind (orthogonal to CMS lifecycle status)."""
+
+    JOURNAL = "journal", "Journal article"
+    CONFERENCE = "conference", "Conference paper"
+    BOOK_CHAPTER = "book_chapter", "Book chapter"
+    MANUSCRIPT = "manuscript", "Manuscript"
+    OTHER = "other", "Other"
+
+
+class AcademicStage(models.TextChoices):
+    """Academic publication stage (orthogonal to CMS lifecycle status)."""
+
+    PREPRINT = "preprint", "Preprint"
+    IN_PRESS = "in_press", "In press"
+    PUBLISHED = "published", "Published"
+    OTHER = "other", "Other"
+
+
+class DownloadType(models.TextChoices):
+    """Typed download catalog categories (Media-backed)."""
+
+    PDF = "pdf", "PDF"
+    DATASET = "dataset", "Dataset"
+    CODE = "code", "Code archive"
+    ARCHIVE = "archive", "Archive"
+    OTHER = "other", "Other"
+
+
 class ResearchTopic(LocalizedContentMixin, LifecycleMixin):
     """Research domain / agenda area (distinct from blog TopicTag)."""
 
@@ -548,7 +585,7 @@ class ResearchStatement(LocalizedContentMixin, LifecycleMixin):
 
 
 class Publication(LocalizedContentMixin, LifecycleMixin):
-    """Minimal publication core (P5); presentation/export expands in P8."""
+    """Publication core (P5) extended for P8 abstract/identifiers/access."""
 
     authors = models.TextField(blank=True)
     venue = models.CharField(max_length=300, blank=True)
@@ -556,6 +593,38 @@ class Publication(LocalizedContentMixin, LifecycleMixin):
     doi = models.CharField(max_length=200, blank=True)
     url = models.URLField(blank=True)
     pdf_url = models.URLField(blank=True)
+    abstract = models.TextField(blank=True)
+    publication_type = models.CharField(
+        max_length=32,
+        choices=PublicationType.choices,
+        default=PublicationType.OTHER,
+    )
+    academic_stage = models.CharField(
+        max_length=32,
+        choices=AcademicStage.choices,
+        default=AcademicStage.OTHER,
+    )
+    isbn = models.CharField(max_length=32, blank=True)
+    preprint_url = models.URLField(blank=True)
+    code_url = models.URLField(blank=True)
+    dataset_url = models.URLField(blank=True)
+    access_state = models.CharField(
+        max_length=32,
+        choices=AccessState.choices,
+        default=AccessState.PUBLIC,
+    )
+    accessibility_notes = models.TextField(blank=True)
+    citation_text = models.TextField(
+        blank=True,
+        help_text="Editor-supplied citation export text only; never auto-fabricated.",
+    )
+    pdf_media = models.ForeignKey(
+        "media.Media",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
     license = models.CharField(
         max_length=32,
         choices=License.choices,
@@ -589,6 +658,9 @@ class Publication(LocalizedContentMixin, LifecycleMixin):
     def __str__(self) -> str:
         return f"{self.title} ({self.locale})"
 
+    def allows_public_file(self) -> bool:
+        return self.access_state == AccessState.PUBLIC
+
     def public_citation_count(self) -> int | None:
         """Return citation_count only when source + verified + public visibility."""
         if self.citation_visibility != EvidenceVisibility.PUBLIC:
@@ -598,6 +670,26 @@ class Publication(LocalizedContentMixin, LifecycleMixin):
         if self.citation_last_verified is None:
             return None
         return self.citation_count
+
+    def public_citation_text(self) -> str | None:
+        """Return citation text only when editor-supplied with authors + title."""
+        text = (self.citation_text or "").strip()
+        if not text:
+            return None
+        if not (self.title or "").strip():
+            return None
+        if not (self.authors or "").strip():
+            return None
+        return text
+
+    def public_pdf_url(self) -> str:
+        """External PDF URL only when access_state is public."""
+        if not self.allows_public_file():
+            return ""
+        return (self.pdf_url or "").strip()
+
+    def public_external_url(self) -> str:
+        return (self.url or "").strip()
 
 
 class Project(LocalizedContentMixin, LifecycleMixin):
@@ -968,6 +1060,182 @@ class ProjectFunding(models.Model):
 
     def __str__(self) -> str:
         return self.funder
+
+
+class Book(LocalizedContentMixin, LifecycleMixin):
+    """Typed book catalog entity (P8)."""
+
+    authors = models.TextField(blank=True)
+    isbn = models.CharField(max_length=32, blank=True)
+    publisher = models.CharField(max_length=300, blank=True)
+    publication_date = models.DateField(null=True, blank=True)
+    description = models.TextField(blank=True)
+    url = models.URLField(blank=True)
+    license = models.CharField(
+        max_length=32,
+        choices=License.choices,
+        default=License.ALL_RIGHTS_RESERVED,
+    )
+    access_state = models.CharField(
+        max_length=32,
+        choices=AccessState.choices,
+        default=AccessState.METADATA_ONLY,
+    )
+    accessibility_notes = models.TextField(blank=True)
+    cover_media = models.ForeignKey(
+        "media.Media",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+
+    class Meta:
+        db_table = "content_book"
+        ordering = ["locale", "slug"]
+        indexes = [
+            models.Index(
+                fields=["locale", "slug", "status"],
+                name="book_loc_slug_st_idx",
+            ),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["locale", "slug"],
+                name="content_book_unique_locale_slug",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.title} ({self.locale})"
+
+    def allows_public_file(self) -> bool:
+        return self.access_state == AccessState.PUBLIC
+
+
+class Talk(LocalizedContentMixin, LifecycleMixin):
+    """Typed talk / presentation catalog entity (P8)."""
+
+    speakers = models.TextField(blank=True)
+    event_name = models.CharField(max_length=300, blank=True)
+    event_date = models.DateField(null=True, blank=True)
+    location = models.CharField(max_length=300, blank=True)
+    abstract = models.TextField(blank=True)
+    video_url = models.URLField(blank=True)
+    slides_url = models.URLField(blank=True)
+    license = models.CharField(
+        max_length=32,
+        choices=License.choices,
+        default=License.CC_BY_NC_4,
+    )
+    access_state = models.CharField(
+        max_length=32,
+        choices=AccessState.choices,
+        default=AccessState.PUBLIC,
+    )
+    accessibility_notes = models.TextField(blank=True)
+    slides_media = models.ForeignKey(
+        "media.Media",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+
+    class Meta:
+        db_table = "content_talk"
+        ordering = ["locale", "slug"]
+        indexes = [
+            models.Index(
+                fields=["locale", "slug", "status"],
+                name="talk_loc_slug_st_idx",
+            ),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["locale", "slug"],
+                name="content_talk_unique_locale_slug",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.title} ({self.locale})"
+
+    def allows_public_file(self) -> bool:
+        return self.access_state == AccessState.PUBLIC
+
+    def public_video_url(self) -> str:
+        if not self.allows_public_file():
+            return ""
+        return (self.video_url or "").strip()
+
+    def public_slides_url(self) -> str:
+        if not self.allows_public_file():
+            return ""
+        return (self.slides_url or "").strip()
+
+
+class Download(LocalizedContentMixin, LifecycleMixin):
+    """Media-backed download catalog entry (P8) — never a bare external URL."""
+
+    description = models.TextField(blank=True)
+    media = models.ForeignKey(
+        "media.Media",
+        on_delete=models.PROTECT,
+        related_name="+",
+    )
+    download_type = models.CharField(
+        max_length=32,
+        choices=DownloadType.choices,
+        default=DownloadType.OTHER,
+    )
+    language = models.CharField(
+        max_length=16,
+        blank=True,
+        help_text="Language of the file contents (fa/en/…), not CMS locale identity.",
+    )
+    access_state = models.CharField(
+        max_length=32,
+        choices=AccessState.choices,
+        default=AccessState.PUBLIC,
+    )
+    accessibility_notes = models.TextField(blank=True)
+    license = models.CharField(
+        max_length=32,
+        choices=License.choices,
+        default=License.ALL_RIGHTS_RESERVED,
+    )
+
+    class Meta:
+        db_table = "content_download"
+        ordering = ["locale", "slug"]
+        indexes = [
+            models.Index(
+                fields=["locale", "slug", "status"],
+                name="download_loc_slug_st_idx",
+            ),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["locale", "slug"],
+                name="content_download_unique_locale_slug",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.title} ({self.locale})"
+
+    def allows_public_file(self) -> bool:
+        return self.access_state == AccessState.PUBLIC
+
+    def public_media_is_downloadable(self) -> bool:
+        media = self.media
+        return bool(
+            self.allows_public_file()
+            and media is not None
+            and media.is_active
+            and media.file
+        )
 
 
 class ContentRevision(models.Model):
