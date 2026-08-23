@@ -250,11 +250,11 @@
   - بر اساس جدول «Suggested ledger mapping» در فایل مشکلات؛ KI/DEBT/RISK/DEFER واقعی ساخته شود تا این یافته‌ها گم نشوند.
   - شواهد: LOG-0224 (KI-0002..0006، DEBT-0008..0015، DEFER-0033..0037، RISK-0014؛ مجوز مالک: attestation گفت‌وگوی 2026-08-23)
 
-- [ ] **E1 — تعریف توکن‌های گمشده در `global.css` + هم‌راستایی contract/design.md (رفع P1/P14/P2)** — `P0` · `agent` · `M`
+- [x] **E1 — تعریف توکن‌های گمشده در `global.css` + هم‌راستایی contract/design.md (رفع P1/P14/P2)** — `P0` · `agent` · `M`
   - تعریف: `--space-1..10, --space-section, --space-gutter, --measure-prose/page, --text-display(+scale), --font-display/body, --color-ink-muted/tertiary, --color-accent, --color-surface-raised` (+ سایه/مدت/ایزینگ/radius مطابق جدول contract).
   - سپس: `DESIGN-CONTRACT.md` §2 دقیقاً با بیلد sync شود؛ design.md به همین نام‌ها alias شود (سه دیکشنری ممنوع).
   - پذیرش: اسکریپت Compare-Object used-vs-defined در فایل مشکلات → خروجی خالی؛ اسکرین‌شات قبل/بعد از about detail routes؛ `npm run check/build` PASS.
-  - شواهد: LOG-____
+  - شواهد: LOG-0228 (undefined: 23→0؛ `@theme static`؛ شواهد بصری قبل/بعد در `docs/status/evidence/e1-token-foundation/`؛ سهم design.md به E8 موکول شد)
 
 - [ ] **E2 — اصلاحات کنتراست AA (P3/P4/P5)** — `P0` · `agent` · `S` · deps: E1
   - hover برند تیره‌تر (#0a6a62 یا #076e66)، توکن جدید control-border (#748682/#7f918d) جدا از hairline کارت، ink-secondary → #616e74.
