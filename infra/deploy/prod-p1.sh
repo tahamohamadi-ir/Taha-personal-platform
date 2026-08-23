@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# SUPERSEDED — staging-era script (P0A-09); staging decommissioned (ADR-0025)
+# and public HTML now served by the `web` container (LOG-0216). References to
+# staging.tahamohamadi.ir below are historical. Kept for reference only.
+#
 # Stage the static P1 artifact on staging.tahamohamadi.ir (P0A-09).
 # Run with root/sudo. Production blocks in the Caddyfile are untouched.
 #

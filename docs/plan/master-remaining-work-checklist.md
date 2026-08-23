@@ -92,11 +92,11 @@
   - پذیرش: لینک دانلود در `/{locale}/research/statement/` ظاهر شود؛ headerهای nosniff/no-store در probe.
   - شواهد: LOG-____
 
-- [ ] **A8 — Reading time واقعی دوزبانه (F1)** — `P2` · `agent` · `M` · deps: —
+- [x] **A8 — Reading time واقعی دوزبانه (F1)** — `P2` · `agent` · `M` · deps: —
   - امروز مدل با ~200wpm یکنواخت روی save محاسبه می‌کند (`apps/cms/apps/content/models.py:110`)؛ هدف: fa=180/en=230 wpm طبق `custom-admin-rebuild-fa.md` §14.1.
   - دامنه: `models.py` + command backfill `recompute_reading_time` + تست‌ها؛ نمایش وب بدون تغییر.
   - پذیرش: `uv run pytest -q tests/test_content*` PASS؛ backfill روی نمونه عدد موردانتظار؛ migration در صورت نیاز additive.
-  - شواهد: LOG-____
+  - شواهد: LOG-0222 (fa=180/en=230 + `recompute_reading_time`؛ 378 pytest PASS؛ بک‌فیل پروداکشن یک گام owner در پنجره‌ی attended بعدی)
 
 - [ ] **A9 — TOC + breadcrumb برای مقالات بلند (F6)** — `P3` · `agent` · `M` · deps: —
   - دامنه: تولید TOC سمت build از h2/h3 بدینه‌ی sanitize‌شده در `writing/[slug].astro` + Breadcrumbs موجود؛ no-JS.
@@ -164,7 +164,7 @@
 - [ ] **B11 — پوشش usage registry برای PKهای media داخل JSON بلوک‌های composition** — `P2` · `agent` · `S` · deps: —
   - `MEDIA_REFERENCE_FIELDS` فقط FKها را می‌شناسد؛ settings بلوک‌ها (media/mediaList) هم باید در orphan scan بیایند تا حذف اشتباه ممکن نشود.
   - پذیرش: pytest orphan که بلوک دارای media را usage می‌شمارد.
-  - شواهد: LOG-____
+  - شواهد: LOG-0223 (`MEDIA_JSON_SETTINGS_KEYS`/`mediaIds` scan + orphan endpoint test؛ 380 pytest PASS)
 
 - [ ] **B12 — یکپارچه‌سازی preview در SPA** — `P3` · `agent` · `S` · deps: —
   - دکمه‌ی staff preview + کپی share-link (HMAC موجود) در نوار ادیتور همه‌ی entity ها؛ راهنمای TTL ۱۵ دقیقه در tooltip.
@@ -177,7 +177,7 @@
   - زنجیره موجود: transition به published ⇒ `invoke_static_rebuild()` (apps/api/admin_content.py:902) ⇒ POST HMAC به `/rebuild-trigger/` ⇒ `rebuild-web.sh` (VPS `REBUILD_TRIGGER_ENABLED=true`).
   - کار: یک سناریوی آزمایشی end-to-end (مقاله‌ی آزمایشی publish → مشاهده‌ی rebuild موفق → unpublish/archive) + ثبت زمان‌ها در WORK_LOG + افزودن assertion به smoke (وجود متغیر `cms-build-origin=cms`).
   - پذیرش: WORK_LOG با timestampهای rebuild و لینک لاگ؛ هیچ SSH در مسیر.
-  - شواهد: LOG-____
+  - شواهد: PARTIAL — آماده‌سازی DONE (LOG-0225): فلگ `--expect-cms-origin` در smoke.sh + چک‌لیست `docs/plan/manual-test-checklists/publish-rebuild-chain-c1.md`؛ اجرای زنده‌ی سناریو منتشر/بازگشت مقاله‌ی آزمایشی توسط مالک.
 
 - [ ] **C2 — سلف‌سرویس کردن عملیات روتین در `cd.yml` + Environment protection** — `P1` · `agent` · `M` · deps: —
   - همه‌ی عملیات (migrate، rebuild-web، نصب تایمر، image pull) از طریق `workflow_dispatch` موجود + افزودن GitHub Environment `production` با required reviewer تا تأیید مالک در UI باشد نه ترمینال.
@@ -197,7 +197,7 @@
 - [ ] **C5 — پاک‌سازی اسکریپت‌های کهنه infra** — `P2` · `agent` · `S` · deps: —
   - pinهای کهنه `b369885` در `prod-cms-reset-and-migrate.sh` و `run-prod-cms-migrate.ps1`؛ انتظارات `/blog/` 200 در `smoke-blog.sh` (الان redirect دائمی است)؛ headerهای staging-era در `prod-p1.sh`؛ علامت SUPERSEDED/انتقال به پوشه‌ی reference برای `deploy.sh`/`rollback.sh`/`stage-p1.sh`/`rebuild-static.sh`/`caddy-apply.sh`.
   - پذیرش: `rg -n "b369885|staging.tahamohamadi" infra/` → فقط موارد علامت‌خورده‌ی historical؛ smokeها سبز.
-  - شواهد: LOG-____
+  - شواهد: LOG-0224 (پین‌ها → پارامتر الزامی؛ بنر SUPERSEDED روی deploy/rollback/stage-p1/prod-p1/rebuild-static؛ static-site.caddy تاریخی؛ smoke-blog بازنویسی‌شده و روی پروداکشن PASS)
 
 - [ ] **C6 — Runbook «zero-SSH operations»** — `P1` · `agent` · `S` · deps: C2,C4
   - بخش جدید در `docs/governance/DEPLOY_RUNBOOK.md`: جدول عملیات روتین ↔ dispatch/trigger معادل؛ فهرست مواردی که SSH مشروع است (اضطرار/سوییچ Caddy/recovery).
@@ -246,9 +246,9 @@
 
 # WS-E — نواقص UI عمومی (P1–P19 از DESIGN-UI-CURRENT-PROBLEMS)
 
-- [ ] **E0 — مجوز مالک + تخصیص ID دفتری برای P1–P19** — `P0` · `owner→agent` · `S`
+- [x] **E0 — مجوز مالک + تخصیص ID دفتری برای P1–P19** — `P0` · `owner→agent` · `S`
   - بر اساس جدول «Suggested ledger mapping» در فایل مشکلات؛ KI/DEBT/RISK/DEFER واقعی ساخته شود تا این یافته‌ها گم نشوند.
-  - شواهد: LOG-____
+  - شواهد: LOG-0224 (KI-0002..0006، DEBT-0008..0015، DEFER-0033..0037، RISK-0014؛ مجوز مالک: attestation گفت‌وگوی 2026-08-23)
 
 - [ ] **E1 — تعریف توکن‌های گمشده در `global.css` + هم‌راستایی contract/design.md (رفع P1/P14/P2)** — `P0` · `agent` · `M`
   - تعریف: `--space-1..10, --space-section, --space-gutter, --measure-prose/page, --text-display(+scale), --font-display/body, --color-ink-muted/tertiary, --color-accent, --color-surface-raised` (+ سایه/مدت/ایزینگ/radius مطابق جدول contract).
@@ -277,7 +277,7 @@
 - [ ] **E6 — جستجو: noscript `/blog/` → `/writing/` (P12) و پوسته‌سازی Pagefind (P17)** — `P1(P12)/P2(P17)` · `agent` · `S`
   - اصلاح href در `pages/{en,fa}/search/index.astro`؛ سپس themeکردن CSS صفحهfind-ui با توکن‌ها (بدون fork سنگین).
   - پذیرش: `rg "/blog/" apps/web/src/pages/*/search` → بدون نتیجه؛ اسکرین‌شات UI جستجو هم‌خوان با دیزاین.
-  - شواهد: LOG-____
+  - شواهد: PARTIAL — P12 DONE (LOG-0221؛ KI-0006 pending deploy)؛ P17 (پوسته‌ی Pagefind) باقی است.
 
 - [ ] **E7 — اعتبارسنجی override رنگ برند CMS (P11)** — `P1` · `agent` · `M` · deps: E1
   - در بیلد Astro: محاسبه‌ی کنتراست primaryColor با سفید/canvas؛ زیر آستانه ⇒ fail-build یا clamp به نزدیک‌ترین مقدار مجاز (تصمیم در Task Spec) + مشتق emphasis/soft از brand تا hover هم تغییر کند.
@@ -350,14 +350,14 @@
 - [ ] **F10 — پاک‌سازی ارجاع‌های Wagtail و کامنت‌های کهنه‌ی ریپو** — `P2` · `agent` · `S`
   - `infra/cms/Dockerfile.cms` (هدر Wagtail 7.4.2)، `.env.example` (`WAGTAILADMIN_BASE_URL`)، کامنت ci-admin-frontend.yml («not yet served»)، هدر Caddyfile (edge default قدیمی).
   - پذیرش: `rg -ni wagtail infra/ .github/` → فقط موارد تاریخی علامت‌خورده.
-  - شواهد: LOG-____
+  - شواهد: LOG-0224 (Dockerfile/.env.example/ci-admin-frontend/Caddyfile edge/README پاک‌سازی؛ فقط مارکرهای historical باقی)
 
 - [ ] **F11 — تصمیم DEBT-0002: حفظ tabs با بهبود find-in-page (sticky toolbar + show-all toggle) یا ماندن روی mitigated** — `P3` · `owner→agent` · `S/M`
   - شواهد: LOG-____
 
 - [ ] **F12 — همگام‌سازی checkboxهای کهنه‌ی Task-list §5/§19** — `P3` · `agent` · `S`
   - مواردی مثل sitemap/robots (P1-09) و P1-13 که عملاً انجام شده ولی تیک ندارند، با ارجاع LOG تیک بخورند تا دوباره‌کاری القا نشود.
-  - شواهد: LOG-____
+  - شواهد: LOG-0224 (P0A-06/G0-04/P1-09 robots+sitemap؛ P1-13 سلامت استک و بکاپ؛ آیتم پنجره‌ی ارتباطی P1-13 عمداً بدون تیک ماند)
 
 # WS-G — فازهای آینده (صف‌شده، شروع gated)
 

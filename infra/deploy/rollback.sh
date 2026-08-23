@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# SUPERSEDED — static-symlink era (ADR-0017). Public HTML is now served by the
+# `web` nginx container behind Compose Caddy (LOG-0216); web rollback is a
+# previous image via cd.yml. Kept for reference only.
+#
 # Static P1 rollback — restore a previous release (ADR-0017).
 # Candidate script: review against the P0A-01 inventory before first use.
 #

@@ -3,7 +3,7 @@
 # production). Read-only; no SSH, no sudo.
 #
 # Usage:
-#   ./smoke.sh <BASE_URL> [--expect-noindex]
+#   ./smoke.sh <BASE_URL> [--expect-noindex] [--expect-cms-origin]
 #
 # Checks (one PASS|FAIL line each; non-zero exit on any FAIL):
 #   /                -> 200
@@ -14,11 +14,15 @@
 #   /sitemap.xml     -> 200
 #   /nonexistent-qa  -> 404
 #   --expect-noindex -> response header x-robots-tag on / contains noindex
+#   --expect-cms-origin -> <meta name="cms-build-origin" content="cms"> present
+#                         on /{locale}/cv/ (proves HTML came from a CMS rebuild,
+#                         not the offline snapshot — publish→rebuild chain, C1)
 
 set -euo pipefail
 
-BASE_URL="${1:?usage: smoke.sh <BASE_URL> [--expect-noindex]}"
+BASE_URL="${1:?usage: smoke.sh <BASE_URL> [--expect-noindex|--expect-cms-origin]}"
 FLAG="${2:-}"
+FLAG2="${3:-}"
 
 FAILURES=0
 
@@ -57,6 +61,23 @@ if [[ "$FLAG" == "--expect-noindex" ]]; then
     echo "FAIL noindex / (x-robots-tag header on / does not contain noindex)"
     FAILURES=$((FAILURES + 1))
   fi
+fi
+
+if [[ "$FLAG" == "--expect-cms-origin" || "$FLAG2" == "--expect-cms-origin" ]]; then
+  for path in /en/cv/ /fa/cv/; do
+    body="$(curl -s "${BASE_URL}${path}" || true)"
+    if grep -q '<meta name="cms-build-origin" content="cms"' <<<"$body"; then
+      echo "PASS cms-build-origin=cms ${path}"
+    else
+      echo "FAIL cms-build-origin=cms ${path} (meta missing or not cms — snapshot build?)"
+      FAILURES=$((FAILURES + 1))
+    fi
+  done
+fi
+
+if [[ -n "$FLAG2" && "$FLAG2" != "--expect-cms-origin" && "$FLAG2" != "--expect-noindex" ]]; then
+  echo "unknown flag ${FLAG2}"
+  exit 2
 fi
 
 exit "$FAILURES"

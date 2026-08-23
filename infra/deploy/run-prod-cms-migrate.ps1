@@ -1,10 +1,19 @@
 # Interactive production CMS update + migrate. Opens SSH with sudo password prompt.
+# SUPERSEDED for routine use — prefer the GitHub Actions workflow_dispatch
+# CMS-migrate job (cd-cms-migrate.sh). Kept for incident-only SSH use.
+#
+# Usage: .\run-prod-cms-migrate.ps1 -Image ghcr.io/tahamohamadi-ir/taha-cms:<sha>
+# Get <sha> from the latest 'CMS image' workflow run on main. No default pin:
+# a stale default (b369885) previously skipped migrations.
+param(
+    [Parameter(Mandatory = $true)]
+    [string]$Image
+)
 $ErrorActionPreference = "Stop"
 $LogFile = Join-Path $PSScriptRoot "..\..\cms-deploy-output.log"
 $Key = Join-Path $env:USERPROFILE ".ssh\taha-platform-ops"
 $Remote = "deploy@85.192.29.196"
 $Port = 2222
-$Image = "ghcr.io/tahamohamadi-ir/taha-cms:b369885"
 
 Write-Host "Production CMS update + migrate"
 Write-Host "Enter VPS sudo password when prompted."

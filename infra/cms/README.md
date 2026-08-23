@@ -139,7 +139,7 @@ bash infra/deploy/update-cms.sh
 # (before file_server). Required handles: /admin* /static* /health/
 # Do not use handle /health* — it would steal /health.json.
 # Then: sudo caddy validate && sudo systemctl reload caddy
-# Evidence 2026-08-16: without /static*, Wagtail CSS 404s on the Astro 404 page.
+# Evidence 2026-08-16 (historical): without /static*, admin CSS 404s on the Astro 404 page.
 bash infra/deploy/smoke-cms.sh https://tahamohamadi.ir
 
 # Password must be at least 12 characters (do not bypass validation).
@@ -149,25 +149,32 @@ docker compose -f infra/cms/docker-compose.cms.yml exec cms python manage.py cre
 docker compose -f infra/cms/docker-compose.cms.yml exec cms python manage.py seed_site_content
 # Refresh existing canonical slugs: add --force
 
-## Edit content in Wagtail admin
+## Edit content in the admin
 
 Public pages are **Astro static**; CMS stores editorial data exposed via `/api/*`.
-Wagtail **Pages** (default “Welcome…”) are not used for the public site.
 
-After login at `/admin/`, open **Site content** in the sidebar:
+Content is edited in the React admin SPA at `/admin/` (ADR-0026; ADM-1 cutover,
+DEFER-0023 CLOSED). Django staff HTML at `/staff/` remains for LOGIN_URL, draft
+preview and MFA fallback (Wagtail removed — DEBT-0003 CLOSED / LOG-0193;
+"Wagtail admin" in older runbooks/logs is historical).
 
-| Menu item | What it edits |
+After login at `/admin/`, edit:
+
+| Area | What it edits |
 |-----------|----------------|
-| Articles | Blog / writing (`/en/blog/`, `/fa/blog/`) |
+| Articles | Blog / writing (`/{locale}/writing/`; `/{locale}/blog/` redirects permanently) |
 | Research topics, statements, publications, projects | Research section |
 | Landing / Profiles | CMS copies of hero/about (static rebuild required) |
 | Case studies | P6 project depth pages |
+| Publications / Books / Talks / Downloads | P8 catalog routes |
 
-Set **Status = Published** and **Published at** in the past, then rebuild public HTML:
-`rebuild-web.sh` after Caddy web cutover (ADR-0027 Slice 1+), or `rebuild-static.sh`
-until cutover / during transition.
+Set **Status = Published** and **Published at** in the past. Publishing triggers
+the HMAC rebuild hook (`invoke_static_rebuild` → `/rebuild-trigger/` →
+`rebuild-web.sh`) when enabled; otherwise rebuild public HTML manually with
+`infra/deploy/rebuild-web.sh` (post-cutover canonical; `rebuild-static.sh` is
+superseded — see its header).
 
-Upload images via **Images** (Wagtail library) and attach to articles as needed.
+Upload files via the **Media** library and attach to content as needed.
 
 ## Public `/api/` and `/media/` (DEFER-0017)
 
