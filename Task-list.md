@@ -68,7 +68,21 @@
 - [ ] **Infra #9 timers not enabled** `taha-publish-scheduled-content.timer:5` + `taha-platform-backup.timer:5` — require owner `install-*timer.sh`, never auto-enabled
 
 **P2 — latent:**
-- [ ] B7 `primaryColor` 404→null, B8 `research-graph` 404→null hidden, Infra #3 `pull_policy:missing`, #4 `nginx:alpine` unpinned, #5 `/var/www/html` mount, Tests P1 gaps (Pagefind, sitemap, health)
+- [x] B7 `primaryColor` 404→null hidden — `siteSettings.ts:42` now throws when `isCmsOriginBuild()` *(LOG-0238)*
+- [x] B8 `research-graph` 404→null silently dropped — `research-graph.ts:86` throws on missing topic/project detail when CMS build *(LOG-0238)*
+- [x] Infra #3 `pull_policy:missing` + mutable `:main` — compose now requires `CMS_IMAGE`/`WEB_IMAGE` (`:?`) + `pull_policy: always` *(LOG-0238)*
+- [x] #4 `nginx:alpine` unpinned — pinned `nginx:1.27-alpine@sha256:65645c...` *(LOG-0238)*
+- [x] #5 `/var/www/html` mount — `create_host_path: false` + `caddy-compose-reload.sh` guard *(LOG-0238)*
+- [x] Tests P1 gaps — `qa/pagefind.spec.mjs` + `qa/sitemap.spec.mjs` + `qa/health.spec.mjs` + CI steps + smoke `/health/` vs `/health.json` distinction *(LOG-0238)*
+
+## P9/P10/P11 scaffold (2026-08-23, LOG-0238)
+
+- [x] **P9-01/02 Course + CreativeWork contracts** — `content.0015_p9_courses_creativeworks` (Course: level/prerequisites/outcomes/format/language/availability/license/last_updated; CreativeWork: creator/role/date/license/access_state/rights/consent, no student PII); admin API `course`/`creative-work` entities; public API + Astro routes `/teaching/` (canonical, list+detail) and `/creative/` (list+detail), fa+en, honest-empty *(LOG-0238)*
+- [x] **P10-01 taxonomy governance** — `docs/governance/TAXONOMY_GOVERNANCE.md` (glossary/synonym/creation rules) + `content.0016` Collection model (curator/criteria/date, curation contract) *(LOG-0238)*
+- [x] **P11-01 AI entry gate** — ADR-0029 draft `docs/adr/0029-p10-p11-ai-gate.md` (threat model, no private ingest, owner-gated) *(LOG-0238)*
+- [ ] P10-03 FTS benchmark + P10-04 index lifecycle — deferred until content volume justifies (Pagefind browse fallback active)
+- [ ] P9-03 keyboard/captions QA for course/creative pages — deferred to content-population slice
+- [ ] **Prod migrate `content.0015/0016`** — owner attended `cd-cms-migrate` dispatch required (schema change; RISK-0012 path)
 
 ## Production cutover snapshot (2026-08-23, LOG-0235 — updated)
 
