@@ -1,4 +1,6 @@
 ---
+import Lightbox from "./Lightbox.astro";
+
 export interface StoryMedia {
   id: number;
   url: string;
@@ -70,6 +72,15 @@ function columnStyle(layout: string, ratio: string): string {
 }
 
 const { locale, story } = Astro.props;
+
+const needsLightbox = story.sections.some((section) =>
+  section.blocks.some((block) => {
+    if (block.blockType !== "figure" && block.blockType !== "gallery") return false;
+    const media = mediaOf(block.settings);
+    if (Array.isArray(media)) return media.some((m) => Boolean(m.url));
+    return Boolean(media?.url);
+  }),
+);
 ---
 
 {
@@ -121,7 +132,13 @@ const { locale, story } = Astro.props;
           if (block.blockType === "figure" && media && !Array.isArray(media)) {
             return (
               <figure>
-                <img src={media.url} alt={altFor(locale, media)} />
+                <a
+                  href={media.url}
+                  data-lightbox
+                  data-lightbox-alt={altFor(locale, media)}
+                >
+                  <img src={media.url} alt={altFor(locale, media)} />
+                </a>
                 {caption && <figcaption>{caption}</figcaption>}
               </figure>
             );
@@ -131,7 +148,13 @@ const { locale, story } = Astro.props;
               <div class="story-gallery">
                 {media.map((item: StoryMedia) => (
                   <figure>
-                    <img src={item.url} alt={altFor(locale, item)} />
+                    <a
+                      href={item.url}
+                      data-lightbox
+                      data-lightbox-alt={altFor(locale, item)}
+                    >
+                      <img src={item.url} alt={altFor(locale, item)} />
+                    </a>
                   </figure>
                 ))}
               </div>
@@ -299,6 +322,8 @@ const { locale, story } = Astro.props;
     </section>
   ))
 }
+
+{needsLightbox && <Lightbox />}
 
 <style>
   .story-section {

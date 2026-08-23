@@ -10,6 +10,26 @@
 
 # Work Log
 
+## LOG-0212 — 2026-08-22 — Wave 2: statement PDF, lightbox, CSP Report-Only demo embed
+
+- Outcome: Implemented Wave 2 on branch `feat/wave2-cms-web-addons` (worktree `.worktrees/feat-wave2-cms-web-addons`) from `origin/main`. (1) **DEFER-0019:** additive `statement_pdf` FK on `ResearchStatement` + migration `content.0013_researchstatement_statement_pdf`; public API projects via `public_media_ref` only when Media `is_active` (title/mime/size); admin `statementPdfId` MediaPicker + orphan registry; Astro `/fa|en/research/statement/` download link. (2) **F7:** CaseStudyDetail/DiagramBlock render active screenshot/diagram images; shared native `<dialog>` lightbox (~2KB inline JS) with focus trap/Esc/restore/`prefers-reduced-motion`; StoryBody figure/gallery same pattern; no-JS = direct file links. (3) **DEFER-0021 PARTIAL:** `Content-Security-Policy-Report-Only` on `infra/caddy/Caddyfile` + `Caddyfile.compose` (script/style `'unsafe-inline'` so JSON-LD/About do not falsely block on future enforce); click-to-load sandboxed iframe gated by empty `demoEmbedAllowlist.ts` placeholders — no invented demo URLs; seed data has no public demos. Enforce mode left as documented follow-up. Did **not** set `CMS_CD_AUTO_MIGRATE`. Uncommitted for parent review.
+- Why: Close statement PDF deferral; ship progressive-enhancement gallery UX; start CSP/demo embed safely.
+- Scope / files: `apps/cms/apps/content/models.py`, `migrations/0013_*`, `apps/media/public_urls.py`, `apps/api/api.py`, `admin_content.py`, `admin_media.py`, `tests/test_statement_pdf.py`, `apps/web` statement pages + CaseStudyDetail/DiagramBlock/AvailabilityBar/DemoEmbed/Lightbox/StoryBody + `demoEmbedAllowlist.ts`, `infra/caddy/Caddyfile*`, docs/plan + ledgers, Task-list F7.
+- Commands or actions actually performed: isolated worktree from `origin/main`; targeted pytest/ruff/web check+build (see verification).
+- Verification actually run and result:
+  - `uv run pytest tests/test_statement_pdf.py tests/test_media_image_rewire.py -q` → **9 passed**
+  - `uv run ruff check .` (apps/cms) → **All checks passed**
+  - `npm run check` (apps/web) → **0 errors**
+  - `npm run build` (apps/web) → **PASS** (40 pages)
+- Deferred or risk IDs: `DEFER-0019` **CLOSED** (repo; prod migrate+upload pending); `DEFER-0021` **PARTIAL** (Report-Only + click-to-load UI; enforce + owner allowlist open); Wave 3+ not started.
+- Rollback / recovery: reverse `0013`; remove CSP Report-Only header; remove lightbox/DemoEmbed; prior image.
+- Owner migrate (attended; never `CMS_CD_AUTO_MIGRATE`):
+  1. `dumpdata` + DB backup
+  2. Attended migrate through `content.0013` (workflow_dispatch `migrate_cms=true` or VPS)
+  3. Reload Caddy (Compose `edge` or host) for CSP Report-Only
+  4. Admin: upload PDF → attach on research-statement → activate Media → rebuild web
+  5. Confirm demo hosts before expanding allowlist / `frame-src` and before CSP enforce
+
 ## LOG-0210 — 2026-08-22 — Compose Caddy edge cutover PASS (525 rollback + ACME seed)
 
 - Outcome: Owner-attended Caddy cutover on VPS `deploy@85.192.29.196:2222` (SSH key `taha-nls1-production`). **First attempt:** host Caddy disabled → Compose `caddy` started without seeded ACME data → public TLS **HTTP 525** (Cloudflare origin cert mismatch). **Rollback:** Compose `caddy` stopped → host systemd Caddy re-enabled → `smoke-cms.sh` **PASS**. **Recovery:** copied host `/var/lib/caddy` into Docker volume `taha-cms_caddy_data`; host Caddy disabled again; Compose `caddy` restarted. **Second cutover PASS:** `curl -sI https://tahamohamadi.ir/` → **HTTP/2 200**; `smoke-cms.sh` → **PASS** (all checks). **Agent follow-up (same day):** VPS repo pulled to `ddd061d`; live `taha-cms-web-1` nginx still had old `try_files … /404.html` (not rebuilt after cutover). Ran `bash infra/deploy/rebuild-web.sh` → **PASS** (public smoke incl. `nonexistent-qa` **404**); live nginx now `try_files … =404`. `bash infra/deploy/smoke.sh https://tahamohamadi.ir` → **PASS** (all checks). Host Caddy **inactive/disabled**; `taha-cms-caddy-1` **Up** on **80/443**. Set GitHub repo variable **`CADDY_EDGE=compose`** via `gh`. Repo fix: Compose caddy healthcheck probes `:2019/config/` (avoids `:80` → HTTPS redirect TLS mismatch). Apt upgradable **3** phased packages; SSH **22+2222** (2222 canonical). **`DEFER-0031` CLOSED**; **`RISK-0013` CLOSED**; **`RISK-0005` CLOSED**; **`RISK-0006` CLOSED**. Did **not** set `CMS_CD_AUTO_MIGRATE`. **GOAL_COMPLETE=yes** for Slice 4 edge cutover gates.

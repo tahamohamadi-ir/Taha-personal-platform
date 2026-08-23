@@ -110,7 +110,11 @@ DETAIL_FIELD_MAPS: dict[str, dict[str, str]] = {
         "future_directions": "futureDirections",
         "story": "storyId",
     },
-    "research-statement": {"body": "body", "story": "storyId"},
+    "research-statement": {
+        "body": "body",
+        "statement_pdf": "statementPdfId",
+        "story": "storyId",
+    },
     "project": {
         "project_type": "projectType",
         "objective": "objective",
@@ -252,6 +256,15 @@ def _coerce_field_value(field, attr: str, key: str, value) -> object:
                     400,
                     "VALIDATION",
                     f"{key} must reference an image Media row.",
+                    fields={"fields": [key]},
+                )
+        if attr == "statement_pdf":
+            mime = getattr(related, "mime", "") or ""
+            if mime and mime != "application/pdf":
+                raise AdminError(
+                    400,
+                    "VALIDATION",
+                    f"{key} must reference a PDF Media row.",
                     fields={"fields": [key]},
                 )
         return related

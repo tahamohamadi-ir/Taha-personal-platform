@@ -1,0 +1,91 @@
+---
+import { isDemoEmbedAllowed } from "../../data/demoEmbedAllowlist";
+
+interface Props {
+  demoUrl: string;
+  locale: "en" | "fa";
+  demoLabel: string;
+}
+
+const { demoUrl, locale, demoLabel } = Astro.props;
+const canEmbed = isDemoEmbedAllowed(demoUrl);
+const loadLabel =
+  locale === "fa" ? `بارگذاری ${demoLabel}` : `Load ${demoLabel}`;
+const openLabel = locale === "fa" ? "باز کردن در تب جدید" : "Open in new tab";
+---
+
+{
+  canEmbed ? (
+    <div class="demo-embed" data-demo-embed>
+      <p class="demo-embed-actions">
+        <button type="button" class="demo-embed-load" data-demo-src={demoUrl}>
+          {loadLabel}
+        </button>
+        {" "}
+        <a href={demoUrl} rel="noopener noreferrer" target="_blank">
+          {openLabel}
+        </a>
+      </p>
+      <div class="demo-embed-frame" hidden></div>
+    </div>
+  ) : (
+    <a href={demoUrl} rel="noopener noreferrer">{demoUrl}</a>
+  )
+}
+
+{
+  canEmbed && (
+    <script is:inline>
+      (function () {
+        document.addEventListener("click", function (event) {
+          var btn = event.target && event.target.closest
+            ? event.target.closest("[data-demo-src]")
+            : null;
+          if (!btn) return;
+          var root = btn.closest("[data-demo-embed]");
+          if (!root) return;
+          var host = root.querySelector(".demo-embed-frame");
+          var src = btn.getAttribute("data-demo-src");
+          if (!host || !src || host.querySelector("iframe")) return;
+          var frame = document.createElement("iframe");
+          frame.src = src;
+          frame.title = "Demo";
+          frame.loading = "lazy";
+          frame.referrerPolicy = "no-referrer";
+          frame.setAttribute(
+            "sandbox",
+            "allow-scripts allow-same-origin allow-forms allow-popups"
+          );
+          frame.className = "demo-embed-iframe";
+          host.hidden = false;
+          host.appendChild(frame);
+          btn.disabled = true;
+        });
+      })();
+    </script>
+  )
+}
+
+<style>
+  .demo-embed-actions {
+    margin: 0.35rem 0;
+  }
+  .demo-embed-load {
+    font: inherit;
+    cursor: pointer;
+  }
+  .demo-embed-frame {
+    margin-top: 0.75rem;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-md, 0.25rem);
+    overflow: hidden;
+    aspect-ratio: 16 / 10;
+    background: var(--color-surface-muted, #f3f4f1);
+  }
+  .demo-embed-iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+</style>

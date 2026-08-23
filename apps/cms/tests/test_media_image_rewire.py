@@ -89,6 +89,7 @@ def test_media_reference_fields_cover_content_image_fks():
     assert ("content.Article", "featured_image") in MEDIA_REFERENCE_FIELDS
     assert ("content.ProjectDiagram", "diagram_image") in MEDIA_REFERENCE_FIELDS
     assert ("content.ProjectScreenshot", "screenshot_image") in MEDIA_REFERENCE_FIELDS
+    assert ("content.ResearchStatement", "statement_pdf") in MEDIA_REFERENCE_FIELDS
 
 
 @pytest.mark.django_db

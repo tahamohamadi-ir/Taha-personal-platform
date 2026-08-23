@@ -1,0 +1,141 @@
+---
+/**
+ * Native dialog lightbox (~2KB). Progressive enhancement:
+ * without JS, `a[data-lightbox]` remains a direct file link.
+ */
+---
+
+<dialog class="site-lightbox" id="site-lightbox" aria-label="Image preview">
+  <form method="dialog" class="site-lightbox-bar">
+    <button type="submit" class="site-lightbox-close" aria-label="Close">×</button>
+  </form>
+  <img class="site-lightbox-img" alt="" />
+</dialog>
+
+<script is:inline>
+(function () {
+  var dialog = document.getElementById("site-lightbox");
+  if (!dialog || typeof dialog.showModal !== "function") return;
+  var img = dialog.querySelector(".site-lightbox-img");
+  if (!img) return;
+  var lastFocus = null;
+  var reduceMotion =
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function focusables() {
+    return Array.prototype.slice.call(
+      dialog.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+    ).filter(function (el) {
+      return !el.hasAttribute("disabled") && el.offsetParent !== null;
+    });
+  }
+
+  function openFrom(anchor) {
+    var href = anchor.getAttribute("href");
+    if (!href) return;
+    lastFocus = document.activeElement;
+    img.src = href;
+    img.alt = (function () {
+      var fromData = anchor.getAttribute("data-lightbox-alt");
+      if (fromData) return fromData;
+      var nested = anchor.querySelector("img");
+      return nested && nested.alt ? nested.alt : "";
+    })();
+    dialog.showModal();
+    var closeBtn = dialog.querySelector(".site-lightbox-close");
+    if (closeBtn) closeBtn.focus();
+  }
+
+  function restoreFocus() {
+    img.removeAttribute("src");
+    img.alt = "";
+    if (lastFocus && typeof lastFocus.focus === "function") {
+      lastFocus.focus();
+    }
+    lastFocus = null;
+  }
+
+  document.addEventListener("click", function (event) {
+    var target = event.target;
+    if (!target || !target.closest) return;
+    var anchor = target.closest("a[data-lightbox]");
+    if (!anchor) return;
+    if (event.defaultPrevented || event.button !== 0) return;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    openFrom(anchor);
+  });
+
+  dialog.addEventListener("close", restoreFocus);
+
+  dialog.addEventListener("keydown", function (event) {
+    if (event.key !== "Tab" || !dialog.open) return;
+    var nodes = focusables();
+    if (nodes.length === 0) return;
+    var first = nodes[0];
+    var last = nodes[nodes.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
+
+  if (reduceMotion) {
+    dialog.classList.add("site-lightbox--reduced");
+  }
+})();
+</script>
+
+<style is:global>
+  .site-lightbox {
+    border: none;
+    padding: 0;
+    max-width: min(96vw, 72rem);
+    max-height: 96vh;
+    background: transparent;
+  }
+  .site-lightbox::backdrop {
+    background: rgba(12, 14, 16, 0.72);
+  }
+  .site-lightbox:not(.site-lightbox--reduced)::backdrop {
+    transition: opacity 0.15s ease;
+  }
+  .site-lightbox-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0 0 0.5rem;
+  }
+  .site-lightbox-close {
+    font: inherit;
+    font-size: 1.5rem;
+    line-height: 1;
+    border: 0;
+    background: var(--color-surface, #fff);
+    color: var(--color-ink, #111);
+    width: 2.25rem;
+    height: 2.25rem;
+    cursor: pointer;
+  }
+  .site-lightbox-img {
+    display: block;
+    max-width: 96vw;
+    max-height: 88vh;
+    width: auto;
+    height: auto;
+    margin: 0 auto;
+    background: var(--color-surface, #fff);
+  }
+  a[data-lightbox] {
+    display: inline-block;
+    max-width: 100%;
+  }
+  a[data-lightbox] img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+</style>

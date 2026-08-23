@@ -19,6 +19,13 @@
 		X-Content-Type-Options "nosniff"
 		X-Frame-Options "DENY"
 		Referrer-Policy "strict-origin-when-cross-origin"
+		# DEFER-0021: Report-Only first. Designed so existing inline JSON-LD,
+		# About/catalog scripts, and primaryColor style injection are allowed
+		# when later switched to enforce. Owner must confirm demo hosts before
+		# adding them to frame-src and before enforce mode.
+		# Placeholders (uncomment + replace after owner approval):
+		#   https://OWNER_APPROVED_DEMO_HOST
+		Content-Security-Policy-Report-Only "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; media-src 'self'; frame-src 'self'; object-src 'none'"
 	}
 }
 

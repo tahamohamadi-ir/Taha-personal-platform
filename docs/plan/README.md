@@ -1,4 +1,4 @@
-# Plan index — which spec do I execute?
+﻿# Plan index — which spec do I execute?
 
 Goal:
 You pick the correct Task Spec in under one minute and never re-run finished work.
@@ -15,7 +15,8 @@ Last reconciled: 2026-08-22.
 
 | Spec | State | Who runs it | Notes |
 |---|---|---|---|
-| `wave1-web-polish-task-spec.md` | IN_PROGRESS | agent | Writing-canonical + RSS + OG + catalog URL filters (Wave 1). |
+| `wave1-web-polish-task-spec.md` | DONE (merged) | agent | Writing-canonical + RSS + OG + catalog URL filters (Wave 1). LOG-0211. |
+| `wave2-cms-web-addons-task-spec.md` | IN_PROGRESS | agent | Wave 2: statement PDF (`DEFER-0019`), lightbox F7, CSP Report-Only + click-to-load (`DEFER-0021` PARTIAL). LOG-0212. Owner: attended migrate `content.0013`. |
 | `cms-origin-and-full-stack-cd-task-spec.md` | DONE (repo + edge) | agent | ADR-0027 Slices 0–5 code done; Compose Caddy edge live (`DEFER-0031` / `RISK-0013` CLOSED, LOG-0210); HMAC (`DEFER-0027` CLOSED). |
 | `P3-public-preview-token-task-spec.md` | DONE | agent | DEFER-0016 CLOSED 2026-08-22 (LOG-0204 repo; LOG-0209 production secret + CMS recreate). |
 | `blog-story-composition-task-spec.md` | PARTIAL | agent | Blog story live; entity stories Slice 5 (`DEFER-0030` CLOSED in ledger). Owner migrate + rebuild. |
@@ -23,7 +24,7 @@ Last reconciled: 2026-08-22.
 | `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | Featured→Media + Wagtail uninstall closed; HMAC `DEFER-0027` CLOSED. Remaining: §18 QA matrix only (`DEFER-0032`). |
 | `P0-A-stack-inventory-task-spec.md` | BLOCKED (owner) | owner | Read-only VPS inventory. Not an agent task. |
 
-Owner remaining work that is **not** a new spec: apt/SSH if reopened; static web rebuild after merges. HMAC (`DEFER-0027`) and Compose Caddy (`DEFER-0031`) are **CLOSED** (LOG-0210). Do **not** set `CMS_CD_AUTO_MIGRATE`.
+Owner remaining work that is **not** a new spec: Wave 2–3 attended migrate (`content.0013` then `content.0014`) + Caddy reload + `rebuild-web.sh`; demo allowlist before CSP enforce (`DEFER-0021`); static rebuild after later merges. HMAC (`DEFER-0027`) and Compose Caddy (`DEFER-0031`) are **CLOSED** (LOG-0210). Do **not** set `CMS_CD_AUTO_MIGRATE`.
 
 ## 2. Queued — do not start yet
 
@@ -108,7 +109,7 @@ template. Two parts are stale:
 - Its phase backlog lists tasks as READY that `S-PLAN-STATE.md` already marks DONE.
 
 When they disagree, `S-PLAN-STATE.md` and this file win.
-The active agent spec in §1 is `ADM-6-frontend-wiring-task-spec.md`. P7 remains queued/superseded. Owner inventory stays owner-only.
+The active agent specs in §1 include Wave polish/P8 follow-ups; P7 remains queued/superseded. Owner inventory stays owner-only.
 
 If the playbook mentions an OpenCode agent you do not have, ignore the dispatch
 mechanism and execute the active spec directly.

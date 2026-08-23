@@ -138,6 +138,7 @@ class PublicMediaOut(Schema):
     alt: str
     mime: str = ""
     title: str = ""
+    size: int = 0
 
 
 class ArticleListOut(Schema):
@@ -478,12 +479,13 @@ class ResearchTopicDetailOut(ResearchTopicListOut):
 
 
 class ResearchStatementOut(Schema):
-    """Public research statement (sanitized rich text)."""
+    """Public research statement (sanitized rich text + optional active PDF)."""
 
     locale: str
     slug: str
     title: str
     body: str
+    statement_pdf: PublicMediaOut | None = None
     story: StoryDocumentOut | None = None
     published_at: datetime | None
     updated_at: datetime | None
@@ -491,6 +493,15 @@ class ResearchStatementOut(Schema):
     @staticmethod
     def resolve_body(obj: ResearchStatement) -> str:
         return sanitize_public_richtext(str(obj.body or ""))
+
+    @staticmethod
+    def resolve_statement_pdf(obj: ResearchStatement, context) -> dict | None:
+        request = context.get("request") if context else None
+        return public_media_ref(
+            getattr(obj, "statement_pdf", None),
+            request,
+            locale=obj.locale,
+        )
 
     @staticmethod
     def resolve_story(obj: ResearchStatement) -> dict | None:
@@ -742,7 +753,7 @@ def list_research_statements(request, locale: str) -> list[ResearchStatement]:
     return list(
         ResearchStatement.objects.public()
         .filter(locale=locale)
-        .select_related("story")
+        .select_related("story", "statement_pdf")
         .prefetch_related("story__sections__blocks")
         .order_by("slug")
     )
@@ -757,7 +768,7 @@ def get_research_statement(request, locale: str, slug: str) -> ResearchStatement
     statement = (
         ResearchStatement.objects.public()
         .filter(locale=locale, slug=slug)
-        .select_related("story")
+        .select_related("story", "statement_pdf")
         .prefetch_related("story__sections__blocks")
         .first()
     )
