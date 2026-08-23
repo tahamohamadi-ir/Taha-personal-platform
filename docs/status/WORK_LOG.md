@@ -10,6 +10,7 @@
 
 # Work Log
 
+<<<<<<< HEAD
 ## LOG-0212 — 2026-08-22 — Wave 2: statement PDF, lightbox, CSP Report-Only demo embed
 
 - Outcome: Implemented Wave 2 on branch `feat/wave2-cms-web-addons` (worktree `.worktrees/feat-wave2-cms-web-addons`) from `origin/main`. (1) **DEFER-0019:** additive `statement_pdf` FK on `ResearchStatement` + migration `content.0013_researchstatement_statement_pdf`; public API projects via `public_media_ref` only when Media `is_active` (title/mime/size); admin `statementPdfId` MediaPicker + orphan registry; Astro `/fa|en/research/statement/` download link. (2) **F7:** CaseStudyDetail/DiagramBlock render active screenshot/diagram images; shared native `<dialog>` lightbox (~2KB inline JS) with focus trap/Esc/restore/`prefers-reduced-motion`; StoryBody figure/gallery same pattern; no-JS = direct file links. (3) **DEFER-0021 PARTIAL:** `Content-Security-Policy-Report-Only` on `infra/caddy/Caddyfile` + `Caddyfile.compose` (script/style `'unsafe-inline'` so JSON-LD/About do not falsely block on future enforce); click-to-load sandboxed iframe gated by empty `demoEmbedAllowlist.ts` placeholders — no invented demo URLs; seed data has no public demos. Enforce mode left as documented follow-up. Did **not** set `CMS_CD_AUTO_MIGRATE`. Uncommitted for parent review.
@@ -29,6 +30,17 @@
   3. Reload Caddy (Compose `edge` or host) for CSP Report-Only
   4. Admin: upload PDF → attach on research-statement → activate Media → rebuild web
   5. Confirm demo hosts before expanding allowlist / `frame-src` and before CSP enforce
+=======
+## LOG-0213 — 2026-08-22 — Wave 3 P8 publications / books / talks / downloads (repo)
+
+- Outcome: Implemented Wave 3 (P8) on branch `feat/wave3-p8-publications` in worktree `.worktrees/feat-wave3-p8-publications` from `origin/main`. IA-CONTRACT gains §4b URL tree. CMS models + admin registry + public API + Astro routes + citation/download ACL tests. Migration `content.0013` additive only — **not** applied to production. Left **uncommitted** for parent review. Did **not** start Wave 4/5 or owner decommission. Did **not** set `CMS_CD_AUTO_MIGRATE`.
+- Why: Ship P8 product phase (Task-list §13) with one-canonical-URL publications and Media-backed downloads.
+- Scope / files: `docs/contracts/IA-CONTRACT.md`; `docs/plan/P8-publications-books-talks-downloads-task-spec.md`; `apps/cms/apps/content/models.py` + `0013_p8_*`; `apps/cms/apps/api/{api,admin_content,admin_api}.py`; admin-frontend `entities.ts` / `api.ts`; `apps/web` catalog pages + `lib/cms/publications.ts`; tests `test_api_p8.py`; ledgers.
+- Commands or actions actually performed: isolated worktree; `makemigrations`; `uv run ruff check` (targeted); `uv run pytest tests/test_api_p8.py tests/test_admin_content_write.py tests/test_api_research.py` → **25 passed**; `apps/web` `npm run check` → **0 errors**; `npm run build` → **PASS**; admin-frontend `npm run check` → **PASS**.
+- Verification actually performed and result: as above. Production migrate/rebuild **not** run.
+- Deferred or risk IDs: Wave 4 blockers unchanged (35KB island budget vs three.js; GSAP license; ADR-0028). No new DEFER opened for P8 empty catalogs (honest empty states).
+- Rollback / recovery: discard worktree branch; migration reverse is additive field/table adds only after owner dumpdata.
+>>>>>>> feat/wave3-p8-publications
 
 ## LOG-0210 — 2026-08-22 — Compose Caddy edge cutover PASS (525 rollback + ACME seed)
 

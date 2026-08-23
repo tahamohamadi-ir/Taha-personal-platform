@@ -33,10 +33,14 @@ export type ContentEntity =
   | "landing"
   | "profile"
   | "article"
+  | "series"
   | "research-topic"
   | "research-statement"
   | "project"
-  | "publication";
+  | "publication"
+  | "book"
+  | "talk"
+  | "download";
 
 export type ContentStatus =
   | "draft"

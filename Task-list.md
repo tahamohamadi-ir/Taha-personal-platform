@@ -712,22 +712,22 @@ P0-B hardening? ??????? ??????? visual/browser/screen-reader? dark mode? motion 
 
 ---
 
-## 13. P8 — Publications? Books? Downloads? Talks
+## 13. P8 — Publications / Books / Downloads / Talks
 
-### Task P8-01 — domain contracts ? rights
+### Task P8-01 — domain contracts + rights
 
-- [ ] Publication core ?? extend ? Book/Talk/Download typed contracts ????.
-- [ ] DOI/URL/authors/date/venue/license/accessibility/access state validate ????.
+- [x] Publication core extended; Book/Talk/Download typed contracts (LOG-0213).
+- [x] DOI/URL/authors/date/venue/license/accessibility/access state on models + admin maps (LOG-0213).
 
-### Task P8-02 — download security ? presentation
+### Task P8-02 — download security + presentation
 
-- [ ] file title/type/size/language/accessibility? public/restricted authorization ? safe headers ???? ????.
-- [ ] private media ?? public relation ??? ????.
+- [x] file title/type/size/language/accessibility; public/restricted authorization; safe download headers (LOG-0213).
+- [x] inactive/private media never in public projection or `/file` (LOG-0213).
 
 ### Task P8-03 — citation/SEO/release
 
-- [ ] citation export ??? ????? structured data ??? real? sitemap/identifier/link/restricted tests PASS.
-- [ ] copyright issue fallback = takedown ???? ? metadata-only.
+- [x] citation export only when editor-supplied + authors/title; JSON-LD when real DOI/URL; sitemap; ACL tests PASS (LOG-0213).
+- [ ] copyright issue fallback = takedown path + metadata-only (ops/process; not automated in this slice).
 
 ---
 

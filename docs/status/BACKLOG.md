@@ -43,7 +43,7 @@
 | P5 | P5 | Research (Topic/Statement/Project/Publication minimal) | DONE in repo (code-first); prod migrate blocked on RISK-0003; DEFER-0017/0019/0020 | Project owner | P5-research-task-spec.md, Task-list §10, LOG-0136 |
 | P6 | P6 | Projects + case studies | DONE in repo (code-first); prod migrate blocked on RISK-0003; DEFER-0017/0021 | P5 on main | P6-case-studies-task-spec.md, Task-list §11, LOG-0137 |
 | P7 | P7 | Professional admin — **superseded by ADM (§17, ADR-0026)** | — | Project owner | Task-list §12 note |
-| P8 | P8 | Publications/Books/Downloads/Talks | P6/P7 | Project owner | Task-list §13 |
+| P8 | P8 | Publications/Books/Downloads/Talks | Repo Wave 3 done (LOG-0213); owner attended migrate `content.0013` + rebuild-web | Project owner | Task-list §13; P8 task spec |
 | P9 | P9 | Teaching + Creative | P8 | Project owner | Task-list §14 |
 | P10 | P10 | Topics + Pagefind search + collections | P4-P9 content | Project owner | Task-list §15 |
 | P11 | P11 | AI/semantic/knowledge graph | P10 | Project owner | Task-list §16 |

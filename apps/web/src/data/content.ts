@@ -133,6 +133,28 @@ export interface LocaleContent {
     updatedLabel: string;
     fallback: string;
   };
+  catalog: {
+    publicationsHeading: string;
+    publicationsIntro: string;
+    publicationsEmpty: string;
+    booksHeading: string;
+    booksIntro: string;
+    booksEmpty: string;
+    talksHeading: string;
+    talksIntro: string;
+    talksEmpty: string;
+    downloadsHeading: string;
+    downloadsIntro: string;
+    downloadsEmpty: string;
+    missingTranslation: string;
+    citationLabel: string;
+    citationUnavailable: string;
+    abstractHeading: string;
+    restrictedNote: string;
+    downloadLabel: string;
+    licenseLabel: string;
+    parentResearchLabel: string;
+  };
   sections?: {
     experience: string;
     education: string;
@@ -326,6 +348,30 @@ export const content: Record<LocaleCode, LocaleContent> = {
       fallback:
         "If a download does not work, the file may be temporarily unavailable; please try again later.",
     },
+    catalog: {
+      publicationsHeading: "Publications",
+      publicationsIntro:
+        "Published papers and manuscripts. Open an item for identifiers, abstract, and citation when available.",
+      publicationsEmpty: "No published publications are available in this build.",
+      booksHeading: "Books",
+      booksIntro: "Published books and public book records when available.",
+      booksEmpty: "No published books are available in this build.",
+      talksHeading: "Talks",
+      talksIntro: "Public talks and presentations when available.",
+      talksEmpty: "No published talks are available in this build.",
+      downloadsHeading: "Downloads",
+      downloadsIntro:
+        "Catalog files released for public download. Restricted or inactive files are omitted.",
+      downloadsEmpty: "No published downloads are available in this build.",
+      missingTranslation: "This page is not yet translated into Persian.",
+      citationLabel: "Citation",
+      citationUnavailable: "A citation export is not available for this item.",
+      abstractHeading: "Abstract",
+      restrictedNote: "The file for this item is not publicly downloadable.",
+      downloadLabel: "Download file",
+      licenseLabel: "License",
+      parentResearchLabel: "Research",
+    },
     sections: {
       experience: "Experience",
       education: "Education",
@@ -517,6 +563,30 @@ export const content: Record<LocaleCode, LocaleContent> = {
       updatedLabel: "به‌روزرسانی",
       fallback:
         "اگر دانلود کار نکرد، فایل احتمالاً موقتاً در دسترس نیست؛ بعداً دوباره تلاش کنید.",
+    },
+    catalog: {
+      publicationsHeading: "انتشارات",
+      publicationsIntro:
+        "مقالات و دست‌نوشته‌های منتشرشده. برای شناسه‌ها، چکیده و استناد (در صورت وجود) هر مورد را باز کنید.",
+      publicationsEmpty: "در این ساخت، انتشارات منتشرشده‌ای موجود نیست.",
+      booksHeading: "کتاب‌ها",
+      booksIntro: "کتاب‌های منتشرشده و رکوردهای عمومی کتاب در صورت وجود.",
+      booksEmpty: "در این ساخت، کتاب منتشرشده‌ای موجود نیست.",
+      talksHeading: "سخنرانی‌ها",
+      talksIntro: "سخنرانی‌ها و ارائه‌های عمومی در صورت وجود.",
+      talksEmpty: "در این ساخت، سخنرانی منتشرشده‌ای موجود نیست.",
+      downloadsHeading: "دانلودها",
+      downloadsIntro:
+        "فایل‌های کاتالوگ آزاد برای دانلود عمومی. فایل‌های محدود یا غیرفعال نمایش داده نمی‌شوند.",
+      downloadsEmpty: "در این ساخت، دانلود منتشرشده‌ای موجود نیست.",
+      missingTranslation: "این صفحه هنوز به انگلیسی ترجمه نشده است.",
+      citationLabel: "استناد",
+      citationUnavailable: "خروجی استناد برای این مورد در دسترس نیست.",
+      abstractHeading: "چکیده",
+      restrictedNote: "فایل این مورد برای دانلود عمومی در دسترس نیست.",
+      downloadLabel: "دانلود فایل",
+      licenseLabel: "مجوز",
+      parentResearchLabel: "پژوهش",
     },
     sections: {
       experience: "سوابق کاری",

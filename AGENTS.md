@@ -21,6 +21,8 @@ P0-G0 is **PASS for static-only P1** (2026-08-14). Staging is decommissioned (AD
 
 **P4–P6 public routes (live):** `/{locale}/writing/`, `/{locale}/research/`, `/{locale}/projects/`. Header/footer may link those destinations because they exist. `/{locale}/blog/` permanently redirects to the writing tree (IA writing-canonical). RSS/Atom is `/{locale}/writing/rss.xml` (`DEFER-0018` CLOSED).
 
+**P8 catalog routes (repo LOG-0213; empty-honest until CMS content + migrate `content.0013`):** `/{locale}/publications/`, `/{locale}/books/`, `/{locale}/talks/`, `/{locale}/downloads/` (+ detail slugs). Legacy `/{locale}/research/publications/{slug}/` permanently redirects to `/{locale}/publications/{slug}/`.
+
 **CMS image `b6bea6a` (live, 2026-08-19):** owner `prod-cms-update-migrate.sh`; `content.0008` + `composition.0002` applied. Blog story editor is on article edit. Post-Wagtail-uninstall smoke uses `/admin/login/` + `/staff/login/` (LOG-0193).
 
 **Runtime target (ADR-0027):** one Compose project — `db`, `cms`, `web` (nginx serving Astro HTML, no public Node/React), **`caddy`** (profile `edge`, live TLS since LOG-0210). Host systemd Caddy is inactive/disabled (rollback documented). Set GitHub `CADDY_EDGE=compose` so CD reloads Compose Caddy (`RISK-0013`/`DEFER-0031` CLOSED). Slice 1 cutover is **live**; Slice 2 gated CD CMS migrate attended path **PASS** (LOG-0179; keep `CMS_CD_AUTO_MIGRATE` unset). Public pages stay no-JS. Active specs: `docs/plan/cms-origin-and-full-stack-cd-task-spec.md` (Slice 3 / Slice 4 cutover next), `docs/plan/ADM-6-frontend-wiring-task-spec.md` (PARTIAL). Master plan: `docs/plan/custom-admin-rebuild-fa.md`.

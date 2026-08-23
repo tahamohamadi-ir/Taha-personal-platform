@@ -206,10 +206,14 @@ def test_schema_endpoint(admin_api_client):
         "landing",
         "profile",
         "article",
+        "series",
         "research-topic",
         "research-statement",
         "project",
         "publication",
+        "book",
+        "talk",
+        "download",
     }
 
     article_specs = {spec["key"]: spec for spec in entities["article"]["fields"]}
@@ -290,4 +294,56 @@ def test_update_blank_numeric_field_ok(admin_api_client):
     )
     assert response.status_code == 200
     assert response.json()["fields"]["readingTimeMinutes"] == 3
+
+
+def test_p8_book_and_download_admin_crud_smoke(admin_api_client, db):
+    from django.core.files.uploadedfile import SimpleUploadedFile
+
+    from apps.content.models import Book, Download
+    from apps.media.models import Media
+
+    book = _post_json(
+        admin_api_client,
+        "/api/v1/admin/content/book",
+        {
+            "locale": "en",
+            "slug": "admin-book",
+            "title": "Admin Book",
+            "fields": {"authors": "Taha", "isbn": "9780000000000"},
+        },
+    )
+    assert book.status_code == 201
+    book_id = book.json()["id"]
+    assert Book.objects.filter(pk=book_id, slug="admin-book").exists()
+
+    media = Media.objects.create(
+        file=SimpleUploadedFile("admin.pdf", b"%PDF-1.4", content_type="application/pdf"),
+        title="admin.pdf",
+        is_active=True,
+    )
+    download = _post_json(
+        admin_api_client,
+        "/api/v1/admin/content/download",
+        {
+            "locale": "en",
+            "slug": "admin-download",
+            "title": "Admin Download",
+            "fields": {"mediaId": media.pk, "downloadType": "pdf", "language": "en"},
+        },
+    )
+    assert download.status_code == 201, download.content
+    download_id = download.json()["id"]
+    assert Download.objects.filter(pk=download_id, media_id=media.pk).exists()
+
+    series = _post_json(
+        admin_api_client,
+        "/api/v1/admin/content/series",
+        {
+            "locale": "en",
+            "slug": "admin-series",
+            "title": "Admin Series",
+            "fields": {"description": "Series desc", "ordering": 1},
+        },
+    )
+    assert series.status_code == 201
 

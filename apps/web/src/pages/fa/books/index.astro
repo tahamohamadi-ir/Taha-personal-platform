@@ -1,0 +1,63 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../../components/blog/Breadcrumbs.astro";
+import { content } from "../../../data/content";
+import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../data/structured";
+import { getBooks } from "../../../lib/cms/publications";
+
+const locale = "fa" as const;
+const pageContent = content[locale];
+const catalog = pageContent.catalog;
+const items = await getBooks(locale);
+const alt = "en";
+
+const structured = [
+  breadcrumbJsonLd([
+    { name: pageContent.name, path: `/${locale}/` },
+    { name: catalog.booksHeading, path: `/${locale}/books/` },
+  ]),
+];
+validateStructuredData(...structured);
+---
+
+<BaseLayout
+  content={{
+    ...pageContent,
+    meta: {
+      title: `${catalog.booksHeading} — ${pageContent.name}`,
+      description: catalog.booksIntro,
+    },
+  }}
+  alternateHref={`/${alt}/books/`}
+>
+  {structured.map((block) => (
+    <script type="application/ld+json" is:inline set:html={jsonLdScriptContent(block)} />
+  ))}
+  <section class="catalog-page">
+    <Breadcrumbs items={[
+      { label: pageContent.name, href: `/${locale}/` },
+      { label: catalog.booksHeading },
+    ]} />
+    <h1>{catalog.booksHeading}</h1>
+    <p class="lead">{catalog.booksIntro}</p>
+    {items.length === 0 ? (
+      <p class="empty">{catalog.booksEmpty}</p>
+    ) : (
+      <ul class="catalog-list">
+        {items.map((item) => (
+          <li>
+            <a href={`/${locale}/books/${item.slug}/`}>{item.title}</a>
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+</BaseLayout>
+
+<style>
+  .catalog-page { max-width: 44rem; margin-inline: auto; padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem; }
+  .catalog-page h1 { font-family: var(--font-display); font-size: clamp(1.75rem, 4vw, 2.4rem); margin: 0 0 0.5rem; }
+  .lead, .empty { color: var(--color-ink-muted); }
+  .catalog-list { list-style: none; padding: 0; margin: 1.5rem 0 0; display: grid; gap: 1rem; }
+  .catalog-list a { font-family: var(--font-display); font-size: 1.15rem; }
+</style>

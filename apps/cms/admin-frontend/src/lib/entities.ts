@@ -9,10 +9,14 @@ export const CONTENT_ENTITIES: ContentEntityMeta[] = [
   { key: "landing", labelFa: "صفحه فرود" },
   { key: "profile", labelFa: "پروفایل" },
   { key: "article", labelFa: "نوشته‌ها" },
+  { key: "series", labelFa: "سری‌ها" },
   { key: "research-topic", labelFa: "موضوعات پژوهش" },
   { key: "research-statement", labelFa: "بیانیه پژوهش" },
   { key: "project", labelFa: "پروژه‌ها" },
   { key: "publication", labelFa: "انتشارات" },
+  { key: "book", labelFa: "کتاب‌ها" },
+  { key: "talk", labelFa: "سخنرانی‌ها" },
+  { key: "download", labelFa: "دانلودها" },
 ];
 
 export const DEFAULT_CONTENT_ENTITY: ContentEntity = "article";

@@ -133,24 +133,14 @@ export interface ProjectDetailDto extends ProjectListDto {
   }>;
 }
 
-export interface PublicationListDto {
-  locale: string;
-  slug: string;
-  title: string;
-  authors: string;
-  venue: string;
-  date: string | null;
-  doi: string;
-  license: string;
-  published_at: string | null;
-  updated_at: string | null;
-}
-
-export interface PublicationDetailDto extends PublicationListDto {
-  url: string;
-  pdf_url: string;
-  citation_count: number | null;
-}
+export type {
+  PublicationDetailDto,
+  PublicationListDto,
+} from "./publications";
+import {
+  getPublication,
+  getPublications,
+} from "./publications";
 
 type Locale = "fa" | "en";
 
@@ -261,19 +251,13 @@ export async function getResearchProject(
 
 export async function getResearchPublications(
   locale: Locale,
-): Promise<PublicationListDto[]> {
-  return paginateAll(
-    `/api/research/publications/${locale}`,
-    `research/publications/${locale}`,
-  );
+): Promise<import("./publications").PublicationListDto[]> {
+  return getPublications(locale);
 }
 
 export async function getResearchPublication(
   locale: Locale,
   slug: string,
-): Promise<PublicationDetailDto | null> {
-  return fetchDetail(
-    `/api/research/publications/${locale}/${slug}`,
-    `research publication ${locale}/${slug}`,
-  );
+): Promise<import("./publications").PublicationDetailDto | null> {
+  return getPublication(locale, slug);
 }

@@ -1,0 +1,182 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../../components/blog/Breadcrumbs.astro";
+import { content } from "../../../data/content";
+import {
+  breadcrumbJsonLd,
+  jsonLdScriptContent,
+  scholarlyArticleJsonLd,
+  validateStructuredData,
+} from "../../../data/structured";
+import {
+  getPublication,
+  getPublications,
+} from "../../../lib/cms/publications";
+
+export async function getStaticPaths() {
+  const locale = "en" as const;
+  const publications = await getPublications(locale);
+  return publications.map((pub) => ({ params: { slug: pub.slug } }));
+}
+
+const locale = "en" as const;
+const pageContent = content[locale];
+const catalog = pageContent.catalog;
+const slug = Astro.params.slug as string;
+const publication = await getPublication(locale, slug);
+if (!publication) {
+  return Astro.redirect(`/${locale}/publications/`, 302);
+}
+
+const description =
+  (publication.abstract || "").trim() ||
+  [publication.authors, publication.venue].filter(Boolean).join(" — ") ||
+  catalog.publicationsIntro;
+
+const structured = [
+  breadcrumbJsonLd([
+    { name: pageContent.name, path: `/${locale}/` },
+    { name: catalog.publicationsHeading, path: `/${locale}/publications/` },
+    {
+      name: publication.title,
+      path: `/${locale}/publications/${publication.slug}/`,
+    },
+  ]),
+];
+const scholarly = scholarlyArticleJsonLd({
+  locale,
+  title: publication.title,
+  slug: publication.slug,
+  authors: publication.authors,
+  venue: publication.venue,
+  date: publication.date,
+  doi: publication.doi,
+  url: publication.url,
+});
+if (scholarly) structured.push(scholarly);
+validateStructuredData(...structured);
+const alternateExists =
+  (await getPublication("fa", publication.slug)) !== null;
+const pdfHref = publication.pdf?.url || publication.pdf_url || "";
+---
+
+<BaseLayout
+  content={{
+    ...pageContent,
+    meta: {
+      title: `${publication.title} — ${pageContent.name}`,
+      description,
+    },
+  }}
+  alternateHref={
+    alternateExists ? `/fa/publications/${publication.slug}/` : null
+  }
+>
+  {
+    structured.map((block) => (
+      <script
+        type="application/ld+json"
+        is:inline
+        set:html={jsonLdScriptContent(block)}
+      />
+    ))
+  }
+  <section class="catalog-page">
+    <Breadcrumbs
+      items={[
+        { label: pageContent.name, href: `/${locale}/` },
+        { label: catalog.publicationsHeading, href: `/${locale}/publications/` },
+        { label: publication.title },
+      ]}
+    />
+    {!alternateExists && <p class="missing">{catalog.missingTranslation}</p>}
+    <h1>{publication.title}</h1>
+    <p class="meta">{publication.authors}</p>
+    {
+      publication.venue && (
+        <p class="meta">
+          {publication.venue}
+          {publication.date ? ` · ${publication.date}` : ""}
+        </p>
+      )
+    }
+    {publication.doi && <p class="meta">DOI: {publication.doi}</p>}
+    <p class="meta">{catalog.licenseLabel}: {publication.license}</p>
+    {
+      publication.abstract && (
+        <>
+          <h2>{catalog.abstractHeading}</h2>
+          <p>{publication.abstract}</p>
+        </>
+      )
+    }
+    {
+      publication.citation_text ? (
+        <>
+          <h2>{catalog.citationLabel}</h2>
+          <pre class="citation">{publication.citation_text}</pre>
+        </>
+      ) : (
+        <p class="meta">{catalog.citationUnavailable}</p>
+      )
+    }
+    {
+      publication.citation_count != null && (
+        <p class="meta">Citations: {publication.citation_count}</p>
+      )
+    }
+    {
+      publication.url && (
+        <p>
+          <a href={publication.url} rel="noopener noreferrer">
+            {publication.url}
+          </a>
+        </p>
+      )
+    }
+    {
+      pdfHref ? (
+        <p>
+          <a href={pdfHref} rel="noopener noreferrer">
+            PDF
+          </a>
+        </p>
+      ) : publication.access_state !== "public" ? (
+        <p class="meta">{catalog.restrictedNote}</p>
+      ) : null
+    }
+    <p>
+      <a href={`/${locale}/research/`}>{catalog.parentResearchLabel}</a>
+    </p>
+  </section>
+</BaseLayout>
+
+<style>
+  .catalog-page {
+    max-width: 44rem;
+    margin-inline: auto;
+    padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem;
+  }
+  .catalog-page h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 4vw, 2.4rem);
+    margin: 0 0 0.5rem;
+  }
+  .catalog-page h2 {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    margin: 1.5rem 0 0.5rem;
+  }
+  .meta,
+  .missing {
+    color: var(--color-ink-muted);
+  }
+  .citation {
+    white-space: pre-wrap;
+    font-family: var(--font-body);
+    background: transparent;
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
+</style>
