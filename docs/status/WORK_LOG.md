@@ -1,3 +1,13 @@
+## LOG-0217 — 2026-08-22 — Design/UI review split into problems + proposals
+
+- Outcome: Docs-only. Split the mixed review into `docs/plan/DESIGN-UI-CURRENT-PROBLEMS.md` (`P1`–`P19`) and `docs/plan/DESIGN-UI-UX-IMPROVEMENT-PROPOSALS.md` (`S1`–`S37`). Index left at `docs/plan/DESIGN-UI-UX-IMPROVEMENT-REVIEW.md`. Plan README §3 updated. No code, no token changes, no ledger IDs allocated (`KI`/`DEBT`/`RISK`/`DEFER` mapping is inside the problems file).
+- Why: Owner asked for current problems and improvement suggestions (including for already-documented `design.md` / contract rules) as separate `.md` files.
+- Scope / files: the three `docs/plan/DESIGN-UI*` files; `docs/plan/README.md`; this entry.
+- Commands or actions actually performed: read contract cards, `design.md` bound sections, `global.css`, public Astro; contrast math against token hex values; token used-vs-defined inventory on `apps/web/src`.
+- Verification actually performed and result: no implementation; no browser pass. P1 layout collapse is inferred from CSS cascade, not screenshotted.
+- Deferred or risk IDs: none opened. Suggested mapping listed in the problems file.
+- Rollback / recovery: delete the three plan files and revert the README row.
+
 ## LOG-0216 — 2026-08-23 — Production Waves 1–5 cutover (migrate 0013/0014, rebuild-web, old-stack gone)
 
 - Outcome: Owner-attended production cutover on VPS after Waves 1–5 merged to `main` (`repo_head=13d2c81`). **CMS:** `CMS_IMAGE=ghcr.io/tahamohamadi-ir/taha-cms:116c241` via `bash infra/deploy/cd-cms-migrate.sh` → `content.0013_researchstatement_statement_pdf` OK, `content.0014_p8_publications_books_talks_downloads` OK; `backup_ok` under `/home/deploy/cms-migrate-backups/pre-migrate-20260823T061529Z`; previous image `e2cd1b6` → `116c241`; **`cd-cms-migrate PASS`** + **`CMS smoke PASS`**. **Web:** `bash infra/deploy/cd-rebuild-web.sh` → `taha-web:local` rebuild PASS; public smoke PASS; `/en/search/` and `/en/publications/` HTTP/2 200; `smoke.sh` + `smoke-cms.sh` PASS. **Old stack:** `sudo docker ps -a --filter name=taha-prod-` empty; only Compose project `taha-cms` running(4); public site 200. Compose QA env blocked `docker compose` in `/opt/taha/repository` without placeholders (`sudo -E` ignored on this host — use `sudo env …`); containers already absent so stop/down was a no-op. Did **not** set `CMS_CD_AUTO_MIGRATE`. Did **not** enable `FEATURE_ADMIN_BULK_ARCHIVE` in production.
