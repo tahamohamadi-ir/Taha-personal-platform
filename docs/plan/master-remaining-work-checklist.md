@@ -302,7 +302,7 @@
 
 | ID باز | موضوع | آیتم مسئول | وضعیت |
 |---|---|---|---|
-| RISK-0008 | revoke/rotate credential 9Router | **F1** | OPEN |
+| RISK-0008 | revoke/rotate credential 9Router | **F1** | CLOSED (2026-08-23) |
 | RISK-0011 | فرسایش پروژه | WS-D (D1–D5) | OPEN |
 | DEBT-0001 | drift design.md | E8 | OPEN |
 | DEBT-0002 | تب‌های About و find-in-page | **F11** (تصمیم mitigation) | OPEN (mitigated) |
@@ -319,9 +319,9 @@
 | DEFER-0025 | dark mode | **F4** | OPEN |
 | DEFER-0032 | QA دستی S6 | B9 | PARTIAL |
 
-- [ ] **F1 — RISK-0008: مالک credential 9Router را revoke/rotate و فقط در password manager نگه می‌دارد** — `P0` · `owner` · `S`
+- [x] **F1 — RISK-0008: مالک credential 9Router را revoke/rotate و فقط در password manager نگه می‌دارد** — `P0` · `owner` · `S`
   - پذیرش: attestation مالک در WORK_LOG (بدون ذکر مقدار)؛ RISK-0008 → CLOSED.
-  - شواهد: LOG-____
+  - شواهد: LOG-0226 (attestation مالک 2026-08-23؛ دفتر ریسک به‌روز شد)
 
 - [ ] **F2 — DEFER-0021: allowlist دامنه‌های دمو توسط مالک → پر کردن `demoEmbedAllowlist.ts` → تست click-to-load → سوییچ CSP به enforce در هر دو Caddyfile + حذف placeholder `OWNER_APPROVED_DEMO_HOST`** — `P1` · `joint` · `M` · deps: مالک
   - پذیرش: embed آزمایشی روی دامنه‌ی مجاز کار می‌کند؛ دامتهای خارج frame-src بلاک؛ smokeها سبز؛ DEFER-0021 → CLOSED.

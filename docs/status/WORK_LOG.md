@@ -1,3 +1,14 @@
+## LOG-0226 — 2026-08-23 — F1 done: 9Router credential rotated by owner (RISK-0008 → CLOSED)
+
+- Outcome: Owner performed revoke/rotate of the exposed 9Router credential in the 9Router dashboard and keeps the fresh credential only in a password manager (owner attestation given in the working session, 2026-08-23). No secret value was printed, stored, or committed anywhere. `RISK-0008` → **CLOSED** in the risk register; board item F1 ticked and WS-F tracker row updated. Push of local `main` (six M0 commits + this entry) owner-approved in the same session.
+- Why: F1 was the last P0 quick-win; closure requires owner attestation per board acceptance (attestation only, no value).
+- Scope / files: `docs/status/RISK_REGISTER.md`, `docs/plan/master-remaining-work-checklist.md`, this entry. No code, no infra, no config change.
+- Commands or actions actually performed: ledger/board edits; LOG ID allocation procedure run (`git rev-list --all --remotes …` → max LOG-0225 → allocated LOG-0226); `git push origin main` after edits.
+- Verification actually performed and result: attestation recorded without any credential value; register row status flipped with evidence pointers; push accepted by origin (CI web+cms triggered by design on main).
+- Decisions / assumptions: rotation is invisible to the platform (credential was never used by repo/tooling), so no functional re-test is possible or needed; residual rule "agents never read `.env`/secret stores" remains standing guidance in the closed row's mitigation column.
+- Deferred or risk IDs: RISK-0008 CLOSED. No new IDs opened.
+- Rollback / recovery: none required for docs; if the new credential is ever re-exposed, reopen per the row's fallback clause.
+
 ## LOG-0225 — 2026-08-23 — C1 prep: cms-origin smoke assertion + publish→rebuild chain checklist
 
 - Outcome: Prepared board C1 (publish→rebuild proof) without touching production state. (1) `infra/deploy/smoke.sh` gained optional third-flag `--expect-cms-origin`: probes `<meta name="cms-build-origin" content="cms">` on `/en/cv/` and `/fa/cv/` (the pages that set the meta today; landing meta is A1 scope). (2) New joint checklist `docs/plan/manual-test-checklists/publish-rebuild-chain-c1.md` with T_publish/T_live/T_revert/T_gone timestamp protocol, pass criteria (zero SSH, ≤10 min, green origin smoke, honest revert) and rollback note. Live production probe already run read-only: full smoke + origin flag PASS (`cms-build-origin=cms` present on both cv pages), confirming current prod HTML is CMS-built.
