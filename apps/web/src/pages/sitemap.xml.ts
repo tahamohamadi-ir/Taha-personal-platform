@@ -1,4 +1,4 @@
-import type { APIRoute } from "astro";
+﻿import type { APIRoute } from "astro";
 import { site } from "../data/site";
 import { getPublishedArticles } from "../lib/cms/articles";
 import {
@@ -19,8 +19,8 @@ export const GET: APIRoute = async () => {
     "/fa/about/",
     "/en/cv/",
     "/fa/cv/",
-    "/en/blog/",
-    "/fa/blog/",
+    "/en/writing/",
+    "/fa/writing/",
     "/en/research/",
     "/fa/research/",
     "/en/research/statement/",
@@ -37,7 +37,7 @@ export const GET: APIRoute = async () => {
   for (const locale of site.locales) {
     const articles = await getPublishedArticles(locale);
     for (const article of articles) {
-      const path = `/${locale}/blog/${article.slug}/`;
+      const path = `/${locale}/writing/${article.slug}/`;
       const lastmod = article.updated_at ?? article.published_at;
       const lastmodTag = lastmod
         ? `<lastmod>${lastmod.slice(0, 10)}</lastmod>`

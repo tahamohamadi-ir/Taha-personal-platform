@@ -44,7 +44,7 @@ When an entity is published in one locale and absent in the requested locale:
 - Inactive routes MUST NOT appear as live header or footer links.
 - Do not create empty category pages or placeholder shells for future content.
 - A header link that 404s is a defect, not progressive disclosure.
-- Current live routes: `/`, `/{locale}/`, `/{locale}/about/`, `/{locale}/about/{section}/`, `/{locale}/about/{section}/{slug}/` when detail content exists, `/{locale}/cv/`, `404`.
+- Current live routes: `/`, `/{locale}/`, `/{locale}/about/`, `/{locale}/about/{section}/`, `/{locale}/about/{section}/{slug}/` when detail content exists, `/{locale}/cv/`, `/{locale}/writing/`, `/{locale}/writing/{slug}/`, `/{locale}/writing/series/{slug}/`, `/{locale}/writing/tag/{slug}/`, `/{locale}/writing/rss.xml`, `/{locale}/research/` (plus published statement/topics/projects/publications detail), `/{locale}/projects/` (plus detail), `404`. `/{locale}/blog/**` exists only as permanent redirects to writing.
 - `KI-0002` is CLOSED in this checkout and must not regress.
 
 ## 5. Canonical URLs

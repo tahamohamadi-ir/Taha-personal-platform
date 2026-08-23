@@ -1,3 +1,10 @@
+## 2026-08-22 — Wave 1 web polish
+
+- Canonical public writing routes at `/{locale}/writing/` with permanent redirects from `/{locale}/blog/`.
+- Per-locale RSS feeds + BaseLayout `rel=alternate` (`DEFER-0018` CLOSED).
+- Default typographic OG card + optional `ogImage` / article featured override (`DEFER-0009` CLOSED).
+- Projects and research catalogs sync `?type=&sort=` via `history.replaceState`.
+
 # Changelog
 
 ## 2026-08-22 — Compose Caddy edge cutover PASS (LOG-0210)

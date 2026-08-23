@@ -70,7 +70,7 @@ test("create → publish → public fa/en JSON", async ({ page, request }) => {
   if (publicBase) {
     for (const locale of ["en", "fa"] as const) {
       const html = await request.get(
-        `${publicBase.replace(/\/$/, "")}/${locale}/blog/${SLUG}/`,
+        `${publicBase.replace(/\/$/, "")}/${locale}/writing/${SLUG}/`,
       );
       expect(html.status(), `public html ${locale}`).toBe(200);
       const text = await html.text();

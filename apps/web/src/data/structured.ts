@@ -1,4 +1,4 @@
-import { site } from "./site";
+﻿import { site } from "./site";
 import { content } from "./content";
 import { profile, type Profile } from "./profile";
 import type { LocaleCode } from "./site";
@@ -43,7 +43,7 @@ export function blogPostingJsonLd(input: {
   updatedAt: string | null;
   wordCount: number;
 }): JsonLdBlock {
-  const url = new URL(`/${input.locale}/blog/${input.slug}/`, site.url).href;
+  const url = new URL(`/${input.locale}/writing/${input.slug}/`, site.url).href;
   const block: JsonLdBlock = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
