@@ -1,5 +1,6 @@
 """Base settings shared by all environments (P3 code-first)."""
 
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -134,3 +135,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 OTP_TOTP_ISSUER = "tahamohamadi.ir"
 OTP_EMAIL_SENDER = "noreply@tahamohamadi.ir"
+
+# Outbound email (contact form). All env-driven; empty EMAIL_HOST means the
+# contact endpoint answers 503 honestly instead of pretending to send.
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "true").lower() == "true"
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "noreply@tahamohamadi.ir")
+# Recipient override for contact messages; falls back to SiteSettings.contact_email.
+CONTACT_FORM_TO = os.environ.get("CONTACT_FORM_TO", "")

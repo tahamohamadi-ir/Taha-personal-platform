@@ -58,15 +58,31 @@ class PublicDownloadOut(Schema):
     updated_at: datetime | None
 
 
+class PublicContactBlockOut(Schema):
+    """Public contact details (owner-published; empty strings are omitted upstream)."""
+
+    email: str = ""
+    phone: str = ""
+    phoneIntl: str = ""
+    location: str = ""
+    linkedin: str = ""
+    orcid: str = ""
+    employer: str = ""
+    employerUrl: str = ""
+    formEnabled: bool = False
+
+
 class PublicSiteSettingsOut(Schema):
     """Public site presentation used by Astro at build time.
 
-    Only ``primaryColor`` and active current-document downloads are projected.
-    Inactive media slots are omitted (private-by-default).
+    Only ``primaryColor``, active current-document downloads and the public
+    contact block are projected. Inactive media slots are omitted
+    (private-by-default).
     """
 
     primaryColor: str
     downloads: list[PublicDownloadOut] = Field(default_factory=list)
+    contact: PublicContactBlockOut = Field(default_factory=PublicContactBlockOut)
 
 
 def _public_media_href(media: Media) -> str:
@@ -239,7 +255,21 @@ def get_public_site_settings(request) -> PublicSiteSettingsOut:
         item = _public_download(kind, media)
         if item is not None:
             downloads.append(item)
-    return PublicSiteSettingsOut(primaryColor=color, downloads=downloads)
+    return PublicSiteSettingsOut(
+        primaryColor=color,
+        downloads=downloads,
+        contact=PublicContactBlockOut(
+            email=(settings.contact_email or "").strip(),
+            phone=(settings.contact_phone or "").strip(),
+            phoneIntl=(settings.contact_phone_intl or "").strip(),
+            location=(settings.contact_location or "").strip(),
+            linkedin=(settings.contact_linkedin or "").strip(),
+            orcid=(settings.contact_orcid or "").strip(),
+            employer=(settings.contact_employer or "").strip(),
+            employerUrl=(settings.contact_employer_url or "").strip(),
+            formEnabled=bool(settings.contact_form_enabled),
+        ),
+    )
 
 
 @api.get(
@@ -1124,3 +1154,8 @@ def download_file(request, locale: str, slug: str):
     response["Cache-Control"] = "private, no-store"
     response["X-Robots-Tag"] = "noindex, nofollow"
     return response
+
+from apps.api.public_contact import contact_router  # noqa: E402
+
+api.add_router("", contact_router)
+

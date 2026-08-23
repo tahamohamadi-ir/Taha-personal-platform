@@ -32,6 +32,15 @@ interface SettingsForm {
   primaryColor: string;
   seoDefaultTitle: string;
   seoDefaultDescription: string;
+  contactEmail: string;
+  contactPhone: string;
+  contactPhoneIntl: string;
+  contactLocation: string;
+  contactLinkedin: string;
+  contactOrcid: string;
+  contactEmployer: string;
+  contactEmployerUrl: string;
+  contactFormEnabled: boolean;
   navLinks: NavLink[];
   currentCvMediaId: number | null;
   currentResumeMediaId: number | null;
@@ -47,6 +56,15 @@ function formFromSettings(settings: SiteSettings): SettingsForm {
     primaryColor: settings.primaryColor,
     seoDefaultTitle: settings.seoDefaultTitle,
     seoDefaultDescription: settings.seoDefaultDescription,
+    contactEmail: settings.contactEmail,
+    contactPhone: settings.contactPhone,
+    contactPhoneIntl: settings.contactPhoneIntl,
+    contactLocation: settings.contactLocation,
+    contactLinkedin: settings.contactLinkedin,
+    contactOrcid: settings.contactOrcid,
+    contactEmployer: settings.contactEmployer,
+    contactEmployerUrl: settings.contactEmployerUrl,
+    contactFormEnabled: settings.contactFormEnabled,
     navLinks: settings.navLinks.map((link) => ({ ...link })),
     currentCvMediaId: settings.currentCvMediaId,
     currentResumeMediaId: settings.currentResumeMediaId,
@@ -151,6 +169,13 @@ export default function SettingsPage(): ReactElement {
   }
 
   function updateField(key: keyof SettingsForm, value: string): void {
+    setForm((prev) => (prev === null ? prev : { ...prev, [key]: value }));
+  }
+
+  function updateBooleanField(
+    key: keyof SettingsForm,
+    value: boolean,
+  ): void {
     setForm((prev) => (prev === null ? prev : { ...prev, [key]: value }));
   }
 
@@ -299,6 +324,15 @@ export default function SettingsPage(): ReactElement {
           navLinks,
           seoDefaultTitle: form.seoDefaultTitle,
           seoDefaultDescription: form.seoDefaultDescription,
+          contactEmail: form.contactEmail,
+          contactPhone: form.contactPhone,
+          contactPhoneIntl: form.contactPhoneIntl,
+          contactLocation: form.contactLocation,
+          contactLinkedin: form.contactLinkedin,
+          contactOrcid: form.contactOrcid,
+          contactEmployer: form.contactEmployer,
+          contactEmployerUrl: form.contactEmployerUrl,
+          contactFormEnabled: form.contactFormEnabled,
           currentCvMediaId: form.currentCvMediaId,
           currentResumeMediaId: form.currentResumeMediaId,
         },
@@ -367,6 +401,14 @@ export default function SettingsPage(): ReactElement {
   const primaryColorErr = errorInfo("primaryColor");
   const seoTitleErr = errorInfo("seoDefaultTitle");
   const seoDescriptionErr = errorInfo("seoDefaultDescription");
+  const contactEmailErr = errorInfo("contactEmail");
+  const contactPhoneErr = errorInfo("contactPhone");
+  const contactPhoneIntlErr = errorInfo("contactPhoneIntl");
+  const contactLocationErr = errorInfo("contactLocation");
+  const contactLinkedinErr = errorInfo("contactLinkedin");
+  const contactOrcidErr = errorInfo("contactOrcid");
+  const contactEmployerErr = errorInfo("contactEmployer");
+  const contactEmployerUrlErr = errorInfo("contactEmployerUrl");
   const currentCvErr = errorInfo("currentCvMediaId");
   const currentResumeErr = errorInfo("currentResumeMediaId");
 
@@ -737,6 +779,187 @@ export default function SettingsPage(): ReactElement {
               aria-describedby={seoDescriptionErr.id}
             />
             <FieldErrorList {...seoDescriptionErr} />
+          </div>
+
+          <h3 className="admin-label mt-2">اطلاعات تماس عمومی</h3>
+          <p className="admin-muted text-sm">
+            این مقادیر در فوتر و صفحه CV سایت عمومی نمایش داده می‌شوند. فرم تماس
+            پیام‌ها را مستقیم به ایمیل زیر می‌فرستد (ذخیره نمی‌شود).
+          </p>
+
+          <div className="admin-form-row">
+            <label htmlFor="settings-contact-email" className="admin-label">
+              ایمیل عمومی
+            </label>
+            <input
+              id="settings-contact-email"
+              type="email"
+              className="admin-input"
+              value={form.contactEmail}
+              disabled={saving}
+              onChange={(event) =>
+                updateField("contactEmail", event.target.value)
+              }
+              aria-invalid={contactEmailErr.id !== undefined}
+              aria-describedby={contactEmailErr.id}
+            />
+            <FieldErrorList {...contactEmailErr} />
+          </div>
+
+          <div className="admin-form-row">
+            <label htmlFor="settings-contact-phone" className="admin-label">
+              شماره تماس (ایران)
+            </label>
+            <input
+              id="settings-contact-phone"
+              type="text"
+              className="admin-input"
+              value={form.contactPhone}
+              disabled={saving}
+              onChange={(event) =>
+                updateField("contactPhone", event.target.value)
+              }
+              aria-invalid={contactPhoneErr.id !== undefined}
+              aria-describedby={contactPhoneErr.id}
+            />
+            <FieldErrorList {...contactPhoneErr} />
+          </div>
+
+          <div className="admin-form-row">
+            <label htmlFor="settings-contact-phone-intl" className="admin-label">
+              شماره تماس بین‌المللی (Google Voice)
+            </label>
+            <input
+              id="settings-contact-phone-intl"
+              type="text"
+              className="admin-input"
+              value={form.contactPhoneIntl}
+              disabled={saving}
+              onChange={(event) =>
+                updateField("contactPhoneIntl", event.target.value)
+              }
+              aria-invalid={contactPhoneIntlErr.id !== undefined}
+              aria-describedby={contactPhoneIntlErr.id}
+            />
+            <FieldErrorList {...contactPhoneIntlErr} />
+          </div>
+
+          <div className="admin-form-row">
+            <label htmlFor="settings-contact-location" className="admin-label">
+              محل اقامت
+            </label>
+            <input
+              id="settings-contact-location"
+              type="text"
+              className="admin-input"
+              value={form.contactLocation}
+              disabled={saving}
+              onChange={(event) =>
+                updateField("contactLocation", event.target.value)
+              }
+              aria-invalid={contactLocationErr.id !== undefined}
+              aria-describedby={contactLocationErr.id}
+            />
+            <FieldErrorList {...contactLocationErr} />
+          </div>
+
+          <div className="admin-form-row">
+            <label htmlFor="settings-contact-linkedin" className="admin-label">
+              LinkedIn (URL کامل)
+            </label>
+            <input
+              id="settings-contact-linkedin"
+              type="url"
+              className="admin-input"
+              value={form.contactLinkedin}
+              disabled={saving}
+              onChange={(event) =>
+                updateField("contactLinkedin", event.target.value)
+              }
+              aria-invalid={contactLinkedinErr.id !== undefined}
+              aria-describedby={contactLinkedinErr.id}
+            />
+            <FieldErrorList {...contactLinkedinErr} />
+          </div>
+
+          <div className="admin-form-row">
+            <label htmlFor="settings-contact-orcid" className="admin-label">
+              ORCID (URL کامل)
+            </label>
+            <input
+              id="settings-contact-orcid"
+              type="url"
+              className="admin-input"
+              value={form.contactOrcid}
+              disabled={saving}
+              onChange={(event) =>
+                updateField("contactOrcid", event.target.value)
+              }
+              aria-invalid={contactOrcidErr.id !== undefined}
+              aria-describedby={contactOrcidErr.id}
+            />
+            <FieldErrorList {...contactOrcidErr} />
+          </div>
+
+          <div className="admin-form-row">
+            <label htmlFor="settings-contact-employer" className="admin-label">
+              محل کار فعلی
+            </label>
+            <input
+              id="settings-contact-employer"
+              type="text"
+              className="admin-input"
+              value={form.contactEmployer}
+              disabled={saving}
+              onChange={(event) =>
+                updateField("contactEmployer", event.target.value)
+              }
+              aria-invalid={contactEmployerErr.id !== undefined}
+              aria-describedby={contactEmployerErr.id}
+            />
+            <FieldErrorList {...contactEmployerErr} />
+          </div>
+
+          <div className="admin-form-row">
+            <label htmlFor="settings-contact-employer-url" className="admin-label">
+              وب‌سایت محل کار (URL کامل)
+            </label>
+            <input
+              id="settings-contact-employer-url"
+              type="url"
+              className="admin-input"
+              value={form.contactEmployerUrl}
+              disabled={saving}
+              onChange={(event) =>
+                updateField("contactEmployerUrl", event.target.value)
+              }
+              aria-invalid={contactEmployerUrlErr.id !== undefined}
+              aria-describedby={contactEmployerUrlErr.id}
+            />
+            <FieldErrorList {...contactEmployerUrlErr} />
+          </div>
+
+          <div className="admin-form-row">
+            <label
+              htmlFor="settings-contact-form-enabled"
+              className="admin-label"
+            >
+              فعال بودن فرم تماس (ارسال پیام به ایمیل بالا)
+            </label>
+            <input
+              id="settings-contact-form-enabled"
+              type="checkbox"
+              className="admin-checkbox"
+              checked={form.contactFormEnabled}
+              disabled={saving}
+              onChange={(event) =>
+                updateBooleanField("contactFormEnabled", event.target.checked)
+              }
+            />
+            <p className="admin-muted text-sm">
+              ارسال واقعی ایمیل نیازمند متغیرهای EMAIL_* روی سرور است؛ بدون آن
+              فرم خطای «تنظیم نشده» می‌دهد.
+            </p>
           </div>
         </div>
 

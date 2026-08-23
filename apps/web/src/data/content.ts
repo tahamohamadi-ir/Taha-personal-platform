@@ -184,6 +184,11 @@ export interface LocaleContent {
   contact: {
     heading: string;
     unavailable: string;
+    formIntro: string;
+    nameLabel: string;
+    emailLabel: string;
+    messageLabel: string;
+    sendLabel: string;
   };
   search: {
     heading: string;
@@ -419,6 +424,12 @@ export const content: Record<LocaleCode, LocaleContent> = {
     contact: {
       heading: "Contact",
       unavailable: "Contact details are not published yet.",
+      formIntro:
+        "Send a message — it goes straight to my inbox (not stored on the site).",
+      nameLabel: "Name (optional)",
+      emailLabel: "Your email",
+      messageLabel: "Message",
+      sendLabel: "Send message",
     },
     search: {
       heading: "Search",
@@ -654,6 +665,12 @@ export const content: Record<LocaleCode, LocaleContent> = {
     contact: {
       heading: "تماس",
       unavailable: "اطلاعات تماس هنوز منتشر نشده است.",
+      formIntro:
+        "پیام بفرستید — مستقیم به ایمیل من می‌رسد (در سایت ذخیره نمی‌شود).",
+      nameLabel: "نام (اختیاری)",
+      emailLabel: "ایمیل شما",
+      messageLabel: "پیام",
+      sendLabel: "ارسال پیام",
     },
     search: {
       heading: "جستجو",

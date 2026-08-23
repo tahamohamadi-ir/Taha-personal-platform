@@ -826,6 +826,15 @@ export interface SiteSettings {
   navLinks: NavLink[];
   seoDefaultTitle: string;
   seoDefaultDescription: string;
+  contactEmail: string;
+  contactPhone: string;
+  contactPhoneIntl: string;
+  contactLocation: string;
+  contactLinkedin: string;
+  contactOrcid: string;
+  contactEmployer: string;
+  contactEmployerUrl: string;
+  contactFormEnabled: boolean;
   currentCvMediaId: number | null;
   currentResumeMediaId: number | null;
   currentCv: CurrentDocument | null;
@@ -841,6 +850,15 @@ export interface SiteSettingsUpdatePayload {
   navLinks?: NavLink[];
   seoDefaultTitle?: string;
   seoDefaultDescription?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  contactPhoneIntl?: string;
+  contactLocation?: string;
+  contactLinkedin?: string;
+  contactOrcid?: string;
+  contactEmployer?: string;
+  contactEmployerUrl?: string;
+  contactFormEnabled?: boolean;
   currentCvMediaId?: number | null;
   currentResumeMediaId?: number | null;
 }

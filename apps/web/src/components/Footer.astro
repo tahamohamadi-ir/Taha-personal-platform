@@ -1,6 +1,7 @@
 ﻿---
 import type { LocaleContent } from "../data/content";
 import { content as allContent } from "../data/content";
+import { getSiteContact, type PublicSiteContactDto } from "../lib/cms/siteSettings";
 import logo from "../branding/logo.png";
 
 interface Props {
@@ -17,6 +18,14 @@ const switchLabel =
     ? other.gateway.englishLabel
     : other.gateway.persianLabel;
 const switchLang = otherLang;
+const contact: PublicSiteContactDto = await getSiteContact();
+const telHref = (value: string) => `tel:${value.replace(/[^+\d]/g, "")}`;
+const hasContactDetails =
+  contact.email !== "" ||
+  contact.phone !== "" ||
+  contact.linkedin !== "" ||
+  contact.orcid !== "" ||
+  contact.location !== "";
 ---
 
 <footer class="site-footer">
@@ -53,9 +62,116 @@ const switchLang = otherLang;
     >
       {switchLabel}
     </a>
-    <span class="contact-state" aria-label={content.contact.heading}>
-      {content.contact.unavailable}
-    </span>
+    {
+      hasContactDetails ? (
+        <div class="site-contact" id="site-contact">
+          <span class="contact-heading">{content.contact.heading}</span>
+          <ul class="contact-links">
+            {contact.email !== "" && (
+              <li>
+                <a href={`mailto:${contact.email}`}>
+                  <bdi>{contact.email}</bdi>
+                </a>
+              </li>
+            )}
+            {contact.phone !== "" && (
+              <li>
+                <a href={telHref(contact.phone)} dir="ltr">
+                  {contact.phone}
+                </a>
+              </li>
+            )}
+            {contact.phoneIntl !== "" && (
+              <li>
+                <a href={telHref(contact.phoneIntl)} dir="ltr">
+                  {contact.phoneIntl}
+                </a>
+              </li>
+            )}
+            {contact.linkedin !== "" && (
+              <li>
+                <a href={contact.linkedin} rel="me noopener noreferrer">
+                  LinkedIn
+                </a>
+              </li>
+            )}
+            {contact.orcid !== "" && (
+              <li>
+                <a href={contact.orcid} rel="me noopener noreferrer">
+                  ORCID
+                </a>
+              </li>
+            )}
+            {contact.employer !== "" && (
+              <li>
+                {contact.employerUrl !== "" ? (
+                  <a href={contact.employerUrl} rel="noopener noreferrer">
+                    {contact.employer}
+                  </a>
+                ) : (
+                  <span>{contact.employer}</span>
+                )}
+              </li>
+            )}
+            {contact.location !== "" && <li><span>{contact.location}</span></li>}
+          </ul>
+          {contact.formEnabled && contact.email !== "" && (
+            <form class="contact-form" method="post" action="/api/contact">
+              <p class="contact-form-intro">{content.contact.formIntro}</p>
+              <input type="hidden" name="locale" value={content.lang} />
+              <input
+                type="text"
+                name="website"
+                value=""
+                class="contact-honeypot"
+                tabindex={-1}
+                autocomplete="off"
+                aria-hidden="true"
+              />
+              <label class="visually-hidden" for="contact-name">
+                {content.contact.nameLabel}
+              </label>
+              <input
+                id="contact-name"
+                type="text"
+                name="name"
+                maxlength={120}
+                autocomplete="name"
+                placeholder={content.contact.nameLabel}
+              />
+              <label class="visually-hidden" for="contact-email-field">
+                {content.contact.emailLabel}
+              </label>
+              <input
+                id="contact-email-field"
+                type="email"
+                name="email"
+                required
+                maxlength={254}
+                autocomplete="email"
+                placeholder={content.contact.emailLabel}
+              />
+              <label class="visually-hidden" for="contact-message">
+                {content.contact.messageLabel}
+              </label>
+              <textarea
+                id="contact-message"
+                name="message"
+                rows={4}
+                required
+                maxlength={4000}
+                placeholder={content.contact.messageLabel}
+              />
+              <button type="submit">{content.contact.sendLabel}</button>
+            </form>
+          )}
+        </div>
+      ) : (
+        <span class="contact-state" aria-label={content.contact.heading}>
+          {content.contact.unavailable}
+        </span>
+      )
+    }
   </div>
   <p class="footer-identity">
     {content.footer.copyrightMark} <bdi>{new Date().getFullYear()}</bdi>{" "}
@@ -158,6 +274,96 @@ const switchLang = otherLang;
   .contact-state {
     color: var(--color-ink-secondary);
     font-size: 0.875rem;
+  }
+
+  .site-contact {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2, 0.5rem);
+    min-width: min(100%, 22rem);
+    flex: 1 1 16rem;
+  }
+
+  .contact-heading {
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+
+  .contact-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 0.875rem;
+  }
+
+  .contact-links a {
+    color: var(--color-ink-secondary);
+    text-decoration: none;
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .contact-links a:hover,
+  .contact-links a:focus-visible {
+    color: var(--color-brand);
+  }
+
+  .contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2, 0.5rem);
+    max-width: 26rem;
+  }
+
+  .contact-form-intro {
+    margin: 0;
+    color: var(--color-ink-secondary);
+    font-size: 0.8125rem;
+  }
+
+  .contact-form input:not(.contact-honeypot),
+  .contact-form textarea {
+    font: inherit;
+    color: var(--color-ink);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-sm, 8px);
+    padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  }
+
+  .contact-form textarea {
+    resize: vertical;
+  }
+
+  .contact-form button {
+    align-self: flex-start;
+    min-height: 2.75rem;
+    padding-inline: var(--space-4, 1rem);
+    font: inherit;
+    font-weight: 600;
+    color: var(--color-inverse);
+    background: var(--color-brand);
+    border: 1px solid var(--color-brand);
+    border-radius: var(--radius-sm, 8px);
+    cursor: pointer;
+    transition: background-color var(--duration-fast, 140ms) var(--ease-out, ease-out);
+  }
+
+  .contact-form button:hover,
+  .contact-form button:focus-visible {
+    background: var(--color-brand-emphasis);
+  }
+
+  .contact-honeypot {
+    position: absolute;
+    inset-inline-start: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
   }
 
   .footer-identity {

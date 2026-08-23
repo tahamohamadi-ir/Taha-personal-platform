@@ -612,6 +612,9 @@ def test_settings_put_current_cv_pdf_and_public_site(admin_api_client, media_roo
 def test_featured_singleton_created_on_get(admin_api_client):
     from apps.siteconfig.models import SiteSettings
 
+    # Migration 0003 seeds a default row (owner contact data); remove it to
+    # exercise the create-on-first-GET path itself.
+    SiteSettings.objects.all().delete()
     assert SiteSettings.objects.count() == 0
     admin_api_client.get("/api/v1/admin/site")
     assert SiteSettings.objects.count() == 1
