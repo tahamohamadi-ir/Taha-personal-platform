@@ -44,7 +44,12 @@ export async function getPublicSiteSettings(): Promise<PublicSiteSettingsDto | n
   throwIfCmsError(result, "site settings");
   if (result.kind === "unset") return null;
   if (result.kind === "http") {
-    if (result.status === 404) return null;
+    if (result.status === 404) {
+      if (isCmsOriginBuild()) {
+        throw new CmsOriginError("site settings: unexpected HTTP 404", 404);
+      }
+      return null;
+    }
     throw new CmsOriginError(
       `site settings: unexpected HTTP ${result.status}`,
       result.status,

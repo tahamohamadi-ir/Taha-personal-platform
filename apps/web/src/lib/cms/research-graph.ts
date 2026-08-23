@@ -1,5 +1,6 @@
 /** Build-time Topic↔Project↔Publication graph from published CMS projections only. */
 
+import { CmsOriginError, isCmsOriginBuild } from "./client";
 import {
   getResearchProject,
   getResearchProjects,
@@ -82,13 +83,37 @@ export async function getResearchGraph(
     return null;
   }
 
-  const topicDetails = (
-    await Promise.all(topics.map((t) => getResearchTopic(locale, t.slug)))
-  ).filter((t): t is ResearchTopicDetailDto => t !== null);
+  const topicDetailsRaw = await Promise.all(
+    topics.map((t) => getResearchTopic(locale, t.slug)),
+  );
+  if (isCmsOriginBuild()) {
+    const missingTopics = topics.filter((_, i) => topicDetailsRaw[i] === null);
+    if (missingTopics.length > 0) {
+      throw new CmsOriginError(
+        `research graph: missing topic detail for ${missingTopics.map((t) => t.slug).join(", ")}`,
+        404,
+      );
+    }
+  }
+  const topicDetails = topicDetailsRaw.filter(
+    (t): t is ResearchTopicDetailDto => t !== null,
+  );
 
-  const projectDetails = (
-    await Promise.all(projects.map((p) => getResearchProject(locale, p.slug)))
-  ).filter((p): p is ProjectDetailDto => p !== null);
+  const projectDetailsRaw = await Promise.all(
+    projects.map((p) => getResearchProject(locale, p.slug)),
+  );
+  if (isCmsOriginBuild()) {
+    const missingProjects = projects.filter((_, i) => projectDetailsRaw[i] === null);
+    if (missingProjects.length > 0) {
+      throw new CmsOriginError(
+        `research graph: missing project detail for ${missingProjects.map((p) => p.slug).join(", ")}`,
+        404,
+      );
+    }
+  }
+  const projectDetails = projectDetailsRaw.filter(
+    (p): p is ProjectDetailDto => p !== null,
+  );
 
   const pubBySlug = new Map<string, PublicationListDto>(
     publications.map((p) => [p.slug, p]),
