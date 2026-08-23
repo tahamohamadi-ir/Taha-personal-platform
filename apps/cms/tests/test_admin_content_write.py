@@ -72,12 +72,12 @@ def _create_landing(client, *, slug, title, fields=None, locale="en"):
 
 
 def test_create_article_201(admin_api_client):
-    body = " ".join(["word"] * 401)  # computes to a 3-minute read
+    body = " ".join(["word"] * 401)  # en @ 230 wpm → ceil(401/230) = 2-minute read
     response = _create_article(
         admin_api_client,
         slug="hello",
         title="Hello world",
-        fields={"excerpt": "A short excerpt.", "body": body, "readingTimeMinutes": "3"},
+        fields={"excerpt": "A short excerpt.", "body": body, "readingTimeMinutes": "2"},
     )
     assert response.status_code == 201
     data = response.json()
@@ -85,11 +85,11 @@ def test_create_article_201(admin_api_client):
     assert data["locale"] == "en"
     assert data["slug"] == "hello"
     assert data["fields"]["excerpt"] == "A short excerpt."
-    assert data["fields"]["readingTimeMinutes"] == 3
+    assert data["fields"]["readingTimeMinutes"] == 2
 
     article = Article.objects.get(locale="en", slug="hello")
     assert article.status == "draft"
-    assert article.reading_time_minutes == 3
+    assert article.reading_time_minutes == 2
 
 
 def test_create_duplicate_409(admin_api_client):
@@ -280,7 +280,7 @@ def test_update_blank_numeric_field_ok(admin_api_client):
         admin_api_client,
         slug="blanknum",
         title="Blank num",
-        fields={"excerpt": "x", "body": body, "readingTimeMinutes": "3"},
+        fields={"excerpt": "x", "body": body, "readingTimeMinutes": "2"},
     )
     assert created.status_code == 201
     article_id = created.json()["id"]
@@ -293,7 +293,7 @@ def test_update_blank_numeric_field_ok(admin_api_client):
         HTTP_IF_MATCH=f'"{updated_at}"',
     )
     assert response.status_code == 200
-    assert response.json()["fields"]["readingTimeMinutes"] == 3
+    assert response.json()["fields"]["readingTimeMinutes"] == 2
 
 
 def test_p8_book_and_download_admin_crud_smoke(admin_api_client, db):
