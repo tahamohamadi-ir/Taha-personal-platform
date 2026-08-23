@@ -47,11 +47,11 @@ services:
           - postgres
 
   cms:
-    image: ${CMS_IMAGE:-ghcr.io/tahamohamadi-ir/taha-cms:main}
+    image: ${CMS_IMAGE:?CMS_IMAGE is required - set to ghcr.io/tahamohamadi-ir/taha-cms:<sha>}
     build:
       context: ../..
       dockerfile: infra/cms/Dockerfile.cms
-    pull_policy: ${CMS_PULL_POLICY:-missing}
+    pull_policy: ${CMS_PULL_POLICY:-always}
     env_file: .env
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.production
@@ -85,11 +85,11 @@ services:
       retries: 5
 
   web:
-    image: ${WEB_IMAGE:-ghcr.io/tahamohamadi-ir/taha-web:main}
+    image: ${WEB_IMAGE:?WEB_IMAGE is required - set to ghcr.io/tahamohamadi-ir/taha-web:<sha>}
     build:
       context: ../..
       dockerfile: infra/web/Dockerfile.web
-    pull_policy: ${WEB_PULL_POLICY:-missing}
+    pull_policy: ${WEB_PULL_POLICY:-always}
     ports:
       - "127.0.0.1:13080:8080"
     mem_limit: 128m
@@ -125,7 +125,16 @@ services:
       - caddy_data:/data
       - caddy_config:/config
       # Legacy host static paths referenced by Caddyfile.compose (/fonts, /presentation).
-      - /var/www/html:/var/www/html:ro
+      # Guard: after LOG-0216 host /var/www/html may be absent; Docker would create an
+      # empty dir -> Caddy 404. `create_host_path: false` fails fast instead of
+      # creating an empty mount; host must `mkdir -p /var/www/html` or remove this
+      # mount when Caddyfile.compose no longer references /var/www/html.
+      - type: bind
+        source: /var/www/html
+        target: /var/www/html
+        read_only: true
+        bind:
+          create_host_path: false
     mem_limit: 128m
     cpus: "0.25"
     restart: unless-stopped
