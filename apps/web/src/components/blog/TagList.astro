@@ -1,4 +1,4 @@
----
+﻿---
 import type { TopicTagDto } from "../../lib/cms/articles";
 
 interface Props {
@@ -14,7 +14,7 @@ const { locale, tags } = Astro.props;
     <ul class="tag-list">
       {tags.map((tag) => (
         <li>
-          <a href={`/${locale}/blog/tag/${tag.slug}/`}>{tag.name}</a>
+          <a href={`/${locale}/writing/tag/${tag.slug}/`}>{tag.name}</a>
         </li>
       ))}
     </ul>

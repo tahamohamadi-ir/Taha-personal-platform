@@ -187,8 +187,38 @@ cards.sort((a, b) => a.sortKey.localeCompare(b.sortKey, locale));
       }
     };
 
-    filter.addEventListener("change", apply);
-    sort.addEventListener("change", apply);
+    const params = new URLSearchParams(window.location.search);
+    const typeFromUrl = params.get("type");
+    const sortFromUrl = params.get("sort");
+    if (typeFromUrl && [...filter.options].some((o) => o.value === typeFromUrl)) {
+      filter.value = typeFromUrl;
+    }
+    if (sortFromUrl && [...sort.options].some((o) => o.value === sortFromUrl)) {
+      sort.value = sortFromUrl;
+    }
+
+    const syncUrl = () => {
+      const next = new URLSearchParams(window.location.search);
+      if (filter.value && filter.value !== "all") next.set("type", filter.value);
+      else next.delete("type");
+      const defaultSort = sort.options[0]?.value ?? "";
+      if (sort.value && sort.value !== defaultSort) next.set("sort", sort.value);
+      else next.delete("sort");
+      const qs = next.toString();
+      const url = qs
+        ? `${window.location.pathname}?${qs}${window.location.hash}`
+        : `${window.location.pathname}${window.location.hash}`;
+      window.history.replaceState({}, "", url);
+    };
+
+    const applyAndSync = () => {
+      apply();
+      syncUrl();
+    };
+
+    filter.addEventListener("change", applyAndSync);
+    sort.addEventListener("change", applyAndSync);
+    apply();
   }
 
   document.querySelectorAll<HTMLElement>("[data-research-catalog]").forEach(bindCatalog);

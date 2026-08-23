@@ -1,3 +1,13 @@
+## LOG-0211 — 2026-08-22 — Wave 1 web polish (writing-canonical, RSS, OG, catalog URL filters)
+
+- Outcome: Synced plan index to LOG-0210 (`DEFER-0027`/`DEFER-0031` + `RISK-0013` CLOSED; ADM-6 remaining = QA/`DEFER-0032` only). Shipped canonical `/{locale}/writing/` with permanent redirects from `/{locale}/blog/**`. Added per-locale RSS + BaseLayout alternate (`DEFER-0018` CLOSED). Added typographic default OG SVG/PNG + `ogImage` prop (`DEFER-0009` CLOSED). Projects/Research catalogs persist `?type=&sort=` via `history.replaceState` (no-JS still shows all items).
+- Why: Close IA drift before feeds/search deepen `/blog/` URLs; finish low-risk public polish without CMS migrations.
+- Scope / files: `apps/web` routes/components/layouts/public OG; `docs/plan/wave1-web-polish-task-spec.md`; plan README; IA-CONTRACT; deferred-validation; Task-list; CHANGELOG; AGENTS.md; this entry.
+- Commands or actions actually performed: worktree `feat/wave1-web-polish`; Astro writing routes + blog redirects; RSS endpoints; OG assets; catalog URL sync; docs ledger updates.
+- Verification actually performed and result: cd apps/web && npm run check → 0 errors (blog redirect unused-param hints only); pm run build → PASS; ode qa/writing-rss.spec.mjs PASS; ode qa/writing-canonical-og.spec.mjs PASS; ode qa/projects-catalog.spec.mjs PASS.
+- Deferred or risk IDs: `DEFER-0018` **CLOSED**; `DEFER-0009` **CLOSED**; `DEFER-0032` remains OPEN (ADM QA); Wave 2+ not started.
+- Rollback / recovery: revert branch; `/blog/` tree restorable from git history.
+
 # Work Log
 
 ## LOG-0210 — 2026-08-22 — Compose Caddy edge cutover PASS (525 rollback + ACME seed)

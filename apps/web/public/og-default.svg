@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Taha Mohammadi">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f7f8f5"/>
+      <stop offset="55%" stop-color="#e4f7f4"/>
+      <stop offset="100%" stop-color="#f3e8cf"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="48" y="48" width="1104" height="534" rx="24" fill="#ffffff" fill-opacity="0.72" stroke="#dde5e3"/>
+  <image xlink:href="logo.png" x="96" y="120" width="120" height="120"/>
+  <text x="248" y="175" font-family="Inter, Vazirmatn, Segoe UI, sans-serif" font-size="54" font-weight="700" fill="#182328">Taha Mohammadi</text>
+  <text x="248" y="245" font-family="Inter, Vazirmatn, Segoe UI, sans-serif" font-size="32" fill="#087c73">Research Â· Engineering Â· Writing</text>
+  <text x="96" y="480" font-family="Inter, Vazirmatn, Segoe UI, sans-serif" font-size="28" fill="#657278">tahamohamadi.ir</text>
+  <rect x="96" y="520" width="180" height="8" rx="4" fill="#087c73"/>
+</svg>

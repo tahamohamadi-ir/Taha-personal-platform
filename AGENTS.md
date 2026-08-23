@@ -19,7 +19,7 @@ P0-G0 is **PASS for static-only P1** (2026-08-14). Staging is decommissioned (AD
 
 **Public `/api/` (live, 2026-08-17):** Caddy proxies published-only Ninja JSON for articles, research, and projects (`DEFER-0017` CLOSED). `/media/` is proxied; contact persistence and media *upload* stay unpublished. Loopback rebuild: `rebuild-static.sh` until Caddy web cutover; after cutover use `rebuild-web.sh` (LOG-0173).
 
-**P4–P6 public routes (live):** `/{locale}/blog/`, `/{locale}/research/`, `/{locale}/projects/`. Header/footer may link those destinations because they exist. Canonical IA writing URL remains `/{locale}/writing/`; the shipped public tree is `/{locale}/blog/` until a writing-canonical redirect ships. RSS/Atom is `DEFER-0018`.
+**P4–P6 public routes (live):** `/{locale}/writing/`, `/{locale}/research/`, `/{locale}/projects/`. Header/footer may link those destinations because they exist. `/{locale}/blog/` permanently redirects to the writing tree (IA writing-canonical). RSS/Atom is `/{locale}/writing/rss.xml` (`DEFER-0018` CLOSED).
 
 **CMS image `b6bea6a` (live, 2026-08-19):** owner `prod-cms-update-migrate.sh`; `content.0008` + `composition.0002` applied. Blog story editor is on article edit. Post-Wagtail-uninstall smoke uses `/admin/login/` + `/staff/login/` (LOG-0193).
 

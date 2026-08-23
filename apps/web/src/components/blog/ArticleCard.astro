@@ -1,4 +1,4 @@
----
+﻿---
 import type { ArticleListDto } from "../../lib/cms/articles";
 import TagList from "./TagList.astro";
 
@@ -20,7 +20,7 @@ const dateLabel = article.published_at
 
 <article class="article-card">
   <h2 class="article-card-title">
-    <a href={`/${locale}/blog/${article.slug}/`}>{article.title}</a>
+    <a href={`/${locale}/writing/${article.slug}/`}>{article.title}</a>
   </h2>
   {
     article.excerpt && (

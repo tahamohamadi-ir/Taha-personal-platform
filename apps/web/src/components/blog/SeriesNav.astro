@@ -1,4 +1,4 @@
----
+﻿---
 import type { ArticleListDto } from "../../lib/cms/articles";
 
 interface Props {
@@ -17,13 +17,13 @@ const { locale, prev, next, prevLabel, nextLabel, seriesLabel } = Astro.props;
   (prev || next) && (
     <nav class="series-nav" aria-label={seriesLabel}>
       {prev && (
-        <a class="series-nav-prev" href={`/${locale}/blog/${prev.slug}/`}>
+        <a class="series-nav-prev" href={`/${locale}/writing/${prev.slug}/`}>
           <span>{prevLabel}</span>
           <strong>{prev.title}</strong>
         </a>
       )}
       {next && (
-        <a class="series-nav-next" href={`/${locale}/blog/${next.slug}/`}>
+        <a class="series-nav-next" href={`/${locale}/writing/${next.slug}/`}>
           <span>{nextLabel}</span>
           <strong>{next.title}</strong>
         </a>
