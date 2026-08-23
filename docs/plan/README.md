@@ -26,6 +26,7 @@ Last reconciled: 2026-08-23.
 | `rich-blocks-v2-task-spec.md` | DONE | agent | Six no-JS story blocks. Live via web rebuilds. |
 | `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | Remaining: ?18 manual QA (`DEFER-0032` PARTIAL). |
 | `P0-A-stack-inventory-task-spec.md` | BLOCKED (owner) | owner | Read-only VPS inventory. Not an agent task. |
+| `master-remaining-work-checklist.md` | ACTIVE board | agent + owner | Single remaining-work board (LOG-0218). Bakes in owner constraints: all content CMS-managed, complete admin UX, minimal VPS SSH, RISK-0011 de-risking. Execute items only from this board. |
 
 Owner remaining work that is **not** a new spec: demo allowlist before CSP enforce (`DEFER-0021`); manual ADM QA remainder (`DEFER-0032` / S6); optional Research Statement PDF Media upload; contact inbox (`DEBT-0006`). Old-stack decommission **CLOSED** (LOG-0216). HMAC (`DEFER-0027`) and Compose Caddy (`DEFER-0031`) **CLOSED**. Do **not** set `CMS_CD_AUTO_MIGRATE`.
 
