@@ -41,7 +41,9 @@ export type ContentEntity =
   | "publication"
   | "book"
   | "talk"
-  | "download";
+  | "download"
+  | "course"
+  | "creative-work";
 
 export type ContentStatus =
   | "draft"
