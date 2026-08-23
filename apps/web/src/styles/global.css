@@ -8,7 +8,7 @@
   tokens only. Dark mode is out of R2 scope.
 */
 
-@theme {
+@theme static {
   /* primitives */
   --color-navy-950: #071225;
   --color-navy-900: #0b1630;
@@ -57,6 +57,83 @@
   --font-sans: var(--font-latin);
   --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Code", Consolas,
     monospace;
+
+  /*
+    Spacing scale on a 4px rhythm (DESIGN-CONTRACT §2).
+    Named --space-N vars do not feed Tailwind utilities (TW4 derives those
+    from --spacing), so they are consumed exclusively via var().
+  */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-7: 1.75rem;
+  --space-8: 2rem;
+  --space-9: 2.25rem;
+  --space-10: 2.5rem;
+  --space-11: 2.75rem;
+  --space-12: 3rem;
+  --space-14: 3.5rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+
+  /* Fluid rhythm: page inset and section padding */
+  --space-gutter: clamp(1rem, 0.75rem + 1.5vw, 2.5rem);
+  --space-section: clamp(3rem, 2rem + 4vw, 6rem);
+
+  /* Type scale (overlapping Tailwind defaults keep their default values) */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-display: clamp(2rem, 1.35rem + 2.6vw, 3rem);
+
+  /* Measure */
+  --measure-prose: 62ch;
+  --measure-narrow: 42ch;
+  --measure-page: 1280px;
+
+  /* Elevation */
+  --shadow-sm: 0 1px 2px rgba(24, 35, 40, 0.05), 0 1px 3px rgba(24, 35, 40, 0.06);
+  --shadow-md: 0 2px 6px rgba(24, 35, 40, 0.07), 0 6px 16px rgba(24, 35, 40, 0.1);
+  --shadow-lg: 0 16px 48px rgba(7, 18, 37, 0.18);
+
+  /* Motion */
+  --duration-fast: 140ms;
+  --duration-base: 200ms;
+  --duration-slow: 280ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Radius completion */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+
+  /* Glass completion (Gateway + sticky header only — DESIGN-CONTRACT §2b) */
+  --glass-blur: 14px;
+  --glass-saturate: 160%;
+  --glass-border-light: rgba(185, 199, 195, 0.4);
+  --glass-shadow-light: 0 16px 48px rgba(24, 35, 40, 0.1);
+  --glass-solid-dark: #0b1630;
+  --glass-solid-light: #f7f8f5;
+
+  /* Semantic aliases consumed by components (E1/P14) — single dictionary:
+     muted = secondary ink, tertiary per contract table, accent = brand,
+     raised surface = card white, display/body faces = the bilingual pair. */
+  --color-ink-muted: var(--color-ink-secondary);
+  --color-ink-tertiary: #7c8a8f;
+  --color-accent: var(--color-brand);
+  --color-surface-raised: var(--color-surface);
+  --font-body: var(--font-latin);
+  --font-display: var(--font-latin);
 }
 
 @layer base {
@@ -118,7 +195,7 @@
     color: var(--color-inverse);
     padding: 0.5rem 1rem;
     border-radius: var(--radius-md);
-    transition: top 140ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: top var(--duration-fast) var(--ease-out);
   }
 
   .skip-link:focus {

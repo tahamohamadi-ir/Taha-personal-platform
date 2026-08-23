@@ -75,9 +75,25 @@ Use a token. Do not write a raw `rgb()`, `px` gap, or `ms` duration in a compone
 If you genuinely need a value that does not exist, add it to `global.css` in the same
 task and say so in the Work Log.
 
+#### Alias tokens (defined, consume freely)
+
+These names are defined in `global.css` as aliases into the tables above
+(single-dictionary rule — do not invent a second meaning):
+
+| Token | Resolves to |
+|---|---|
+| `--color-ink-muted` | `var(--color-ink-secondary)` |
+| `--color-accent` | `var(--color-brand)` |
+| `--color-surface-raised` | `var(--color-surface)` |
+| `--font-body` / `--font-display` | `var(--font-latin)` |
+
 `design.md` uses different names for the same roles (`--text-primary`,
 `--brand-primary`, `--focus-ring`). Those names do **not** exist in the build.
 Translate to the table above.
+
+Note: `global.css` declares its token block as `@theme static` so every token
+above is emitted to the built CSS even when no utility consumes it yet
+(Tailwind v4 otherwise tree-shakes unused variables).
 
 Dark mode is out of scope. Do not add a theme toggle.
 
