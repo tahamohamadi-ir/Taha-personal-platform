@@ -1,9 +1,10 @@
 # Production Caddyfile — tahamohamadi.ir (HOST edge)
 #
-# Deployed automatically by CD via caddy-sync.sh while repository variable
-# CADDY_EDGE is unset or not `compose` (default until DEFER-0031 live cutover).
-# Do NOT edit /etc/caddy/Caddyfile on the VPS directly; change this file
-# and push to main.
+# HISTORICAL / ROLLBACK ONLY: the Compose edge (infra/caddy/Caddyfile.compose)
+# is live since DEFER-0031 CLOSED (LOG-0210). CD reloads Compose caddy while
+# repository variable CADDY_EDGE=compose; this host-edge file is kept for
+# rollback per infra/caddy/HOST-CADDY-DISABLE.md. Do NOT edit
+# /etc/caddy/Caddyfile on the VPS directly; change this file and push to main.
 #
 # Compose-edge alternative (Docker DNS upstreams): infra/caddy/Caddyfile.compose
 # Host disable + cutover/rollback: infra/caddy/HOST-CADDY-DISABLE.md

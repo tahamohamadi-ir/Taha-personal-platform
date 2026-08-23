@@ -1,8 +1,8 @@
 name: Admin frontend CI
 
 # Builds the custom admin SPA (ADR-0026, apps/cms/admin-frontend/) whenever it
-# changes. The SPA is not yet served by Django; this job keeps it buildable and
-# type-safe until the ADM-1 cutover wires it under /admin/.
+# changes. The SPA is served by Django at /admin/ (ADM-1 cutover, DEFER-0023
+# CLOSED); this job keeps it buildable and type-safe.
 
 on:
   push:

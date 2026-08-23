@@ -15,9 +15,9 @@ agents follow, do not match each other or do not meet the project's own rules.
 
 It does not list taste. Taste is in the companion proposals file.
 
-Canonical ledgers (`known-issues.md`, `TECH_DEBT.md`, `RISK_REGISTER.md`) were
-not written in this pass. Highest IDs in this working copy: `KI-0001`,
-`DEBT-0007`, `RISK-0013`, `DEFER-0032`, `LOG-0216`.
+Canonical ledgers (`known-issues.md`, `TECH_DEBT.md`, `RISK_REGISTER.md`,
+`deferred-validation.md`) received real IDs for P1–P19 on 2026-08-23 (board
+item **E0**); see the mapping table below for each ID.
 
 ---
 
@@ -344,15 +344,29 @@ Compare-Object $used $defined | Where-Object { $_.SideIndicator -eq '<=' }
 
 ---
 
-## Suggested ledger mapping (not allocated)
+## Suggested ledger mapping (allocated 2026-08-23, board E0)
 
-| Problem | Ledger |
+| Problem | Ledger ID |
 |---|---|
-| P1, P3, P4, P5, P12 | `docs/status/known-issues.md` |
-| P2, P9, P10, P14, P15, P16, P17, P19 | `docs/status/TECH_DEBT.md` |
-| P6, P7, P8, P18 | `docs/status/deferred-validation.md` |
-| P11 | `docs/status/RISK_REGISTER.md` |
-| P13 | product decision; then IA-CONTRACT or deferred work |
+| P1 | `KI-0002` (`known-issues.md`) |
+| P3 | `KI-0003` (`known-issues.md`) |
+| P4 | `KI-0004` (`known-issues.md`) |
+| P5 | `KI-0005` (`known-issues.md`) |
+| P12 | `KI-0006` (`known-issues.md`) — fix merged, pending deploy |
+| P2 | `DEBT-0008` (`TECH_DEBT.md`) |
+| P9 | `DEBT-0009` (`TECH_DEBT.md`) |
+| P10 | `DEBT-0010` (`TECH_DEBT.md`) |
+| P14 | `DEBT-0011` (`TECH_DEBT.md`) |
+| P15 | `DEBT-0012` (`TECH_DEBT.md`) |
+| P16 | `DEBT-0013` (`TECH_DEBT.md`) |
+| P17 | `DEBT-0014` (`TECH_DEBT.md`) |
+| P19 | `DEBT-0015` (`TECH_DEBT.md`) |
+| P6 | `DEFER-0033` (`deferred-validation.md`) |
+| P7 | `DEFER-0034` (`deferred-validation.md`) |
+| P8 | `DEFER-0035` (`deferred-validation.md`) |
+| P18 | `DEFER-0036` (`deferred-validation.md`) |
+| P13 | `DEFER-0037` (`deferred-validation.md`; product decision → board E9) |
+| P11 | `RISK-0014` (`RISK_REGISTER.md`) |
 
 ---
 

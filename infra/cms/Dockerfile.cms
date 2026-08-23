@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 #
-# Multi-stage image for the CMS runtime (Django 5.2.9 / Wagtail 7.4.2 / Ninja 1.6.2).
+# Multi-stage image for the CMS runtime (Django 5.2.9 / Ninja 1.6.2).
 # Build context is the repository root (needed for apps/cms/ + uv.lock).
 # Runtime env vars (DJANGO_SECRET_KEY, POSTGRES_*, etc.) come from the compose
 # .env at runtime — never baked into the image.

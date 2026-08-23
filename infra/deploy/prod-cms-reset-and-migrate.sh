@@ -1,11 +1,20 @@
 #!/usr/bin/env bash
+# SUPERSEDED for routine use — the attended path is the GitHub Actions
+# `workflow_dispatch` CMS-migrate job (infra/deploy/cd-cms-migrate.sh) with
+# owner approval; SSH use is incident-only. Kept for reference.
+#
 # Production CMS: hard-reset repo, pin GHCR image, update + migrate.
 # Run on VPS as root:
-#   sudo bash /home/deploy/cms-repo/infra/deploy/prod-cms-reset-and-migrate.sh
+#   sudo CMS_IMAGE=ghcr.io/<owner>/taha-cms:<sha> bash \
+#     /home/deploy/cms-repo/infra/deploy/prod-cms-reset-and-migrate.sh
+#
+# No default image pin: a stale default (b369885) previously skipped newer
+# migrations. Export CMS_IMAGE explicitly to the latest GHCR sha tag from the
+# 'CMS image' workflow on main.
 set -euo pipefail
 
 CMS_REPO_DIR="${CMS_REPO_DIR:-/home/deploy/cms-repo}"
-CMS_IMAGE="${CMS_IMAGE:-ghcr.io/tahamohamadi-ir/taha-cms:b369885}"
+CMS_IMAGE="${CMS_IMAGE:?CMS_IMAGE is required — export it to the latest GHCR sha tag from the 'CMS image' workflow on main (e.g. ghcr.io/tahamohamadi-ir/taha-cms:<sha>). A stale default previously pinned b369885 and skipped migrations.}"
 CMS_BUILD="${CMS_BUILD:-0}"
 COMPOSE_FILE="${CMS_REPO_DIR}/infra/cms/docker-compose.cms.yml"
 ENV_FILE="${CMS_REPO_DIR}/infra/cms/.env"

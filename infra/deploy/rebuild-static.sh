@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# SUPERSEDED — use infra/deploy/rebuild-web.sh (post Caddy web cutover,
+# LOG-0173/LOG-0216). The loopback flow below is kept for reference and for
+# the transition period only.
+#
 # End-to-end static rebuild after CMS publish (P3-08 deploy slice).
 #
 # Builds apps/web with loopback CMS_API_BASE, stages release-<sha>, and atomically

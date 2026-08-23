@@ -24,17 +24,25 @@ check() {
 }
 
 for locale in en fa; do
-  check "/${locale}/blog/" "200"
+  # /{locale}/blog/ permanently redirects to the writing tree (IA
+  # writing-canonical). Static serving emits a 200 meta-refresh stub, so assert
+  # the redirect target instead of a bare 200.
+  check "/${locale}/writing/" "200"
   check "/${locale}/research/" "200"
+  body_code="$(curl -sS -o "$BODY" -w "%{http_code}" "${BASE_URL}/${locale}/blog/")"
+  if [[ "$body_code" != "200" && "$body_code" != "301" && "$body_code" != "308" ]]; then
+    echo "FAIL /${locale}/blog/ expected 200/301/308 got ${body_code}" >&2
+    fail=1
+  elif ! grep -q "/${locale}/writing/" "$BODY"; then
+    echo "FAIL /${locale}/blog/ does not point at /${locale}/writing/" >&2
+    fail=1
+  else
+    echo "PASS /${locale}/blog/ -> /${locale}/writing/ (${body_code})"
+  fi
 done
 
-# Public /api/ remains blocked until DEFER-0017 owner approval.
-code="$(curl -sS -o "$BODY" -w "%{http_code}" "${BASE_URL}/api/articles/en")"
-if [[ "$code" == "200" ]]; then
-  echo "WARN /api/articles/en returned 200 — confirm this is intentional (DEFER-0017)"
-else
-  echo "PASS /api/articles/en blocked (${code})"
-fi
+# Public /api/ is live (DEFER-0017 CLOSED): published-only Ninja JSON.
+check "/api/articles/en" "200"
 
 if [[ "$fail" -ne 0 ]]; then
   exit 1

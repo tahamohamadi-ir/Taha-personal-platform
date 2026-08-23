@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# SUPERSEDED — static-symlink era (ADR-0017). Deploys now go through cd.yml
+# (web image + Compose, LOG-0216). Kept for reference only.
+#
 # Static P1 deploy — atomic symlink switch (ADR-0017).
 # Candidate script: review against the P0A-01 inventory before first use.
 #

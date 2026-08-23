@@ -1,4 +1,8 @@
-# Candidate static-site blocks for the P1 artifact (ADR-0017 / ADR-0015).
+# HISTORICAL — candidate static-site blocks for the P1 artifact
+# (ADR-0017 / ADR-0015). Never applied as-is; staging is decommissioned
+# (ADR-0025) and public HTML is now served by the `web` container behind the
+# Compose Caddyfile (LOG-0216). Kept for reference only.
+#
 # NOT applied: reconcile with the existing Caddyfile only after the P0A-01
 # read-only inventory and explicit owner approval. Validate with `caddy validate`
 # and back up the current Caddyfile before any reload.

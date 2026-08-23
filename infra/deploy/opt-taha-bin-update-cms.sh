@@ -3,7 +3,7 @@
 # Installed to /opt/taha/bin/update-cms.sh — see install-update-cms-sudo.sh
 #
 # Usage (matches update-release.sh — image as argument, not env):
-#   sudo -n /opt/taha/bin/update-cms.sh ghcr.io/tahamohamadi-ir/taha-cms:b369885
+#   sudo -n /opt/taha/bin/update-cms.sh ghcr.io/tahamohamadi-ir/taha-cms:<sha>
 
 set -euo pipefail
 
@@ -16,7 +16,7 @@ fi
 
 if [[ -z "${CMS_IMAGE:-}" ]]; then
   echo "usage: update-cms.sh <CMS_IMAGE>" >&2
-  echo "example: sudo -n /opt/taha/bin/update-cms.sh ghcr.io/tahamohamadi-ir/taha-cms:b369885" >&2
+  echo "example: sudo -n /opt/taha/bin/update-cms.sh ghcr.io/tahamohamadi-ir/taha-cms:<sha>" >&2
   exit 1
 fi
 
