@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactElement } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import {
+  bulkArchiveContent,
   fetchContentList,
   isApiError,
   type ContentEntity,
@@ -9,6 +10,7 @@ import {
   type ContentLocale,
   type ContentStatus,
 } from "../lib/api";
+import { useAuth } from "../lib/AuthContext";
 import {
   CONTENT_ENTITIES,
   CONTENT_STATUSES,
@@ -73,6 +75,8 @@ function renderTabs(activeEntity: ContentEntity | null): ReactElement {
 }
 
 export default function ContentListPage(): ReactElement {
+  const { user } = useAuth();
+  const bulkArchiveEnabled = Boolean(user?.featureFlags?.admin_bulk_archive);
   const routeParams = useParams();
   const entityParam = routeParams.entity ?? null;
   const entity: ContentEntity | null =
@@ -90,6 +94,9 @@ export default function ContentListPage(): ReactElement {
   const [list, setList] = useState<ContentList | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkMessage, setBulkMessage] = useState<string | null>(null);
 
   const localeParam = searchParams.get("locale") ?? "";
   const statusParam = searchParams.get("status") ?? "";
@@ -106,6 +113,11 @@ export default function ContentListPage(): ReactElement {
   useEffect(() => {
     setSearchInput(q);
   }, [q]);
+
+  useEffect(() => {
+    setSelectedIds([]);
+    setBulkMessage(null);
+  }, [entity, locale, status, q, page]);
 
   useEffect(() => {
     if (searchInput === q) {
@@ -191,6 +203,57 @@ export default function ContentListPage(): ReactElement {
     });
   }
 
+  function toggleSelected(id: number, checked: boolean): void {
+    setSelectedIds((prev) => {
+      if (checked) {
+        return prev.includes(id) ? prev : [...prev, id];
+      }
+      return prev.filter((value) => value !== id);
+    });
+  }
+
+  function toggleSelectAll(checked: boolean): void {
+    if (!list) {
+      return;
+    }
+    setSelectedIds(checked ? list.items.map((item) => item.id) : []);
+  }
+
+  async function onBulkArchive(): Promise<void> {
+    if (entity === null || selectedIds.length === 0) {
+      return;
+    }
+    const count = selectedIds.length;
+    if (
+      !window.confirm(
+        `آیا از بایگانی ${formatNumber(count)} مورد انتخاب‌شده مطمئن هستید؟ این عمل در گزارش حسابرسی ثبت می‌شود.`
+      )
+    ) {
+      return;
+    }
+    setBulkBusy(true);
+    setBulkMessage(null);
+    try {
+      const result = await bulkArchiveContent(
+        entity,
+        selectedIds,
+        "bulk archive from content list"
+      );
+      setBulkMessage(
+        `${formatNumber(result.archived)} مورد بایگانی شد` +
+          (result.skipped > 0
+            ? `؛ ${formatNumber(result.skipped)} مورد رد شد.`
+            : ".")
+      );
+      setSelectedIds([]);
+      setReloadKey((key) => key + 1);
+    } catch (err) {
+      setBulkMessage(toErrorMessage(err, "بایگانی گروهی با خطا مواجه شد."));
+    } finally {
+      setBulkBusy(false);
+    }
+  }
+
   if (entity === null) {
     return (
       <div>
@@ -211,6 +274,10 @@ export default function ContentListPage(): ReactElement {
   const totalPages = Math.max(1, Math.ceil(total / Math.max(1, pageSize)));
   const displayPage = Math.min(page, totalPages);
   const hasActiveFilters = q !== "" || locale !== "" || status !== "";
+  const allSelected =
+    list !== null &&
+    list.items.length > 0 &&
+    list.items.every((item) => selectedIds.includes(item.id));
 
   return (
     <div>
@@ -276,6 +343,33 @@ export default function ContentListPage(): ReactElement {
         </div>
       </div>
 
+      {bulkArchiveEnabled && (
+        <div
+          className="admin-card mb-4 flex flex-wrap items-center gap-3"
+          data-testid="bulk-archive-toolbar"
+        >
+          <span className="text-sm" aria-live="polite">
+            {selectedIds.length > 0
+              ? `${formatNumber(selectedIds.length)} مورد انتخاب شده`
+              : "هیچ موردی انتخاب نشده"}
+          </span>
+          <button
+            type="button"
+            className="admin-btn"
+            disabled={selectedIds.length === 0 || bulkBusy}
+            onClick={() => void onBulkArchive()}
+            data-testid="bulk-archive-button"
+          >
+            بایگانی انتخاب‌شده‌ها
+          </button>
+          {bulkMessage && (
+            <p className="text-sm" role="status">
+              {bulkMessage}
+            </p>
+          )}
+        </div>
+      )}
+
       {state === "loading" && (
         <div className="admin-muted py-12 text-center" role="status">
           در حال بارگذاری…
@@ -317,6 +411,21 @@ export default function ContentListPage(): ReactElement {
               </caption>
               <thead>
                 <tr>
+                  {bulkArchiveEnabled && (
+                    <th scope="col">
+                      <label className="sr-only" htmlFor="content-select-all">
+                        انتخاب همه در صفحه
+                      </label>
+                      <input
+                        id="content-select-all"
+                        type="checkbox"
+                        checked={allSelected}
+                        onChange={(event) =>
+                          toggleSelectAll(event.target.checked)
+                        }
+                      />
+                    </th>
+                  )}
                   <th scope="col">عنوان</th>
                   <th scope="col">نامک</th>
                   <th scope="col">زبان</th>
@@ -329,6 +438,18 @@ export default function ContentListPage(): ReactElement {
                   const statusMeta = contentStatusMeta(item.status);
                   return (
                     <tr key={item.id}>
+                      {bulkArchiveEnabled && (
+                        <td>
+                          <input
+                            type="checkbox"
+                            aria-label={`انتخاب ${item.title || item.slug}`}
+                            checked={selectedIds.includes(item.id)}
+                            onChange={(event) =>
+                              toggleSelected(item.id, event.target.checked)
+                            }
+                          />
+                        </td>
+                      )}
                       <td>
                         <Link
                           to={`/content/${entity}/${item.id}`}

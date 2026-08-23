@@ -43,6 +43,8 @@ REBUILD_TRIGGER_ENABLED = _rebuild_enabled in {"1", "true", "yes"}
 REBUILD_TRIGGER_SECRET = os.environ.get("REBUILD_TRIGGER_SECRET", "")
 REBUILD_SCRIPT_PATH = os.environ.get("REBUILD_SCRIPT_PATH", "").strip()
 PREVIEW_SHARE_SECRET = os.environ.get("PREVIEW_SHARE_SECRET", "").strip()
+_bulk_archive = os.environ.get("FEATURE_ADMIN_BULK_ARCHIVE", "false").strip().lower()
+FEATURE_ADMIN_BULK_ARCHIVE = _bulk_archive in {"1", "true", "yes", "on"}
 
 DATABASES = {
     "default": {

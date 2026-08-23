@@ -100,5 +100,5 @@ Header → Hero → Explore by Perspective (live paths only) → Selected Eviden
 - [ ] `/` still offers both languages and does not redirect.
 - [ ] No text from the other locale appears under this locale prefix.
 - [ ] Every new detail page has a next step, not just a footer.
-- [ ] No search affordance unless the search route exists.
+- [x] No search affordance unless the search route exists. *(Wave 5: `/{locale}/search/` + Header/Footer shipped together; LOG-0215)*
 - [ ] No invented metric, link, or translation.

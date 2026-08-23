@@ -6,7 +6,8 @@
 |---|---|---|---|---|---|
 | OWNER_CUTOVER | OPS | **Required gates CLOSED** — migrate [32554382271](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32554382271); rebuild-web [32555455704](https://github.com/tahamohamadi-ir/Taha-personal-platform/actions/runs/32555455704); scheduled-publish timer (owner attestation 2026-08-22, LOG-0201). Optional: HMAC (`DEFER-0027`) / Caddy edge (`DEFER-0031`) | Keep `CMS_CD_AUTO_MIGRATE` unset; owner interactive SPA MFA | Project owner | LOG-0201; LOG-0199; LOG-0196 |
 | ADR-0027 | OPS | Slice 2 attended path **PASS** (`RISK-0012` CLOSED); Slice 4 Caddy cutover still owner (`DEFER-0031`) | Keep `CMS_CD_AUTO_MIGRATE` unset | Project owner | LOG-0179; LOG-0180; LOG-0191 |
-| QA-playwright | QA | Playwright lifecycle CLOSED (`DEFER-0026`); remaining matrix → `DEFER-0032` | — | Project owner | LOG-0184 |
+| QA-playwright | QA | Playwright lifecycle CLOSED (`DEFER-0026`); matrix → `DEFER-0032` **PARTIAL** (Wave 5 LOG-0215) | Manual S6 checklist remainder | Project owner | LOG-0215; adm-qa-s6.md |
+| Old-stack decommission | ops | Shutdown of pre-existing compose stack at `/opt/taha/repository` — AUTHORIZED 2026-08-16; **owner-sudo only** (no agent SSH). Order: inventory → `stop` → `down` without `-v` → `smoke.sh` → WORK_LOG + close row | Interactive sudo; public site 200 after each step | Project owner | [decommission-old-stack.md](../../infra/deploy/decommission-old-stack.md); LOG-0215 ready-for-owner |
 | ADM-0 | ADM | Wagtail uninstall **CLOSED** (`DEBT-0003` / PR #69); SPA `/admin/` + Django `/staff/` | Owner cutover required gates **CLOSED** (LOG-0201); optional HMAC/Caddy remain | Project owner | LOG-0193; LOG-0201; Task-list §17 |
 | ADM-1 | ADM | Custom admin foundation + cutover | DONE (LOG-0156..0158, LOG-0163); `DEFER-0023` CLOSED | Project owner | Task-list §17 |
 | ADM-2 | ADM | Media library + alt-by-locale | DONE (LOG-0159); `DEFER-0014` CLOSED | Project owner | Task-list §17 |
@@ -25,7 +26,6 @@
 | DEFER-0015 | P3 | TOTP recovery codes + disable/re-enroll | DONE in repo — owner CMS rebuild to use on production | Project owner | LOG-0131 |
 | DEFER-0016 | P3-07 | Public preview share-token | Closed 2026-08-22 — HMAC share URL | Project owner | deferred-validation.md |
 | P3 deploy | P3 | CMS runtime hygiene (password + TOTP) | DONE — RISK-0009 CLOSED 2026-08-16 | Project owner | LOG-0129 |
-| Old-stack decommission | ops | Shutdown of pre-existing compose stack (`taha-prod-frontend`/`backend`/`postgres` at `/opt/taha/repository`) — AUTHORIZED 2026-08-16; execution is owner-sudo | owner-sudo execution + runbook | Project owner | infra/deploy/decommission-old-stack.md |
 | B2 | P0-B | Canonical SSH port decision | owner | Project owner | S-PLAN-STATE B2 |
 | RISK-0005 | P0-A | Patch posture — 57 pending updates (owner pasted `apt list --upgradable`) | owner maintenance-window decision | Project owner | RISK-0005 OPEN; B1 inventory DONE 2026-08-16 |
 | RISK-0006 | P0-A | SSH attack surface — UFW allows ports 22+2222 | owner canonical port decision | Project owner | RISK-0006 OPEN |

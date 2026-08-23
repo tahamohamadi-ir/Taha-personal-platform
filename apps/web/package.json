@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && npm run pagefind:index",
+    "pagefind:index": "node scripts/pagefind-index.mjs",
     "preview": "astro preview",
     "check": "astro check",
     "test:e2e": "playwright test",
@@ -24,6 +25,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@playwright/test": "^1.62.1",
+    "pagefind": "^1.4.0",
     "playwright": "^1.62.1",
     "typescript": "~5.9.3"
   }

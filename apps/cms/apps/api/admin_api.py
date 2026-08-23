@@ -33,6 +33,7 @@ from apps.api.admin_common import (
     _require_admin_otp,
     _require_staff_session,
 )
+from apps.content.feature_flags import enabled_feature_flags
 from apps.content.models import (
     Article,
     Landing,
@@ -77,6 +78,7 @@ class AdminUserOut(Schema):
     isStaff: bool
     mfaEnrolled: bool
     otpVerified: bool
+    featureFlags: dict[str, bool] = Field(default_factory=dict)
 
 
 class DashboardSummaryOut(Schema):
@@ -144,6 +146,7 @@ def _serialize_user(user, otp_verified: bool | None = None) -> AdminUserOut:
         isStaff=user.is_staff,
         mfaEnrolled=user_has_device(user, confirmed=True),
         otpVerified=otp_verified,
+        featureFlags=enabled_feature_flags(),
     )
 
 

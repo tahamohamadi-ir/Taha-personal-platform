@@ -7,7 +7,7 @@ Rule:
 Execute a spec only if it appears under **Active** below.
 Everything under **Archived** is history. Read it for context; never execute it.
 
-Last reconciled: 2026-08-21.
+Last reconciled: 2026-08-22.
 
 ---
 
@@ -15,14 +15,15 @@ Last reconciled: 2026-08-21.
 
 | Spec | State | Who runs it | Notes |
 |---|---|---|---|
-| `cms-origin-and-full-stack-cd-task-spec.md` | IN_PROGRESS | agent | ADR-0027. Slice 0–3 + Slice 5 code done in repo (Slice 3 LOG-0205). Next: Slice 4 Caddy live cutover (`DEFER-0031`); owner HMAC (`DEFER-0027`). |
+| `cms-origin-and-full-stack-cd-task-spec.md` | IN_PROGRESS | agent | ADR-0027. Slice 4 Caddy edge **live** (LOG-0210); Slice 3 done. Keep `CMS_CD_AUTO_MIGRATE` unset. |
 | `P3-public-preview-token-task-spec.md` | DONE | agent | DEFER-0016 CLOSED 2026-08-22 (LOG-0204 repo; LOG-0209 production secret + CMS recreate). |
 | `blog-story-composition-task-spec.md` | PARTIAL | agent | Blog story live; entity stories Slice 5 (`DEFER-0030` CLOSED in ledger). Owner migrate + rebuild. |
 | `rich-blocks-v2-task-spec.md` | DONE | agent | Six no-JS story blocks (accordion/tabs/timeline/counters/before_after/slider). Owner static rebuild after merge. |
-| `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | Featured→Media (`0011`, LOG-0187); Wagtail uninstall **CLOSED** (`DEBT-0003` / LOG-0193); HMAC `DEFER-0027`; Playwright `DEFER-0026`. |
+| `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | Featured→Media; Wagtail uninstall CLOSED; HMAC CLOSED; Playwright lifecycle CLOSED; §18 QA → `DEFER-0032` PARTIAL (Wave 5). |
+| `wave5-adm-qa-pagefind-task-spec.md` | IN_PROGRESS | agent | Wave 5: ADM QA + S1/S4 service/flags + early Pagefind search (LOG-0215). |
 | `P0-A-stack-inventory-task-spec.md` | BLOCKED (owner) | owner | Read-only VPS inventory. Not an agent task. |
 
-Owner remaining work that is **not** a new spec: HMAC enable (`DEFER-0027`); apt/SSH (`RISK-0005`/`0006`); Compose Caddy cutover (`DEFER-0031`). CMS migrate through `0008` is **done** on production (`b6bea6a`). Do **not** set `CMS_CD_AUTO_MIGRATE`.
+Owner remaining work that is **not** a new spec: old-stack decommission (`infra/deploy/decommission-old-stack.md`); merge/migrate coordination across waves; CSP enforce if still open. Do **not** set `CMS_CD_AUTO_MIGRATE`.
 
 ## 2. Queued — do not start yet
 

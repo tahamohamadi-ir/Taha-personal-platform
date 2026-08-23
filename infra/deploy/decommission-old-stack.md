@@ -1,6 +1,9 @@
 # Old pre-existing stack decommission — runbook (OWNER-executed)
 
 > Status: prepared 2026-08-16. Owner-authorized to bring down the old stack.
+> **Ready for owner (LOG-0215):** agent work is docs-only; do **not** ask an
+> agent to SSH or stop containers. Linked from `docs/status/BACKLOG.md`
+> (`Old-stack decommission`).
 > This runbook is executed by the OWNER with interactive sudo (the `deploy`
 > user's NOPASSWD sudo covers only `/opt/taha/bin/update-release.sh` and
 > `/opt/taha/bin/caddy-apply.sh`; all `docker` commands below need the owner's
