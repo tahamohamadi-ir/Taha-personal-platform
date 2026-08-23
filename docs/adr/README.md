@@ -23,5 +23,6 @@ ADRها immutable هستند: تغییر تصمیم با ADR جدید انجام
 | 0025 | Staging decommissioning (staging.tahamohamadi.ir removed; gate = CI + production smoke) | Accepted 2026-08-15 (owner) |
 | 0026 | Custom admin panel replaces the Wagtail admin (React SPA + Django Ninja `/api/v1/admin/*`; Wagtail removed; content preserved) | Accepted 2026-08-18 (owner) |
 | 0027 | Unified Compose: `db` + `cms` + `web` (nginx/Astro dist) + later `caddy`; CMS origin; no public React/SSR in v1 | Accepted 2026-08-19 (owner) |
+| 0028 | Research relationship graph as progressive React island (SVG + `motion`, 35KB gzip budget; no gsap/three) | Accepted 2026-08-22 |
 
 The technology baseline still governs the remaining architecture decisions. Create a new ADR only when a decision is non-obvious, expensive to reverse, security/operations relevant, or changes a frozen contract.

@@ -90,6 +90,16 @@ export interface LocaleContent {
     sortTitle: string;
     sortNewest: string;
     viewLabel: string;
+    graphHeading: string;
+    graphIntro: string;
+    graphTreeLabel: string;
+    graphInteractiveLabel: string;
+    graphZoomIn: string;
+    graphZoomOut: string;
+    graphResetView: string;
+    graphFocusHint: string;
+    graphOrphanProjectsLabel: string;
+    graphOrphanPublicationsLabel: string;
   };
   projects: {
     heading: string;
@@ -280,6 +290,18 @@ export const content: Record<LocaleCode, LocaleContent> = {
       sortTitle: "Title",
       sortNewest: "Newest",
       viewLabel: "View",
+      graphHeading: "Relationship map",
+      graphIntro:
+        "Explore how published topics, projects, and publications connect. The list below stays complete without JavaScript.",
+      graphTreeLabel: "Relationship list",
+      graphInteractiveLabel: "Interactive map",
+      graphZoomIn: "Zoom in",
+      graphZoomOut: "Zoom out",
+      graphResetView: "Reset view",
+      graphFocusHint:
+        "Focus a node to highlight neighbors. Use arrow keys to move focus, Escape to reset.",
+      graphOrphanProjectsLabel: "Projects without a topic link",
+      graphOrphanPublicationsLabel: "Publications without a topic or project link",
     },
     projects: {
       heading: "Projects",
@@ -472,6 +494,18 @@ export const content: Record<LocaleCode, LocaleContent> = {
       sortTitle: "عنوان",
       sortNewest: "جدیدترین",
       viewLabel: "مشاهده",
+      graphHeading: "نقشهٔ روابط",
+      graphIntro:
+        "ارتباط موضوع‌ها، پروژه‌ها و انتشارات منتشرشده را ببینید. فهرست زیر بدون جاوااسکریپت کامل می‌ماند.",
+      graphTreeLabel: "فهرست روابط",
+      graphInteractiveLabel: "نقشهٔ تعاملی",
+      graphZoomIn: "بزرگ‌نمایی",
+      graphZoomOut: "کوچک‌نمایی",
+      graphResetView: "بازنشانی نما",
+      graphFocusHint:
+        "با فوکوس روی یک گره، همسایه‌ها برجسته می‌شوند. با کلیدهای جهت فوکوس را جابه‌جا کنید و با Escape بازنشانی کنید.",
+      graphOrphanProjectsLabel: "پروژه‌های بدون پیوند موضوع",
+      graphOrphanPublicationsLabel: "انتشارات بدون پیوند موضوع یا پروژه",
     },
     projects: {
       heading: "پروژه‌ها",

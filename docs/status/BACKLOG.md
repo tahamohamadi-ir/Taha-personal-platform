@@ -37,7 +37,7 @@
 | DEFER-0017 | P4–P6 | Public Caddy `/api/` (blog + research + projects) | DONE — CLOSED 2026-08-17 | Project owner | deferred-validation.md; LOG-0143 |
 | DEFER-0018 | P4 | RSS/Atom blog feed | Deferred — SEO/sitemap/JSON-LD shipped without feed | Project owner | deferred-validation.md |
 | DEFER-0019 | P5 | Research Statement PDF | Deferred — rich text only; no `/media/` PDF | Project owner | deferred-validation.md |
-| DEFER-0020 | P5 | Curated collections / complex research graph | Deferred — list/tree only in P5 | Project owner | deferred-validation.md |
+| DEFER-0020 | P5 | Curated collections (graph viz partial via ADR-0028 / LOG-0214) | Collections still deferred — interactive relationship map shipped | Project owner | deferred-validation.md |
 | DEFER-0021 | P6 | Live demo embed / iframe | Deferred — external links only in P6 | Project owner | deferred-validation.md |
 | P4 | P4 | Blog/Writing (Article/Series, list/detail, feed) | DONE in repo (PR #14/#15); prod migrate blocked on RISK-0003; feed DEFER-0018; public `/api/` DEFER-0017 | Project owner | Task-list §9, LOG-0133, LOG-0134 |
 | P5 | P5 | Research (Topic/Statement/Project/Publication minimal) | DONE in repo (code-first); prod migrate blocked on RISK-0003; DEFER-0017/0019/0020 | Project owner | P5-research-task-spec.md, Task-list §10, LOG-0136 |

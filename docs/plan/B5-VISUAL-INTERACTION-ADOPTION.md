@@ -1,8 +1,10 @@
 # B5 — Visual-interaction adoption brief
 
-> Status: proposal only — nothing on this page is implemented.
-> Grounds: `docs/design.md` §64–§71, §73–§84, §93–§95, §98; `DEFER-0012`;
-> Task `P0B-04`; S-Plan task B5.
+> Status: **partially authorized** — ADR-0028 accepts the research relationship
+> graph island (`motion` + SVG on `/{locale}/research/`). Candidates 1–3 below
+> remain proposals only.
+> Grounds: `docs/design.md` §64–§71, §73–§84, §93–§95, §98, §102;
+> `ADR-0028`; `DEFER-0012`; Task `P0B-04`; S-Plan task B5.
 
 ## Goal & gate
 
@@ -97,6 +99,24 @@ Note: all three candidates reuse existing tokens only — no new palette,
 typography or assets. External assets (Beautiful UI, UI8 DNA) remain governed
 by `DEFER-0012` and are not part of any candidate.
 
+### Candidate 4 — Research relationship map (AUTHORIZED — ADR-0028)
+
+- **Route:** `/{locale}/research/` overview — Topic↔Project↔Publication edges
+  already projected by the CMS; interactive SVG island + static relationship
+  tree. Spec: `docs/plan/wave4-research-graph-island-task-spec.md`.
+- **Why user-value:** answers “how do topics, projects, and publications
+  connect?” in one spatial view (design.md §102 Research Map). Lists alone
+  remain the product for no-JS; the island is progressive enhancement for
+  neighborhood focus, pan/zoom, and keyboard spatial navigation.
+- **Library:** `motion` (MIT) + SVG. **Not** gsap (proprietary per
+  `LICENSES.md`). **Not** three.js (exceeds 35KB gzip island budget — keep
+  budget; see ADR-0028).
+- **Bundle-cost note:** route-local React island, `client:visible`; interaction
+  chunk must stay under the **35KB gzip** budget (unchanged).
+- **Reduced-motion / no-JS fallback:** static HTML relationship tree always
+  present with real hrefs; reduced-motion skips spring/pan animation and keeps
+  focus/state changes.
+
 ## Adoption checklist
 
 Mandatory gate — a candidate is adoptable only if every item passes. Copied
@@ -150,10 +170,9 @@ Any adopted interaction is verified with evidence recorded in its Task Spec and
 
 ## Explicit non-goal
 
-- Do NOT import `motion`, `gsap` or `three` anywhere in the P1 site now — they
-  stay locked but inactive (S-Plan snapshot §5; design.md §73).
-- Do NOT copy Beautiful UI code now — it remains an MIT source-reference,
-  adoptable exclusively through an approved slice with registered source and
-  project-owned tokens (`DEFER-0012`; design.md §98).
-- No application code, dependency change or route change results from this
-  brief.
+- Do NOT import `gsap` or `three` anywhere in the public site without a new ADR
+  (license acceptance and/or explicit gzip budget raise). `motion` may be
+  imported only on authorized routes (currently research graph per ADR-0028).
+- Do NOT copy Beautiful UI code outside an approved slice with registered
+  source and project-owned tokens (`DEFER-0012`; design.md §98).
+- Candidates 1–3 remain unimplemented until separately authorized.

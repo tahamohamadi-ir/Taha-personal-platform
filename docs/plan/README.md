@@ -15,6 +15,7 @@ Last reconciled: 2026-08-21.
 
 | Spec | State | Who runs it | Notes |
 |---|---|---|---|
+| `wave4-research-graph-island-task-spec.md` | DONE (repo) | agent | ADR-0028 research graph island (SVG + motion). LOG-0214. Uncommitted on `feat/wave4-research-graph`. |
 | `cms-origin-and-full-stack-cd-task-spec.md` | IN_PROGRESS | agent | ADR-0027. Slice 0–3 + Slice 5 code done in repo (Slice 3 LOG-0205). Next: Slice 4 Caddy live cutover (`DEFER-0031`); owner HMAC (`DEFER-0027`). |
 | `P3-public-preview-token-task-spec.md` | DONE | agent | DEFER-0016 CLOSED 2026-08-22 (LOG-0204 repo; LOG-0209 production secret + CMS recreate). |
 | `blog-story-composition-task-spec.md` | PARTIAL | agent | Blog story live; entity stories Slice 5 (`DEFER-0030` CLOSED in ledger). Owner migrate + rebuild. |
@@ -38,7 +39,7 @@ Owner remaining work that is **not** a new spec: HMAC enable (`DEFER-0027`); apt
 | `SAMPLES-TRANSFER-RECOMMENDATIONS.md` | Analysis catalog of `SAMP-*` IDs. Bound into `Task-list.md`. Do not create a second spec from it. |
 | `SMALL-MODEL-EXECUTION-PLAN.md` | Operating playbook for small models. See §5 caveat. |
 | `S-PLAN-STATE.md` | Task state tracker for the S-Plan phases. |
-| `B5-VISUAL-INTERACTION-ADOPTION.md` | Proposal only. Nothing in it is implemented or authorized. |
+| `B5-VISUAL-INTERACTION-ADOPTION.md` | Candidate 4 authorized by ADR-0028; Candidates 1–3 still proposal-only. |
 | `P0-G0-content-pack-proposal.md` | Content proposal record. |
 | `LICENSES.md` | Third-party licence notes. |
 

@@ -2347,7 +2347,9 @@ Known dimensions
 Lazy load below fold
 ```
 
-Exact byte budgets MUST be finalized with P1 measurement.
+Exact byte budgets MUST be finalized with P1 measurement. Working island
+budget used by B5 / ADR-0028: **&lt; 35KB gzip per interaction island**. Raising
+that ceiling (e.g. for three.js) requires a new ADR with an explicit number.
 
 ---
 
