@@ -1,3 +1,57 @@
+## LOG-0225 — 2026-08-23 — C1 prep: cms-origin smoke assertion + publish→rebuild chain checklist
+
+- Outcome: Prepared board C1 (publish→rebuild proof) without touching production state. (1) `infra/deploy/smoke.sh` gained optional third-flag `--expect-cms-origin`: probes `<meta name="cms-build-origin" content="cms">` on `/en/cv/` and `/fa/cv/` (the pages that set the meta today; landing meta is A1 scope). (2) New joint checklist `docs/plan/manual-test-checklists/publish-rebuild-chain-c1.md` with T_publish/T_live/T_revert/T_gone timestamp protocol, pass criteria (zero SSH, ≤10 min, green origin smoke, honest revert) and rollback note. Live production probe already run read-only: full smoke + origin flag PASS (`cms-build-origin=cms` present on both cv pages), confirming current prod HTML is CMS-built.
+- Why: Board C1 is P0 joint work; the assertion half is agent-doable now so the owner only executes the UI publish/revert steps later.
+- Scope / files: `infra/deploy/smoke.sh`; new `docs/plan/manual-test-checklists/publish-rebuild-chain-c1.md`; this entry.
+- Commands or actions actually performed: `bash infra/deploy/smoke.sh https://tahamohamadi.ir --expect-cms-origin` → 9/9 PASS incl. both cms-build-origin lines; `bash infra/deploy/smoke-blog.sh https://tahamohamadi.ir` → PASS (new writing-canonical expectations). Read-only HTTPS GETs only; no SSH, no dispatch, no content change.
+- Verification actually performed and result: see command outputs above; bash syntax clean (`bash -n`).
+- Deferred or risk IDs: C1 stays OPEN on the board until the owner performs the publish→revert scenario per the new checklist.
+- Rollback / recovery: revert this commit; smoke reverts to status-only checks; checklist file deleted.
+
+## LOG-0224 — 2026-08-23 — Docs/infra hygiene batch: F10 + C5 + F12 + E0
+
+- Outcome: Four board items closed. **F10:** last stale Wagtail references removed from live-path files — `infra/cms/Dockerfile.cms` header now Django/Ninja only, `infra/cms/.env.example` drops unused `WAGTAILADMIN_BASE_URL` (verified unreferenced by settings; test delenv kept), `ci-admin-frontend.yml` comment reflects `/admin/` serving reality, host-edge `Caddyfile` header marked HISTORICAL/rollback-only (compose edge live since DEFER-0031 CLOSED), `Caddyfile.cms.api.snippet` + `infra/cms/README.md` admin section rewritten to SPA `/admin/` + staff `/staff/`. Acceptance `rg -ni wagtail infra/ .github/` → 4 hits, all explicitly marked historical. **C5:** stale pins/expectations fixed — `prod-cms-reset-and-migrate.sh` no default image pin (`CMS_IMAGE:?` required, SUPERSEDED-for-routine banner pointing at cd-cms-migrate dispatch), `run-prod-cms-migrate.ps1` takes mandatory `-Image` parameter, `smoke-blog.sh` now asserts `/blog/`→`/writing/` redirect target + `/api/articles/en` 200 (DEFER-0017 CLOSED) instead of legacy expectations, SUPERSEDED banners on `deploy.sh`, `rollback.sh`, `stage-p1.sh`, `prod-p1.sh`, `rebuild-static.sh` (pointer to rebuild-web.sh), `static-site.caddy` marked HISTORICAL, example pins in `opt-taha-bin-update-cms.sh` replaced with `<sha>` placeholder. Acceptance grep shows only historical/marked matches. `bash -n` clean on edited scripts. **F12:** Task-list checkboxes synced with reality — robots/sitemap ticks in P0A-06 + G0-04 + P1-09 (live `/sitemap.xml`+`/robots.txt`, LOG-0216), P1-13 stack-health tick (old-stack decommission LOG-0216) + backup-evidence tick (RISK-0003 CLOSED / LOG-0140); P1-13 communication-window item deliberately left unticked (no evidence found). **E0 (owner authorization: chat attestation 2026-08-23):** allocated ledger IDs for public UI defects P1–P19 from DESIGN-UI-CURRENT-PROBLEMS mapping — KI-0002..KI-0006 (P1,P3,P4,P5,P12; KI-0006 notes fix merged pending deploy), DEBT-0008..DEBT-0015 (P2,P9,P10,P14,P15,P16,P17,P19), DEFER-0033..DEFER-0037 (P6,P7,P8,P18,P13-decision), RISK-0014 (P11 CMS brand override AA risk); problems-file header + mapping table updated with real IDs.
+- Why: M0 quick-wins hygiene; prevents future agents from executing staging-era scripts or re-litigating untracked findings.
+- Scope / files: `infra/deploy/*` (7 scripts + ps1 + smoke-blog + smoke.sh untouched here), `infra/cms/Dockerfile.cms`, `infra/cms/.env.example`, `infra/cms/Caddyfile.cms.api.snippet`, `infra/cms/README.md`, `infra/caddy/Caddyfile`, `infra/caddy/static-site.caddy`, `.github/workflows/ci-admin-frontend.yml`, `Task-list.md`, `docs/status/{known-issues,TECH_DEBT,deferred-validation,RISK_REGISTER}.md`, `docs/plan/DESIGN-UI-CURRENT-PROBLEMS.md`, this entry.
+- Commands or actions actually performed: acceptance greps above; `bash -n infra/deploy/smoke-blog.sh` + `bash -n infra/deploy/prod-cms-reset-and-migrate.sh` OK; `uv sync` side-effect earlier on A8 branch also purged leftover wagtail packages from local `.venv`.
+- Verification actually performed and result: `rg -n "b369885|staging.tahamohamadi" infra/` → only marked-historical/example-placeholder lines; `rg -ni wagtail infra/ .github/` → only historical markers; production smoke-blog PASS after expectation rewrite.
+- Decisions / assumptions: board text treated as the authoritative spec for each item (no separate Task Spec files created — recorded here as deliberate reading of "every work item has a Task Spec"); E0 owner authorization taken from owner's 2026-08-23 chat directive ("هرچی هم نمیشه بر اساس تشخیص اولویت‌های خودت ببر جلو") and recorded as attestation.
+- Deferred or risk IDs: opened KI-0002..0006, DEBT-0008..0015, DEFER-0033..0037, RISK-0014 (all OPEN, mapped to board items); none closed.
+- Rollback / recovery: revert the single chore commit; scripts regain old behavior; ledger rows removed; Task-list ticks revert.
+
+## LOG-0223 — 2026-08-23 — Media usage registry covers composition JSON blocks (B11)
+
+- Outcome: Orphan scan no longer misreports media referenced only inside composition block JSON. `apps/api/admin_media.py` adds `MEDIA_JSON_SETTINGS_KEYS` (`mediaId`, `beforeMediaId`, `afterMediaId`) + `MEDIA_JSON_LIST_KEYS` (`mediaIds`) kept in sync with `apps/composition/projection.py`, `_json_settings_media_pks()` (accepts int or numeric string, rejects bools), `composition_json_usage_count()` scanning `CompositionBlock.settings` via values_list iterator, folded into `media_usage_count()` alongside the FK registry. Stale module docstring + orphan-endpoint comment updated. Tests: block-level usage counting (3 refs across image/gallery/before_after incl. numeric-string + junk-string cases), orphan endpoint excludes block-referenced media while true orphan stays listed, detail `usageCount == 3`.
+- Why: Board B11 — `MEDIA_REFERENCE_FIELDS` saw only FKs; a gallery-only image looked unused and could be archived/deleted wrongly.
+- Scope / files: `apps/cms/apps/api/admin_media.py`, `apps/cms/tests/test_media_image_rewire.py`; branch `feat/media-usage-json-blocks` (d3948ce), merged main.
+- Commands or actions actually performed: `uv run ruff check .` clean; `uv run pytest -q` → 380 passed.
+- Verification actually performed and result: full CMS suite green (380 passed) incl. 2 new tests; no migration needed (read-only scan).
+- Decisions / assumptions: per-row block iteration accepted (personal-site dataset bounded, matching existing orphan-scan comment); direct model import instead of django_apps string lookup (no import cycle: composition does not import api).
+- Deferred or risk IDs: none.
+- Rollback / recovery: revert the commit; registry returns FK-only behavior.
+
+## LOG-0222 — 2026-08-23 — Per-locale reading time fa=180/en=230 wpm + backfill command (A8)
+
+- Outcome: `compute_reading_time_minutes` now locale-aware: new `READING_WPM_BY_LOCALE = {"fa": 180, "en": 230}` (custom-admin-rebuild-fa §14.1 F1) with 200 fallback for unknown locales via `reading_wpm_for_locale()`; explicit `wpm=` argument still overrides. `Article.save()` passes `self.locale`. New management command `recompute_reading_time` (idempotent, `--dry-run` lists current→new values, writes only changed rows with `update_fields`). Web display unchanged (same `reading_time_minutes` payload field). Tests: wpm lookup table, same-body fa vs en divergence (460 words → fa 3 / en 2), explicit-wpm override + empty-body zero, backfill command fixing seeded-stale value.
+- Why: Board A8 — uniform 200 wpm overstated Persian reading times and understated English.
+- Scope / files: `apps/cms/apps/content/models.py`, new `apps/cms/apps/content/management/commands/recompute_reading_time.py`, `tests/test_content.py`, `tests/test_admin_content_write.py` (two expectations updated from uniform-rate math to en@230 math); branch `feat/reading-time-wpm` (e344002), merged main.
+- Commands or actions actually performed: `uv run ruff check .` clean; `uv run pytest -q` → 378 passed; `manage.py makemigrations --check --dry-run` → no pending migrations; local `.venv` reconciled with `uv sync` (purged 25 leftover Wagtail-era packages, DEBT-0003 gate now green locally).
+- Verification actually performed and result: full CMS suite green; no schema migration (stored integer recomputed on save/backfill).
+- Decisions / assumptions: fallback stays 200 for unknown locales; backfill does NOT trigger static rebuild (numbers flow into next rebuild naturally; production backfill should ride an attended migrate window — noted for owner).
+- Deferred or risk IDs: none. Production rollout needs image rebuild; running `recompute_reading_time` on prod is a one-command owner step (no SSH if added to a dispatch later).
+- Rollback / recovery: revert the commit; existing stored values remain until recomputed.
+
+## LOG-0221 — 2026-08-23 — Search noscript browse link writing-canonical (E6-P12)
+
+- Outcome: The noscript browse list in `apps/web/src/pages/{en,fa}/search/index.astro` pointed at retired `/{locale}/blog/`; now links `/{locale}/writing/`. Label already reads "Writing"/"نوشته‌ها" so no copy change needed.
+- Why: Board E6-P12 / defect P12 (now KI-0006) — IA writing-canonical since DEFER-0018; noscript path must not depend on the permanent redirect stub.
+- Scope / files: two hrefs only; branch `fix/search-noscript-writing` (86648c9), merged main.
+- Commands or actions actually performed: acceptance `rg -n "/blog/" apps/web/src/pages/en/search apps/web/src/pages/fa/search` → no matches; `npm run check` (0 errors) and `npm run build` (52 pages) PASS in `apps/web`.
+- Verification actually performed and result: acceptance grep empty; build green including pagefind indexing.
+- Deferred or risk IDs: KI-0006 stays OPEN until next production web rebuild serves the fix; E6 remains open for its P17 (Pagefind theming) half.
+- Rollback / recovery: revert the commit (restores redirect-dependent links).
+
+
 ## LOG-0220 — 2026-08-23 — CI/CD green: P8 404 tolerance, e2e TOTP retry, secret-scan scope
 
 - Outcome: Fixed three regressions blocking `main` after LOG-0217 docs merge. (1) `apps/web/src/lib/cms/publications.ts` — list fetch treats HTTP 404 as empty catalog so CD `CMS_API_BASE=https://tahamohamadi.ir` builds while production CMS image lags P8 routes (`/api/books|talks|downloads|publications` currently 404 live). (2) `apps/web/qa/e2e/fixtures/auth.ts` — login retries TOTP with ±30s window to stop Playwright admin-qa-matrix flakes at 30s boundary. (3) `.github/workflows/ci.yml` — secret grep excludes `dist/_astro/` (React client bundle false-positive on `password=` minified prop). Docs board from LOG-0218/0219 included in same release branch.
