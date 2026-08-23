@@ -19,10 +19,8 @@ const switchLabel =
     : other.gateway.persianLabel;
 const switchLang = otherLang;
 const contact: PublicSiteContactDto = await getSiteContact();
-const telHref = (value: string) => `tel:${value.replace(/[^+\d]/g, "")}`;
 const hasContactDetails =
   contact.email !== "" ||
-  contact.phone !== "" ||
   contact.linkedin !== "" ||
   contact.orcid !== "" ||
   contact.location !== "";
@@ -50,6 +48,7 @@ const hasContactDetails =
     <a href={`/${content.lang}/projects/`}>{content.projects.heading}</a>
     <a href={`/${content.lang}/writing/`}>{content.blog.heading}</a>
     <a href={`/${content.lang}/cv/`}>{content.downloads.heading}</a>
+    <a href={`/${content.lang}/contact/`}>{content.contact.heading}</a>
     <a href={`/${content.lang}/search/`}>{content.search.navLabel}</a>
   </nav>
   <div class="footer-meta">
@@ -65,26 +64,11 @@ const hasContactDetails =
     {
       hasContactDetails ? (
         <div class="site-contact" id="site-contact">
-          <span class="contact-heading">{content.contact.heading}</span>
           <ul class="contact-links">
             {contact.email !== "" && (
               <li>
                 <a href={`mailto:${contact.email}`}>
                   <bdi>{contact.email}</bdi>
-                </a>
-              </li>
-            )}
-            {contact.phone !== "" && (
-              <li>
-                <a href={telHref(contact.phone)} dir="ltr">
-                  {contact.phone}
-                </a>
-              </li>
-            )}
-            {contact.phoneIntl !== "" && (
-              <li>
-                <a href={telHref(contact.phoneIntl)} dir="ltr">
-                  {contact.phoneIntl}
                 </a>
               </li>
             )}
@@ -115,56 +99,6 @@ const hasContactDetails =
             )}
             {contact.location !== "" && <li><span>{contact.location}</span></li>}
           </ul>
-          {contact.formEnabled && contact.email !== "" && (
-            <form class="contact-form" method="post" action="/api/contact">
-              <p class="contact-form-intro">{content.contact.formIntro}</p>
-              <input type="hidden" name="locale" value={content.lang} />
-              <input
-                type="text"
-                name="website"
-                value=""
-                class="contact-honeypot"
-                tabindex={-1}
-                autocomplete="off"
-                aria-hidden="true"
-              />
-              <label class="visually-hidden" for="contact-name">
-                {content.contact.nameLabel}
-              </label>
-              <input
-                id="contact-name"
-                type="text"
-                name="name"
-                maxlength={120}
-                autocomplete="name"
-                placeholder={content.contact.nameLabel}
-              />
-              <label class="visually-hidden" for="contact-email-field">
-                {content.contact.emailLabel}
-              </label>
-              <input
-                id="contact-email-field"
-                type="email"
-                name="email"
-                required
-                maxlength={254}
-                autocomplete="email"
-                placeholder={content.contact.emailLabel}
-              />
-              <label class="visually-hidden" for="contact-message">
-                {content.contact.messageLabel}
-              </label>
-              <textarea
-                id="contact-message"
-                name="message"
-                rows={4}
-                required
-                maxlength={4000}
-                placeholder={content.contact.messageLabel}
-              />
-              <button type="submit">{content.contact.sendLabel}</button>
-            </form>
-          )}
         </div>
       ) : (
         <span class="contact-state" aria-label={content.contact.heading}>

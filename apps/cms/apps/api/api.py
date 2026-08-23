@@ -59,11 +59,13 @@ class PublicDownloadOut(Schema):
 
 
 class PublicContactBlockOut(Schema):
-    """Public contact details (owner-published; empty strings are omitted upstream)."""
+    """Public contact details (owner-published; empty strings are omitted upstream).
+
+    Phone numbers are deliberately NOT projected — they stay private in the
+    admin settings (owner decision 2026-08-23).
+    """
 
     email: str = ""
-    phone: str = ""
-    phoneIntl: str = ""
     location: str = ""
     linkedin: str = ""
     orcid: str = ""
@@ -260,8 +262,6 @@ def get_public_site_settings(request) -> PublicSiteSettingsOut:
         downloads=downloads,
         contact=PublicContactBlockOut(
             email=(settings.contact_email or "").strip(),
-            phone=(settings.contact_phone or "").strip(),
-            phoneIntl=(settings.contact_phone_intl or "").strip(),
             location=(settings.contact_location or "").strip(),
             linkedin=(settings.contact_linkedin or "").strip(),
             orcid=(settings.contact_orcid or "").strip(),
