@@ -4,6 +4,7 @@ import Breadcrumbs from "../../../components/blog/Breadcrumbs.astro";
 import ResearchCatalog from "../../../components/ResearchCatalog.astro";
 import ResearchGraphSection from "../../../components/research/ResearchGraphSection.astro";
 import { content } from "../../../data/content";
+import { isCmsOriginBuild } from "../../../lib/cms/client";
 import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../data/structured";
 import { getResearchGraph } from "../../../lib/cms/research-graph";
 import {
@@ -36,7 +37,7 @@ const structured = [
 validateStructuredData(...structured);
 ---
 
-<BaseLayout
+<BaseLayout cmsBuildOrigin={isCmsOriginBuild() ? "cms" : "snapshot"}
   content={{
     ...pageContent,
     meta: {

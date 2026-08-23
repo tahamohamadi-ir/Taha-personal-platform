@@ -3,6 +3,7 @@ import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Breadcrumbs from "../../../components/blog/Breadcrumbs.astro";
 import ProjectsCatalog from "../../../components/ProjectsCatalog.astro";
 import { content } from "../../../data/content";
+import { isCmsOriginBuild } from "../../../lib/cms/client";
 import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../data/structured";
 import { getProjects } from "../../../lib/cms/projects";
 
@@ -20,7 +21,7 @@ const structured = [
 validateStructuredData(...structured);
 ---
 
-<BaseLayout
+<BaseLayout cmsBuildOrigin={isCmsOriginBuild() ? "cms" : "snapshot"}
   content={{
     ...pageContent,
     meta: {

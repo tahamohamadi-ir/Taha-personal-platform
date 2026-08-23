@@ -25,7 +25,7 @@ const contact = await getSiteContact();
   <h1 class="downloads-heading">{content.downloads.heading}</h1>
   <p class="downloads-intro">{content.downloads.intro}</p>
   {
-    (contact.location !== "" || contact.email !== "") && (
+    contact && (contact.location !== "" || contact.email !== "") && (
       <ul class="cv-contact" aria-label={content.contact.heading}>
         {contact.location !== "" && <li><span>{contact.location}</span></li>}
         {contact.email !== "" && (

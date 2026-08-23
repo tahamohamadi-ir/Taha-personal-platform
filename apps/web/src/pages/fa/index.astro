@@ -2,10 +2,28 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Landing from "../../components/Landing.astro";
 import { content } from "../../data/content";
+import { loadLandingProfile } from "../../lib/cms/landing";
+import type { Profile } from "../../data/profile";
 
 const fa = content.fa;
+const landing = await loadLandingProfile("fa");
+const profile: Profile =
+  landing.kind === "profile"
+    ? landing.profile
+    : ({
+        shortBio: "",
+        longBio: "",
+        skills: [],
+        experience: [],
+        education: [],
+        publications: [],
+        researchProjects: [],
+        certificates: [],
+        socials: [],
+        availability: "",
+      } as Profile);
 ---
 
-<BaseLayout content={fa} alternateHref="/en/">
-  <Landing content={fa} />
+<BaseLayout content={fa} alternateHref="/en/" cmsBuildOrigin={landing.source}>
+  <Landing content={fa} profile={profile} />
 </BaseLayout>

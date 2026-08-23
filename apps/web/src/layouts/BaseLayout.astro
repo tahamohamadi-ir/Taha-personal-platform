@@ -6,7 +6,8 @@ import type { LocaleContent } from "../data/content";
 import { site } from "../data/site";
 import type { JsonLdBlock } from "../data/structured";
 import { websiteJsonLd, personJsonLd, validateStructuredData, jsonLdScriptContent } from "../data/structured";
-import { getPrimaryColorOverride } from "../lib/cms/siteSettings";
+import { getPrimaryColorOverride, getSiteSeoDefaults } from "../lib/cms/siteSettings";
+import { isCmsOriginBuild } from "../lib/cms/client";
 
 interface Props {
   content: LocaleContent;
@@ -39,6 +40,15 @@ const canonical = new URL(Astro.url.pathname, site.url).href;
 const altLang = content.lang === "fa" ? "en" : "fa";
 validateStructuredData(...structured);
 const primaryColor = await getPrimaryColorOverride();
+const seoDefaults = await getSiteSeoDefaults();
+const isCms = isCmsOriginBuild();
+const effectiveTitle =
+  title !== content.meta.title || !isCms || !seoDefaults.title ? title : seoDefaults.title;
+const effectiveDescription =
+  description !== content.meta.description || !isCms || !seoDefaults.description
+    ? description
+    : seoDefaults.description;
+const effectiveOrigin = cmsBuildOrigin ?? (isCms ? "cms" : "snapshot");
 ---
 
 <!doctype html>
@@ -48,8 +58,8 @@ const primaryColor = await getPrimaryColorOverride();
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#f7f8f5" />
     <link rel="icon" type="image/png" href="/favicon.png" />
-    <title>{title}</title>
-    <meta name="description" content={description} />
+    <title>{effectiveTitle}</title>
+    <meta name="description" content={effectiveDescription} />
     <meta name="generator" content={Astro.generator} />
     <link rel="canonical" href={canonical} />
     <link rel="alternate" hreflang={content.lang} href={canonical} />
@@ -60,8 +70,8 @@ const primaryColor = await getPrimaryColorOverride();
     }
     <meta property="og:type" content="website" />
     <meta property="og:locale" content={content.lang === "fa" ? "fa_IR" : "en_US"} />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
+    <meta property="og:title" content={effectiveTitle} />
+    <meta property="og:description" content={effectiveDescription} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={resolvedOgImage} />
     <meta name="twitter:card" content="summary_large_image" />
@@ -73,11 +83,7 @@ const primaryColor = await getPrimaryColorOverride();
       href={rssHref}
     />
     <meta name="robots" content="index,follow" />
-    {
-      cmsBuildOrigin && (
-        <meta name="cms-build-origin" content={cmsBuildOrigin} />
-      )
-    }
+    <meta name="cms-build-origin" content={effectiveOrigin} />
     {
       primaryColor && (
         <style is:inline set:html={`:root { --color-brand: ${primaryColor}; }`} />

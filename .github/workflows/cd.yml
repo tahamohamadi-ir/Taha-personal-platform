@@ -91,13 +91,22 @@ jobs:
           name: web-dist-${{ github.sha }}
           path: dist
 
+      # Host /opt/taha/site/current is legacy when CADDY_EDGE=compose (live is Compose web:8080).
+      # Kept for HOST-CADDY-DISABLE rollback; the following "Pull and restart web container"
+      # step is authoritative for Compose edge and must not be skipped when SHORT_SHA is
+      # missing (see WEB_PULL_POLICY + :main fallback there). Docs-only pushes would
+      # otherwise stale web while host current updates.
       - name: Deploy via rsync + SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
           DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
           DEPLOY_USER: ${{ vars.DEPLOY_USER || 'deploy' }}
           RELEASE_NAME: ${{ needs.build.outputs.release_name }}
+          CADDY_EDGE: ${{ vars.CADDY_EDGE }}
         run: |
+          if [ "${CADDY_EDGE}" = "compose" ]; then
+            echo "::notice::CADDY_EDGE=compose: host /opt/taha/site/current is legacy (live is Compose web:8080); still syncing for rollback"
+          fi
           install -m 600 /dev/null ~/.ssh_deploy_key
           echo "$SSH_PRIVATE_KEY" > ~/.ssh_deploy_key
 
@@ -179,22 +188,32 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
           DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
           DEPLOY_USER: ${{ vars.DEPLOY_USER || 'deploy' }}
+          CADDY_EDGE: ${{ vars.CADDY_EDGE }}
         run: |
           install -m 600 /dev/null ~/.ssh_deploy_key
           echo "$SSH_PRIVATE_KEY" > ~/.ssh_deploy_key
           SHORT_SHA="${GITHUB_SHA:0:7}"
           WEB_IMAGE="ghcr.io/tahamohamadi-ir/taha-web:${SHORT_SHA}"
+          WEB_IMAGE_FALLBACK="ghcr.io/tahamohamadi-ir/taha-web:main"
           ssh -i ~/.ssh_deploy_key -o StrictHostKeyChecking=accept-new \
             "${DEPLOY_USER}@${DEPLOY_HOST}" \
             "set -euo pipefail
              cd /home/deploy/cms-repo
+             TARGET=\"\"
              if docker pull \"${WEB_IMAGE}\" 2>/dev/null; then
-               export WEB_IMAGE=\"${WEB_IMAGE}\"
-               docker compose -f infra/cms/docker-compose.cms.yml up -d web
-               echo \"web container updated to ${WEB_IMAGE}\"
+               TARGET=\"${WEB_IMAGE}\"
+             elif [ \"${CADDY_EDGE}\" = \"compose\" ] && docker pull \"${WEB_IMAGE_FALLBACK}\" 2>/dev/null; then
+               TARGET=\"${WEB_IMAGE_FALLBACK}\"
+               echo \"::warning::No web image for ${SHORT_SHA}; using fallback ${WEB_IMAGE_FALLBACK} (CADDY_EDGE=compose avoids stale web)\"
              else
                echo \"::warning::No web image for ${SHORT_SHA}; skipping web container update\"
-             fi"
+               exit 0
+             fi
+             export WEB_IMAGE=\"\${TARGET}\"
+             export WEB_PULL_POLICY=always
+             docker compose -f infra/cms/docker-compose.cms.yml up -d web
+             echo \"web container updated to \${TARGET} (CADDY_EDGE=${CADDY_EDGE:-host})\"
+            "
           rm -f ~/.ssh_deploy_key
 
       - name: Production smoke

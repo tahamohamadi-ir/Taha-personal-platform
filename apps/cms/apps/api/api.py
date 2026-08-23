@@ -85,6 +85,11 @@ class PublicSiteSettingsOut(Schema):
     primaryColor: str
     downloads: list[PublicDownloadOut] = Field(default_factory=list)
     contact: PublicContactBlockOut = Field(default_factory=PublicContactBlockOut)
+    brandName: str = ""
+    tagline: str = ""
+    footerText: str = ""
+    seoDefaultTitle: str = ""
+    seoDefaultDescription: str = ""
 
 
 def _public_media_href(media: Media) -> str:
@@ -269,6 +274,11 @@ def get_public_site_settings(request) -> PublicSiteSettingsOut:
             employerUrl=(settings.contact_employer_url or "").strip(),
             formEnabled=bool(settings.contact_form_enabled),
         ),
+        brandName=(settings.brand_name or "").strip(),
+        tagline=(settings.tagline or "").strip(),
+        footerText=(settings.footer_text or "").strip(),
+        seoDefaultTitle=(settings.seo_default_title or "").strip(),
+        seoDefaultDescription=(settings.seo_default_description or "").strip(),
     )
 
 

@@ -7,71 +7,75 @@ interface Props {
 }
 
 const { content } = Astro.props;
-const contact: PublicSiteContactDto = await getSiteContact();
+const contact: PublicSiteContactDto | null = await getSiteContact();
 const telHref = (value: string) => `tel:${value.replace(/[^+\d]/g, "")}`;
+const hasContact = Boolean(
+  contact &&
+    (contact.email !== "" ||
+      contact.linkedin !== "" ||
+      contact.orcid !== "" ||
+      contact.location !== "" ||
+      contact.employer !== ""),
+);
 ---
 
 <section class="contact-page">
   <h1>{content.contact.heading}</h1>
   <p class="contact-intro">{content.contact.intro}</p>
 
-  <ul class="contact-details">
-    {
-      contact.email !== "" && (
-        <li>
-          <span class="detail-label">Email</span>
-          <a href={`mailto:${contact.email}`}>
-            <bdi>{contact.email}</bdi>
-          </a>
-        </li>
-      )
-    }
-    {
-      contact.linkedin !== "" && (
-        <li>
-          <span class="detail-label">LinkedIn</span>
-          <a href={contact.linkedin} rel="me noopener noreferrer">
-            <bdi>{contact.linkedin.replace(/^https?:\/\//, "")}</bdi>
-          </a>
-        </li>
-      )
-    }
-    {
-      contact.orcid !== "" && (
-        <li>
-          <span class="detail-label">ORCID</span>
-          <a href={contact.orcid} rel="me noopener noreferrer">
-            <bdi>{contact.orcid.replace(/^https?:\/\//, "")}</bdi>
-          </a>
-        </li>
-      )
-    }
-    {
-      contact.employer !== "" && (
-        <li>
-          <span class="detail-label">Work</span>
-          {contact.employerUrl !== "" ? (
-            <a href={contact.employerUrl} rel="noopener noreferrer">
-              {contact.employer}
+  {
+    hasContact && contact ? (
+      <ul class="contact-details">
+        {contact.email !== "" && (
+          <li>
+            <span class="detail-label">Email</span>
+            <a href={`mailto:${contact.email}`}>
+              <bdi>{contact.email}</bdi>
             </a>
-          ) : (
-            <span>{contact.employer}</span>
-          )}
-        </li>
-      )
-    }
-    {
-      contact.location !== "" && (
-        <li>
-          <span class="detail-label">Location</span>
-          <span>{contact.location}</span>
-        </li>
-      )
-    }
-  </ul>
+          </li>
+        )}
+        {contact.linkedin !== "" && (
+          <li>
+            <span class="detail-label">LinkedIn</span>
+            <a href={contact.linkedin} rel="me noopener noreferrer">
+              <bdi>{contact.linkedin.replace(/^https?:\/\//, "")}</bdi>
+            </a>
+          </li>
+        )}
+        {contact.orcid !== "" && (
+          <li>
+            <span class="detail-label">ORCID</span>
+            <a href={contact.orcid} rel="me noopener noreferrer">
+              <bdi>{contact.orcid.replace(/^https?:\/\//, "")}</bdi>
+            </a>
+          </li>
+        )}
+        {contact.employer !== "" && (
+          <li>
+            <span class="detail-label">Work</span>
+            {contact.employerUrl !== "" ? (
+              <a href={contact.employerUrl} rel="noopener noreferrer">
+                {contact.employer}
+              </a>
+            ) : (
+              <span>{contact.employer}</span>
+            )}
+          </li>
+        )}
+        {contact.location !== "" && (
+          <li>
+            <span class="detail-label">Location</span>
+            <span>{contact.location}</span>
+          </li>
+        )}
+      </ul>
+    ) : (
+      <p class="contact-unavailable">{content.contact.unavailable}</p>
+    )
+  }
 
   {
-    contact.formEnabled && contact.email !== "" && (
+    contact && contact.formEnabled && contact.email !== "" && (
       <form class="contact-form" method="post" action="/api/contact">
         <h2>{content.contact.formIntro}</h2>
         <input type="hidden" name="locale" value={content.lang} />

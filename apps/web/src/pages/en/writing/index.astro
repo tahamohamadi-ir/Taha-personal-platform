@@ -3,6 +3,7 @@ import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Breadcrumbs from "../../../components/blog/Breadcrumbs.astro";
 import ArticleCard from "../../../components/blog/ArticleCard.astro";
 import { content } from "../../../data/content";
+import { isCmsOriginBuild } from "../../../lib/cms/client";
 import { getPublishedArticles } from "../../../lib/cms/articles";
 
 const locale = "en" as const;
@@ -11,7 +12,7 @@ const articles = await getPublishedArticles(locale);
 const blog = pageContent.blog;
 ---
 
-<BaseLayout
+<BaseLayout cmsBuildOrigin={isCmsOriginBuild() ? "cms" : "snapshot"}
   content={{
     ...pageContent,
     meta: {

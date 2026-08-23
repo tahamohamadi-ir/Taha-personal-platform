@@ -41,6 +41,9 @@ jobs:
       - name: Projects catalog copy
         run: node qa/projects-catalog.spec.mjs
 
+      - name: P8 catalog parity (mock CMS_API_BASE → API count == dist links)
+        run: node qa/p8-catalog.spec.mjs
+
       - name: Write build fingerprint
         run: |
           version=$(node -p "require('./package.json').version")
@@ -116,3 +119,23 @@ jobs:
           path: apps/web/dist
           if-no-files-found: error
           retention-days: 14
+
+  # Parity job: builds with mocked CMS_API_BASE (http://127.0.0.1:xxxx) and asserts
+  # API count == dist links for P8 catalogs (publications/books/talks/downloads).
+  # Catches the CI (unset) vs CD (https://tahamohamadi.ir) drift where snapshot
+  # empty/catalog mismatches would otherwise ship to production.
+  p8-catalog-mock:
+    name: P8 catalog mock CMS parity
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - run: npm ci
+      - run: node qa/p8-catalog.spec.mjs

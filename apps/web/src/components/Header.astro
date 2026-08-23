@@ -1,6 +1,8 @@
 ﻿---
 import type { LocaleContent } from "../data/content";
 import { content as allContent } from "../data/content";
+import { getSiteBrand } from "../lib/cms/siteSettings";
+import { isCmsOriginBuild } from "../lib/cms/client";
 import logo from "../branding/logo.png";
 
 interface Props {
@@ -22,6 +24,9 @@ const currentPath = Astro.url.pathname.replace(/\/+$/, "") || "/";
 const isCurrent = (href: string) =>
   currentPath === (href.replace(/\/+$/, "") || "/");
 const homeHref = `/${content.lang}/`;
+const cmsBrand = await getSiteBrand();
+const isCms = isCmsOriginBuild();
+const displayName = cmsBrand ?? (isCms ? "" : content.name);
 const navItems = [
   { href: `/${content.lang}/about/`, label: content.about.heading },
   { href: `/${content.lang}/research/`, label: content.research.heading },
@@ -38,7 +43,7 @@ const navItems = [
     <a
       href={homeHref}
       class="brand"
-      aria-label={content.name}
+      aria-label={displayName !== "" ? displayName : content.name}
       aria-current={isCurrent(homeHref) ? "page" : undefined}
     >
       <img
@@ -49,7 +54,7 @@ const navItems = [
         height={logo.height}
         loading="eager"
       />
-      <span class="brand-name">{content.name}</span>
+      <span class="brand-name">{displayName}</span>
     </a>
     <div class="header-nav-group">
       <nav class="header-nav" aria-label={content.navLabel}>

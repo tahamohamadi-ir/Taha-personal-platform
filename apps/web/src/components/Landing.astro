@@ -1,13 +1,14 @@
 ---
 import type { LocaleContent } from "../data/content";
-import { profile } from "../data/profile";
+import type { Profile } from "../data/profile";
 
 interface Props {
   content: LocaleContent;
+  profile: Profile;
 }
 
-const { content } = Astro.props;
-const localeProfile = profile[content.lang];
+const { content, profile } = Astro.props;
+const localeProfile = profile;
 const home = `/${content.lang}/`;
 const perspectiveHref: Record<string, string> = {
   research: `${home}research/`,
@@ -149,7 +150,7 @@ const selectedPublications = localeProfile.publications.slice(0, 2);
     <h2 class="section-heading">{content.about.heading}</h2>
     <div class="rule" aria-hidden="true"><span></span></div>
   </div>
-  <p class="about-body">{profile[content.lang].shortBio}</p>
+  <p class="about-body">{localeProfile.shortBio}</p>
 </section>
 
 <style>

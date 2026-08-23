@@ -1,7 +1,8 @@
 ﻿---
 import type { LocaleContent } from "../data/content";
 import { content as allContent } from "../data/content";
-import { getSiteContact, type PublicSiteContactDto } from "../lib/cms/siteSettings";
+import { getSiteBrand, getSiteContact, getSiteTagline, type PublicSiteContactDto } from "../lib/cms/siteSettings";
+import { isCmsOriginBuild } from "../lib/cms/client";
 import logo from "../branding/logo.png";
 
 interface Props {
@@ -18,12 +19,20 @@ const switchLabel =
     ? other.gateway.englishLabel
     : other.gateway.persianLabel;
 const switchLang = otherLang;
-const contact: PublicSiteContactDto = await getSiteContact();
-const hasContactDetails =
-  contact.email !== "" ||
-  contact.linkedin !== "" ||
-  contact.orcid !== "" ||
-  contact.location !== "";
+const contact: PublicSiteContactDto | null = await getSiteContact();
+const hasContactDetails = Boolean(
+  contact &&
+    (contact.email !== "" ||
+      contact.linkedin !== "" ||
+      contact.orcid !== "" ||
+      contact.location !== "" ||
+      contact.employer !== ""),
+);
+const cmsBrand = await getSiteBrand();
+const cmsTagline = await getSiteTagline();
+const isCms = isCmsOriginBuild();
+const displayName = cmsBrand ?? (isCms ? "" : content.name);
+const displayTagline = cmsTagline ?? (isCms ? "" : content.footer.tagline);
 ---
 
 <footer class="site-footer">
@@ -37,8 +46,8 @@ const hasContactDetails =
       loading="lazy"
     />
     <div class="footer-brand-copy">
-      <p class="footer-name">{content.name}</p>
-      <p class="footer-tagline">{content.footer.tagline}</p>
+      {displayName !== "" && <p class="footer-name">{displayName}</p>}
+      {displayTagline !== "" && <p class="footer-tagline">{displayTagline}</p>}
     </div>
   </div>
   <nav class="footer-explore" aria-label={content.footer.exploreLabel}>
@@ -62,7 +71,7 @@ const hasContactDetails =
       {switchLabel}
     </a>
     {
-      hasContactDetails ? (
+      hasContactDetails && contact ? (
         <div class="site-contact" id="site-contact">
           <ul class="contact-links">
             {contact.email !== "" && (
@@ -109,7 +118,7 @@ const hasContactDetails =
   </div>
   <p class="footer-identity">
     {content.footer.copyrightMark} <bdi>{new Date().getFullYear()}</bdi>{" "}
-    {content.name}
+    {displayName !== "" ? displayName : content.name}
   </p>
 </footer>
 

@@ -131,8 +131,6 @@ function requireListPayload<T>(
   throwIfCmsError(result, context);
   if (result.kind === "unset") return null;
   if (result.kind === "http") {
-    // Production CMS may lag web deploy; treat missing list routes as empty-honest.
-    if (result.status === 404) return null;
     throw new CmsOriginError(
       `${context}: unexpected HTTP ${result.status}`,
       result.status,
