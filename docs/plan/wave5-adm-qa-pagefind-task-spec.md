@@ -52,5 +52,5 @@
 
 - Files changed (task-owned only): see git status on `feat/wave5-adm-qa-pagefind`
 - Verification actually run (command + result): ruff PASS; pytest bulk+workflow 20 passed; web check/build+pagefind PASS; Playwright skipped (uv missing in Bash webServer PATH)
-- Deferred/risk IDs: `DEFER-0032` PARTIAL or CLOSED; `DEBT-0006` contact OPEN unchanged; owner decommission pending
+- Deferred/risk IDs: `DEFER-0032` PARTIAL; `DEBT-0006` contact OPEN unchanged; owner decommission **CLOSED** (LOG-0216)
 - Explicit blockers and next input: owner old-stack decommission; merge coordination with other waves; CSP enforce if still open from Wave 2

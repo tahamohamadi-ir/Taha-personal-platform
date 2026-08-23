@@ -1,6 +1,6 @@
 # Task: Wave 1 — web polish (writing canonical, RSS, OG, catalog URL filters)
 
-**Status:** DONE (repo; owner rebuild pending)
+**Status:** DONE (live after LOG-0216 rebuild)
 
 - Goal: Close public writing URL drift, ship per-locale RSS, add a typographic default OG card, and persist projects/research catalog filters in the URL — without CMS migrations or Wave 2+ scope.
 - User/actor and journey: Public visitors open `/{locale}/writing/` (and old `/{locale}/blog/` URLs permanently redirect). Feeds are discoverable via `rel=alternate`. Social previews use `/og-default.png` unless an article has `featured_image`. Catalog filters remain usable with JS and show all items without JS.

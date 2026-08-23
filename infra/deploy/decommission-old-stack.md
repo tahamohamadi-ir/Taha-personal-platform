@@ -1,9 +1,9 @@
 # Old pre-existing stack decommission — runbook (OWNER-executed)
 
-> Status: prepared 2026-08-16. Owner-authorized to bring down the old stack.
-> **Ready for owner (LOG-0215):** agent work is docs-only; do **not** ask an
-> agent to SSH or stop containers. Linked from `docs/status/BACKLOG.md`
-> (`Old-stack decommission`).
+> Status: **CLOSED** 2026-08-23 (LOG-0216). Inventory showed no `taha-prod-*`
+> containers; only Compose project `taha-cms` running(4); public site 200.
+> Keep this runbook for rollback history and if a stray container reappears.
+> Linked from `docs/status/BACKLOG.md` (`Old-stack decommission` CLOSED).
 > This runbook is executed by the OWNER with interactive sudo (the `deploy`
 > user's NOPASSWD sudo covers only `/opt/taha/bin/update-release.sh` and
 > `/opt/taha/bin/caddy-apply.sh`; all `docker` commands below need the owner's
@@ -25,12 +25,29 @@ Astro artifact served directly by Caddy from `/opt/taha/site/current`, and
 Caddy does not reverse-proxy any of the old containers. `RISK-0004` closed
 2026-08-16 with this inventory.
 
+## Compose QA env note
+
+The old `compose.yaml` may require `TAHA_QA_ADMIN_EMAIL` /
+`TAHA_QA_ADMIN_PASSWORD` to interpolate even for `ps`/`stop`/`down`. Use
+**placeholders** (not real secrets). They are never sent to a live QA flow
+during decommission.
+
+On this VPS, `sudo -E` is ignored — pass vars **inline** with `sudo env …`.
+If `docker ps -a --filter name=taha-prod-` is already empty, the stack is
+already gone; skip stop/down and only confirm public `200`.
+
 ## Step 0 — pre-down inventory (owner, sudo)
 
 ```sh
-cd /opt/taha/repository && sudo docker compose ps
+cd /opt/taha/repository
+sudo env TAHA_QA_ADMIN_EMAIL=decommission-placeholder@invalid \
+  TAHA_QA_ADMIN_PASSWORD=decommission-placeholder-not-a-secret \
+  docker compose ps
 sudo docker compose ls
+sudo docker ps -a --filter name=taha-prod-
 ```
+
+If compose still fails to parse, inventory by container name only (filter above).
 
 - Record the running container names and the compose project name before
   anything is stopped.
@@ -40,19 +57,28 @@ sudo docker compose ls
 - Confirm the public site is currently 200 before starting:
 
 ```sh
-curl -s -o /dev/null -w "%{http_code}" https://tahamohamadi.ir/
+curl -s -o /dev/null -w "%{http_code}\n" https://tahamohamadi.ir/
 ```
 
 ## Step 1 — stop (not remove)
 
 ```sh
-cd /opt/taha/repository && sudo docker compose stop
+cd /opt/taha/repository
+sudo env TAHA_QA_ADMIN_EMAIL=decommission-placeholder@invalid \
+  TAHA_QA_ADMIN_PASSWORD=decommission-placeholder-not-a-secret \
+  docker compose stop
+```
+
+Fallback (no compose parse):
+
+```sh
+sudo docker stop taha-prod-frontend-1 taha-prod-backend-1 taha-prod-postgres-1
 ```
 
 - Verify the public site is still served after stopping:
 
 ```sh
-curl -s -o /dev/null -w "%{http_code}" https://tahamohamadi.ir/
+curl -s -o /dev/null -w "%{http_code}\n" https://tahamohamadi.ir/
 ```
 
 Expect `200`. The site is served by Caddy from disk and does not depend on any
@@ -61,7 +87,16 @@ of these containers.
 ## Step 2 — down, volumes preserved (no `-v`)
 
 ```sh
-cd /opt/taha/repository && sudo docker compose down
+cd /opt/taha/repository
+sudo env TAHA_QA_ADMIN_EMAIL=decommission-placeholder@invalid \
+  TAHA_QA_ADMIN_PASSWORD=decommission-placeholder-not-a-secret \
+  docker compose down
+```
+
+Fallback (remove stopped containers only; **do not** delete volumes):
+
+```sh
+sudo docker rm taha-prod-frontend-1 taha-prod-backend-1 taha-prod-postgres-1
 ```
 
 - **NEVER** pass `-v` (`docker compose down -v`) unless the owner has a
@@ -83,7 +118,10 @@ sudo docker image prune -f
 If the old stack must be restored:
 
 ```sh
-cd /opt/taha/repository && sudo docker compose up -d
+cd /opt/taha/repository
+sudo env TAHA_QA_ADMIN_EMAIL=decommission-placeholder@invalid \
+  TAHA_QA_ADMIN_PASSWORD=decommission-placeholder-not-a-secret \
+  docker compose up -d
 ```
 
 Volumes were preserved by `docker compose down` (no `-v`), so the postgres

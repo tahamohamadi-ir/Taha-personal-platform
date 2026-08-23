@@ -1,3 +1,10 @@
+## 2026-08-23 — Production Waves 1–5 cutover (LOG-0216)
+
+- Attended CMS migrate on `taha-cms:116c241`: `content.0013` + `content.0014` applied; `cd-cms-migrate PASS` + `CMS smoke PASS`.
+- Attended `cd-rebuild-web.sh`: `taha-web:local` live; `/en/search/` + `/en/publications/` 200; public + CMS smoke PASS.
+- Old `/opt/taha/repository` `taha-prod-*` containers confirmed absent; only Compose project `taha-cms` (4 services) running. Site 200.
+- Keep `CMS_CD_AUTO_MIGRATE` unset; keep `FEATURE_ADMIN_BULK_ARCHIVE` off until explicitly enabled.
+
 ## 2026-08-22 — Wave 1 web polish
 
 - Canonical public writing routes at `/{locale}/writing/` with permanent redirects from `/{locale}/blog/`.

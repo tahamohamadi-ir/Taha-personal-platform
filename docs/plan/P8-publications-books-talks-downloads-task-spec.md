@@ -7,7 +7,7 @@
 - Release type: `STANDARD`
 - Risk level: Medium (additive migrations; access/license projection mistakes)
 - Owner and handoff recipient: Agent implements in `feat/wave3-p8-publications` → owner dumpdata + attended migrate → rebuild-web
-- Status: `PARTIAL` (repo complete LOG-0213; owner attended migrate `content.0013` + rebuild-web remaining)
+- Status: `DONE` (repo LOG-0213; production migrate `0013`/`0014` + rebuild LOG-0216)
 
 ## Scope
 

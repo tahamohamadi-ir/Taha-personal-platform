@@ -7,7 +7,7 @@ Rule:
 Execute a spec only if it appears under **Active** below.
 Everything under **Archived** is history. Read it for context; never execute it.
 
-Last reconciled: 2026-08-22.
+Last reconciled: 2026-08-23.
 
 ---
 
@@ -15,19 +15,19 @@ Last reconciled: 2026-08-22.
 
 | Spec | State | Who runs it | Notes |
 |---|---|---|---|
-| `wave1-web-polish-task-spec.md` | DONE (merged) | agent | Writing-canonical + RSS + OG + catalog URL filters (Wave 1). LOG-0211. |
-| `wave2-cms-web-addons-task-spec.md` | DONE (merged) | agent | Statement PDF, lightbox, CSP Report-Only demos. LOG-0212. Owner migrate `content.0013`. |
-| `P8-publications-books-talks-downloads-task-spec.md` | DONE (merged, migrate pending) | agent + owner | Wave 3 LOG-0213. Migration `content.0014` (depends on `0013`). Attended migrate + rebuild-web required. |
-| `wave4-research-graph-island-task-spec.md` | DONE (merged) | agent | ADR-0028 research graph island (SVG + motion). LOG-0214. |
-| `wave5-adm-qa-pagefind-task-spec.md` | DONE (merged) | agent | Wave 5: ADM QA + S1/S4 service/flags + early Pagefind search. LOG-0215. `DEFER-0032` PARTIAL. |
-| `cms-origin-and-full-stack-cd-task-spec.md` | DONE (repo + edge) | agent | ADR-0027 Slices 0?5; Compose Caddy live (`DEFER-0031`/`RISK-0013` CLOSED, LOG-0210); HMAC `DEFER-0027` CLOSED. |
-| `P3-public-preview-token-task-spec.md` | DONE | agent | DEFER-0016 CLOSED 2026-08-22 (LOG-0204 repo; LOG-0209 production secret + CMS recreate). |
-| `blog-story-composition-task-spec.md` | PARTIAL | agent | Blog story live; entity stories Slice 5 (`DEFER-0030` CLOSED in ledger). Owner migrate + rebuild. |
-| `rich-blocks-v2-task-spec.md` | DONE | agent | Six no-JS story blocks (accordion/tabs/timeline/counters/before_after/slider). Owner static rebuild after merge. |
-| `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | Featured?Media; Wagtail uninstall CLOSED; HMAC CLOSED; Playwright lifecycle CLOSED; §18 QA ? `DEFER-0032` PARTIAL (Wave 5). |
+| `wave1-web-polish-task-spec.md` | DONE (live) | agent | Writing-canonical + RSS + OG + catalog URL filters. LOG-0211; prod rebuild LOG-0216. |
+| `wave2-cms-web-addons-task-spec.md` | DONE (live) | agent + owner | Statement PDF schema, lightbox, CSP Report-Only. LOG-0212; prod migrate `0013` LOG-0216. |
+| `P8-publications-books-talks-downloads-task-spec.md` | DONE (live) | agent + owner | Wave 3 LOG-0213; prod migrate `0014` + rebuild LOG-0216. Catalogs empty-honest until CMS content. |
+| `wave4-research-graph-island-task-spec.md` | DONE (live) | agent | ADR-0028 research graph island. LOG-0214; live after LOG-0216 rebuild. |
+| `wave5-adm-qa-pagefind-task-spec.md` | DONE (live) | agent | ADM QA + service/flags + Pagefind. LOG-0215; `/search/` live LOG-0216. `DEFER-0032` PARTIAL. |
+| `cms-origin-and-full-stack-cd-task-spec.md` | DONE (repo + edge) | agent | ADR-0027; Compose Caddy live; HMAC CLOSED. LOG-0210. |
+| `P3-public-preview-token-task-spec.md` | DONE | agent | DEFER-0016 CLOSED (LOG-0204/0209). |
+| `blog-story-composition-task-spec.md` | PARTIAL | agent | Blog/entity stories in repo; keep content publishing honest. |
+| `rich-blocks-v2-task-spec.md` | DONE | agent | Six no-JS story blocks. Live via web rebuilds. |
+| `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | Remaining: ?18 manual QA (`DEFER-0032` PARTIAL). |
 | `P0-A-stack-inventory-task-spec.md` | BLOCKED (owner) | owner | Read-only VPS inventory. Not an agent task. |
 
-Owner remaining work that is **not** a new spec: attended migrate `content.0013` then `content.0014` + Caddy reload + `rebuild-web.sh`; demo allowlist before CSP enforce (`DEFER-0021`); old-stack decommission (`infra/deploy/decommission-old-stack.md`). HMAC (`DEFER-0027`) and Compose Caddy (`DEFER-0031`) are **CLOSED** (LOG-0210). Do **not** set `CMS_CD_AUTO_MIGRATE`.
+Owner remaining work that is **not** a new spec: demo allowlist before CSP enforce (`DEFER-0021`); manual ADM QA remainder (`DEFER-0032` / S6); optional Research Statement PDF Media upload; contact inbox (`DEBT-0006`). Old-stack decommission **CLOSED** (LOG-0216). HMAC (`DEFER-0027`) and Compose Caddy (`DEFER-0031`) **CLOSED**. Do **not** set `CMS_CD_AUTO_MIGRATE`.
 
 ## 2. Queued ? do not start yet
 

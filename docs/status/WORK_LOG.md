@@ -1,3 +1,13 @@
+## LOG-0216 — 2026-08-23 — Production Waves 1–5 cutover (migrate 0013/0014, rebuild-web, old-stack gone)
+
+- Outcome: Owner-attended production cutover on VPS after Waves 1–5 merged to `main` (`repo_head=13d2c81`). **CMS:** `CMS_IMAGE=ghcr.io/tahamohamadi-ir/taha-cms:116c241` via `bash infra/deploy/cd-cms-migrate.sh` → `content.0013_researchstatement_statement_pdf` OK, `content.0014_p8_publications_books_talks_downloads` OK; `backup_ok` under `/home/deploy/cms-migrate-backups/pre-migrate-20260823T061529Z`; previous image `e2cd1b6` → `116c241`; **`cd-cms-migrate PASS`** + **`CMS smoke PASS`**. **Web:** `bash infra/deploy/cd-rebuild-web.sh` → `taha-web:local` rebuild PASS; public smoke PASS; `/en/search/` and `/en/publications/` HTTP/2 200; `smoke.sh` + `smoke-cms.sh` PASS. **Old stack:** `sudo docker ps -a --filter name=taha-prod-` empty; only Compose project `taha-cms` running(4); public site 200. Compose QA env blocked `docker compose` in `/opt/taha/repository` without placeholders (`sudo -E` ignored on this host — use `sudo env …`); containers already absent so stop/down was a no-op. Did **not** set `CMS_CD_AUTO_MIGRATE`. Did **not** enable `FEATURE_ADMIN_BULK_ARCHIVE` in production.
+- Why: Close owner gates left after repo merges (schema + public HTML + decommission attestation).
+- Scope / files: production VPS only for runtime; this entry + ledger sync (CHANGELOG, BACKLOG, deferred-validation, plan README, Task-list, AGENTS, DEPLOY_RUNBOOK, decommission runbook).
+- Commands or actions actually performed (owner): dump attempt → writable path `/home/deploy/cms-migrate-backups`; `cd-cms-migrate.sh`; `cd-rebuild-web.sh`; inventory `docker compose ls` / `taha-prod-` filter; public curls.
+- Verification actually performed and result: migrate lines OK for 0013/0014; `cd-cms-migrate PASS`; `rebuild-web PASS` / `cd-rebuild-web PASS`; smoke scripts PASS; search/publications 200; no `taha-prod-*` containers.
+- Deferred or risk IDs: production schema through `0014` **CLOSED**; old-stack decommission **CLOSED** (already empty); `DEFER-0019` schema live — PDF Media upload still editorial; `DEFER-0021` PARTIAL (allowlist/enforce); `DEFER-0032` PARTIAL (manual S6); `DEFER-0020` OPEN (collections only); `DEBT-0006` contact OPEN.
+- Rollback / recovery: `export CMS_IMAGE=ghcr.io/tahamohamadi-ir/taha-cms:e2cd1b6 && bash infra/deploy/update-cms.sh`; restore from `pre-migrate-20260823T061529Z`; previous `taha-web` image if needed.
+
 ## LOG-0211 â€” 2026-08-22 â€” Wave 1 web polish (writing-canonical, RSS, OG, catalog URL filters)
 
 - Outcome: Synced plan index to LOG-0210 (`DEFER-0027`/`DEFER-0031` + `RISK-0013` CLOSED; ADM-6 remaining = QA/`DEFER-0032` only). Shipped canonical `/{locale}/writing/` with permanent redirects from `/{locale}/blog/**`. Added per-locale RSS + BaseLayout alternate (`DEFER-0018` CLOSED). Added typographic default OG SVG/PNG + `ogImage` prop (`DEFER-0009` CLOSED). Projects/Research catalogs persist `?type=&sort=` via `history.replaceState` (no-JS still shows all items).
@@ -12,23 +22,23 @@
 
 ## LOG-0215 — 2026-08-22 — Wave 5: ADM QA + service/flags + early Pagefind
 
-- Outcome: Implemented Wave 5 on `feat/wave5-adm-qa-pagefind`. **ADM QA:** Playwright `admin-qa-matrix.spec.ts` + pytest bulk/flags; S6 checklist; `DEFER-0032` → **PARTIAL** (full LTR admin chrome + viewport/reduced-motion remain manual). **S1/S4:** `apps/content/services/lifecycle.py` + `public_projection.py`; `FEATURE_ADMIN_BULK_ARCHIVE` default-off; SPA bulk archive gated by `auth/me.featureFlags`. **Pagefind:** `/{en,fa}/search/` + nav + post-build per-locale index; Task-list §15 phase-order exception. **Owner decommission:** runbook at `infra/deploy/decommission-old-stack.md` — ready for owner (no SSH by agent). Contact inbox untouched (`DEBT-0006` OPEN). Merged to main.
+- Outcome: Implemented Wave 5 on `feat/wave5-adm-qa-pagefind`. **ADM QA:** Playwright `admin-qa-matrix.spec.ts` + pytest bulk/flags; S6 checklist; `DEFER-0032` → **PARTIAL** (full LTR admin chrome + viewport/reduced-motion remain manual). **S1/S4:** `apps/content/services/lifecycle.py` + `public_projection.py`; `FEATURE_ADMIN_BULK_ARCHIVE` default-off; SPA bulk archive gated by `auth/me.featureFlags`. **Pagefind:** `/{en,fa}/search/` + nav + post-build per-locale index; Task-list §15 phase-order exception. **Owner decommission:** **CLOSED** in LOG-0216 (no `taha-prod-*`). Contact inbox untouched (`DEBT-0006` OPEN). Merged to main; live after LOG-0216 rebuild.
 - Why: Close Wave 5 plan todos (adm-qa, service-flags, pagefind, owner-decommission note).
 - Verification: `uv run ruff check` PASS; pytest bulk/flags **20 passed**; `npm run check` 0 errors; `npm run build` (offline) PASS including `pagefind:index`. Playwright `admin-qa-matrix` skipped on this Windows host (`uv` missing in Bash webServer) — re-run under CI.
-- Deferred or risk IDs: `DEFER-0032` **PARTIAL**; `DEBT-0006` contact **OPEN**; owner old-stack decommission **pending**; CSP enforce if still open from Wave 2.
+- Deferred or risk IDs: `DEFER-0032` **PARTIAL**; `DEBT-0006` contact **OPEN**; owner old-stack decommission **CLOSED** (LOG-0216); CSP enforce if still open from Wave 2.
 - Rollback / recovery: keep `FEATURE_ADMIN_BULK_ARCHIVE` false; revert search routes/nav; Pagefind artifacts are build-only.
 
 ## LOG-0212 — 2026-08-22 — Wave 2: statement PDF, lightbox, CSP Report-Only demo embed
 
-- Outcome: Wave 2 merged to main. DEFER-0019 repo CLOSED (`content.0013_researchstatement_statement_pdf`); F7 lightbox; DEFER-0021 PARTIAL (CSP Report-Only + click-to-load). Production migrate/upload still owner. Never `CMS_CD_AUTO_MIGRATE`.
+- Outcome: Wave 2 merged to main. DEFER-0019 repo CLOSED (`content.0013_researchstatement_statement_pdf`); F7 lightbox; DEFER-0021 PARTIAL (CSP Report-Only + click-to-load). **Production migrate + rebuild: LOG-0216.** Never `CMS_CD_AUTO_MIGRATE`.
 - Evidence: pytest statement_pdf + media rewire 9 passed; ruff clean; web check/build PASS.
 - Rollback / recovery: reverse `0013`; remove CSP Report-Only / lightbox / DemoEmbed.
 
 ## LOG-0213 — 2026-08-22 — Wave 3 P8 publications / books / talks / downloads (repo)
 
-- Outcome: Wave 3 merged to main. IA §4b; Book/Talk/Download + Publication extensions; admin + public API + Astro; migration `content.0014_p8_publications_books_talks_downloads` depends on `content.0013_researchstatement_statement_pdf`. Not applied to production yet.
+- Outcome: Wave 3 merged to main. IA §4b; Book/Talk/Download + Publication extensions; admin + public API + Astro; migration `content.0014_p8_publications_books_talks_downloads` depends on `content.0013_researchstatement_statement_pdf`. **Production migrate + rebuild: LOG-0216.**
 - Evidence: pytest P8/admin/research 25 passed; web check/build PASS; admin-frontend check PASS.
-- Owner: attended migrate through `0014` then `rebuild-web.sh`. Never `CMS_CD_AUTO_MIGRATE`.
+- Owner: attended migrate through `0014` then `rebuild-web.sh` — **DONE** (LOG-0216). Never `CMS_CD_AUTO_MIGRATE`.
 - Rollback / recovery: reverse additive `0014` after dumpdata; discard branch history only if needed.
 
 ## LOG-0214 — 2026-08-22 — Wave 4 research relationship graph island (ADR-0028)

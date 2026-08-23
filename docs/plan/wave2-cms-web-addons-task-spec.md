@@ -54,4 +54,4 @@
   - `uv run ruff check .` in `apps/cms` → All checks passed
   - `npm run check` + `npm run build` in `apps/web` → 0 errors; 40 pages built
 - Deferred/risk IDs: DEFER-0019 CLOSED (repo); DEFER-0021 PARTIAL; no new CRITICAL risk
-- Explicit blockers and next input: owner prod migrate `content.0013`; owner demo host confirmation before CSP enforce / frame-src expansion; Wave 3 P8 IA not started
+- Explicit blockers and next input: owner demo host confirmation before CSP enforce / frame-src expansion; prod migrate `content.0013` **DONE** (LOG-0216)
