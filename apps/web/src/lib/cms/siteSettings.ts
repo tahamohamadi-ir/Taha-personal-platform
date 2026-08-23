@@ -16,8 +16,6 @@ export interface PublicDownloadDto {
 
 export interface PublicSiteContactDto {
   email: string;
-  phone: string;
-  phoneIntl: string;
   location: string;
   linkedin: string;
   orcid: string;
@@ -57,8 +55,6 @@ export async function getPublicSiteSettings(): Promise<PublicSiteSettingsDto | n
  */
 const OFFLINE_CONTACT_SNAPSHOT: PublicSiteContactDto = {
   email: "taha.mohammadi@shahed.ac.ir",
-  phone: "+98 910 235 5374",
-  phoneIntl: "+1 925 456 4581",
   location: "Tehran, Iran",
   linkedin: "https://linkedin.com/in/taha-mohammadi-95770986",
   orcid: "https://orcid.org/0009-0006-7736-7638",
@@ -75,8 +71,6 @@ export async function getSiteContact(): Promise<PublicSiteContactDto> {
   if (!contact) return OFFLINE_CONTACT_SNAPSHOT;
   return {
     email: (contact.email || "").trim(),
-    phone: (contact.phone || "").trim(),
-    phoneIntl: (contact.phoneIntl || "").trim(),
     location: (contact.location || "").trim(),
     linkedin: (contact.linkedin || "").trim(),
     orcid: (contact.orcid || "").trim(),

@@ -38,6 +38,8 @@ export const GET: APIRoute = async () => {
     "/fa/downloads/",
     "/en/search/",
     "/fa/search/",
+    "/en/contact/",
+    "/fa/contact/",
   ];
 
   const staticEntries = staticPaths

@@ -19,7 +19,6 @@ interface Props {
 
 const { content, files } = Astro.props;
 const contact = await getSiteContact();
-const telHref = (value: string) => `tel:${value.replace(/[^+\d]/g, "")}`;
 ---
 
 <section class="downloads">
@@ -33,13 +32,6 @@ const telHref = (value: string) => `tel:${value.replace(/[^+\d]/g, "")}`;
           <li>
             <a href={`mailto:${contact.email}`}>
               <bdi>{contact.email}</bdi>
-            </a>
-          </li>
-        )}
-        {contact.phone !== "" && (
-          <li>
-            <a href={telHref(contact.phone)} dir="ltr">
-              {contact.phone}
             </a>
           </li>
         )}

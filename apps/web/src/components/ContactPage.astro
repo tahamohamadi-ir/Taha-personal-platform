@@ -1,0 +1,236 @@
+---
+import type { LocaleContent } from "../data/content";
+import { getSiteContact, type PublicSiteContactDto } from "../lib/cms/siteSettings";
+
+interface Props {
+  content: LocaleContent;
+}
+
+const { content } = Astro.props;
+const contact: PublicSiteContactDto = await getSiteContact();
+const telHref = (value: string) => `tel:${value.replace(/[^+\d]/g, "")}`;
+---
+
+<section class="contact-page">
+  <h1>{content.contact.heading}</h1>
+  <p class="contact-intro">{content.contact.intro}</p>
+
+  <ul class="contact-details">
+    {
+      contact.email !== "" && (
+        <li>
+          <span class="detail-label">Email</span>
+          <a href={`mailto:${contact.email}`}>
+            <bdi>{contact.email}</bdi>
+          </a>
+        </li>
+      )
+    }
+    {
+      contact.linkedin !== "" && (
+        <li>
+          <span class="detail-label">LinkedIn</span>
+          <a href={contact.linkedin} rel="me noopener noreferrer">
+            <bdi>{contact.linkedin.replace(/^https?:\/\//, "")}</bdi>
+          </a>
+        </li>
+      )
+    }
+    {
+      contact.orcid !== "" && (
+        <li>
+          <span class="detail-label">ORCID</span>
+          <a href={contact.orcid} rel="me noopener noreferrer">
+            <bdi>{contact.orcid.replace(/^https?:\/\//, "")}</bdi>
+          </a>
+        </li>
+      )
+    }
+    {
+      contact.employer !== "" && (
+        <li>
+          <span class="detail-label">Work</span>
+          {contact.employerUrl !== "" ? (
+            <a href={contact.employerUrl} rel="noopener noreferrer">
+              {contact.employer}
+            </a>
+          ) : (
+            <span>{contact.employer}</span>
+          )}
+        </li>
+      )
+    }
+    {
+      contact.location !== "" && (
+        <li>
+          <span class="detail-label">Location</span>
+          <span>{contact.location}</span>
+        </li>
+      )
+    }
+  </ul>
+
+  {
+    contact.formEnabled && contact.email !== "" && (
+      <form class="contact-form" method="post" action="/api/contact">
+        <h2>{content.contact.formIntro}</h2>
+        <input type="hidden" name="locale" value={content.lang} />
+        <input
+          type="text"
+          name="website"
+          value=""
+          class="contact-honeypot"
+          tabindex={-1}
+          autocomplete="off"
+          aria-hidden="true"
+        />
+        <label for="page-contact-name">{content.contact.nameLabel}</label>
+        <input
+          id="page-contact-name"
+          type="text"
+          name="name"
+          maxlength={120}
+          autocomplete="name"
+        />
+        <label for="page-contact-email">{content.contact.emailLabel}</label>
+        <input
+          id="page-contact-email"
+          type="email"
+          name="email"
+          required
+          maxlength={254}
+          autocomplete="email"
+        />
+        <label for="page-contact-message">{content.contact.messageLabel}</label>
+        <textarea
+          id="page-contact-message"
+          name="message"
+          rows={6}
+          required
+          maxlength={4000}
+        />
+        <button type="submit">{content.contact.sendLabel}</button>
+      </form>
+    )
+  }
+</section>
+
+<style>
+  .contact-page {
+    max-width: var(--measure-page, 1280px);
+    margin-inline: auto;
+    width: 100%;
+    padding-block: var(--space-section, 3rem) var(--space-section, 3rem);
+    padding-inline: clamp(1rem, 5vw, 2.5rem);
+  }
+
+  h1 {
+    font-size: var(--text-display, 2.5rem);
+    line-height: 1.15;
+    margin: 0 0 var(--space-4, 1rem);
+  }
+
+  .contact-intro {
+    max-width: var(--measure-prose, 62ch);
+    color: var(--color-ink-secondary);
+    margin: 0 0 var(--space-6, 1.5rem);
+  }
+
+  .contact-details {
+    list-style: none;
+    margin: 0 0 var(--space-8, 2rem);
+    padding: 0;
+    display: grid;
+    gap: var(--space-3, 0.75rem);
+    max-width: var(--measure-prose, 62ch);
+  }
+
+  .contact-details li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    align-items: baseline;
+    padding-block: var(--space-2, 0.5rem);
+    border-block-end: 1px solid var(--color-border-subtle);
+  }
+
+  .detail-label {
+    flex: 0 0 6.5rem;
+    color: var(--color-ink-secondary);
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .contact-details a {
+    color: var(--color-ink);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  .contact-details a:hover,
+  .contact-details a:focus-visible {
+    color: var(--color-brand);
+  }
+
+  .contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2, 0.5rem);
+    max-width: 34rem;
+  }
+
+  .contact-form h2 {
+    font-size: 1.125rem;
+    margin: 0 0 var(--space-2, 0.5rem);
+    color: var(--color-ink);
+  }
+
+  .contact-form label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-ink-secondary);
+    margin-block-start: var(--space-2, 0.5rem);
+  }
+
+  .contact-form input:not(.contact-honeypot),
+  .contact-form textarea {
+    font: inherit;
+    color: var(--color-ink);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-sm, 8px);
+    padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  }
+
+  .contact-form textarea {
+    resize: vertical;
+  }
+
+  .contact-form button {
+    align-self: flex-start;
+    margin-block-start: var(--space-3, 0.75rem);
+    min-height: 2.75rem;
+    padding-inline: var(--space-5, 1.25rem);
+    font: inherit;
+    font-weight: 600;
+    color: var(--color-inverse);
+    background: var(--color-brand);
+    border: 1px solid var(--color-brand);
+    border-radius: var(--radius-sm, 8px);
+    cursor: pointer;
+    transition: background-color var(--duration-fast, 140ms) var(--ease-out, ease-out);
+  }
+
+  .contact-form button:hover,
+  .contact-form button:focus-visible {
+    background: var(--color-brand-emphasis);
+  }
+
+  .contact-honeypot {
+    position: absolute;
+    inset-inline-start: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+</style>

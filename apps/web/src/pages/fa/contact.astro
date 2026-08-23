@@ -1,0 +1,16 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ContactPage from "../../components/ContactPage.astro";
+import { content } from "../../data/content";
+import { isCmsOriginBuild } from "../../lib/cms/client";
+
+const fa = content.fa;
+---
+
+<BaseLayout
+  content={fa}
+  alternateHref="/en/contact/"
+  cmsBuildOrigin={isCmsOriginBuild() ? "cms" : "snapshot"}
+>
+  <ContactPage content={fa} />
+</BaseLayout>

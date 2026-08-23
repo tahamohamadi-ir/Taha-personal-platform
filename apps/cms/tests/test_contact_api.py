@@ -166,6 +166,20 @@ def test_public_site_settings_project_contact_block():
 
 
 @pytest.mark.django_db
+def test_public_site_settings_never_leaks_phone_numbers():
+    """Phones stay private (owner decision 2026-08-23) even when stored."""
+    row = SiteSettings.get_singleton()
+    row.contact_phone = "+98 910 000 0000"
+    row.contact_phone_intl = "+1 202 555 0100"
+    row.save()
+
+    body = Client().get("/api/site").content.decode("utf-8")
+    assert "+98 910 000 0000" not in body
+    assert "+1 202 555 0100" not in body
+    assert "phone" not in json.loads(body)["contact"]
+
+
+@pytest.mark.django_db
 def test_admin_site_settings_contact_roundtrip(admin_api_client):
     detail = admin_api_client.get("/api/v1/admin/site")
     assert detail.status_code == 200

@@ -184,6 +184,7 @@ export interface LocaleContent {
   contact: {
     heading: string;
     unavailable: string;
+    intro: string;
     formIntro: string;
     nameLabel: string;
     emailLabel: string;
@@ -424,6 +425,8 @@ export const content: Record<LocaleCode, LocaleContent> = {
     contact: {
       heading: "Contact",
       unavailable: "Contact details are not published yet.",
+      intro:
+        "The fastest way to reach me is email. For a quick hello, the message form below goes straight to my inbox.",
       formIntro:
         "Send a message — it goes straight to my inbox (not stored on the site).",
       nameLabel: "Name (optional)",
@@ -665,6 +668,8 @@ export const content: Record<LocaleCode, LocaleContent> = {
     contact: {
       heading: "تماس",
       unavailable: "اطلاعات تماس هنوز منتشر نشده است.",
+      intro:
+        "سریع‌ترین راه رسیدن به من ایمیل است. پیام کوتاه هم از فرم زیر مستقیم به صندوق من می‌رسد.",
       formIntro:
         "پیام بفرستید — مستقیم به ایمیل من می‌رسد (در سایت ذخیره نمی‌شود).",
       nameLabel: "نام (اختیاری)",
