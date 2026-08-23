@@ -32,6 +32,18 @@ if [ ! -d /var/www/html ]; then
   sudo mkdir -p /var/www/html 2>/dev/null || mkdir -p /var/www/html 2>/dev/null || true
 fi
 
+# Compose is fail-closed (LOG-0238: ${CMS_IMAGE:?}/${WEB_IMAGE:?}). A caddy reload
+# does not change app images — derive current ones from the running containers so
+# `up -d caddy` validates without requiring deploy-time env.
+if [ -z "${CMS_IMAGE:-}" ]; then
+  CMS_IMAGE="$(docker inspect taha-cms-cms-1 --format '{{.Config.Image}}' 2>/dev/null || true)"
+  [ -n "$CMS_IMAGE" ] && export CMS_IMAGE || unset CMS_IMAGE
+fi
+if [ -z "${WEB_IMAGE:-}" ]; then
+  WEB_IMAGE="$(docker inspect taha-cms-web-1 --format '{{.Config.Image}}' 2>/dev/null || true)"
+  [ -n "$WEB_IMAGE" ] && export WEB_IMAGE || unset WEB_IMAGE
+fi
+
 cd "$(dirname "$COMPOSE_FILE")"
 
 # Recreate so bind-mounted Caddyfile is re-read; validate inside the container.
