@@ -1,5 +1,6 @@
 ---
 import type { LocaleContent } from "../data/content";
+import { getSiteContact } from "../lib/cms/siteSettings";
 
 export interface DownloadFile {
   title: string;
@@ -17,11 +18,61 @@ interface Props {
 }
 
 const { content, files } = Astro.props;
+const contact = await getSiteContact();
+const telHref = (value: string) => `tel:${value.replace(/[^+\d]/g, "")}`;
 ---
 
 <section class="downloads">
   <h1 class="downloads-heading">{content.downloads.heading}</h1>
   <p class="downloads-intro">{content.downloads.intro}</p>
+  {
+    (contact.location !== "" || contact.email !== "") && (
+      <ul class="cv-contact" aria-label={content.contact.heading}>
+        {contact.location !== "" && <li><span>{contact.location}</span></li>}
+        {contact.email !== "" && (
+          <li>
+            <a href={`mailto:${contact.email}`}>
+              <bdi>{contact.email}</bdi>
+            </a>
+          </li>
+        )}
+        {contact.phone !== "" && (
+          <li>
+            <a href={telHref(contact.phone)} dir="ltr">
+              {contact.phone}
+            </a>
+          </li>
+        )}
+        {contact.employer !== "" && (
+          <li>
+            <span>
+              {contact.employerUrl !== "" ? (
+                <a href={contact.employerUrl} rel="noopener noreferrer">
+                  {contact.employer}
+                </a>
+              ) : (
+                contact.employer
+              )}
+            </span>
+          </li>
+        )}
+        {contact.linkedin !== "" && (
+          <li>
+            <a href={contact.linkedin} rel="me noopener noreferrer">
+              LinkedIn
+            </a>
+          </li>
+        )}
+        {contact.orcid !== "" && (
+          <li>
+            <a href={contact.orcid} rel="me noopener noreferrer">
+              ORCID
+            </a>
+          </li>
+        )}
+      </ul>
+    )
+  }
   <ul class="downloads-list">
     {files.map((file) => (
       <li class="downloads-item">
@@ -56,6 +107,27 @@ const { content, files } = Astro.props;
     width: 100%;
     padding-block: 3rem 4rem;
     padding-inline: clamp(1rem, 5vw, 2.5rem);
+  }
+
+  .cv-contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+    list-style: none;
+    margin: 0 0 2rem;
+    padding: 0;
+    color: var(--color-ink-secondary);
+    font-size: 0.9375rem;
+  }
+
+  .cv-contact a {
+    color: var(--color-ink-secondary);
+    text-decoration: none;
+  }
+
+  .cv-contact a:hover,
+  .cv-contact a:focus-visible {
+    color: var(--color-brand);
   }
 
   .downloads-heading {

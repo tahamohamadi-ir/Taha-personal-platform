@@ -22,6 +22,17 @@ class SiteSettings(models.Model):
     nav_links = models.JSONField(default=list, blank=True)
     seo_default_title = models.CharField(max_length=200, blank=True, default="")
     seo_default_description = models.TextField(blank=True, default="")
+    # Public contact block (board A10 decision 2026-08-23: contact path
+    # reopened with a non-persistent email form — no inbox persistence).
+    contact_email = models.CharField(max_length=254, blank=True, default="")
+    contact_phone = models.CharField(max_length=32, blank=True, default="")
+    contact_phone_intl = models.CharField(max_length=32, blank=True, default="")
+    contact_location = models.CharField(max_length=200, blank=True, default="")
+    contact_linkedin = models.CharField(max_length=300, blank=True, default="")
+    contact_orcid = models.CharField(max_length=300, blank=True, default="")
+    contact_employer = models.CharField(max_length=200, blank=True, default="")
+    contact_employer_url = models.CharField(max_length=300, blank=True, default="")
+    contact_form_enabled = models.BooleanField(default=False)
     current_cv_media = models.ForeignKey(
         "media.Media",
         null=True,

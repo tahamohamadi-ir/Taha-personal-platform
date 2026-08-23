@@ -36,6 +36,8 @@ siteconfig_router = Router()
 VALID_LOCALES = ("fa", "en")
 HEX_COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 SLUG_RE = re.compile(r"^[a-z0-9-]+$")
+EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+URLISH_RE = re.compile(r"^https?://[^\s]+$")
 # Relative path must be a single leading slash (no protocol-relative "//host"),
 # or an absolute http(s) URL; bounded length (500).
 HREF_RE = re.compile(r"^(https?://[^\s]+|/(?!/)[^\s]*)$")
@@ -172,6 +174,15 @@ class SiteSettingsOut(Schema):
     navLinks: list[NavLinkOut]
     seoDefaultTitle: str
     seoDefaultDescription: str
+    contactEmail: str
+    contactPhone: str
+    contactPhoneIntl: str
+    contactLocation: str
+    contactLinkedin: str
+    contactOrcid: str
+    contactEmployer: str
+    contactEmployerUrl: str
+    contactFormEnabled: bool
     currentCvMediaId: int | None
     currentResumeMediaId: int | None
     currentCv: CurrentDocumentOut | None
@@ -193,6 +204,15 @@ class SiteSettingsUpdateIn(Schema):
     navLinks: list[dict] | None = None
     seoDefaultTitle: str | None = None
     seoDefaultDescription: str | None = None
+    contactEmail: str | None = None
+    contactPhone: str | None = None
+    contactPhoneIntl: str | None = None
+    contactLocation: str | None = None
+    contactLinkedin: str | None = None
+    contactOrcid: str | None = None
+    contactEmployer: str | None = None
+    contactEmployerUrl: str | None = None
+    contactFormEnabled: bool | None = None
     currentCvMediaId: int | None = None
     currentResumeMediaId: int | None = None
 
@@ -347,12 +367,69 @@ def _serialize_site_settings(item: SiteSettings) -> SiteSettingsOut:
         navLinks=[NavLinkOut(**link) for link in item.nav_links],
         seoDefaultTitle=item.seo_default_title,
         seoDefaultDescription=item.seo_default_description,
+        contactEmail=item.contact_email,
+        contactPhone=item.contact_phone,
+        contactPhoneIntl=item.contact_phone_intl,
+        contactLocation=item.contact_location,
+        contactLinkedin=item.contact_linkedin,
+        contactOrcid=item.contact_orcid,
+        contactEmployer=item.contact_employer,
+        contactEmployerUrl=item.contact_employer_url,
+        contactFormEnabled=item.contact_form_enabled,
         currentCvMediaId=cv.pk if cv is not None else None,
         currentResumeMediaId=resume.pk if resume is not None else None,
         currentCv=_serialize_current_document(cv),
         currentResume=_serialize_current_document(resume),
         updatedAt=item.updated_at,
     )
+
+
+# ("payload key", "model attr", max length) for the public contact block.
+_CONTACT_TEXT_FIELDS = [
+    ("contactEmail", "contact_email", 254),
+    ("contactPhone", "contact_phone", 32),
+    ("contactPhoneIntl", "contact_phone_intl", 32),
+    ("contactLocation", "contact_location", 200),
+    ("contactLinkedin", "contact_linkedin", 300),
+    ("contactOrcid", "contact_orcid", 300),
+    ("contactEmployer", "contact_employer", 200),
+    ("contactEmployerUrl", "contact_employer_url", 300),
+]
+
+
+def _apply_contact_fields(payload, item: SiteSettings) -> None:
+    """Apply optional contact fields with strip + length validation."""
+    for key, attr, max_len in _CONTACT_TEXT_FIELDS:
+        value = getattr(payload, key)
+        if value is None:
+            continue
+        stripped = value.strip()
+        if len(stripped) > max_len:
+            raise AdminError(
+                400,
+                "VALIDATION",
+                f"{key} must not exceed {max_len} characters.",
+                fields={key: [f"{key} must not exceed {max_len} characters."]},
+            )
+        url_fields = ("contact_linkedin", "contact_orcid", "contact_employer_url")
+        if stripped and (key == "contactEmail" or attr in url_fields):
+            if key == "contactEmail" and not EMAIL_RE.fullmatch(stripped):
+                raise AdminError(
+                    400,
+                    "VALIDATION",
+                    "contactEmail must be a valid email address.",
+                    fields={"contactEmail": ["contactEmail must be a valid email address."]},
+                )
+            if key != "contactEmail" and not URLISH_RE.fullmatch(stripped):
+                raise AdminError(
+                    400,
+                    "VALIDATION",
+                    f"{key} must be an http(s) URL.",
+                    fields={key: [f"{key} must be an http(s) URL."]},
+                )
+        setattr(item, attr, stripped)
+    if payload.contactFormEnabled is not None:
+        item.contact_form_enabled = payload.contactFormEnabled
 
 
 def _validate_nav_links(value) -> list[dict]:
@@ -645,6 +722,7 @@ def site_settings_put(request, payload: SiteSettingsUpdateIn):
                     },
                 )
             item.seo_default_description = seo_description
+        _apply_contact_fields(payload, item)
         if "currentCvMediaId" in provided:
             item.current_cv_media = _resolve_cv_media(
                 provided["currentCvMediaId"], "currentCvMediaId"

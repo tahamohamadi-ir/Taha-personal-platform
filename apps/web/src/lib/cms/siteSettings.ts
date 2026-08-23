@@ -14,9 +14,22 @@ export interface PublicDownloadDto {
   updated_at: string | null;
 }
 
+export interface PublicSiteContactDto {
+  email: string;
+  phone: string;
+  phoneIntl: string;
+  location: string;
+  linkedin: string;
+  orcid: string;
+  employer: string;
+  employerUrl: string;
+  formEnabled: boolean;
+}
+
 export interface PublicSiteSettingsDto {
   primaryColor: string;
   downloads: PublicDownloadDto[];
+  contact?: PublicSiteContactDto;
 }
 
 /** Default primary color when CMS_API_BASE is unset (offline builds). */
@@ -35,6 +48,42 @@ export async function getPublicSiteSettings(): Promise<PublicSiteSettingsDto | n
     );
   }
   return result.data;
+}
+
+/**
+ * Public contact block. CMS-driven when CMS_API_BASE is set (production
+ * builds); the committed snapshot below is the offline-dev fallback ONLY
+ * (never the production artifact — cms-build-origin honesty rule).
+ */
+const OFFLINE_CONTACT_SNAPSHOT: PublicSiteContactDto = {
+  email: "taha.mohammadi@shahed.ac.ir",
+  phone: "+98 910 235 5374",
+  phoneIntl: "+1 925 456 4581",
+  location: "Tehran, Iran",
+  linkedin: "https://linkedin.com/in/taha-mohammadi-95770986",
+  orcid: "https://orcid.org/0009-0006-7736-7638",
+  employer: "MCI (Hamrah-e Aval)",
+  employerUrl: "https://mci.ir",
+  // Mirrors migration 0003 seed. Offline submissions hit /api/contact and get
+  // an honest "email not configured" page until SMTP env exists.
+  formEnabled: true,
+};
+
+export async function getSiteContact(): Promise<PublicSiteContactDto> {
+  const settings = await getPublicSiteSettings();
+  const contact = settings?.contact;
+  if (!contact) return OFFLINE_CONTACT_SNAPSHOT;
+  return {
+    email: (contact.email || "").trim(),
+    phone: (contact.phone || "").trim(),
+    phoneIntl: (contact.phoneIntl || "").trim(),
+    location: (contact.location || "").trim(),
+    linkedin: (contact.linkedin || "").trim(),
+    orcid: (contact.orcid || "").trim(),
+    employer: (contact.employer || "").trim(),
+    employerUrl: (contact.employerUrl || "").trim(),
+    formEnabled: Boolean(contact.formEnabled),
+  };
 }
 
 /** Valid `#RRGGBB` from CMS, else null (keep CSS defaults). */

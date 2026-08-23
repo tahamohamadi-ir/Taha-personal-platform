@@ -103,10 +103,10 @@
   - پذیرش: `npm run check && npm run build`؛ اسپک dist وجود anchor/TOC برای مقاله‌ی دارای ≥۳ heading.
   - شواهد: LOG-____
 
-- [ ] **A10 — تصمیم بازگشتی مسیر تماس (گیت DEBT-0006/B10)** — `P1` · `owner` · `S(تصمیم)` · deps: —
+- [x] **A10 — تصمیم بازگشتی مسیر تماس (گیت DEBT-0006/B10)** — `P1` · `owner` · `S(تصمیم)` · deps: —
   - اگر تماس عمومی باز شود ⇒ فرم non-persistent یا persistence با ADR/Task Spec (retention/consent/spam) و آنگاه B10 (inbox) باز می‌شود؛ در غیر این صورت DEBT-0006 با یادداشت CANCELLED-byscope بسته شود تا از تخته پاک‌تر شود.
   - خروجی: یک ورودی WORK_LOG تصمیم + به‌روزرسانی دفتر.
-  - شواهد: LOG-____
+  - شواهد: LOG-0229 — **تصمیم مالک (attestation گفت‌وگوی 2026-08-23):** تماس باز شد به‌صورت فرم non-persistent ایمیلی (بدون ذخیره‌سازی) + انتشار اطلاعات تماس عمومی؛ B10/inbox ذخیره‌سازی همچنان بسته می‌ماند مگر درخواست صریح مالک (DEBT-0006 به‌روز شد).
 
 # WS-B — تکمیل و UX پنل ادمین (قید ۲ مالک)
 
@@ -157,9 +157,9 @@
   - پذیرش: DEFER-0032 → CLOSED در دفتر.
   - شواهد: LOG-____
 
-- [ ] **B10 — Contact inbox (DEBT-0006)** — `P3` · BLOCKED · deps: A10 (تصمیم تماس)
-  - تا باز شدن منبع تماس عمومی ساخته نمی‌شود (سیاست فعلی). پس از A10: Task Spec + پیاده‌سازی + تست retention/audit.
-  - شواهد: LOG-____
+- [ ] **B10 — Contact inbox (DEBT-0006)** — `P3` · BLOCKED · deps: —
+  - A10 resolved 2026-08-23 (LOG-0229): contact path reopened as a **non-persistent email form** (no storage); the persisted inbox is intentionally not built. Revisit only on explicit owner request.
+  - شواهد: LOG-0229 (endpoint + tests + ledgers)
 
 - [ ] **B11 — پوشش usage registry برای PKهای media داخل JSON بلوک‌های composition** — `P2` · `agent` · `S` · deps: —
   - `MEDIA_REFERENCE_FIELDS` فقط FKها را می‌شناسد؛ settings بلوک‌ها (media/mediaList) هم باید در orphan scan بیایند تا حذف اشتباه ممکن نشود.
