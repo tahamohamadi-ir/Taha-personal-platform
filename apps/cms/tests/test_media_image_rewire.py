@@ -92,6 +92,51 @@ def test_media_reference_fields_cover_content_image_fks():
     assert ("content.ResearchStatement", "statement_pdf") in MEDIA_REFERENCE_FIELDS
 
 
+def _make_story_with_blocks(*, media):
+    from apps.composition.models import (
+        CompositionBlock,
+        CompositionPage,
+        CompositionSection,
+    )
+
+    page = CompositionPage.objects.create(
+        key="story-json-usage",
+        kind=CompositionPage.KIND_STORY,
+        locale=Locale.FA,
+        title="داستان",
+    )
+    section = CompositionSection.objects.create(page=page, position=0)
+    CompositionBlock.objects.create(
+        section=section,
+        position=0,
+        block_type="image",
+        settings={"mediaId": str(media.pk)},  # numeric string must count too
+    )
+    CompositionBlock.objects.create(
+        section=section,
+        position=1,
+        block_type="gallery",
+        settings={"mediaIds": [media.pk, 999_999]},
+    )
+    CompositionBlock.objects.create(
+        section=section,
+        position=2,
+        block_type="before_after",
+        settings={"beforeMediaId": media.pk, "afterMediaId": "not-a-number"},
+    )
+    return page
+
+
+@pytest.mark.django_db
+def test_composition_block_json_media_counts_toward_usage():
+    used = _make_image(title="story-media")
+    unused = _make_image(title="story-unused")
+    _make_story_with_blocks(media=used)
+    # One reference per block: image (mediaId) + gallery (mediaIds) + before_after.
+    assert media_usage_count(used) == 3
+    assert media_usage_count(unused) == 0
+
+
 @pytest.mark.django_db
 def test_media_usage_counts_featured_image_reference():
     media = _make_image(title="used-featured")
@@ -249,3 +294,20 @@ def test_admin_project_case_media_image_assign(admin_api_client):
     assert updated.json()["diagramImageId"] == media.pk
     diagram.refresh_from_db()
     assert diagram.diagram_image_id == media.pk
+
+
+@pytest.mark.django_db
+def test_orphans_endpoint_excludes_block_referenced_media(admin_api_client):
+    block_used = _make_image(title="block-used")
+    orphan = _make_image(title="true-orphan")
+    _make_story_with_blocks(media=block_used)
+
+    listed = admin_api_client.get("/api/v1/admin/media/orphans")
+    assert listed.status_code == 200
+    orphan_ids = {item["id"] for item in listed.json()["items"]}
+    assert orphan.pk in orphan_ids
+    assert block_used.pk not in orphan_ids
+
+    detail = admin_api_client.get(f"/api/v1/admin/media/{block_used.pk}")
+    assert detail.status_code == 200
+    assert detail.json()["usageCount"] == 3

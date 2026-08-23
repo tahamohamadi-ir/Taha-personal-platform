@@ -8,7 +8,9 @@ methods additionally enforce the same-origin CSRF baseline.
 
 Content image FKs (featured / diagram / screenshot) register in
 ``MEDIA_REFERENCE_FIELDS`` so orphan counting reflects Media-library usage.
-Composition block JSON ``mediaId`` / ``mediaIds`` remain outside this FK registry.
+Composition block JSON ``settings`` (``mediaId``/``mediaIds``/
+``beforeMediaId``/``afterMediaId``, board B11) are scanned as well so a
+block-referenced file is never misreported as an orphan.
 """
 
 from __future__ import annotations
@@ -28,6 +30,7 @@ from apps.api.admin_common import (
     _parse_positive_int,
     _require_admin_otp,
 )
+from apps.composition.models import CompositionBlock
 from apps.media.models import Media
 from apps.media.sniff import mime_family, sniff_mime
 
@@ -41,14 +44,59 @@ MEDIA_REFERENCE_FIELDS: list[tuple[str, str]] = [
     ("content.ResearchStatement", "statement_pdf"),
 ]
 
+# JSON keys inside composition block ``settings`` that may hold Media PKs
+# (int or numeric string). Keep in sync with apps.composition.projection.
+MEDIA_JSON_SETTINGS_KEYS = ("mediaId", "beforeMediaId", "afterMediaId")
+MEDIA_JSON_LIST_KEYS = ("mediaIds",)
+
+
+def _json_settings_media_pks(settings: object) -> set[int]:
+    """Media PKs referenced by one composition block ``settings`` payload."""
+    pks: set[int] = set()
+    if not isinstance(settings, dict):
+        return pks
+
+    def _as_pk(value: object) -> int | None:
+        if isinstance(value, bool):
+            return None
+        if isinstance(value, int):
+            return value
+        if isinstance(value, str) and value.isdigit():
+            return int(value)
+        return None
+
+    for key in MEDIA_JSON_SETTINGS_KEYS:
+        pk = _as_pk(settings.get(key))
+        if pk is not None:
+            pks.add(pk)
+    for key in MEDIA_JSON_LIST_KEYS:
+        value = settings.get(key)
+        if isinstance(value, list):
+            for item in value:
+                pk = _as_pk(item)
+                if pk is not None:
+                    pks.add(pk)
+    return pks
+
+
+def composition_json_usage_count(media) -> int:
+    """Composition blocks whose JSON ``settings`` reference ``media`` (B11)."""
+    found = 0
+    rows = CompositionBlock.objects.values_list("settings", flat=True).iterator()
+    for settings in rows:
+        if media.pk in _json_settings_media_pks(settings):
+            found += 1
+    return found
+
 
 def media_usage_count(media) -> int:
-    """Total references to ``media`` across the registered composition fields."""
+    """Total references to ``media`` across registered FKs + composition JSON."""
     total = 0
     for model_path, field in MEDIA_REFERENCE_FIELDS:
         app, m = model_path.split(".")
         model = django_apps.get_model(app, m)
         total += model.objects.filter(**{f"{field}__pk": media.pk}).count()
+    total += composition_json_usage_count(media)
     return total
 
 
@@ -308,9 +356,10 @@ def media_orphans(
     pageSize: str = "20",
 ):
     qs, page_num, page_size = _apply_filters(request, q, type, active, page, pageSize)
-    # Manual scan: usage references are cheap to count (the registry is empty
-    # today) and the dataset is a personal-site media library, so filtering the
-    # ordered set in Python is bounded and acceptable.
+    # Manual scan: usage references are cheap to count (FK registry plus a
+    # bounded JSON scan over composition blocks) and the dataset is a
+    # personal-site media library, so filtering the ordered set in Python is
+    # bounded and acceptable.
     ordered = list(qs)
     orphans = [m for m in ordered if media_usage_count(m) == 0]
     total = len(orphans)
