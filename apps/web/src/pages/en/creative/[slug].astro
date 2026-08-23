@@ -1,0 +1,176 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../../components/blog/Breadcrumbs.astro";
+import { content } from "../../../data/content";
+import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../data/structured";
+import { getCreativeWork, getCreativeWorks } from "../../../lib/cms/creative";
+
+export async function getStaticPaths() {
+  const locale = "en" as const;
+  const items = await getCreativeWorks(locale);
+  return items.map((item) => ({ params: { slug: item.slug } }));
+}
+
+const locale = "en" as const;
+const pageContent = content[locale];
+const t = pageContent.creative;
+const slug = Astro.params.slug as string;
+const work = await getCreativeWork(locale, slug);
+if (!work) return Astro.redirect(`/${locale}/creative/`, 302);
+
+const alternateExists = (await getCreativeWork("fa", slug)) !== null;
+const isUnavailable = work.access_state !== "public";
+const hasGallery = !isUnavailable && work.gallery && work.gallery.length > 0;
+const structured = [
+  breadcrumbJsonLd([
+    { name: pageContent.name, path: `/${locale}/` },
+    { name: t.heading, path: `/${locale}/creative/` },
+    { name: work.title, path: `/${locale}/creative/${work.slug}/` },
+  ]),
+];
+validateStructuredData(...structured);
+---
+
+<BaseLayout
+  content={{
+    ...pageContent,
+    meta: { title: `${work.title} — ${pageContent.name}`, description: work.description || t.intro },
+  }}
+  alternateHref={alternateExists ? `/fa/creative/${work.slug}/` : null}
+>
+  {structured.map((block) => <script type="application/ld+json" is:inline set:html={jsonLdScriptContent(block)} />)}
+  <section class="catalog-page">
+    <Breadcrumbs items={[{ label: pageContent.name, href: `/${locale}/` }, { label: t.heading, href: `/${locale}/creative/` }, { label: work.title }]} />
+    {!alternateExists && <p class="missing">{t.missingTranslation}</p>}
+    <h1>{work.title}</h1>
+    {work.description && <p class="lead">{work.description}</p>}
+
+    <dl class="meta-grid">
+      <dt>{t.creatorLabel}</dt><dd>{work.creator_name || "—"}{work.creator_role ? ` · ${work.creator_role}` : ""}</dd>
+      {work.creation_date && <><dt>{t.dateLabel}</dt><dd>{work.creation_date}</dd></>}
+      <dt>{t.licenseLabel}</dt><dd>{work.license}</dd>
+      {work.rights_statement && <><dt>{t.rightsLabel}</dt><dd>{work.rights_statement}</dd></>}
+    </dl>
+
+    {isUnavailable && <p class="unavailable" role="status">{t.restrictedNote}</p>}
+
+    {work.cover?.url && !isUnavailable && <img src={work.cover.url} alt={work.cover.alt} loading="lazy" style="max-width:100%;border-radius:8px;margin:1rem 0" />}
+
+    {work.body && !isUnavailable && <div class="body" set:html={work.body} />}
+
+    {work.accessibility_notes && !isUnavailable && (
+      <>
+        <h2>{t.accessibilityLabel}</h2>
+        <p class="meta">{work.accessibility_notes}</p>
+      </>
+    )}
+
+    {hasGallery ? (
+      <>
+        <h2 id="gallery-heading">{t.galleryLabel}</h2>
+        <p class="meta">Keyboard: Tab to focus, Enter to open, Arrow keys to navigate, Escape to close.</p>
+        <ul class="gallery" role="list" aria-labelledby="gallery-heading">
+          {work.gallery.map((img, idx) => (
+            <li>
+              <button
+                type="button"
+                class="gallery-thumb"
+                data-index={idx}
+                aria-label={`${t.captionLabel}: ${img.caption || img.alt}`}
+              >
+                <img src={img.url} alt={img.alt} loading="lazy" />
+                {img.caption && <span class="caption">{img.caption}</span>}
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        <dialog id="gallery-dialog" aria-label={t.galleryLabel}>
+          <form method="dialog">
+            <button class="dialog-close" aria-label="Close" value="close">×</button>
+          </form>
+          <div class="dialog-content">
+            <img id="dialog-img" alt="" />
+            <p id="dialog-caption" class="caption"></p>
+          </div>
+          <div class="dialog-nav">
+            <button type="button" id="dialog-prev" aria-label="Previous">‹ Prev</button>
+            <button type="button" id="dialog-next" aria-label="Next">Next ›</button>
+          </div>
+        </dialog>
+
+        <script is:inline define:vars={{ gallery: work.gallery }}>
+          (() => {
+            const dialog = document.getElementById('gallery-dialog');
+            const imgEl = document.getElementById('dialog-img');
+            const capEl = document.getElementById('dialog-caption');
+            const prevBtn = document.getElementById('dialog-prev');
+            const nextBtn = document.getElementById('dialog-next');
+            if (!dialog || !imgEl || !capEl || !prevBtn || !nextBtn) return;
+            let idx = 0;
+            function show(i) {
+              idx = (i + gallery.length) % gallery.length;
+              const g = gallery[idx];
+              imgEl.src = g.url;
+              imgEl.alt = g.alt || '';
+              capEl.textContent = g.caption || g.alt || '';
+            }
+            document.querySelectorAll('.gallery-thumb').forEach((btn) => {
+              btn.addEventListener('click', () => {
+                const i = Number(btn.getAttribute('data-index') || '0');
+                show(i);
+                if (typeof dialog.showModal === 'function') dialog.showModal();
+                else dialog.setAttribute('open', '');
+              });
+              btn.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  btn.click();
+                }
+              });
+            });
+            prevBtn.addEventListener('click', () => show(idx - 1));
+            nextBtn.addEventListener('click', () => show(idx + 1));
+            dialog.addEventListener('keydown', (e) => {
+              if (e.key === 'ArrowLeft') { e.preventDefault(); show(idx - 1); }
+              if (e.key === 'ArrowRight') { e.preventDefault(); show(idx + 1); }
+              if (e.key === 'Escape' && dialog.open) dialog.close();
+            });
+            dialog.addEventListener('click', (e) => {
+              const rect = dialog.getBoundingClientRect();
+              if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) dialog.close();
+            });
+          })();
+        </script>
+        <noscript>
+          <p class="meta">Gallery images are listed above with alt text and captions. JavaScript enhances keyboard navigation.</p>
+        </noscript>
+      </>
+    ) : !isUnavailable ? (
+      <p class="meta">No gallery images are published for this work.</p>
+    ) : null}
+
+    <p><a href={`/${locale}/creative/`}>{t.heading}</a> · <a href={`/${locale}/contact/`}>{pageContent.contact.heading}</a></p>
+  </section>
+</BaseLayout>
+
+<style>
+  .catalog-page { max-width: 44rem; margin-inline: auto; padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem; }
+  .catalog-page h1 { font-family: var(--font-display); font-size: clamp(1.75rem, 4vw, 2.4rem); margin: 0 0 0.5rem; }
+  .catalog-page h2 { font-family: var(--font-display); font-size: 1.2rem; margin: 1.5rem 0 0.5rem; }
+  .lead, .meta, .missing { color: var(--color-ink-muted); }
+  .unavailable { color: #92400e; background: #fef3c7; padding: 0.75rem; border-radius: 0.5rem; }
+  .meta-grid { display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem 1rem; margin: 1rem 0; }
+  .meta-grid dt { font-weight: 600; }
+  .gallery { list-style: none; padding: 0; margin: 1rem 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: 0.75rem; }
+  .gallery-thumb { display: block; width: 100%; border: 1px solid var(--color-border-subtle); border-radius: 0.5rem; overflow: hidden; background: var(--color-canvas); cursor: pointer; padding: 0; }
+  .gallery-thumb img { width: 100%; height: auto; display: block; }
+  .gallery-thumb .caption { display: block; padding: 0.35rem 0.5rem; font-size: 0.8125rem; color: var(--color-ink-muted); text-align: start; }
+  .gallery-thumb:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }
+  dialog { border: 1px solid var(--color-border-subtle); border-radius: 0.75rem; padding: 1rem; max-width: min(90vw, 40rem); max-height: 90vh; }
+  dialog::backdrop { background: rgba(0,0,0,0.5); }
+  .dialog-content img { width: 100%; height: auto; display: block; }
+  .dialog-nav { display: flex; justify-content: space-between; gap: 1rem; margin-top: 0.75rem; }
+  .dialog-close { position: absolute; inset-inline-end: 0.5rem; inset-block-start: 0.5rem; border: 0; background: var(--color-canvas); width: 2rem; height: 2rem; border-radius: 999px; cursor: pointer; }
+  .caption { color: var(--color-ink-muted); font-size: 0.875rem; }
+</style>

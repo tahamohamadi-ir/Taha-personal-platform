@@ -17,6 +17,8 @@ export const CONTENT_ENTITIES: ContentEntityMeta[] = [
   { key: "book", labelFa: "کتاب‌ها" },
   { key: "talk", labelFa: "سخنرانی‌ها" },
   { key: "download", labelFa: "دانلودها" },
+  { key: "course", labelFa: "دوره‌ها" },
+  { key: "creative-work", labelFa: "آثار خلاق" },
 ];
 
 export const DEFAULT_CONTENT_ENTITY: ContentEntity = "article";

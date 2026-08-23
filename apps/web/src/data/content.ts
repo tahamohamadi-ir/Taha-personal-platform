@@ -165,6 +165,38 @@ export interface LocaleContent {
     licenseLabel: string;
     parentResearchLabel: string;
   };
+  teaching: {
+    heading: string;
+    intro: string;
+    empty: string;
+    levelLabel: string;
+    prerequisitesLabel: string;
+    outcomesLabel: string;
+    formatLabel: string;
+    languageLabel: string;
+    availabilityLabel: string;
+    licenseLabel: string;
+    lastUpdatedLabel: string;
+    missingTranslation: string;
+    noPrerequisites: string;
+    unavailableNote: string;
+    accessibilityLabel: string;
+  };
+  creative: {
+    heading: string;
+    intro: string;
+    empty: string;
+    creatorLabel: string;
+    roleLabel: string;
+    dateLabel: string;
+    licenseLabel: string;
+    rightsLabel: string;
+    restrictedNote: string;
+    missingTranslation: string;
+    galleryLabel: string;
+    captionLabel: string;
+    accessibilityLabel: string;
+  };
   sections?: {
     experience: string;
     education: string;
@@ -405,6 +437,40 @@ export const content: Record<LocaleCode, LocaleContent> = {
       downloadLabel: "Download file",
       licenseLabel: "License",
       parentResearchLabel: "Research",
+    },
+    teaching: {
+      heading: "Teaching",
+      intro:
+        "Courses and learning resources. Open an item for level, prerequisites, outcomes, and availability. No enrolment or payment.",
+      empty: "No published courses are available in this build.",
+      levelLabel: "Level",
+      prerequisitesLabel: "Prerequisites",
+      outcomesLabel: "Outcomes",
+      formatLabel: "Format",
+      languageLabel: "Language",
+      availabilityLabel: "Availability",
+      licenseLabel: "License",
+      lastUpdatedLabel: "Last updated",
+      missingTranslation: "This course is not yet translated into Persian.",
+      noPrerequisites: "None",
+      unavailableNote: "This course is not currently available.",
+      accessibilityLabel: "Accessibility",
+    },
+    creative: {
+      heading: "Creative",
+      intro:
+        "Selected creative works — design, visual, and experiments. No student work is shown.",
+      empty: "No published creative works are available in this build.",
+      creatorLabel: "Creator",
+      roleLabel: "Role",
+      dateLabel: "Date",
+      licenseLabel: "License",
+      rightsLabel: "Rights",
+      restrictedNote: "This work is not publicly available.",
+      missingTranslation: "This creative work is not yet translated into Persian.",
+      galleryLabel: "Gallery",
+      captionLabel: "Caption",
+      accessibilityLabel: "Accessibility",
     },
     sections: {
       experience: "Experience",
@@ -648,6 +714,39 @@ export const content: Record<LocaleCode, LocaleContent> = {
       downloadLabel: "دانلود فایل",
       licenseLabel: "مجوز",
       parentResearchLabel: "پژوهش",
+    },
+    teaching: {
+      heading: "تدریس",
+      intro:
+        "دوره‌ها و منابع یادگیری. برای سطح، پیش‌نیازها، پیامدها و دسترسی هر مورد را باز کنید. بدون ثبت‌نام یا پرداخت.",
+      empty: "در این ساخت، دورهٔ منتشرشده‌ای موجود نیست.",
+      levelLabel: "سطح",
+      prerequisitesLabel: "پیش‌نیازها",
+      outcomesLabel: "پیامدهای یادگیری",
+      formatLabel: "قالب",
+      languageLabel: "زبان",
+      availabilityLabel: "دسترسی",
+      licenseLabel: "مجوز",
+      lastUpdatedLabel: "آخرین به‌روزرسانی",
+      missingTranslation: "این دوره هنوز به انگلیسی ترجمه نشده است.",
+      noPrerequisites: "بدون پیش‌نیاز",
+      unavailableNote: "این دوره در حال حاضر در دسترس نیست.",
+      accessibilityLabel: "دسترس‌پذیری",
+    },
+    creative: {
+      heading: "آثار خلاق",
+      intro: "گزیدهٔ آثار خلاق — طراحی، بصری و تجربه‌ها. هیچ اثر دانشجویی نمایش داده نمی‌شود.",
+      empty: "در این ساخت، اثر خلاق منتشرشده‌ای موجود نیست.",
+      creatorLabel: "پدیدآور",
+      roleLabel: "نقش",
+      dateLabel: "تاریخ",
+      licenseLabel: "مجوز",
+      rightsLabel: "حقوق",
+      restrictedNote: "این اثر برای نمایش عمومی در دسترس نیست.",
+      missingTranslation: "این اثر هنوز به انگلیسی ترجمه نشده است.",
+      galleryLabel: "گالری",
+      captionLabel: "عنوان",
+      accessibilityLabel: "دسترس‌پذیری",
     },
     sections: {
       experience: "سوابق کاری",

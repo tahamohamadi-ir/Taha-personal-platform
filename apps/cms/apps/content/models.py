@@ -328,11 +328,30 @@ class ProfileSocialLink(OrderedProfileItem):
 
 
 class TopicTag(models.Model):
-    """Locale-aware editorial topic tag (slug unique globally per P4 Spec)."""
+    """Locale-aware editorial topic tag (slug unique globally per P4 Spec).
+
+    ``description`` is the glossary entry shown on canonical topic pages
+    (P10-01); ``synonyms`` is a comma-separated alias list — aliases are not
+    separate tags (see ``docs/governance/TAXONOMY_GOVERNANCE.md`` §3).
+    """
 
     name = models.CharField(max_length=100)
     slug = models.SlugField(max_length=100, unique=True)
     locale = models.CharField(max_length=2, choices=Locale.choices, db_index=True)
+    description = models.TextField(
+        blank=True,
+        help_text=(
+            "Glossary entry / editorial definition for the tag "
+            "(shown on topic pages when present)."
+        ),
+    )
+    synonyms = models.TextField(
+        blank=True,
+        help_text=(
+            "Comma-separated synonyms / aliases (not separate tags); "
+            "creation must check this list."
+        ),
+    )
 
     class Meta:
         db_table = "content_topic_tag"
@@ -1259,6 +1278,302 @@ class Download(LocalizedContentMixin, LifecycleMixin):
             and media is not None
             and media.is_active
             and media.file
+        )
+
+
+class Collection(LocalizedContentMixin, LifecycleMixin):
+    """Curated collection (P10-03) — explicit editorial set with curator/criteria/date.
+
+    Members are curated via M2M to published public projections only
+    (``Article``, ``Project``, ``Publication``). No auto-query or AI
+    inference. See ``docs/governance/TAXONOMY_GOVERNANCE.md`` §4.2 and
+    ADR-0029 P10-03. ``curator_name`` / ``criteria`` / ``curated_date``
+    are the curation contract (required for publish in a later strictness
+    slice; scaffold allows blank for draft).
+    """
+
+    description = models.TextField(
+        blank=True, help_text="Summary for list cards / collection page."
+    )
+    curator_name = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Human curator responsible for the collection (P10-03).",
+    )
+    curator_title = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Curator title / affiliation (optional).",
+    )
+    criteria = models.TextField(
+        blank=True,
+        help_text="Inclusion criteria prose — why members belong (P10-03).",
+    )
+    curated_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date of last human curation review (P10-03).",
+    )
+    cover_media = models.ForeignKey(
+        "media.Media",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        help_text="Optional cover image (active Media only in public projection).",
+    )
+    # Explicit curated members — all blank; projection filters to public() members.
+    articles = models.ManyToManyField(
+        "Article",
+        blank=True,
+        related_name="collections",
+        help_text="Curated articles (editorial only).",
+    )
+    projects = models.ManyToManyField(
+        "Project",
+        blank=True,
+        related_name="collections",
+        help_text="Curated projects (editorial only).",
+    )
+    publications = models.ManyToManyField(
+        "Publication",
+        blank=True,
+        related_name="collections",
+        help_text="Curated publications (editorial only).",
+    )
+
+    class Meta:
+        db_table = "content_collection"
+        ordering = ["locale", "slug"]
+        indexes = [
+            models.Index(
+                fields=["locale", "slug", "status"],
+                name="collection_loc_slug_st_idx",
+            ),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["locale", "slug"],
+                name="content_collection_unique_locale_slug",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.title} ({self.locale})"
+
+
+class CourseLevel(models.TextChoices):
+    """Course difficulty/level (P9-01)."""
+
+    BEGINNER = "beginner", "Beginner"
+    INTERMEDIATE = "intermediate", "Intermediate"
+    ADVANCED = "advanced", "Advanced"
+    ALL_LEVELS = "all_levels", "All levels"
+
+
+class CourseFormat(models.TextChoices):
+    """Course delivery format (P9-01)."""
+
+    ONLINE = "online", "Online"
+    IN_PERSON = "in_person", "In person"
+    HYBRID = "hybrid", "Hybrid"
+    SELF_PACED = "self_paced", "Self-paced"
+    WORKSHOP = "workshop", "Workshop"
+
+
+class CourseLanguage(models.TextChoices):
+    """Language of instruction (orthogonal to CMS locale)."""
+
+    FA = "fa", "Persian"
+    EN = "en", "English"
+    BILINGUAL = "bilingual", "Bilingual"
+
+
+class Course(LocalizedContentMixin, LifecycleMixin):
+    """Teaching course catalog entity (P9-01) — no LMS/payment."""
+
+    description = models.TextField(blank=True, help_text="Short summary for list cards.")
+    body = models.TextField(blank=True, help_text="Full description / syllabus (sanitized HTML).")
+    level = models.CharField(
+        max_length=32,
+        choices=CourseLevel.choices,
+        default=CourseLevel.BEGINNER,
+    )
+    prerequisites = models.TextField(
+        blank=True,
+        help_text="Prerequisites; leave blank or 'none' for no prerequisites.",
+    )
+    outcomes = models.TextField(blank=True, help_text="Learning outcomes, one per line or prose.")
+    course_format = models.CharField(
+        max_length=32,
+        choices=CourseFormat.choices,
+        default=CourseFormat.ONLINE,
+    )
+    course_language = models.CharField(
+        max_length=32,
+        choices=CourseLanguage.choices,
+        default=CourseLanguage.EN,
+    )
+    availability = models.CharField(
+        max_length=32,
+        choices=Availability.choices,
+        default=Availability.PUBLIC,
+    )
+    license = models.CharField(
+        max_length=32,
+        choices=License.choices,
+        default=License.CC_BY_NC_4,
+    )
+    last_updated = models.DateField(null=True, blank=True, help_text="Required last-updated date.")
+    accessibility_notes = models.TextField(blank=True)
+    cover_media = models.ForeignKey(
+        "media.Media",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+
+    class Meta:
+        db_table = "content_course"
+        ordering = ["locale", "slug"]
+        indexes = [
+            models.Index(
+                fields=["locale", "slug", "status"],
+                name="course_loc_slug_st_idx",
+            ),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["locale", "slug"],
+                name="content_course_unique_locale_slug",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.title} ({self.locale})"
+
+    def allows_public_detail(self) -> bool:
+        return self.availability != Availability.PRIVATE
+
+    def public_prerequisites_display(self) -> str:
+        text = (self.prerequisites or "").strip()
+        return text if text else "none"
+
+    def public_cover(self) -> bool:
+        return bool(self.cover_media and self.cover_media.is_active)
+
+
+class CreativeWorkType(models.TextChoices):
+    """Creative work category (P9-02)."""
+
+    DESIGN = "design", "Design"
+    VISUAL = "visual", "Visual"
+    PHOTOGRAPHY = "photography", "Photography"
+    EXPERIMENT = "experiment", "Experiment"
+    OTHER = "other", "Other"
+
+
+class CreativeWork(LocalizedContentMixin, LifecycleMixin):
+    """Creative work catalog entity (P9-02) — no student PII."""
+
+    description = models.TextField(blank=True, help_text="Short summary for list cards.")
+    body = models.TextField(blank=True, help_text="Full description (sanitized HTML).")
+    work_type = models.CharField(
+        max_length=32,
+        choices=CreativeWorkType.choices,
+        default=CreativeWorkType.OTHER,
+    )
+    creator_name = models.CharField(max_length=200, blank=True, help_text="Creator / author name.")
+    creator_role = models.CharField(max_length=200, blank=True, help_text="Role of the creator.")
+    creation_date = models.DateField(
+        null=True, blank=True, help_text="Creation / publication date."
+    )
+    license = models.CharField(
+        max_length=32,
+        choices=License.choices,
+        default=License.CC_BY_NC_4,
+    )
+    access_state = models.CharField(
+        max_length=32,
+        choices=AccessState.choices,
+        default=AccessState.PUBLIC,
+    )
+    rights_statement = models.TextField(
+        blank=True, help_text="Rights / consent disclosure (no student PII)."
+    )
+    consent_verified = models.BooleanField(
+        default=False, help_text="Rights / consent verified; no student PII stored."
+    )
+    accessibility_notes = models.TextField(blank=True)
+    cover_media = models.ForeignKey(
+        "media.Media",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+
+    class Meta:
+        db_table = "content_creative_work"
+        ordering = ["locale", "slug"]
+        indexes = [
+            models.Index(
+                fields=["locale", "slug", "status"],
+                name="creative_work_loc_slug_st_idx",
+            ),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["locale", "slug"],
+                name="content_creative_work_unique_locale_slug",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.title} ({self.locale})"
+
+    def allows_public_file(self) -> bool:
+        return self.access_state == AccessState.PUBLIC
+
+    def public_creator_display(self) -> str:
+        return (self.creator_name or "").strip()
+
+
+class CreativeWorkGalleryImage(models.Model):
+    """Ordered gallery image for a CreativeWork (P9-03 keyboard + captions)."""
+
+    creative_work = models.ForeignKey(
+        CreativeWork,
+        on_delete=models.CASCADE,
+        related_name="gallery_images",
+    )
+    media = models.ForeignKey(
+        "media.Media",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+    caption = models.CharField(max_length=300, blank=True)
+    alt_text = models.TextField(blank=True, help_text="Alt text (required for public projection).")
+    ordering = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        db_table = "content_creative_work_gallery_image"
+        ordering = ["ordering", "id"]
+        indexes = [
+            models.Index(fields=["creative_work", "ordering"], name="cw_gallery_work_order_idx"),
+        ]
+
+    def __str__(self) -> str:
+        return f"Gallery {self.creative_work_id}:{self.ordering}"
+
+    def is_publicly_projectable(self) -> bool:
+        return bool(
+            self.media is not None
+            and self.media.is_active
+            and (self.alt_text or "").strip()
         )
 
 

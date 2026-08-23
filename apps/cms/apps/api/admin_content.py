@@ -30,6 +30,8 @@ from apps.content.models import (
     Article,
     Book,
     ContentRevision,
+    Course,
+    CreativeWork,
     Download,
     Landing,
     Profile,
@@ -64,6 +66,8 @@ ENTITY_MODELS = {
     "book": Book,
     "talk": Talk,
     "download": Download,
+    "course": Course,
+    "creative-work": CreativeWork,
 }
 
 PREVIEW_SHARE_ENTITIES = {
@@ -203,6 +207,34 @@ DETAIL_FIELD_MAPS: dict[str, dict[str, str]] = {
         "access_state": "accessState",
         "accessibility_notes": "accessibilityNotes",
         "license": "license",
+    },
+    "course": {
+        "description": "description",
+        "body": "body",
+        "level": "level",
+        "prerequisites": "prerequisites",
+        "outcomes": "outcomes",
+        "course_format": "courseFormat",
+        "course_language": "courseLanguage",
+        "availability": "availability",
+        "license": "license",
+        "last_updated": "lastUpdated",
+        "accessibility_notes": "accessibilityNotes",
+        "cover_media": "coverMediaId",
+    },
+    "creative-work": {
+        "description": "description",
+        "body": "body",
+        "work_type": "workType",
+        "creator_name": "creatorName",
+        "creator_role": "creatorRole",
+        "creation_date": "creationDate",
+        "license": "license",
+        "access_state": "accessState",
+        "rights_statement": "rightsStatement",
+        "consent_verified": "consentVerified",
+        "accessibility_notes": "accessibilityNotes",
+        "cover_media": "coverMediaId",
     },
 }
 

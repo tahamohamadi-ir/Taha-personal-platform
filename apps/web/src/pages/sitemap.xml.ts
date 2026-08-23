@@ -8,6 +8,8 @@ import {
 } from "../lib/cms/research";
 import { getBooks, getDownloads, getTalks } from "../lib/cms/publications";
 import { getProjects } from "../lib/cms/projects";
+import { getCourses } from "../lib/cms/courses";
+import { getCreativeWorks } from "../lib/cms/creative";
 
 export const prerender = true;
 
@@ -36,6 +38,10 @@ export const GET: APIRoute = async () => {
     "/fa/talks/",
     "/en/downloads/",
     "/fa/downloads/",
+    "/en/teaching/",
+    "/fa/teaching/",
+    "/en/creative/",
+    "/fa/creative/",
     "/en/search/",
     "/fa/search/",
     "/en/contact/",
@@ -141,6 +147,30 @@ export const GET: APIRoute = async () => {
         : "";
       dynamicEntries.push(
         `  <url><loc>${new URL(path, site.url).href}</loc>${lastmodTag}<changefreq>monthly</changefreq><priority>0.7</priority></url>`,
+      );
+    }
+
+    const courses = await getCourses(locale);
+    for (const course of courses) {
+      const path = `/${locale}/teaching/${course.slug}/`;
+      const lastmod = course.updated_at ?? course.published_at;
+      const lastmodTag = lastmod
+        ? `<lastmod>${lastmod.slice(0, 10)}</lastmod>`
+        : "";
+      dynamicEntries.push(
+        `  <url><loc>${new URL(path, site.url).href}</loc>${lastmodTag}<changefreq>monthly</changefreq><priority>0.6</priority></url>`,
+      );
+    }
+
+    const creative = await getCreativeWorks(locale);
+    for (const work of creative) {
+      const path = `/${locale}/creative/${work.slug}/`;
+      const lastmod = work.updated_at ?? work.published_at;
+      const lastmodTag = lastmod
+        ? `<lastmod>${lastmod.slice(0, 10)}</lastmod>`
+        : "";
+      dynamicEntries.push(
+        `  <url><loc>${new URL(path, site.url).href}</loc>${lastmodTag}<changefreq>monthly</changefreq><priority>0.6</priority></url>`,
       );
     }
   }

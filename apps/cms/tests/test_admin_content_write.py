@@ -214,6 +214,8 @@ def test_schema_endpoint(admin_api_client):
         "book",
         "talk",
         "download",
+        "course",
+        "creative-work",
     }
 
     article_specs = {spec["key"]: spec for spec in entities["article"]["fields"]}

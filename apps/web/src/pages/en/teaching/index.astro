@@ -1,0 +1,59 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../../components/blog/Breadcrumbs.astro";
+import { content } from "../../../data/content";
+import { isCmsOriginBuild } from "../../../lib/cms/client";
+import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../data/structured";
+import { getCourses } from "../../../lib/cms/courses";
+
+const locale = "en" as const;
+const pageContent = content[locale];
+const t = pageContent.teaching;
+const items = await getCourses(locale);
+
+const structured = [
+  breadcrumbJsonLd([
+    { name: pageContent.name, path: `/${locale}/` },
+    { name: t.heading, path: `/${locale}/teaching/` },
+  ]),
+];
+validateStructuredData(...structured);
+---
+
+<BaseLayout
+  cmsBuildOrigin={isCmsOriginBuild() ? "cms" : "snapshot"}
+  content={{
+    ...pageContent,
+    meta: { title: `${t.heading} — ${pageContent.name}`, description: t.intro },
+  }}
+  alternateHref="/fa/teaching/"
+>
+  {structured.map((block) => <script type="application/ld+json" is:inline set:html={jsonLdScriptContent(block)} />)}
+  <section class="catalog-page">
+    <Breadcrumbs items={[{ label: pageContent.name, href: `/${locale}/` }, { label: t.heading }]} />
+    <h1>{t.heading}</h1>
+    <p class="lead">{t.intro}</p>
+    {items.length === 0 ? (
+      <p class="empty">{t.empty}</p>
+    ) : (
+      <ul class="catalog-list">
+        {items.map((item) => (
+          <li>
+            <a href={`/${locale}/teaching/${item.slug}/`}>{item.title}</a>
+            {item.description && <p class="meta">{item.description}</p>}
+            <p class="meta">{t.levelLabel}: {item.level} · {t.formatLabel}: {item.course_format} · {t.languageLabel}: {item.course_language}</p>
+          </li>
+        ))}
+      </ul>
+    )}
+    <p class="meta" style="margin-top:1.5rem">No enrolment or payment is offered on this page.</p>
+  </section>
+</BaseLayout>
+
+<style>
+  .catalog-page { max-width: 44rem; margin-inline: auto; padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem; }
+  .catalog-page h1 { font-family: var(--font-display); font-size: clamp(1.75rem, 4vw, 2.4rem); margin: 0 0 0.5rem; }
+  .lead, .meta, .empty { color: var(--color-ink-muted); }
+  .catalog-list { list-style: none; padding: 0; margin: 1.5rem 0 0; display: grid; gap: 1.25rem; }
+  .catalog-list a { font-family: var(--font-display); font-size: 1.15rem; }
+</style>

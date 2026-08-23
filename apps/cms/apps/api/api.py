@@ -18,9 +18,12 @@ from ninja.pagination import PageNumberPagination, paginate
 
 from apps.composition.projection import public_story_document
 from apps.content.models import (
+    AccessState,
     Article,
     ArticleSlugRedirect,
     Book,
+    Course,
+    CreativeWork,
     Download,
     Landing,
     Profile,
@@ -136,11 +139,13 @@ class ProfileOut(Schema):
 
 
 class TopicTagOut(Schema):
-    """Public topic tag projection."""
+    """Public topic tag projection (P10-01 glossary)."""
 
     name: str
     slug: str
     locale: str
+    description: str = ""
+    synonyms: str = ""
 
 
 class SeriesOut(Schema):
@@ -886,6 +891,119 @@ class DownloadDetailOut(DownloadListOut):
         return obj.media.size
 
 
+class CourseListOut(Schema):
+    locale: str
+    slug: str
+    title: str
+    description: str
+    level: str
+    course_format: str
+    course_language: str
+    availability: str
+    license: str
+    last_updated: date | None
+    published_at: datetime | None
+    updated_at: datetime | None
+
+
+class CourseDetailOut(CourseListOut):
+    body: str
+    prerequisites: str
+    outcomes: str
+    accessibility_notes: str
+    cover: dict | None = None
+
+    @staticmethod
+    def resolve_body(obj: Course) -> str:
+        return sanitize_public_richtext(str(obj.body or ""))
+
+    @staticmethod
+    def resolve_prerequisites(obj: Course) -> str:
+        return obj.public_prerequisites_display()
+
+    @staticmethod
+    def resolve_cover(obj: Course, context) -> dict | None:
+        request = context.get("request") if context else None
+        return public_media_ref(getattr(obj, "cover_media", None), request, locale=obj.locale)
+
+
+class GalleryImageOut(Schema):
+    url: str
+    alt: str
+    caption: str = ""
+    mime: str = ""
+    title: str = ""
+    size: int = 0
+
+
+class CreativeWorkListOut(Schema):
+    locale: str
+    slug: str
+    title: str
+    description: str
+    work_type: str
+    creator_name: str
+    creator_role: str
+    creation_date: date | None
+    license: str
+    access_state: str
+    published_at: datetime | None
+    updated_at: datetime | None
+
+
+class CreativeWorkDetailOut(CreativeWorkListOut):
+    body: str
+    rights_statement: str
+    accessibility_notes: str
+    cover: dict | None = None
+    gallery: list[GalleryImageOut] = Field(default_factory=list)
+
+    @staticmethod
+    def resolve_body(obj: CreativeWork) -> str:
+        return sanitize_public_richtext(str(obj.body or ""))
+
+    @staticmethod
+    def resolve_rights_statement(obj: CreativeWork) -> str:
+        # No student PII — rights text is editor-curated; empty when not public.
+        if obj.access_state != AccessState.PUBLIC and not (obj.rights_statement or "").strip():
+            return ""
+        return (obj.rights_statement or "").strip()
+
+    @staticmethod
+    def resolve_cover(obj: CreativeWork, context) -> dict | None:
+        if not obj.allows_public_file():
+            return None
+        request = context.get("request") if context else None
+        return public_media_ref(getattr(obj, "cover_media", None), request, locale=obj.locale)
+
+    @staticmethod
+    def resolve_gallery(obj: CreativeWork, context) -> list[GalleryImageOut]:
+        if not obj.allows_public_file():
+            return []
+        request = context.get("request") if context else None
+        images = getattr(obj, "gallery_images", None)
+        if images is None:
+            return []
+        result: list[GalleryImageOut] = []
+        for row in images.all().select_related("media"):
+            if not row.is_publicly_projectable():
+                continue
+            ref = public_media_ref(row.media, request, locale=obj.locale)
+            if ref is None:
+                continue
+            result.append(
+                GalleryImageOut(
+                    url=ref.get("url", ""),
+                    alt=ref.get("alt", "") or (row.alt_text or "").strip(),
+                    caption=(row.caption or "").strip(),
+                    mime=ref.get("mime", "") or "",
+                    title=ref.get("title", "") or "",
+                    size=ref.get("size", 0) or 0,
+                )
+            )
+        return result
+
+
 @api.get(
     "/research/topics/{locale}",
     response=list[ResearchTopicListOut],
@@ -1164,6 +1282,100 @@ def download_file(request, locale: str, slug: str):
     response["Cache-Control"] = "private, no-store"
     response["X-Robots-Tag"] = "noindex, nofollow"
     return response
+
+@api.get(
+    "/courses/{locale}",
+    response=list[CourseListOut],
+    summary="List published courses for a locale (paginated)",
+)
+@paginate(PageNumberPagination, page_size=10)
+def list_courses(request, locale: str):
+    return Course.objects.public().filter(locale=locale).order_by("slug")
+
+
+@api.get(
+    "/courses/{locale}/{slug}",
+    response=CourseDetailOut,
+    summary="Get one published course by slug",
+)
+def get_course(request, locale: str, slug: str) -> Course:
+    course = (
+        Course.objects.public()
+        .filter(locale=locale, slug=slug)
+        .select_related("cover_media")
+        .first()
+    )
+    if course is None:
+        raise HttpError(404, "course not found")
+    return course
+
+
+# Alias for IA canonical /{locale}/teaching/ — same queryset as /courses/.
+@api.get(
+    "/teaching/{locale}",
+    response=list[CourseListOut],
+    summary="List published teaching courses for a locale (alias of /courses/)",
+)
+@paginate(PageNumberPagination, page_size=10)
+def list_teaching(request, locale: str):
+    return Course.objects.public().filter(locale=locale).order_by("slug")
+
+
+@api.get(
+    "/teaching/{locale}/{slug}",
+    response=CourseDetailOut,
+    summary="Get one published teaching course by slug (alias)",
+)
+def get_teaching_course(request, locale: str, slug: str) -> Course:
+    return get_course(request, locale, slug)
+
+
+@api.get(
+    "/creative-works/{locale}",
+    response=list[CreativeWorkListOut],
+    summary="List published creative works for a locale (paginated)",
+)
+@paginate(PageNumberPagination, page_size=10)
+def list_creative_works(request, locale: str):
+    return CreativeWork.objects.public().filter(locale=locale).order_by("slug")
+
+
+@api.get(
+    "/creative-works/{locale}/{slug}",
+    response=CreativeWorkDetailOut,
+    summary="Get one published creative work by slug",
+)
+def get_creative_work(request, locale: str, slug: str) -> CreativeWork:
+    work = (
+        CreativeWork.objects.public()
+        .filter(locale=locale, slug=slug)
+        .select_related("cover_media")
+        .prefetch_related("gallery_images__media")
+        .first()
+    )
+    if work is None:
+        raise HttpError(404, "creative work not found")
+    return work
+
+
+@api.get(
+    "/creative/{locale}",
+    response=list[CreativeWorkListOut],
+    summary="List published creative works for a locale (alias of /creative-works/)",
+)
+@paginate(PageNumberPagination, page_size=10)
+def list_creative(request, locale: str):
+    return CreativeWork.objects.public().filter(locale=locale).order_by("slug")
+
+
+@api.get(
+    "/creative/{locale}/{slug}",
+    response=CreativeWorkDetailOut,
+    summary="Get one published creative work by slug (alias)",
+)
+def get_creative(request, locale: str, slug: str) -> CreativeWork:
+    return get_creative_work(request, locale, slug)
+
 
 from apps.api.public_contact import contact_router  # noqa: E402
 
