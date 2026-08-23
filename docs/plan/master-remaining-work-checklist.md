@@ -277,7 +277,7 @@
 - [ ] **E6 — جستجو: noscript `/blog/` → `/writing/` (P12) و پوسته‌سازی Pagefind (P17)** — `P1(P12)/P2(P17)` · `agent` · `S`
   - اصلاح href در `pages/{en,fa}/search/index.astro`؛ سپس themeکردن CSS صفحهfind-ui با توکن‌ها (بدون fork سنگین).
   - پذیرش: `rg "/blog/" apps/web/src/pages/*/search` → بدون نتیجه؛ اسکرین‌شات UI جستجو هم‌خوان با دیزاین.
-  - شواهد: PARTIAL — P12 DONE (LOG-0221؛ KI-0006 pending deploy)؛ P17 (پوسته‌ی Pagefind) باقی است.
+  - شواهد: PARTIAL — P12 DONE و CLOSED (LOG-0221؛ KI-0006 CLOSED با دیپلوی LOG-0227)؛ P17 (پوسته‌ی Pagefind) باقی است.
 
 - [ ] **E7 — اعتبارسنجی override رنگ برند CMS (P11)** — `P1` · `agent` · `M` · deps: E1
   - در بیلد Astro: محاسبه‌ی کنتراست primaryColor با سفید/canvas؛ زیر آستانه ⇒ fail-build یا clamp به نزدیک‌ترین مقدار مجاز (تصمیم در Task Spec) + مشتق emphasis/soft از brand تا hover هم تغییر کند.

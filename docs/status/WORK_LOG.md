@@ -1,3 +1,14 @@
+## LOG-0227 — 2026-08-23 — Post-deploy verification: all CI/CD green, E6-P12 live, KI-0006 CLOSED
+
+- Outcome: Pushed `main` (`0ac07a4..721fc51`, seven M0/F1 commits incl. LOG-0226 ledger closure). All five GitHub Actions runs succeeded: CI (1m22s), CMS image (2m01s), Web image (1m55s), **CD — Deploy to production (2m11s)**, CMS CI. Production smoke after deploy fully green — `smoke.sh --expect-cms-origin` 9/9 PASS and `smoke-blog.sh` PASS (writing-canonical redirect expectations + `/api/articles/en` 200). Live HTML check confirms the search noscript fix is served: `/en/search/` + `/fa/search/` link `/writing/` with zero `/blog/` references → `KI-0006` → **CLOSED**.
+- Why: Owner approved push; closing the loop with deploy verification and flipping the now-served defect to closed per DoD.
+- Scope / files: `docs/status/known-issues.md` (KI-0006 status), `docs/plan/master-remaining-work-checklist.md` (E6 evidence line), this entry. No code change in this commit.
+- Commands or actions actually performed: `git push origin main`; `gh run list` (5/5 success); `bash infra/deploy/smoke.sh https://tahamohamadi.ir --expect-cms-origin`; `bash infra/deploy/smoke-blog.sh https://tahamohamadi.ir`; curl probes of both search pages. All read-only GETs against production.
+- Verification actually performed and result: see outputs above; production healthy post-deploy, CMS origin meta present on cv pages, no regression observed.
+- Decisions / assumptions: CD deploy of a docs-ledger commit also refreshed web/CMS images from the same sha (image workflows run on main); treated as expected pipeline behavior per cd.yml design.
+- Deferred or risk IDs: KI-0006 CLOSED. Board C1 remains OPEN pending the owner-run publish/revert scenario (checklist ready, LOG-0225).
+- Rollback / recovery: none needed; prior image rollback path unchanged (cd.yml / DEPLOY_RUNBOOK).
+
 ## LOG-0226 — 2026-08-23 — F1 done: 9Router credential rotated by owner (RISK-0008 → CLOSED)
 
 - Outcome: Owner performed revoke/rotate of the exposed 9Router credential in the 9Router dashboard and keeps the fresh credential only in a password manager (owner attestation given in the working session, 2026-08-23). No secret value was printed, stored, or committed anywhere. `RISK-0008` → **CLOSED** in the risk register; board item F1 ticked and WS-F tracker row updated. Push of local `main` (six M0 commits + this entry) owner-approved in the same session.
