@@ -25,7 +25,11 @@ def _contact_health() -> tuple[str, str | None]:
         if not email_host:
             return "error", "contact form enabled but EMAIL_HOST not configured"
         if not recipient:
-            return "error", "contact form enabled but no recipient (CONTACT_FORM_TO / SiteSettings.contact_email)"
+            return (
+                "error",
+                "contact form enabled but no recipient "
+                "(CONTACT_FORM_TO / SiteSettings.contact_email)",
+            )
         return "ok", None
     except Exception:  # pragma: no cover - missing table before migrate should not flap health
         return "unknown", None
