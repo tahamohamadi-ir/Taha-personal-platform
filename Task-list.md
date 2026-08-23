@@ -38,12 +38,44 @@
 - [x] Early Pagefind `/{locale}/search/`
 - [x] Old-stack decommission **CLOSED** (no `taha-prod-*`; LOG-0216)
 
-## Production cutover snapshot (2026-08-23, LOG-0216)
+## Hotfix — deploy parity & contact page (2026-08-23, LOG-0232..0235)
 
-- Live CMS image: `ghcr.io/tahamohamadi-ir/taha-cms:116c241`
-- Live web: `taha-web:local` via `cd-rebuild-web.sh`
-- Compose project: `taha-cms` only (caddy + cms + db + web)
-- Remaining owner polish: DEFER-0021 allowlist/enforce; DEFER-0032 manual S6; optional statement PDF upload; DEBT-0006 contact inbox
+- [x] Contact page `/{locale}/contact/` — phones removed from public surface, form moved from footer to dedicated page + nav, footer minimal (email/LinkedIn/ORCID/MCI/Tehran) — `feat/contact-page-ia` LOG-0232, live `release-705ed4c`
+- [x] Deploy parity fix — web `taha-web:6e2ee...` (Aug 19) stale → `ghcr.io/taha-web:705ed4c:3ff7bf...` (pull + `compose up -d web` 15:27) + publications `0→3` via `docker build --build-arg CMS_API_BASE --no-cache` `e782...` (17:23) — LOG-0234/0235
+- [x] CMS parity fix — `taha-cms:e2cd1b6` → `ghcr.io/taha-cms:705ed4c` via `cd-cms-migrate.sh` (backup 382KB, `siteconfig.0003` OK, 9/9 smoke) + `infra/cms/.env` persist `705ed4c` — LOG-0235
+- [x] Caddy/Cloudflare alignment verified — Host `inactive`, Compose `taha-cms-caddy-1` healthy, `cf-cache-status:DYNAMIC`
+- [x] Catalog parity verified — `publications API:3 HTML:3` now, `books/talks/downloads:0` honest, `projects/writing/research: live` — LOG-0235
+- [ ] CI gap — `ci-web-image.yml:9` missing `apps/cms/admin-frontend/**` + `cd.yml:195` stale-web on docs-only push → Task-list C3 `WEB_PULL_POLICY=always` (P1)
+
+## Audit — deployment/content gaps found 2026-08-23 (P0/P1 — must not be glossed)
+
+> Source: 3-agent audit (web CMS projection, infra, tests). Each gap caused or could cause silent empty like Projects/Writing.
+
+**P0 — fail-closed (deploy would look green but HTML empty):**
+- [ ] **B1 P8 404→empty** `apps/web/src/lib/cms/publications.ts:133` — `requireListPayload` returns `[]` on 404 with comment "CMS may lag". After LOG-0216/LOG-0235 lag closed, 404 must fail-build like `articles.ts:69`. Also `sitemap.xml.ts:99` silently omits.
+- [ ] **B2 contact snapshot fallback** `apps/web/src/lib/cms/siteSettings.ts:56` — `getSiteContact()` returns `OFFLINE_CONTACT_SNAPSHOT` even when `CMS_API_BASE` set and 404. Violates ADR-0027 Slice 3 snapshot-only-when-unset (correct in `cmsProfile.ts:67`).
+- [ ] **P0 CI vs CD divergence** `.github/workflows/ci.yml:36` builds without `CMS_API_BASE`, `cd.yml:55` with. Empty-honest `publications` passes CI even when live would be empty. Need `CI -- CMS_API_BASE` job or API↔HTML parity spec.
+- [ ] **P0 no API↔HTML parity test** — no spec asserts `GET /api/...` count == `dist/...` links. Need `p8-catalog.spec.mjs` for `publications/books/talks/downloads`.
+- [ ] **Infra #1 admin-frontend drift** `.github/workflows/ci-cms-image.yml:14` missing `apps/cms/admin-frontend/**` — SPA push never rebuilds CMS image, `/admin/` stale.
+- [ ] **Infra #2 CD dual-path stale** `cd.yml:195` `No web image for ${SHORT_SHA}; skipping` — docs-only push updates host `/opt/taha/site` but live `web:8080` (Compose edge) stays stale.
+
+**P1 — live stale content:**
+- [ ] **B3 home never CMS** `apps/web/src/components/Landing.astro:3` — `profile.en/fa.ts` static regardless of `CMS_API_BASE` (checklist A1)
+- [ ] **B4 footer/brand static** `content.ts:219` `footer.tagline` + `BaseLayout` brand — should be `GET /api/site` (A3)
+- [ ] **B5 CV md still served** `apps/web/public/downloads/*.md` — `cvDownloads.ts:89` returns `[]` on CMS but file still at `/downloads/*.md` (A4)
+- [ ] **B6 cms-build-origin missing** only `cv`+`about` emit `<meta name="cms-build-origin">` — `smoke.sh --expect-cms-origin` cannot prove `writing/projects/publications` came from CMS
+- [ ] **Infra #8 contact 503** `infra/cms/.env.example:17` `EMAIL_HOST=""` → honest 503, but no boot validation — operator sees healthy `/health/` but form 503
+- [ ] **Infra #9 timers not enabled** `taha-publish-scheduled-content.timer:5` + `taha-platform-backup.timer:5` — require owner `install-*timer.sh`, never auto-enabled
+
+**P2 — latent:**
+- [ ] B7 `primaryColor` 404→null, B8 `research-graph` 404→null hidden, Infra #3 `pull_policy:missing`, #4 `nginx:alpine` unpinned, #5 `/var/www/html` mount, Tests P1 gaps (Pagefind, sitemap, health)
+
+## Production cutover snapshot (2026-08-23, LOG-0235 — updated)
+
+- Live CMS image: `ghcr.io/tahamohamadi-ir/taha-cms:705ed4c` (was `116c241` at LOG-0216, migrated 15:34 with `siteconfig.0003`)
+- Live web: `ghcr.io/tahamohamadi-ir/taha-web:e782...` (local build `main:e782` with 3 pubs, was `3ff7...` at 15:27, original `6e2ee...` Aug 19 stale)
+- Compose project: `taha-cms` only (caddy + cms + db + web) — all 4 healthy
+- Remaining owner polish: DEFER-0021 allowlist/enforce; DEFER-0032 manual S6; optional statement PDF upload; DEBT-0006 inbox deferred (email contact is product per LOG-0232); KI-0007 Cloudflare toggle
 
 ## Progress snapshot (2026-08-18)
 
@@ -836,8 +868,8 @@ P0-B hardening? ??????? ??????? visual/browser/screen-reader? dark mode? motion 
 
 - [x] ???????? ???????? ?????? ???? import ???????: `apps/security/views_totp.py`, `apps/security/forms.py`? hook ??? ??????? ??? fallback `/admin-wagtail/` ????????. *(LOG-0165 — SPA `/admin/security` + `/api/v1/admin/auth/mfa/*`; Wagtail HTML ???? fallback ???)*
 - [x] ?????/????/me/CSRF ????? Django-level ?? Ninja (`/api/v1/admin/auth/*`) — LOG-0156. ??????? login ???? ???? fallback ???.
-- [ ] ????? ????: dumpdata ??? VPS ??? ?? migrate (`RISK-0010`) — ?? ??? ???? fixture ?????? ?? DB ???? commit ???????.
-- [ ] ??? Wagtail ?? INSTALLED_APPS/uninstall — **?????** ?? ???????? `RichTextField` ? `wagtailimages.Image` (`DEBT-0003`).
+- [x] ????? ????: dumpdata ??? VPS ??? ?? migrate (`RISK-0010`) — fixture preserved + backup before `content.0013/0014` (LOG-0216). *(DEBT-0003 CLOSED)*
+- [x] ??? Wagtail ?? INSTALLED_APPS/uninstall — `RichTextField` → `TextField` + Media FKs, `0011` no-op, `DEBT-0003` CLOSED 2026-08-21 LOG-0193.
 - [x] ??????????? ??????? MFA ???? enrollment ?? SPA/Ninja ?? ???? ???? `/admin-wagtail/`. *(LOG-0165 — `test_admin_mfa_api.py`)*
 
 ### Task ADM-1 — Admin foundation (real working admin)
