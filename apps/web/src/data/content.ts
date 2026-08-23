@@ -185,6 +185,12 @@ export interface LocaleContent {
     heading: string;
     unavailable: string;
   };
+  search: {
+    heading: string;
+    intro: string;
+    noscript: string;
+    navLabel: string;
+  };
   footer: {
     tagline: string;
     switchLabel: string;
@@ -414,6 +420,13 @@ export const content: Record<LocaleCode, LocaleContent> = {
       heading: "Contact",
       unavailable: "Contact details are not published yet.",
     },
+    search: {
+      heading: "Search",
+      intro: "Find published pages on this site. Drafts and private files are not indexed.",
+      noscript:
+        "Search needs JavaScript. Browse blog, research, or projects from the links below.",
+      navLabel: "Search",
+    },
     footer: {
       tagline: "Human-centered intelligent systems.",
       switchLabel: "Language",
@@ -641,6 +654,13 @@ export const content: Record<LocaleCode, LocaleContent> = {
     contact: {
       heading: "تماس",
       unavailable: "اطلاعات تماس هنوز منتشر نشده است.",
+    },
+    search: {
+      heading: "جستجو",
+      intro: "صفحات منتشرشده این سایت را پیدا کنید. پیشنویس‌ها و فایل‌های خصوصی ایندکس نمی‌شوند.",
+      noscript:
+        "جستجو به جاوااسکریپت نیاز دارد. از پیوندهای وبلاگ، پژوهش یا پروژه‌ها در پایین استفاده کنید.",
+      navLabel: "جستجو",
     },
     footer: {
       tagline: "سیستم‌های هوشمند انسان‌محور.",

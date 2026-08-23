@@ -5,6 +5,7 @@ export interface AdminUser {
   isStaff: boolean;
   mfaEnrolled: boolean;
   otpVerified: boolean;
+  featureFlags?: Record<string, boolean>;
 }
 
 export interface DashboardSummary {
@@ -368,6 +369,26 @@ export async function transitionContent(
   return request<ContentDetail>(`/content/${entity}/${id}/transition`, {
     method: "POST",
     body: JSON.stringify(payload),
+  });
+}
+
+export interface BulkArchiveResult {
+  archived: number;
+  skipped: number;
+  ids: number[];
+}
+
+export async function bulkArchiveContent(
+  entity: ContentEntity,
+  ids: number[],
+  reason?: string
+): Promise<BulkArchiveResult> {
+  return request<BulkArchiveResult>(`/content/${entity}/bulk-archive`, {
+    method: "POST",
+    body: JSON.stringify({
+      ids,
+      ...(reason !== undefined && reason !== "" ? { reason } : {}),
+    }),
   });
 }
 

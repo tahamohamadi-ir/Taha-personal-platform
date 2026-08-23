@@ -7,6 +7,13 @@
 
 # Changelog
 
+## 2026-08-22 — Wave 5: ADM QA, service/flags, early Pagefind (LOG-0215)
+
+- ADM QA (`DEFER-0032` **PARTIAL**): Playwright matrix for RTL shell, keyboard login, admin noindex/no-store, LTR slug fields, bulk archive count+confirm; S6 manual checklist shipped.
+- Progressive S1/S4: lifecycle + public_projection service helpers; `FEATURE_ADMIN_BULK_ARCHIVE` default-off (e2e on); exposed on `auth/me.featureFlags`.
+- Early P10 Pagefind: `/{locale}/search/` + Header/Footer links + post-build per-locale index (`npm run pagefind:index`); phase-order exception recorded in Task-list §15.
+- Contact inbox (`DEBT-0006`) unchanged OPEN. Owner old-stack decommission remains human-only.
+
 ## 2026-08-22 — Wave 2 CMS/web add-ons (LOG-0212)
 
 - **DEFER-0019 CLOSED (repo):** nullable `ResearchStatement.statement_pdf` → Media (`content.0013`); public projection via `public_media_ref` (active only; title/mime/size); admin MediaPicker; Astro statement download (fa/en).

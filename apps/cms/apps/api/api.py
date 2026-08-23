@@ -17,7 +17,6 @@ from ninja.errors import HttpError
 from ninja.pagination import PageNumberPagination, paginate
 
 from apps.composition.projection import public_story_document
-from apps.content.html_sanitize import sanitize_html
 from apps.content.models import (
     Article,
     ArticleSlugRedirect,
@@ -32,6 +31,10 @@ from apps.content.models import (
     Series,
     Talk,
     TopicTag,
+)
+from apps.content.services.public_projection import (
+    published_for_locale,
+    sanitize_public_richtext,
 )
 from apps.media.models import Media
 from apps.media.public_urls import public_media_ref
@@ -83,14 +86,6 @@ def _public_download(kind: str, media: Media | None) -> PublicDownloadOut | None
         size_bytes=media.size,
         updated_at=media.updated_at,
     )
-
-
-
-
-
-def sanitize_public_richtext(raw: str) -> str:
-    """Re-sanitize rich HTML for public projection (local allowlist; ADR-0022)."""
-    return sanitize_html(raw)
 
 
 class LandingOut(Schema):
@@ -253,7 +248,7 @@ def get_public_site_settings(request) -> PublicSiteSettingsOut:
     summary="List published landing pages for a locale",
 )
 def list_landings(request, locale: str) -> list[Landing]:
-    return list(Landing.objects.public().filter(locale=locale))
+    return list(published_for_locale(Landing.objects, locale))
 
 
 @api.get(
@@ -262,7 +257,7 @@ def list_landings(request, locale: str) -> list[Landing]:
     summary="Get one published landing page by slug",
 )
 def get_landing(request, locale: str, slug: str) -> Landing:
-    landing = Landing.objects.public().filter(locale=locale, slug=slug).first()
+    landing = published_for_locale(Landing.objects, locale).filter(slug=slug).first()
     if landing is None:
         raise HttpError(404, "landing not found")
     return landing
@@ -274,7 +269,7 @@ def get_landing(request, locale: str, slug: str) -> Landing:
     summary="List published profile pages for a locale",
 )
 def list_profiles(request, locale: str) -> list[Profile]:
-    return list(Profile.objects.public().filter(locale=locale))
+    return list(published_for_locale(Profile.objects, locale))
 
 
 @api.get(
@@ -283,7 +278,7 @@ def list_profiles(request, locale: str) -> list[Profile]:
     summary="Get one published profile page by slug",
 )
 def get_profile(request, locale: str, slug: str) -> Profile:
-    profile = Profile.objects.public().filter(locale=locale, slug=slug).first()
+    profile = published_for_locale(Profile.objects, locale).filter(slug=slug).first()
     if profile is None:
         raise HttpError(404, "profile not found")
     return profile

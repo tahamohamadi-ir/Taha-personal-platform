@@ -17,16 +17,17 @@ Last reconciled: 2026-08-22.
 |---|---|---|---|
 | `wave1-web-polish-task-spec.md` | DONE (merged) | agent | Writing-canonical + RSS + OG + catalog URL filters (Wave 1). LOG-0211. |
 | `wave2-cms-web-addons-task-spec.md` | DONE (merged) | agent | Statement PDF, lightbox, CSP Report-Only demos. LOG-0212. Owner migrate `content.0013`. |
-| `P8-publications-books-talks-downloads-task-spec.md` | DONE (merged, migrate pending) | agent ? owner | Wave 3 LOG-0213. Migration `content.0014` (depends on `0013`). Attended migrate + rebuild-web required. |
+| `P8-publications-books-talks-downloads-task-spec.md` | DONE (merged, migrate pending) | agent + owner | Wave 3 LOG-0213. Migration `content.0014` (depends on `0013`). Attended migrate + rebuild-web required. |
 | `wave4-research-graph-island-task-spec.md` | DONE (merged) | agent | ADR-0028 research graph island (SVG + motion). LOG-0214. |
+| `wave5-adm-qa-pagefind-task-spec.md` | DONE (merged) | agent | Wave 5: ADM QA + S1/S4 service/flags + early Pagefind search. LOG-0215. `DEFER-0032` PARTIAL. |
 | `cms-origin-and-full-stack-cd-task-spec.md` | DONE (repo + edge) | agent | ADR-0027 Slices 0?5; Compose Caddy live (`DEFER-0031`/`RISK-0013` CLOSED, LOG-0210); HMAC `DEFER-0027` CLOSED. |
 | `P3-public-preview-token-task-spec.md` | DONE | agent | DEFER-0016 CLOSED 2026-08-22 (LOG-0204 repo; LOG-0209 production secret + CMS recreate). |
 | `blog-story-composition-task-spec.md` | PARTIAL | agent | Blog story live; entity stories Slice 5 (`DEFER-0030` CLOSED in ledger). Owner migrate + rebuild. |
 | `rich-blocks-v2-task-spec.md` | DONE | agent | Six no-JS story blocks (accordion/tabs/timeline/counters/before_after/slider). Owner static rebuild after merge. |
-| `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | Featured?Media + Wagtail uninstall closed; HMAC `DEFER-0027` CLOSED. Remaining: §18 QA matrix only (`DEFER-0032`). |
+| `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | Featured?Media; Wagtail uninstall CLOSED; HMAC CLOSED; Playwright lifecycle CLOSED; §18 QA ? `DEFER-0032` PARTIAL (Wave 5). |
 | `P0-A-stack-inventory-task-spec.md` | BLOCKED (owner) | owner | Read-only VPS inventory. Not an agent task. |
 
-Owner remaining work that is **not** a new spec: attended migrate `content.0013` then `content.0014` + Caddy reload + `rebuild-web.sh`; demo allowlist before CSP enforce (`DEFER-0021`); merge Wave 5 then rebuild. HMAC (`DEFER-0027`) and Compose Caddy (`DEFER-0031`) are **CLOSED** (LOG-0210). Do **not** set `CMS_CD_AUTO_MIGRATE`.
+Owner remaining work that is **not** a new spec: attended migrate `content.0013` then `content.0014` + Caddy reload + `rebuild-web.sh`; demo allowlist before CSP enforce (`DEFER-0021`); old-stack decommission (`infra/deploy/decommission-old-stack.md`). HMAC (`DEFER-0027`) and Compose Caddy (`DEFER-0031`) are **CLOSED** (LOG-0210). Do **not** set `CMS_CD_AUTO_MIGRATE`.
 
 ## 2. Queued ? do not start yet
 
@@ -40,7 +41,7 @@ Owner remaining work that is **not** a new spec: attended migrate `content.0013`
 | File | Role |
 |---|---|
 | `SAMPLES-TRANSFER-RECOMMENDATIONS.md` | Analysis catalog of `SAMP-*` IDs. Bound into `Task-list.md`. Do not create a second spec from it. |
-| `SMALL-MODEL-EXECUTION-PLAN.md` | Operating playbook for small models. See §5 caveat. |
+| `SMALL-MODEL-EXECUTION-PLAN.md` | Operating playbook for small models. See ?5 caveat. |
 | `S-PLAN-STATE.md` | Task state tracker for the S-Plan phases. |
 | `B5-VISUAL-INTERACTION-ADOPTION.md` | Proposal only. Nothing in it is implemented or authorized (Candidate 4 research graph adopted via ADR-0028). |
 | `P0-G0-content-pack-proposal.md` | Content proposal record. |
@@ -111,7 +112,7 @@ template. Two parts are stale:
 - Its phase backlog lists tasks as READY that `S-PLAN-STATE.md` already marks DONE.
 
 When they disagree, `S-PLAN-STATE.md` and this file win.
-The active agent specs in §1 include Wave polish/P8 follow-ups; P7 remains queued/superseded. Owner inventory stays owner-only.
+The active agent specs in ?1 include Wave polish/P8 follow-ups; P7 remains queued/superseded. Owner inventory stays owner-only.
 
 If the playbook mentions an OpenCode agent you do not have, ignore the dispatch
 mechanism and execute the active spec directly.
@@ -125,7 +126,7 @@ mechanism and execute the active spec directly.
 3. Put a `**Status:**` line directly under the title. Use `READY`, `QUEUED`, `BLOCKED`, `PARTIAL`, or `DONE`.
 4. Use full repo-relative paths in Allowed files. Never a bare filename.
 5. Give every verification step an exact command and an expected result.
-6. Add a row to §1 or §2 of this file in the same change.
+6. Add a row to ?1 or ?2 of this file in the same change.
 
 Expected result:
 Another agent can execute your spec without asking you a question.

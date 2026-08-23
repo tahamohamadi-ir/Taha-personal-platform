@@ -74,6 +74,9 @@ REBUILD_TRIGGER_ENABLED = False
 REBUILD_TRIGGER_SECRET = ""
 REBUILD_SCRIPT_PATH = ""
 
+# Admin feature flags (S4) — default off; enable via env / settings override.
+FEATURE_ADMIN_BULK_ARCHIVE = False
+
 # Public preview share tokens (DEFER-0016). Falls back to SECRET_KEY when unset.
 PREVIEW_SHARE_SECRET = ""
 PREVIEW_SHARE_TTL_SECONDS = 900

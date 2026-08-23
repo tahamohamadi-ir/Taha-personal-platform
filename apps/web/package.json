@@ -1,11 +1,12 @@
-{
+﻿{
   "name": "@taha/web",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && npm run pagefind:index",
+    "pagefind:index": "node scripts/pagefind-index.mjs",
     "preview": "astro preview",
     "check": "astro check",
     "test:e2e": "playwright test",
@@ -29,6 +30,7 @@
     "@playwright/test": "^1.62.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
+    "pagefind": "^1.4.0",
     "playwright": "^1.62.1",
     "typescript": "~5.9.3"
   }

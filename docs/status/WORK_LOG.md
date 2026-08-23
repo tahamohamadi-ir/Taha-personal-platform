@@ -10,6 +10,14 @@
 
 # Work Log
 
+## LOG-0215 — 2026-08-22 — Wave 5: ADM QA + service/flags + early Pagefind
+
+- Outcome: Implemented Wave 5 on `feat/wave5-adm-qa-pagefind`. **ADM QA:** Playwright `admin-qa-matrix.spec.ts` + pytest bulk/flags; S6 checklist; `DEFER-0032` → **PARTIAL** (full LTR admin chrome + viewport/reduced-motion remain manual). **S1/S4:** `apps/content/services/lifecycle.py` + `public_projection.py`; `FEATURE_ADMIN_BULK_ARCHIVE` default-off; SPA bulk archive gated by `auth/me.featureFlags`. **Pagefind:** `/{en,fa}/search/` + nav + post-build per-locale index; Task-list §15 phase-order exception. **Owner decommission:** runbook at `infra/deploy/decommission-old-stack.md` — ready for owner (no SSH by agent). Contact inbox untouched (`DEBT-0006` OPEN). Merged to main.
+- Why: Close Wave 5 plan todos (adm-qa, service-flags, pagefind, owner-decommission note).
+- Verification: `uv run ruff check` PASS; pytest bulk/flags **20 passed**; `npm run check` 0 errors; `npm run build` (offline) PASS including `pagefind:index`. Playwright `admin-qa-matrix` skipped on this Windows host (`uv` missing in Bash webServer) — re-run under CI.
+- Deferred or risk IDs: `DEFER-0032` **PARTIAL**; `DEBT-0006` contact **OPEN**; owner old-stack decommission **pending**; CSP enforce if still open from Wave 2.
+- Rollback / recovery: keep `FEATURE_ADMIN_BULK_ARCHIVE` false; revert search routes/nav; Pagefind artifacts are build-only.
+
 ## LOG-0212 — 2026-08-22 — Wave 2: statement PDF, lightbox, CSP Report-Only demo embed
 
 - Outcome: Wave 2 merged to main. DEFER-0019 repo CLOSED (`content.0013_researchstatement_statement_pdf`); F7 lightbox; DEFER-0021 PARTIAL (CSP Report-Only + click-to-load). Production migrate/upload still owner. Never `CMS_CD_AUTO_MIGRATE`.

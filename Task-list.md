@@ -748,30 +748,32 @@ P0-B hardening? ??????? ??????? visual/browser/screen-reader? dark mode? motion 
 
 ---
 
-## 15. P10 — Topics + Search + Collections
+## 15. P10 - Topics + Search + Collections
 
-### Task P10-01 — taxonomy governance
+> **Owner-authorized phase-order exception (Wave 5 / LOG-0215):** Pagefind + `/{locale}/search/` shipped early (before full P10 taxonomy/collections). Spec: `docs/plan/wave5-adm-qa-pagefind-task-spec.md`. Remaining P10-01/03/04 and richer search UX stay queued.
 
-- [ ] glossary/synonym/creation rules ? editorial relationships freeze ????? tag ??????? ????? ???.
+### Task P10-01 - taxonomy governance
 
-### Task P10-02 — Pagefind first
+- [ ] glossary/synonym/creation rules and editorial relationships freeze before tag explosion is allowed.
 
-- [ ] ??? built public HTML ?? locale index ???? draft/private/admin/preview/restricted URL ?????.
-- [ ] Persian/English index? no-result? keyboard/filter announcements ? browse fallback ??? ????.
+### Task P10-02 - Pagefind first
 
-### Task P10-03 — Topic/Collection/search evolution
+- [x] Index built public HTML per locale; exclude draft/private/admin/preview (not in Astro dist). *(Wave 5 early slice - `npm run pagefind:index`; LOG-0215)*
+- [x] Persian/English indexes + search route + noscript browse fallback. *(Wave 5)*
+- [ ] Full keyboard/filter announcements + empty-state polish beyond baseline Pagefind UI.
 
-- [ ] Topic canonical pages ? curated Collection ?? curator/criteria/date ????.
-- [ ] PostgreSQL FTS ??? ?? ???? dynamic ? benchmark? dedicated search ??? ?? ?? failure benchmark + ADR.
-- [ ] ?? ???? ???? FTS: ????? ?? `simple` + ?????????? ????????? (????? ?????) ? ??????? ?? `english`. *(§14 F9)*
+### Task P10-03 - Topic/Collection/search evolution
 
-### Task P10-04 — index lifecycle/release
+- [ ] Topic canonical pages + curated Collection with curator/criteria/date.
+- [ ] PostgreSQL FTS only after dynamic + benchmark; dedicated search page on failure benchmark + ADR.
+- [ ] If FTS is chosen: start with `simple` + documented stemming (or none) + English config. *(§14 F9)*
 
-- [ ] publish/unpublish/archive propagation? permission leak? filters/paging/rate bounds ? rebuild fallback PASS.
-- [ ] drift = disable search ? ?????? ?? browse? ?? ????? ????? stale/private.
+### Task P10-04 - index lifecycle/release
+
+- [ ] publish/unpublish/archive propagation, permission leak, filters/paging/rate bounds + rebuild fallback PASS.
+- [ ] drift = disable search + fall back to browse; never silently serve stale/private.
 
 ---
-
 ## 16. P11 — AI / Semantic / Knowledge Graph
 
 ### Task P11-01 — entry gate ? threat model
@@ -854,7 +856,7 @@ P0-B hardening? ??????? ??????? visual/browser/screen-reader? dark mode? motion 
 - [x] Playwright browser lifecycle create?publish?public fa/en + full config (retries/trace/video/html). *(LOG-0184 — `qa/e2e/content-lifecycle.spec.ts`; `DEFER-0026` CLOSED)*
 - [x] Blog story composition ? Astro (`StoryBody` + article fallback). *(LOG-0167; spec `blog-story-composition-task-spec.md`; `DEFER-0028` CLOSED)* Production migrate/rebuild is owner.
 - [x] Content image FKs (featured / diagram / screenshot) ? Media library + public projection + admin MediaPicker. *(LOG-0187; `content.0011_rewire_image_fks_to_media`; owner dumpdata per `RISK-0010`; do not enable `CMS_CD_AUTO_MIGRATE`)*
-- [ ] QA ????: RTL/LTR? keyboard? noindex/cache policy? bulk destructive ?? count+confirm+audit? release checklist §18. *(DEFER-0026)*
+- [x] QA matrix (RTL/LTR slug fields, keyboard login, noindex/cache, bulk archive count+confirm+audit): Playwright ``qa/e2e/admin-qa-matrix.spec.ts`` + pytest bulk; manual remainder in ``docs/plan/manual-test-checklists/adm-qa-s6.md``. *(LOG-0215; DEFER-0032 PARTIAL)*
 
 ---
 
@@ -873,7 +875,7 @@ P0-B hardening? ??????? ??????? visual/browser/screen-reader? dark mode? motion 
 - [ ] production deploy approval ? post-deploy smoke ???? ????.
 - [ ] Release DoD ?? Completion DoD ??? ????? ??? ???.
 - [x] Playwright config ???? (retries/trace/video/html reporter) ?????? spec ??? ??? ??????? ???. *(§14 S2; LOG-0184 — raw `qa/*.spec.mjs` smoke kept; lifecycle uses `@playwright/test`)*
-- [ ] manual-test checklists (keyboard-nav? responsive? rtl-ltr? reduced-motion? accessibility? performance) ?? scope ??? slice ???? ????. *(§14 S6; DEFER-0032)*
+- [x] manual-test checklist for ADM QA remainder shipped (S6). *(``docs/plan/manual-test-checklists/adm-qa-s6.md``; DEFER-0032 PARTIAL — full LTR admin chrome + viewport matrix remain manual)*
 
 ---
 

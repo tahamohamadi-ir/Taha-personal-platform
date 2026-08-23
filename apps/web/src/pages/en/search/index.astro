@@ -1,0 +1,86 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { content } from "../../../data/content";
+
+const locale = "en" as const;
+const pageContent = content[locale];
+const search = pageContent.search;
+---
+
+<BaseLayout
+  content={{
+    ...pageContent,
+    meta: {
+      title: `${search.heading} — ${pageContent.name}`,
+      description: search.intro,
+    },
+  }}
+  alternateHref="/fa/search/"
+>
+  <section class="search-page" data-pagefind-ignore>
+    <h1>{search.heading}</h1>
+    <p class="search-intro">{search.intro}</p>
+    <noscript>
+      <p class="search-noscript">{search.noscript}</p>
+      <ul class="search-browse">
+        <li><a href={`/${locale}/blog/`}>{pageContent.blog.heading}</a></li>
+        <li>
+          <a href={`/${locale}/research/`}>{pageContent.research.heading}</a>
+        </li>
+        <li>
+          <a href={`/${locale}/projects/`}>{pageContent.projects.heading}</a>
+        </li>
+      </ul>
+    </noscript>
+    <div id="pagefind-search" class="pagefind-host" data-pagefind-ui></div>
+  </section>
+</BaseLayout>
+
+<link href="/en/pagefind/pagefind-ui.css" rel="stylesheet" />
+<script is:inline type="module">
+  const host = document.getElementById("pagefind-search");
+  if (host) {
+    import("/en/pagefind/pagefind-ui.js")
+      .then(({ PagefindUI }) => {
+        new PagefindUI({
+          element: "#pagefind-search",
+          showImages: false,
+          showSubResults: true,
+          translations: {
+            placeholder: "Search published pages",
+            clear_search: "Clear",
+            load_more: "Load more",
+            search_label: "Search this site",
+            filters_label: "Filters",
+            zero_results: "No results for [SEARCH_TERM]",
+            many_results: "[COUNT] results for [SEARCH_TERM]",
+            one_result: "[COUNT] result for [SEARCH_TERM]",
+          },
+        });
+      })
+      .catch(() => {
+        host.textContent =
+          "Search index is unavailable. Browse blog, research, or projects from the navigation.";
+      });
+  }
+</script>
+
+<style>
+  .search-page {
+    max-width: 48rem;
+    margin-inline: auto;
+    padding: 2rem clamp(1rem, 5vw, 2.5rem) 4rem;
+  }
+  .search-intro,
+  .search-noscript {
+    color: var(--color-ink-secondary);
+    margin-block: 0.75rem 1.5rem;
+  }
+  .search-browse {
+    margin: 0 0 1.5rem;
+    padding-inline-start: 1.25rem;
+  }
+  .pagefind-host {
+    min-height: 3rem;
+  }
+</style>

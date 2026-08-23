@@ -24,3 +24,5 @@ PASSWORD_HASHERS = [
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 REBUILD_TRIGGER_ENABLED = False
 REBUILD_TRIGGER_SECRET = ""
+# Enable bulk archive for Playwright ADM QA matrix (DEFER-0032).
+FEATURE_ADMIN_BULK_ARCHIVE = True

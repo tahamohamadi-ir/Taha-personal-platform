@@ -1,8 +1,11 @@
-# Playwright content lifecycle (DEFER-0026)
+# Playwright content lifecycle + ADM QA matrix
 
-Browser create → publish → public `fa`/`en` JSON against a disposable CMS.
-Complements `apps/cms/tests/test_content_lifecycle_e2e.py` (pytest JSON); does
-not replace it.
+Browser suites against a disposable CMS:
+
+- `content-lifecycle.spec.ts` — create → publish → public `fa`/`en` JSON (`DEFER-0026` CLOSED)
+- `admin-qa-matrix.spec.ts` — RTL/keyboard/noindex/LTR slug/bulk archive (`DEFER-0032` PARTIAL)
+
+Manual remainder: `docs/plan/manual-test-checklists/adm-qa-s6.md`.
 
 ## Prerequisites
 
@@ -23,6 +26,9 @@ npx playwright install chromium
 # 3) Run suite (starts migrate + seed + runserver via webServer)
 npm run test:e2e
 ```
+
+E2E settings enable `FEATURE_ADMIN_BULK_ARCHIVE` for the bulk archive UI/spec.
+Production must keep that flag **off** unless the owner enables it.
 
 Fixture login (not production secrets):
 

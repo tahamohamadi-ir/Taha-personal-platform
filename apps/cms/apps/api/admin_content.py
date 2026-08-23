@@ -25,6 +25,7 @@ from apps.api.admin_common import (
     _parse_positive_int,
     _require_admin_otp,
 )
+from apps.content.feature_flags import is_feature_enabled
 from apps.content.models import (
     Article,
     Book,
@@ -41,6 +42,11 @@ from apps.content.models import (
 )
 from apps.content.preview_token import build_preview_share_path, preview_ttl_seconds
 from apps.content.revisions import create_revision, restore_revision_as_draft
+from apps.content.services.lifecycle import (
+    LifecycleError,
+    bulk_archive_items,
+    transition_item,
+)
 from apps.rebuild.services import invoke_static_rebuild
 from apps.security.models import AuditLog
 
@@ -69,16 +75,12 @@ PREVIEW_SHARE_ENTITIES = {
 VALID_LOCALES = ("fa", "en")
 VALID_STATUSES = ("draft", "review", "scheduled", "published", "archived")
 
-# Allowed lifecycle transitions per current status (ADM-4 / DEBT-0005).
-ALLOWED_TRANSITIONS = {
-    "draft": {"review", "scheduled", "published", "archived"},
-    "review": {"draft", "scheduled", "published", "archived"},
-    "scheduled": {"draft", "published", "archived"},
-    "published": {"archived"},
-    "archived": {"draft"},
-}
-
 TRANSITION_REASON_MAX = 500
+
+
+def _lifecycle_admin_error(exc: LifecycleError) -> AdminError:
+    status = 409 if exc.code == "DUPLICATE" else 400
+    return AdminError(status, exc.code, exc.message)
 
 # Sentinel returned by _coerce_field_value for blank numeric fields so the
 # caller leaves the field unchanged instead of failing on an empty string.
@@ -530,6 +532,21 @@ class ContentTransitionIn(Schema):
     scheduledFor: datetime | None = None
 
 
+class ContentBulkArchiveIn(Schema):
+    """Bulk archive request (feature-flagged; Wave 5 / DEFER-0032)."""
+
+    ids: list[int]
+    reason: str | None = None
+
+
+class ContentBulkArchiveOut(Schema):
+    """Bulk archive result with archived count for confirm UX."""
+
+    archived: int
+    skipped: int
+    ids: list[int]
+
+
 class ContentRevisionCreateIn(Schema):
     """Optional note when creating an immutable snapshot."""
 
@@ -587,32 +604,6 @@ def _revision_out(rev: ContentRevision, *, include_snapshot: bool = False) -> Co
         createdById=rev.created_by_id,
         snapshot=rev.snapshot if include_snapshot else None,
     )
-
-
-def _apply_lifecycle_side_effects(item, *, new_status: str, scheduled_for: datetime | None) -> None:
-    """Set published_at / scheduled_for consistent with the target status."""
-    if new_status == "scheduled":
-        if scheduled_for is None:
-            raise AdminError(
-                400,
-                "VALIDATION",
-                "scheduledFor is required when transitioning to scheduled.",
-            )
-        if timezone.is_naive(scheduled_for):
-            scheduled_for = timezone.make_aware(
-                scheduled_for, timezone.get_current_timezone()
-            )
-        if scheduled_for <= timezone.now():
-            raise AdminError(
-                400,
-                "VALIDATION",
-                "scheduledFor must be in the future.",
-            )
-        item.scheduled_for = scheduled_for
-    else:
-        item.scheduled_for = None
-    if new_status == "published" and item.published_at is None:
-        item.published_at = timezone.now()
 
 
 @content_router.get("/schema", response=ContentSchemaOut, summary="Writable-field metadata.")
@@ -688,6 +679,40 @@ def content_list(
         pageSize=page_size,
         total=total,
     )
+
+
+@content_router.post(
+    "/{entity}/bulk-archive",
+    response=ContentBulkArchiveOut,
+    summary="Bulk-archive content rows (feature-flagged).",
+)
+def content_bulk_archive(request, entity: str, payload: ContentBulkArchiveIn):
+    """Archive many rows when ``FEATURE_ADMIN_BULK_ARCHIVE`` is on (default off)."""
+    _require_admin_otp(request)
+    _check_csrf(request)
+    if not is_feature_enabled("admin_bulk_archive"):
+        raise AdminError(
+            404,
+            "FEATURE_DISABLED",
+            "Bulk archive is disabled (FEATURE_ADMIN_BULK_ARCHIVE).",
+        )
+    model = ENTITY_MODELS.get(entity)
+    if model is None:
+        raise AdminError(404, "NOT_FOUND", "Unknown content entity.")
+    reason = (payload.reason or "").strip()[:TRANSITION_REASON_MAX]
+    try:
+        with transaction.atomic():
+            result = bulk_archive_items(
+                model,
+                entity=entity,
+                ids=list(payload.ids or []),
+                reason=reason,
+                user=request.user,
+                ip=_client_ip(request),
+            )
+    except LifecycleError as exc:
+        raise _lifecycle_admin_error(exc) from None
+    return ContentBulkArchiveOut(**result)
 
 
 @content_router.get(
@@ -859,36 +884,18 @@ def content_transition(request, entity: str, id: int, payload: ContentTransition
             # validate against the same stale status; audit is written in the
             # same transaction as the status change.
             item = model.objects.select_for_update().get(pk=id)
-            old_status = item.status
-            if payload.to not in ALLOWED_TRANSITIONS.get(old_status, set()):
-                raise AdminError(
-                    400,
-                    "VALIDATION",
-                    f"Invalid transition from {old_status} to {payload.to}.",
-                )
-            _apply_lifecycle_side_effects(
-                item,
-                new_status=payload.to,
-                scheduled_for=payload.scheduledFor,
-            )
-            item.status = payload.to
             try:
-                item.save()
-            except IntegrityError:
-                raise AdminError(
-                    409, "DUPLICATE", "A record with this locale and slug already exists."
-                ) from None
-            detail = f"reason={reason}"
-            if payload.to == "scheduled" and item.scheduled_for is not None:
-                detail = f"{detail}; scheduledFor={item.scheduled_for.isoformat()}"
-            AuditLog.objects.create(
-                user=request.user,
-                action=f"lifecycle.{old_status}->{payload.to}",
-                model_name=entity,
-                object_id=str(id),
-                ip=_client_ip(request),
-                detail=detail,
-            )
+                transition_item(
+                    item,
+                    entity=entity,
+                    to_status=payload.to,
+                    reason=reason,
+                    scheduled_for=payload.scheduledFor,
+                    user=request.user,
+                    ip=_client_ip(request),
+                )
+            except LifecycleError as exc:
+                raise _lifecycle_admin_error(exc) from None
     except model.DoesNotExist:
         raise AdminError(404, "NOT_FOUND", "Content not found.") from None
     if payload.to == "published":
