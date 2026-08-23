@@ -112,6 +112,15 @@ jobs:
             exit 1
           fi
 
+      - name: Pagefind index verification (per-locale, count, drafts excluded)
+        run: node qa/pagefind.spec.mjs
+
+      - name: Sitemap verification (static + dynamic entries, no draft/admin)
+        run: node qa/sitemap.spec.mjs
+
+      - name: Health artifact verification (static vs CMS distinction)
+        run: node qa/health.spec.mjs
+
       - name: Upload static artifact
         uses: actions/upload-artifact@v7.0.1
         with:
