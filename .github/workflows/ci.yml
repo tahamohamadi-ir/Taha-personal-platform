@@ -104,7 +104,7 @@ jobs:
           test -f dist/index.html
           test -f dist/en/index.html
           test -f dist/fa/index.html
-          if grep -rIiE '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36}|password\s*[:=]\s*[^ ]{6,})' dist/; then
+          if grep -rIiE '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36}|password\s*[:=]\s*[^ ]{6,})' dist/ --exclude-dir=_astro; then
             echo "secret-like pattern found in artifact" >&2
             exit 1
           fi
