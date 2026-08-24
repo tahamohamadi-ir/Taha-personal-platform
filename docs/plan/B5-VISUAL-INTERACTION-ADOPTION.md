@@ -1,10 +1,12 @@
 # B5 — Visual-interaction adoption brief
 
-> Status: **partially authorized** — ADR-0028 accepts the research relationship
-> graph island (`motion` + SVG on `/{locale}/research/`). Candidates 1–3 below
-> remain proposals only.
+> Status: **AUTHORIZED (2026-08-23, ADR-0030)** — owner in-session attestation
+> accepts `motion`, `gsap` (license), `d3`, and `three` (with explicit
+> ≤150KB-gzip lazy budget for the single 3D signature experience). Candidates
+> 1–3 below are now authorized; Candidate 5 (3D identity constellation) is
+> added. Every interaction still follows the gate + checklist + QA plan below.
 > Grounds: `docs/design.md` §64–§71, §73–§84, §93–§95, §98, §102;
-> `ADR-0028`; `DEFER-0012`; Task `P0B-04`; S-Plan task B5.
+> `ADR-0028`; **`ADR-0030`**; `DEFER-0012`; Task `P0B-04`; S-Plan task B5.
 
 ## Goal & gate
 
@@ -170,9 +172,11 @@ Any adopted interaction is verified with evidence recorded in its Task Spec and
 
 ## Explicit non-goal
 
-- Do NOT import `gsap` or `three` anywhere in the public site without a new ADR
-  (license acceptance and/or explicit gzip budget raise). `motion` may be
-  imported only on authorized routes (currently research graph per ADR-0028).
+- ~~Do NOT import `gsap` or `three` anywhere in the public site without a new ADR~~
+  **SUPERSEDED by ADR-0030 (2026-08-23):** gsap (license accepted by owner), d3,
+  and three (≤150KB lazy budget, single signature experience) are authorized.
+  `motion` remains the default for functional micro-interactions.
 - Do NOT copy Beautiful UI code outside an approved slice with registered
   source and project-owned tokens (`DEFER-0012`; design.md §98).
-- Candidates 1–3 remain unimplemented until separately authorized.
+- ~~Candidates 1–3 remain unimplemented until separately authorized~~ —
+  authorized via ADR-0030; implement with per-interaction QA evidence.
