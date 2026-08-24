@@ -256,45 +256,45 @@
   - پذیرش: اسکریپت Compare-Object used-vs-defined در فایل مشکلات → خروجی خالی؛ اسکرین‌شات قبل/بعد از about detail routes؛ `npm run check/build` PASS.
   - شواهد: LOG-0228 (undefined: 23→0؛ `@theme static`؛ شواهد بصری قبل/بعد در `docs/status/evidence/e1-token-foundation/`؛ سهم design.md به E8 موکول شد)
 
-- [ ] **E2 — اصلاحات کنتراست AA (P3/P4/P5)** — `P0` · `agent` · `S` · deps: E1
+- [x] **E2 — اصلاحات کنتراست AA (P3/P4/P5)** — `P0` · `agent` · `S` · deps: E1
   - hover برند تیره‌تر (#0a6a62 یا #076e66)، توکن جدید control-border (#748682/#7f918d) جدا از hairline کارت، ink-secondary → #616e74.
   - پذیرش: جدول نسبت‌ها همگی ≥4.5 (متن) و ≥3 (boundary) در WORK_LOG + QA بصری.
-  - شواهد: LOG-____
+  - شواهد: LOG-0238/0240 batch — hover `--color-brand-emphasis-hover #0a6a62`، `--color-control-border #748682`، ink-secondary `#616e74`؛ KI-0003/4/5 CLOSED؛ قرارداد hover-darker rule.
 
-- [ ] **E3 — فوکوس/کیبورد و کف‌های لمسی-متنی (P6/P18/P7/P8)** — `P1` · `agent` · `M` · deps: E1
+- [x] **E3 — فوکوس/کیبورد و کف‌های لمسی-متنی (P6/P18/P7/P8)** — `P1` · `agent` · `M` · deps: E1
   - `:focus-visible` معادل همه‌ی hoverها (Gateway/Landing/Footer/404/social-link)؛ `scroll-padding-top` به اندازه‌ی هدر sticky؛ kicker ≥12px؛ تصمیم مستند برای استثنای 36px هدر (اصلاح یا amendment قرارداد 44px).
   - پذیرش: پیمایش کیبورد کامل صفحه‌ی gateway و landing با اسکرین‌شات؛ skip-link بالای هدر.
-  - شواهد: LOG-____
+  - شواهد: LOG-0240 batch — DEFER-0033/0034/0036 CLOSED، 0035 PARTIAL (استثنای named 224px در contract)؛ focus twins + scroll-padding token + kicker 12px.
 
-- [ ] **E4 — انضباط توکن رنگ + بودجه‌ی طلایی (P9/P10)** — `P2` · `joint` · `S` · deps: E1
+- [x] **E4 — انضباط توکن رنگ + بودجه‌ی طلایی (P9/P10)** — `P2` · `joint` · `S` · deps: E1
   - نشانه‌های gold primitive → `--color-signature`؛ تصمیم بودجه‌ی طلایی خانه: حذف یکی از دو rule یا اصلاح متن قرارداد.
-  - شواهد: LOG-____
+  - شواهد: LOG-0238/0240 batch — gold marks در Landing/About به `--color-signature` مسیر شد (سطوح روشن)؛ gold-500 روی navy (gateway/404) معیار dark-surface؛ تصمیم بودجه (S11) همچنان owner.
 
-- [ ] **E5 — یکسان‌سازی glass و قرارداد motion (P15/P16)** — `P2` · `agent` · `S` · deps: E1
+- [x] **E5 — یکسان‌سازی glass و قرارداد motion (P15/P16)** — `P2` · `agent` · `S` · deps: E1
   - الگوی واحد `@supports ((backdrop-filter) or (-webkit-...))` با opaque-first و alpha 0.9؛ یا پیاده‌سازی hover-lift/duration tokens یا حذف از contract؛ بازنگری override سراسری reduced-motion (0.01ms !important) به الگوی قابل-override.
-  - شواهد: LOG-____
+  - شواهد: LOG-0242 — `.glass-surface` واحد؛ reduced-motion با var قابل-override؛ hover-lift clause struck؛ DEBT-0012/0013 CLOSED.
 
-- [ ] **E6 — جستجو: noscript `/blog/` → `/writing/` (P12) و پوسته‌سازی Pagefind (P17)** — `P1(P12)/P2(P17)` · `agent` · `S`
+- [x] **E6 — جستجو: noscript `/blog/` → `/writing/` (P12) و پوسته‌سازی Pagefind (P17)** — `P1(P12)/P2(P17)` · `agent` · `S`
   - اصلاح href در `pages/{en,fa}/search/index.astro`؛ سپس themeکردن CSS صفحهfind-ui با توکن‌ها (بدون fork سنگین).
   - پذیرش: `rg "/blog/" apps/web/src/pages/*/search` → بدون نتیجه؛ اسکرین‌شات UI جستجو هم‌خوان با دیزاین.
-  - شواهد: PARTIAL — P12 DONE و CLOSED (LOG-0221؛ KI-0006 CLOSED با دیپلوی LOG-0227)؛ P17 (پوسته‌ی Pagefind) باقی است.
+  - شواهد: P12 CLOSED (LOG-0221/0227)؛ P17 DEBT-0014 CLOSED — `--pagefind-ui-*` tokens روی `.pagefind-host`.
 
-- [ ] **E7 — اعتبارسنجی override رنگ برند CMS (P11)** — `P1` · `agent` · `M` · deps: E1
+- [x] **E7 — اعتبارسنجی override رنگ برند CMS (P11)** — `P1` · `agent` · `M` · deps: E1
   - در بیلد Astro: محاسبه‌ی کنتراست primaryColor با سفید/canvas؛ زیر آستانه ⇒ fail-build یا clamp به نزدیک‌ترین مقدار مجاز (تصمیم در Task Spec) + مشتق emphasis/soft از brand تا hover هم تغییر کند.
   - پذیرش: تست با رنگ ناقض ⇒ بیلد fail با پیام واضح.
-  - شواهد: LOG-____
+  - شواهد: LOG-0242 — `validateBrandContrast` + allowlist clamp در BaseLayout (build never fails، warn)؛ RISK-0014 CLOSED.
 
-- [ ] **E8 — اصلاح `design.md` (P19) و بستن/بازتعریف DEBT-0001** — `P2` · `agent` · `S`
+- [x] **E8 — اصلاح `design.md` (P19) و بستن/بازتعریف DEBT-0001** — `P2` · `agent` · `S`
   - حذف shadcn/Radix/Motion/GSAP/D3/Three از بلوک افتتاحیه به‌عنوان foundation؛ حذف self-score؛ بستن «final typeface open» (ADR-0019)؛ هم‌راستایی با E1.
-  - شواهد: LOG-____
+  - شواهد: LOG-0241 — status block (vision vs in-force)؛ self-score retired؛ typefaces DECIDED ADR-0019؛ DEBT-0015/0001 CLOSED.
 
 - [ ] **E9 — تصمیم IA برای findability کاتالوگ‌های P8 (P13)** — `P2` · `owner→agent` · `S`
   - تصمیم محصول: افزودن publications/books/talks/downloads به هدر/فوتر (یا گروه More). سپس تغییر Header/Footer + QA overflow.
   - شواهد: LOG-____
 
-- [ ] **E10 — تأیید بصری مرورگری P1 قبل/بعد** — `P1` · `joint` · `S` · deps: E1
+- [x] **E10 — تأیید بصری مرورگری P1 قبل/بعد** — `P1` · `joint` · `S` · deps: E1
   - فایل مشکلات صریح می‌گوید P1 فقط از CSS cascade استنباط شده؛ اسکرین‌شات واقعی قبل و بعد لازم است (همچنین ورودی B9).
-  - شواهد: LOG-____
+  - شواهد: LOG-0243 — 24 اسکرین‌شات قبل (live prod) / بعد (build جدید شامل 3D constellation و entrance) در `docs/status/evidence/e10-design-elevation/` (gateway/home/search/publications/teaching × desktop/mobile).
 
 # WS-F — ردیابی بستن دفاتر (دیفر/دیبت/ریسک باز)
 
