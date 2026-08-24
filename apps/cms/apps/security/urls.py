@@ -1,4 +1,4 @@
-"""Non-Wagtail staff security URLs (HTML MFA fallback + Django login)."""
+"""Staff security URLs (HTML MFA fallback + Django login)."""
 
 from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path

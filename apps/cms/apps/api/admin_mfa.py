@@ -2,7 +2,7 @@
 
 Primary enrollment path for staff is the React Security page (``/admin/security``)
 backed by these endpoints. Django HTML fallback lives under
-``/staff/account/two-factor/`` (no Wagtail).
+``/staff/account/two-factor/``.
 """
 
 from __future__ import annotations

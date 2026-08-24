@@ -91,7 +91,7 @@ tahamohamadi.ir {
 		}
 	}
 
-	# Django staff HTML after Wagtail removal (DEBT-0003 CLOSED / PR #69).
+	# Django staff HTML (DEBT-0003 CLOSED / PR #69).
 	# `/admin/*` does not match `/staff/*` — both must be proxied.
 	redir /staff /staff/ 308
 

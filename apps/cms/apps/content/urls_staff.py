@@ -1,4 +1,4 @@
-"""Staff-only Django URLs previously registered via Wagtail admin hooks."""
+"""Staff-only Django URLs (HTML profile pages + MFA fallback)."""
 
 from django.shortcuts import redirect
 from django.urls import path
