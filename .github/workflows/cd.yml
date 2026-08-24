@@ -233,6 +233,9 @@ jobs:
   # ADR-0027 Slice 2 / RISK-0012: CMS migrate is NOT on every push by default.
   # Owner-attended: Actions → CD → Run workflow → migrate_cms = true (after CMS image exists).
   # Later unattended: set repository variable CMS_CD_AUTO_MIGRATE=true (fails if image missing).
+  # The three gated jobs below run SEQUENTIALLY (needs chain + !cancelled()) — they all
+  # git operate on the same VPS working tree (/home/deploy/cms-repo); parallel runs raced
+  # FETCH_HEAD and failed with "Cannot fast-forward to multiple branches" (LOG-0245).
   cms-migrate:
     name: CMS image migrate (gated)
     needs: deploy
@@ -285,13 +288,14 @@ jobs:
 
   # ADR-0027 Slice 1+: web container rebuild is NOT on every push.
   # Owner-attended: Actions → CD → Run workflow → rebuild_web = true.
+  # Sequential after cms-migrate (same VPS working tree; see chain note above).
   rebuild-web:
     name: Web container rebuild (gated)
-    needs: deploy
+    needs: [deploy, cms-migrate]
     runs-on: ubuntu-latest
     environment: production
     if: >
-      github.event_name == 'workflow_dispatch' && inputs.rebuild_web == true
+      !cancelled() && github.event_name == 'workflow_dispatch' && inputs.rebuild_web == true
     steps:
       - name: Pull repo + rebuild-web.sh + smoke
         env:
@@ -317,13 +321,18 @@ jobs:
 
   # OWNER_CUTOVER step 6: scheduled-publish timer is NOT on every push.
   # Owner-attended: Actions → CD → Run workflow → install_scheduled_timer = true.
+  # NOTE: requires a ONE-TIME owner sudoers entry on the VPS (Infra#9) — the
+  # deploy user's NOPASSWD list does not cover install-scheduled-publish-timer.
+  # Owner one-time: cd /home/deploy/cms-repo && git pull --ff-only origin main
+  #   && sudo bash infra/deploy/install-scheduled-publish-timer-sudo.sh
+  # Sequential after rebuild-web (same VPS working tree; see chain note above).
   install-scheduled-timer:
     name: Scheduled publish timer install (gated)
-    needs: deploy
+    needs: [deploy, cms-migrate, rebuild-web]
     runs-on: ubuntu-latest
     environment: production
     if: >
-      github.event_name == 'workflow_dispatch' && inputs.install_scheduled_timer == true
+      !cancelled() && github.event_name == 'workflow_dispatch' && inputs.install_scheduled_timer == true
     steps:
       - name: Pull repo + install timer + verify
         env:
