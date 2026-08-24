@@ -1,0 +1,56 @@
+---
+interface Props {
+  title: string;
+  meta?: string[];
+}
+const { title, meta } = Astro.props;
+---
+
+<article class="detail">
+  <header class="detail__head">
+    <h1>{title}</h1>
+    {meta && meta.length > 0 && (
+      <p class="meta-row">
+        {meta.filter(Boolean).map((m) => <span>{m}</span>)}
+      </p>
+    )}
+  </header>
+  <div class="detail__body prose">
+    <slot name="body" />
+  </div>
+  <footer class="detail__related">
+    <slot name="related" />
+  </footer>
+</article>
+
+<style>
+  .detail {
+    max-width: var(--measure-prose, 66ch);
+    margin-inline: auto;
+    padding: var(--space-8, 4rem) clamp(1rem, 5vw, 2.5rem);
+    display: grid;
+    gap: var(--space-6, 2rem);
+  }
+  .detail__head {
+    display: grid;
+    gap: var(--space-3, 0.75rem);
+  }
+  .detail__head h1 {
+    margin: 0;
+    color: var(--ink-hi, #f2f6fa);
+    font-size: clamp(1.875rem, 1.4rem + 1.6vw, 2.75rem);
+    font-weight: 700;
+    line-height: 1.25;
+  }
+  [dir='rtl'] .detail__head h1 { letter-spacing: 0; }
+  .detail__body {
+    background: var(--surface-read, #101f3c);
+    border: 1px solid var(--glass-edge, rgba(255, 255, 255, 0.16));
+    border-radius: var(--radius-lg, 16px);
+    padding: clamp(1.25rem, 4vw, 2.5rem);
+  }
+  .detail__related {
+    display: grid;
+    gap: var(--space-3, 0.75rem);
+  }
+</style>
