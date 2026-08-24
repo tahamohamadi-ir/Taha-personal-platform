@@ -122,10 +122,10 @@ const effectiveOrigin = cmsBuildOrigin ?? (isCms ? "cms" : "snapshot");
       ))
     }
   </head>
-  <body class="flex min-h-screen flex-col">
+  <body class="site-shell">
     <a class="skip-link" href="#main">{content.skip}</a>
     <Header content={content} alternateHref={alternateHref} />
-    <main id="main" class="site-main">
+    <main id="main" class="flex-1">
       <slot />
     </main>
     <Footer content={content} alternateHref={alternateHref} />
