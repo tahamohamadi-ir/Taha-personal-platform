@@ -1,5 +1,10 @@
 # DESIGN SYSTEM — Taha Mohammadi Personal Platform
 
+> **Status (2026-08-23):** This file is the DESIGN VISION reference. The BINDING rules are `docs/contracts/DESIGN-CONTRACT.md` + `docs/contracts/IA-CONTRACT.md` + `apps/web/src/styles/global.css` tokens.
+> **In force today:** Astro static-first, CSS/Tailwind + global.css tokens, motion per ADR-0030 (motion/GSAP/D3/Three authorized with fallbacks), fonts Inter+Vazirmatn (ADR-0019 — DECIDED, not open), no dark theme (light-only), mascot assets not shipped, no command palette.
+> **Not yet built (vision):** mascot system, Journey section, command palette, dark theme, portrait.
+> **Self-score §2.1 is RETIRED** — unscored until a visual QA pass against the contract checklist.
+
 ## `design.md` — Visual, Interaction & Experience Baseline v1.0
 
 > **Status:** Freeze Candidate  
@@ -7,7 +12,7 @@
 > **Product:** Personal Research, Professional & Knowledge Platform  
 > **Primary public locales:** Persian (`fa`) and English (`en`)  
 > **Frontend architecture:** Astro + TypeScript + React Islands  
-> **UI foundation:** Tailwind CSS + custom design tokens + shadcn/ui + Radix Primitives  
+> **UI foundation:** Tailwind CSS + custom design tokens + shadcn/ui + Radix Primitives (admin-only today; public site uses CSS/Tailwind tokens — see status block)  
 > **Motion/visualization:** Motion + selective GSAP + selective D3 + very selective Three.js / React Three Fiber  
 > **Design direction:** **Editorial-Tech Premium with Human Character**  
 > **Core visual identity:** Deep Navy + Turquoise + Refined Gold  
@@ -106,22 +111,7 @@ The design system is evaluated with this weighted rubric.
 
 ## 2.1 Final self-assessment
 
-| Dimension | Score |
-|---|---:|
-| Brand coherence | 0.99 / 1.0 |
-| Bilingual / RTL | 0.99 / 1.0 |
-| Accessibility | 0.98 / 1.0 |
-| Token/system completeness | 0.99 / 1.0 |
-| Component architecture | 0.99 / 1.0 |
-| Performance-aware interaction | 0.99 / 1.0 |
-| Logo / mascot integration | 0.78 / 0.8 |
-| Hero / homepage / gateway | 0.79 / 0.8 |
-| Agent implementability | 0.99 / 1.0 |
-| Responsive / visualization | 0.68 / 0.7 |
-| QA / governance | 0.68 / 0.7 |
-| **Total** | **9.84 / 10** |
-
-This is an internal design-system assessment, not a substitute for real usability testing.
+Retired 2026-08-23 — see status block.
 
 ---
 
@@ -3415,8 +3405,8 @@ Minor component additions do not require full version bump if they follow existi
 These decisions remain intentionally open:
 
 1. Final logo geometry.
-2. Final English typeface.
-3. Final Persian typeface.
+2. Final English typeface — DECIDED — ADR-0019 (Inter + Vazirmatn Variable).
+3. Final Persian typeface — DECIDED — ADR-0019 (Inter + Vazirmatn Variable).
 4. Exact Language Gateway background effect.
 5. Exact Hero visual implementation.
 6. Light/dark default strategy after prototypes.

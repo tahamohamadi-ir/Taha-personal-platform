@@ -6,7 +6,13 @@ import type { LocaleContent } from "../data/content";
 import { site } from "../data/site";
 import type { JsonLdBlock } from "../data/structured";
 import { websiteJsonLd, personJsonLd, validateStructuredData, jsonLdScriptContent } from "../data/structured";
-import { getPrimaryColorOverride, getSiteSeoDefaults } from "../lib/cms/siteSettings";
+import {
+  getPrimaryColorOverride,
+  getSiteSeoDefaults,
+  validateBrandContrast,
+  ALLOWED_BRAND_COLORS,
+  FALLBACK_PRIMARY_COLOR,
+} from "../lib/cms/siteSettings";
 import { isCmsOriginBuild } from "../lib/cms/client";
 
 interface Props {
@@ -39,9 +45,26 @@ const rssHref = new URL(`/${content.lang}/writing/rss.xml`, site.url).href;
 const canonical = new URL(Astro.url.pathname, site.url).href;
 const altLang = content.lang === "fa" ? "en" : "fa";
 validateStructuredData(...structured);
-const primaryColor = await getPrimaryColorOverride();
 const seoDefaults = await getSiteSeoDefaults();
 const isCms = isCmsOriginBuild();
+// E7/RISK-0014: an owner-chosen primaryColor that fails WCAG AA (white on the
+// fill, or brand vs canvas, worst case < 4.5:1) is clamped to the first
+// allowlisted turquoise that passes — never a build failure.
+const requestedPrimaryColor = await getPrimaryColorOverride();
+let primaryColor: string | null = null;
+if (requestedPrimaryColor && isCms) {
+  const verdict = validateBrandContrast(requestedPrimaryColor);
+  if (verdict.ok) {
+    primaryColor = requestedPrimaryColor;
+  } else {
+    primaryColor =
+      ALLOWED_BRAND_COLORS.find((candidate) => validateBrandContrast(candidate).ok) ??
+      FALLBACK_PRIMARY_COLOR;
+    console.warn(
+      `[cms] primaryColor ${requestedPrimaryColor} fails WCAG AA contrast (${verdict.ratio.toFixed(2)}:1); clamped to ${primaryColor}`,
+    );
+  }
+}
 const effectiveTitle =
   title !== content.meta.title || !isCms || !seoDefaults.title ? title : seoDefaults.title;
 const effectiveDescription =

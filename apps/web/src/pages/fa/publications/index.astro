@@ -1,6 +1,6 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
-import Breadcrumbs from "../../../components/blog/Breadcrumbs.astro";
+import Breadcrumbs from "../../../components/Breadcrumbs.astro";
 import { content } from "../../../data/content";
 import { isCmsOriginBuild } from "../../../lib/cms/client";
 import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../data/structured";
@@ -50,7 +50,10 @@ validateStructuredData(...structured);
     <p class="lead">{catalog.publicationsIntro}</p>
     {
       publications.length === 0 ? (
-        <p class="empty">{catalog.publicationsEmpty}</p>
+        <div class="empty-state">
+          <p>{catalog.publicationsEmpty}</p>
+          <p>{catalog.emptyNextAction}</p>
+        </div>
       ) : (
         <ul class="catalog-list">
           {publications.map((pub) => (
@@ -82,8 +85,7 @@ validateStructuredData(...structured);
     margin: 0 0 0.5rem;
   }
   .lead,
-  .meta,
-  .empty {
+  .meta {
     color: var(--color-ink-muted);
   }
   .catalog-list {

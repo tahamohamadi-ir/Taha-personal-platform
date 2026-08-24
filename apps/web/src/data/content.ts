@@ -156,6 +156,7 @@ export interface LocaleContent {
     downloadsHeading: string;
     downloadsIntro: string;
     downloadsEmpty: string;
+    emptyNextAction: string;
     missingTranslation: string;
     citationLabel: string;
     citationUnavailable: string;
@@ -429,6 +430,8 @@ export const content: Record<LocaleCode, LocaleContent> = {
       downloadsIntro:
         "Catalog files released for public download. Restricted or inactive files are omitted.",
       downloadsEmpty: "No published downloads are available in this build.",
+      emptyNextAction:
+        "In the meantime, current output and background live in Research and About.",
       missingTranslation: "This page is not yet translated into Persian.",
       citationLabel: "Citation",
       citationUnavailable: "A citation export is not available for this item.",
@@ -706,6 +709,8 @@ export const content: Record<LocaleCode, LocaleContent> = {
       downloadsIntro:
         "فایل‌های کاتالوگ آزاد برای دانلود عمومی. فایل‌های محدود یا غیرفعال نمایش داده نمی‌شوند.",
       downloadsEmpty: "در این ساخت، دانلود منتشرشده‌ای موجود نیست.",
+      emptyNextAction:
+        "در این میان، خروجی و پیشینهٔ فعلی در بخش پژوهش و درباره است.",
       missingTranslation: "این صفحه هنوز به انگلیسی ترجمه نشده است.",
       citationLabel: "استناد",
       citationUnavailable: "خروجی استناد برای این مورد در دسترس نیست.",

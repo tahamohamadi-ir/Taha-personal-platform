@@ -91,7 +91,7 @@ const canonical = new URL("/", site.url).href;
       </g>
     </svg>
     <main class="gateway-stage" id="main">
-      <div class="gateway-panel">
+      <div class="gateway-panel glass-surface glass-surface--dark">
         <img
           class="gateway-mark"
           src={logoGateway.src}
@@ -172,6 +172,9 @@ const canonical = new URL("/", site.url).href;
     min-width: 0;
   }
 
+  /* Glass background/border/shadow/blur come from the shared
+     .glass-surface--dark utility (global.css, DEBT-0012); navy-900 is its
+     opaque fallback when backdrop-filter is unsupported. */
   .gateway-panel {
     display: flex;
     flex-direction: column;
@@ -183,19 +186,8 @@ const canonical = new URL("/", site.url).href;
     min-width: 0;
     margin-block: auto;
     position: relative;
-    background-color: var(--glass-bg-dark);
-    border: 1px solid var(--glass-border-dark);
     border-radius: var(--radius-lg);
     padding: clamp(2rem, 7vw, 3.5rem) clamp(1.25rem, 6vw, 2.5rem);
-    box-shadow: var(--glass-shadow-dark);
-    -webkit-backdrop-filter: blur(16px) saturate(120%);
-    backdrop-filter: blur(16px) saturate(120%);
-  }
-
-  @supports not (backdrop-filter: blur(1px)) {
-    .gateway-panel {
-      background-color: var(--color-navy-900);
-    }
   }
 
   .gateway-mark {
@@ -248,7 +240,7 @@ const canonical = new URL("/", site.url).href;
     gap: 0.45rem;
     margin: 0;
     color: var(--color-turquoise-500);
-    font-size: 0.7rem;
+    font-size: var(--text-xs);
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -302,7 +294,8 @@ const canonical = new URL("/", site.url).href;
       color 140ms cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
-  .gateway-action:hover {
+  .gateway-action:hover,
+  .gateway-action:focus-visible {
     color: var(--color-navy-950);
   }
 
@@ -311,7 +304,8 @@ const canonical = new URL("/", site.url).href;
     border-color: var(--color-turquoise-500);
   }
 
-  .gateway-action--en:hover {
+  .gateway-action--en:hover,
+  .gateway-action--en:focus-visible {
     background-color: var(--color-turquoise-500);
   }
 
@@ -320,7 +314,8 @@ const canonical = new URL("/", site.url).href;
     border-color: var(--color-gold-500);
   }
 
-  .gateway-action--fa:hover {
+  .gateway-action--fa:hover,
+  .gateway-action--fa:focus-visible {
     background-color: var(--color-gold-500);
   }
 

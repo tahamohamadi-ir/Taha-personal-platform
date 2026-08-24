@@ -38,6 +38,37 @@ export interface PublicSiteSettingsDto {
 /** Default primary color when CMS_API_BASE is unset (offline builds). */
 export const FALLBACK_PRIMARY_COLOR = "#087c73";
 
+/**
+ * E7/RISK-0014 allowlist consulted when a CMS primaryColor fails WCAG AA.
+ * Ordered by preference; the first entry that passes validateBrandContrast wins.
+ */
+export const ALLOWED_BRAND_COLORS = ["#087c73", "#0d9689", "#0a6a62", "#16b8a6"] as const;
+
+const CANVAS_COLOR = "#f7f8f5";
+
+function relativeLuminance(hex: string): number {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  const lin = (c: number) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+}
+
+/** WCAG contrast ratio between two #RRGGBB colors (order-independent). */
+function contrastRatio(a: string, b: string): number {
+  const la = relativeLuminance(a);
+  const lb = relativeLuminance(b);
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+}
+
+/**
+ * E7/RISK-0014: WCAG AA verdict for a candidate `--color-brand` value.
+ * `ratio` is the worst case against white #ffffff (text on color fills) and
+ * canvas #f7f8f5; ok === ratio >= 4.5. Pure function; never throws.
+ */
+export function validateBrandContrast(hex: string): { ok: boolean; ratio: number } {
+  const ratio = Math.min(contrastRatio(hex, "#ffffff"), contrastRatio(hex, CANVAS_COLOR));
+  return { ok: ratio >= 4.5, ratio };
+}
+
 /** Published site settings. Null when CMS_API_BASE is unset. Outage fails the build. */
 export async function getPublicSiteSettings(): Promise<PublicSiteSettingsDto | null> {
   const result = await cmsFetchJson<PublicSiteSettingsDto>("/api/site");

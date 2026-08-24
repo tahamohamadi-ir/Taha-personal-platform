@@ -82,5 +82,15 @@ const search = pageContent.search;
   }
   .pagefind-host {
     min-height: 3rem;
+    /* E6-P17 / DEBT-0014: Pagefind themed with design-system tokens, no fork */
+    --pagefind-ui-primary: var(--color-brand);
+    --pagefind-ui-text: var(--color-ink);
+    --pagefind-ui-background: var(--color-canvas);
+    --pagefind-ui-border-radius: var(--radius-md);
+    --pagefind-ui-font: inherit;
+  }
+  .pagefind-host .pagefind-ui__search-input {
+    min-height: 44px;
+    font: inherit;
   }
 </style>

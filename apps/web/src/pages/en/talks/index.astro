@@ -1,6 +1,6 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
-import Breadcrumbs from "../../../components/blog/Breadcrumbs.astro";
+import Breadcrumbs from "../../../components/Breadcrumbs.astro";
 import { content } from "../../../data/content";
 import { isCmsOriginBuild } from "../../../lib/cms/client";
 import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../data/structured";
@@ -42,7 +42,10 @@ validateStructuredData(...structured);
     <h1>{catalog.talksHeading}</h1>
     <p class="lead">{catalog.talksIntro}</p>
     {items.length === 0 ? (
-      <p class="empty">{catalog.talksEmpty}</p>
+      <div class="empty-state">
+        <p>{catalog.talksEmpty}</p>
+        <p>{catalog.emptyNextAction}</p>
+      </div>
     ) : (
       <ul class="catalog-list">
         {items.map((item) => (
@@ -58,7 +61,7 @@ validateStructuredData(...structured);
 <style>
   .catalog-page { max-width: 44rem; margin-inline: auto; padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem; }
   .catalog-page h1 { font-family: var(--font-display); font-size: clamp(1.75rem, 4vw, 2.4rem); margin: 0 0 0.5rem; }
-  .lead, .empty { color: var(--color-ink-muted); }
+  .lead { color: var(--color-ink-muted); }
   .catalog-list { list-style: none; padding: 0; margin: 1.5rem 0 0; display: grid; gap: 1rem; }
   .catalog-list a { font-family: var(--font-display); font-size: 1.15rem; }
 </style>

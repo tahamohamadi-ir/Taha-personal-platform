@@ -215,7 +215,8 @@ const types = Array.from(new Set(projects.map((project) => project.project_type)
     color: inherit;
   }
 
-  .project-card:hover {
+  .project-card:hover,
+  .project-card:focus-visible {
     border-color: var(--color-brand);
   }
 
@@ -268,7 +269,8 @@ const types = Array.from(new Set(projects.map((project) => project.project_type)
     flex: none;
   }
 
-  .project-card:hover .project-cta {
+  .project-card:hover .project-cta,
+  .project-card:focus-visible .project-cta {
     background-color: var(--color-brand);
     color: var(--color-navy-950);
   }

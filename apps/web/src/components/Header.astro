@@ -38,7 +38,7 @@ const navItems = [
 ];
 ---
 
-<header class="site-header">
+<header class="site-header glass-surface">
   <div class="site-header-inner">
     <a
       href={homeHref}
@@ -86,20 +86,13 @@ const navItems = [
 </header>
 
 <style>
+  /* Glass background/blur come from the shared .glass-surface utility
+     (global.css, DEBT-0012): solid canvas fallback, near-opaque glass upgrade. */
   .site-header {
     position: sticky;
     top: 0;
     z-index: 30;
-    background-color: var(--color-canvas);
     border-bottom: 1px solid var(--color-border-subtle);
-  }
-
-  @supports (backdrop-filter: blur(10px)) {
-    .site-header {
-      background-color: var(--glass-bg-light);
-      -webkit-backdrop-filter: blur(10px) saturate(120%);
-      backdrop-filter: blur(10px) saturate(120%);
-    }
   }
 
   .site-header-inner {
@@ -221,7 +214,10 @@ const navItems = [
   }
 
   /* Zoom-approximation 160/195 CSS px: logo row + 2×2 link grid so every
-     `.site-header a` stays within the short viewport after scroll. */
+     `.site-header a` stays within the short viewport after scroll.
+     NAMED EXCEPTION (DEFER-0035, documented in DESIGN-CONTRACT.md §3):
+     below 224px CSS width, header links are allowed at 36px min-height
+     (2.25rem) instead of the 44px floor. */
   @media (max-width: 14rem) {
     .site-header-inner {
       display: grid;
