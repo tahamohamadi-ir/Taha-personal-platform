@@ -107,8 +107,19 @@ Header → Hero → Explore by Perspective (live paths only) → Selected Eviden
 → Short About → honest Contact state → Footer
 ```
 
+**Redesign v2 order (ADR-0031, active as phases land):**
+
+```text
+Header → HeroSection (constellation identity) → PerspectiveGrid → FocusStrip
+→ Selected Evidence (only if real) → JourneySection → Highlights + Latest Writing
+→ ContactCTA → Footer
+```
+
 - Omit a section rather than fill it with placeholder content.
 - Every perspective card MUST lead somewhere real or carry no link at all.
+- The v2 order MAY ship section-by-section during the migration; a half-migrated
+  home page must still satisfy the legacy order rules for sections not yet rebuilt.
+- JourneySection and any evidence-backed numbers follow §10; no invented milestones.
 
 ## 10. Evidence rule
 

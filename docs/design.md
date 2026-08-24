@@ -1,8 +1,9 @@
 # DESIGN SYSTEM — Taha Mohammadi Personal Platform
 
-> **Status (2026-08-23):** This file is the DESIGN VISION reference. The BINDING rules are `docs/contracts/DESIGN-CONTRACT.md` + `docs/contracts/IA-CONTRACT.md` + `apps/web/src/styles/global.css` tokens.
-> **In force today:** Astro static-first, CSS/Tailwind + global.css tokens, motion per ADR-0030 (motion/GSAP/D3/Three authorized with fallbacks), fonts Inter+Vazirmatn (ADR-0019 — DECIDED, not open), no dark theme (light-only), mascot assets not shipped, no command palette.
-> **Not yet built (vision):** mascot system, Journey section, command palette, dark theme, portrait.
+> **Status (2026-08-24):** This file is the DESIGN VISION reference. The BINDING rules are `docs/contracts/DESIGN-CONTRACT.md` + `docs/contracts/IA-CONTRACT.md` + `apps/web/src/styles/global.css` tokens.
+> **REDESIGN v2 IN FLIGHT (ADR-0031, 2026-08-24):** the approved direction is the dark-first «Glass Constellation» identity — night canvas site-wide, glass-as-signature surfaces over solid reading panels, aurora/grain ambience, and the M0–M4 motion ladder. Binding execution plan: `reDesign_plan.md` v2 (repo root). The §12–§14 "Solid-first + Selective Glass" philosophy and the light-theme palette tables below are superseded by ADR-0031 + DESIGN-CONTRACT §0 as each migration phase lands; they remain accurate history for not-yet-migrated pages.
+> **In force today:** Astro static-first, CSS/Tailwind + global.css tokens, motion per ADR-0030 ladder (ADR-0031), fonts Inter+Vazirmatn Variable (ADR-0019 — DECIDED), mascot assets not shipped, no command palette, no dual-theme toggle (single night theme is the target state).
+> **Not yet built (vision, unchanged):** mascot system, portrait. **Now scheduled by ADR-0031:** Journey section (M3/GSAP), TopicGraph D3 island, upgraded Three.js hero, dark theme → shipped AS the only theme via phases.
 > **Self-score §2.1 is RETIRED** — unscored until a visual QA pass against the contract checklist.
 
 ## `design.md` — Visual, Interaction & Experience Baseline v1.0

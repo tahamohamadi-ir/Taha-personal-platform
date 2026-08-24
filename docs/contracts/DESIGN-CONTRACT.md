@@ -1,5 +1,12 @@
 # Design contract card — buildable rules
 
+> **v2 (2026-08-24, ADR-0031):** the visual identity is **dark-first «Glass Constellation»**.
+> This card now describes BOTH states during the migration: §0 lists the v2 night tokens
+> that land in Phase 0; the legacy light table in §2 stays valid only until each page
+> migrates. When a page migrates, it consumes ONLY §0 tokens.
+> Source of truth for **visual intent**: `reDesign_plan.md` v2 + `docs/design.md`.
+> Source of truth for **tokens that exist today**: `apps/web/src/styles/global.css`.
+
 Goal:
 You can build a page that matches the product's visual identity without reading
 `docs/design.md` end to end, and without guessing what "editorial" means.
@@ -7,30 +14,77 @@ You can build a page that matches the product's visual identity without reading
 Source of truth for **tokens that exist today**:
 `apps/web/src/styles/global.css`.
 
-Source of truth for **visual intent**:
-`docs/design.md`. That file also describes a future stack. See §1.
+---
+
+## 0. Night token system (v2 target — ADR-0031)
+
+These are added to `global.css` in Phase 0 and become the ONLY palette for
+migrated pages:
+
+| Purpose | Token | Value | Contrast rule |
+|---|---|---|---|
+| Page canvas (night) | `--canvas-night` | `#071225` | — |
+| Section canvas (deep) | `--canvas-deep` | `#0B1630` | — |
+| Solid reading surface | `--surface-read` | `#101F3C` | body text sits here, never on glass |
+| Glass fill (resting) | `--glass-fill` | `rgba(255,255,255,.08)` | decorative/chrome only |
+| Glass fill (strong) | `--glass-fill-strong` | `rgba(255,255,255,.14)` | header, overlays |
+| Glass edge | `--glass-edge` | `rgba(255,255,255,.16)` | ≥3:1 vs adjacent canvas |
+| Primary text on night | `--ink-hi` | `#F2F6FA` | ≥13:1 on night |
+| Secondary text | `--ink-mid` | `#A8B8C8` | ≥7:1 |
+| Meta/caption text | `--ink-low` | `#6E8095` | ≥4.5:1, metadata only |
+| Brand (graphics/fills) | `--brand` | `#16B8A6` | large glyphs/UI ≥3:1 |
+| Brand as text/link | `--brand-text` | `#3DD6C5` | ≥4.5:1 on night — link & focus colour |
+| Brand deep fill | `--brand-deep` | `#0D9689` | fills only; label must pass 4.5:1 |
+| Signature gold | `--gold` | `#E3B95C` | ≤4% of surface; marks/badges/rules only |
+| Research/AI accent | `--violet` | `#8E75E6` | research nodes, badges |
+| Danger | `--danger` | `#FF6B5E` | errors |
+
+Scales carried unchanged from §2 below: radius, spacing (`--space-*`),
+type scale, measures, motion durations/easings.
+
+**Hover rule on night surfaces:** a text-bearing fill's hover MUST keep its
+label ≥4.5:1 — verify per pair; fills may go lighter or deeper, contrast is the
+binding constraint, not direction. Decorative hairlines hover toward
+`--glass-edge` brightening.
+
+**Aurora/grain:** `ThemeAurora.astro` renders fixed CSS-only radial gradients
+(≤8% alpha turquoise/violet) + SVG grain ≈3%. Never behind solid reading
+surfaces' text contrast computation (contrast is checked against
+`--surface-read`, which aurora does not modify).
+
+## 0b. Component layer (ADR-0031)
+
+```
+components/primitives/   Btn, Chip, Kicker, MetaRow, Field, Icon      ← atoms, zero logic
+components/ui/           SiteHeader, SiteFooter, Breadcrumbs, EmptyState, Pagination, ThemeAurora
+components/patterns/     ArticleCard, ProjectCard, ResearchCard, PublicationRow, CatalogPage (single), DetailShell
+components/sections/     HeroSection, PerspectiveGrid, FocusStrip, EvidenceSection, JourneySection, WritingLatest, ContactCTA
+components/islands/      React islands with an interaction justification ONLY
+lib/format.ts            formatDate/formatNumber — fa Jalali + Persian digits at build time
+```
+
+Rules:
+- No raw hex/px-gap/ms anywhere outside `global.css`. CI grep enforces this for pages/components.
+- No page-local `<style>` block that duplicates a shared class; page styles compose shared classes + variants.
+- A catalog page is built from `CatalogPage`; a detail page from `DetailShell`. New copies are defects.
+
+## 1. Stack boundary (updated by ADR-0030/0031)
+
+Authorized NOW under recorded budgets and fallbacks (see ADR-0030 table and
+contract §3b): `motion`, `gsap`, `d3`, `three` inside lazy islands only.
+
+Still forbidden without a Task Spec: shadcn/Radix in the public build,
+any SSR/Node runtime, any new always-on service.
+
+Island budgets: ≤35KB gzip default; three ≤150KB; d3 ≤60KB. Every island has a
+static no-JS fallback carrying the same content.
 
 ---
 
-## 1. Stack boundary (DEBT-0001)
+## 2. Legacy light tokens (pre-v2 — valid only for not-yet-migrated pages)
 
-`docs/design.md` documents the P3+ target architecture: React islands,
-shadcn/ui, Radix, Motion, GSAP, D3, Three.js.
-
-**None of that is installed or used in the public build.**
-
-You MUST NOT import React, shadcn, Radix, GSAP, D3, Three, or Motion without an
-approved Task Spec and owner sign-off.
-
-`gsap`, `motion`, and `three` appear in `apps/web/package.json` as locked, unused
-dependencies (`DEBT-0003`). Their presence is not permission to use them.
-
-What you may use today:
-Astro components, plain CSS, Tailwind v4 utilities, and the tokens below.
-
----
-
-## 2. Tokens that actually exist
+> These remain defined in `global.css` until each page migrates to §0.
+> A migrated page MUST NOT consume this table.
 
 Use these names. They are defined in `global.css` under `@theme`.
 
@@ -96,50 +150,104 @@ Note: `global.css` declares its token block as `@theme static` so every token
 above is emitted to the built CSS even when no utility consumes it yet
 (Tailwind v4 otherwise tree-shakes unused variables).
 
-Dark mode is out of scope. Do not add a theme toggle.
+~~Dark mode is out of scope. Do not add a theme toggle.~~
+**Superseded (ADR-0031):** there is no dual-theme system and no toggle; the site
+adopts a single night theme (`§0`) via the phased migration. Building light-page
+variants for migrated pages is a defect.
 
 ### Component classes in `global.css`
 
 | Class | Use |
 |---|---|
 | `.skip-link` | Keyboard skip target, already wired in the layout |
-| `.glass-surface` | Sticky header only (light variant; opaque-first fallback built in) |
-| `.glass-surface--dark` | Language Gateway panel only — adds dark chrome + shadow to `.glass-surface` |
-| `.surface-interactive` | A card that responds to hover or focus (documented, not yet in build — E8) |
+| `.glass-surface` | Shared glass utility — header + Gateway today; v2 glass cards/chips consume it with fill variants |
+| `.glass-surface--dark` | Dark chrome variant |
+| `.surface-interactive` | A card that responds to hover or focus |
+
+v2 adds (Phase 1+): `.btn` (+`--primary/--ghost/--quiet/--sm`), `.card`,
+`.card--row`, `.list-row`, `.chip`, `.kicker`, `.meta-row`, `.empty-state`,
+`.container`, `.section`, `.prose` — the single source of component styling;
+per-page copies are deleted as pages migrate.
 
 ---
 
-## 2b. Glass rules
+## 2b. Glass rules (v2 — ADR-0031)
 
-The philosophy is **solid-first with selective glass**, not a glassmorphism site.
+The philosophy is now **glass-as-signature over solid reading surfaces**:
+glass carries the identity of chrome, cards, chips and overlays; text that must
+be read at length sits on opaque panels. It is still NOT "blur everything".
 
-Where glass is allowed:
+Where glass is allowed (v2):
 
-- The Language Gateway panel, over the dark constellation field.
-- The sticky site header, over scrolling page content.
+- Sticky site header (strong fill).
+- Cards, chips, stat/identity cards, floating controls, Lightbox, More-menu panel.
+- Gateway central panel.
+- Primary CTA buttons in hero/CTA sections.
 
-Nowhere else. Never behind prose, tables, forms, or anything that must stay
-readable over arbitrary content.
+Where glass MUST NOT be used:
 
-Non-negotiable rules:
+- Prose/article body, tables, forms, code blocks → these sit on `--surface-read`.
+- More than two nested glass layers (no glass-on-glass beyond depth 2).
+- Anywhere the label's contrast against its own local fill is below 4.5:1.
+
+The five-part recipe (all five required):
+
+```css
+.glass {
+  background: var(--glass-fill);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  backdrop-filter: blur(16px) saturate(150%);
+  border: 1px solid var(--glass-edge);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 16px 48px rgba(2,8,20,.45);
+}
+```
+
+1. blur 12–20px + `saturate(150%)` — saturation lets the aurora read through the surface.
+2. 1px light edge + inner top highlight (edge refraction).
+3. Tinted shadow from the night canvas hue (`rgba(2,8,20,…)`), never raw black.
+4. Text never relies on what is behind the blur: contrast is verified against the opaque fallback (`--surface-read` or ≥20% local fill), per rule 2 of the legacy list below which remains binding.
+5. Mobile <768px: blur ≤10px; if QA records jank, mobile falls back to the opaque surface entirely.
+
+Non-negotiable rules carried from v1 (still binding):
 
 1. **Always define the opaque fallback first,** then add `backdrop-filter` inside
    `@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)))`.
-   A browser without blur support must get a solid, readable surface — not a
-   washed-out translucent one.
-   **Implemented once (DEBT-0012 closed 2026-08-23):** the only glass
-   `@supports` block in the build is the `.glass-surface` /
-   `.glass-surface--dark` utility in `apps/web/src/styles/global.css`. Header
-   and Gateway consume it; never write a second `@supports` glass pattern in a
-   component.
-2. **The opaque fallback is the contrast reference.** Verify text contrast against
-   the solid colour. If it only passes because of the blur, it does not pass.
-3. **Light glass stays near-opaque** (`0.9`). The header scrolls over unknown
-   content, and `--color-ink-secondary` on canvas is about 4.6:1 — there is no
-   headroom to spend on transparency.
-4. **Never combine glass with a drop shadow on the same element** beyond the
-   single `--glass-shadow-*` token.
-5. Blur is a depth and dismissal cue, not decoration.
+   The only glass `@supports` block is the `.glass-surface` utility in
+   `global.css`; never write a second one in a component.
+2. **The opaque fallback is the contrast reference.** If it only passes because of the blur, it does not pass.
+3. Never combine glass with a drop shadow beyond the single tinted shadow above.
+4. Blur is a depth cue, not decoration.
+
+~~Where glass is allowed: … Nowhere else…~~ (legacy v1 list — superseded by the
+v2 allow/deny lists above; kept for the migration window where only header and
+Gateway are glass.)
+
+Legacy light-glass notes (rule 3 "near-opaque 0.9" applied to light surfaces;
+night fills use the §0 alphas instead).
+
+---
+
+## 3b. Motion ladder (v2 — ADR-0031, under ADR-0030 budgets)
+
+Every interaction belongs to exactly one tier. One library per interaction;
+CSS/native is evaluated first.
+
+| Tier | Tech | Allowed uses | Budget / guard |
+|---|---|---|---|
+| M0 functional | CSS transitions | hover/focus/active on all controls; open/close | `--duration-fast/base`; 0KB |
+| M1 ambient | CSS keyframes | aurora drift (≤60s alternate); constellation stroke-draw entrance; nothing else loops | 0KB |
+| M2 pointer | ~1KB rAF + CSS custom props | spotlight card borders (`--mx/--my`), tilt ≤4°, magnetic CTA ≤6px pull, hero pointer parallax damped | ≤5KB total; `(hover:hover) and (pointer:fine)` only |
+| M3 narrative | GSAP ScrollTrigger in a lazy island | Journey timeline draw + node activation; home section reveal stagger ≤6 items | ≤35KB gzip; home route only |
+| M4 signature | three / d3 lazy islands | ConstellationHero (mouse-reactive, drag-rotate); TopicGraph research graph (clickable, tooltip) | three ≤150KB · d3 ≤60KB gzip |
+
+Binding for all tiers:
+- `prefers-reduced-motion: reduce` ⇒ M1–M4 off; final state rendered statically with full content.
+- No JS ⇒ only M0/M1 run; every island's fallback shows the same content statically.
+- Animate `transform` and `opacity` only; never layout properties.
+- Hero copy renders immediately; no render-blocking imports; islands are `client:visible`.
+- Easing language is shared: `--ease-out cubic-bezier(.22,1,.36,1)`; durations 120/160/240/360ms tokens.
+- Every animated element must answer "what does this say about Taha or the content?" (design.md §67 anti-rule).
+- New specs gate shipping: `qa/budget.spec.mjs` (chunk sizes), `qa/glass-contrast.spec.mjs` (glass label contrast).
 
 ---
 
@@ -161,39 +269,40 @@ These replace subjective wording. They are checkable.
 - Do not apply Latin letter-spacing to Persian text. Reset it under `[dir="rtl"]`.
 
 **Colour discipline**
-- Body text uses `--color-ink`. Secondary uses `--color-ink-secondary`.
-  Meta, captions, and file sizes use `--color-ink-tertiary`.
-- Maximum three accent hues visible in one viewport: brand, one context colour, gold.
+- Migrated (night) pages: body text `--ink-hi`, secondary `--ink-mid`, meta `--ink-low`, links/focus `--brand-text` — per §0.
+- Legacy (light) pages during migration: body text `--color-ink`; secondary `--color-ink-secondary`;
+  meta/captions `--color-ink-tertiary`.
+- Maximum three accent hues visible in one viewport: brand family, one context colour, gold.
 - Gold is scarce. Per page you may use at most: one short rule or divider
   (≤64px × 3px), one accent stroke inside the identity graphic, one badge.
-- Gold MUST NOT be a normal button colour and MUST NOT be body text on white.
-- Contrast: body text ≥ 4.5:1; large text and UI glyphs ≥ 3:1. Verify, do not assume.
+- Gold MUST NOT be a normal button colour and MUST NOT be body text on any surface.
+- Contrast: body text ≥ 4.5:1; large text and UI glyphs ≥ 3:1; night-surface
+  floors per §0 (`--ink-mid` ≥7:1, `--ink-low` ≥4.5:1). Verify, do not assume.
 - Never encode meaning in colour alone. Add text or a shape.
 
 **Surfaces and elevation**
-- Default card: `--color-surface` on `--color-canvas`, 1px `--color-border-subtle`, `--shadow-sm`.
-- Hover or focus raises exactly one step: `--shadow-md` plus `--color-border-strong`.
+- v2 default card: `.glass` recipe on the night canvas; hover brightens edge toward `--glass-edge`.
+- Reading-heavy cards/panels: opaque `--surface-read` with 1px `--glass-edge` hairline.
 - `--shadow-lg` is reserved for overlays. Never on a resting card.
-- Do not combine a shadow and a blur on the same element.
-- Glass tokens are for the Gateway and the header only. See §2b.
+- Do not combine a shadow and a blur beyond the single tinted shadow of §2b.
+- Glass allow/deny lists in §2b are binding.
 
 **Interaction**
-- **Hover-darker rule (E2/KI-0003, 2026-08-23):** on light surfaces, a
-  text-bearing fill's hover MUST be **darker** than its rest state, never
-  lighter. Primary hover = `--color-brand-emphasis-hover` `#0a6a62`
-  (white-on-hover 5.4:1). `#0d9689`/`#16b8a6` are for dark surfaces and large
-  graphics only.
-- **Control boundary (E2/KI-0004):** interactive controls (buttons, inputs,
-  selects, ghost CTAs) use `--color-control-border` `#748682` (3:1 on canvas).
-  `--color-border-subtle/strong` remain for decorative card hairlines.
+- ~~Hover-darker rule~~ → **Hover-AA rule (v2, supersedes E2 direction-only rule):**
+  a text-bearing fill's hover MUST keep its label ≥4.5:1 against the hover fill —
+  verified per pair, on both light (legacy) and night (§0) surfaces. On light legacy
+  surfaces this still means darker (e.g. `#0a6a62`); on night surfaces either
+  direction is allowed if contrast holds.
+- **Control boundary:** interactive controls keep a ≥3:1 boundary vs their canvas:
+  legacy `--color-control-border #748682`; night pages use `--glass-edge`
+  brightening + focus ring as the boundary cue.
 - Minimum touch target 44×44px, including header links and CTAs.
-  Named exception (DEFER-0035): **below 224px CSS width** (`max-width: 14rem`
-  zoom-safety grid in `Header.astro`), 36px min-height is allowed for header
-  links. Everywhere else the 44px floor holds.
+  Named exception (DEFER-0035): **below 224px CSS width**, 36px min-height is
+  allowed for header links. Everywhere else the 44px floor holds.
 - Every `:hover` style MUST have a matching `:focus-visible` style — the same
   fill, border colour and shadow/glow as hover, while keeping the outline ring.
-  Ring colours: inverse/white on navy surfaces, brand on light surfaces
-  (the global `--color-focus` outline is the default). Keyboard parity is not optional.
+  Ring colours: `--brand-text` on night surfaces, brand on light surfaces.
+  Keyboard parity is not optional.
 - The current page MUST be marked with `aria-current="page"` and shown with more
   than colour — the header uses weight plus a 2px rule.
 - Transitions use `--duration-fast` or `--duration-base` with `--ease-out`.
@@ -248,12 +357,11 @@ The audience is PhD admissions and senior industry readers. They scan for proof.
 ## 6. Definition of done for a visual change
 
 - [ ] Renders and reads with JavaScript disabled.
-- [ ] Only tokens from §2 are used. No raw hex, px gap or ms duration in a component.
+- [ ] Only tokens are used — §0 (night) for migrated pages, §2 (legacy) for the rest. No raw hex, px gap or ms duration in a component.
 - [ ] Checked at 320, 390, 768, 1024, 1280, 1440 px with no horizontal scroll.
 - [ ] Checked in both `/fa/` and `/en/`.
 - [ ] Keyboard reachable, visible focus, every hover has a focus twin, no hover-only affordance.
-- [ ] Contrast verified for new colour pairs — **including hover and focus states**,
-      which is where it usually breaks.
-- [ ] Any glass surface defines its opaque fallback first and passes contrast against it.
-- [ ] Motion honours `prefers-reduced-motion: reduce` (global overridable kill switch).
-- [ ] No new dependency added.
+- [ ] Contrast verified for new colour pairs — **including hover and focus states**, which is where it usually breaks. Night pages: §0 floors (`--ink-mid` ≥7:1, `--ink-low`/labels ≥4.5:1).
+- [ ] Any glass surface follows the five-part recipe, defines its opaque fallback first, and passes contrast against it; glass deny-list respected (no prose/table/form on glass).
+- [ ] Motion stays inside its ladder tier (§3b); honours `prefers-reduced-motion: reduce`; island budgets verified by `qa/budget.spec.mjs`.
+- [ ] No new dependency added outside ADR-0030's authorized set.

@@ -1,6 +1,6 @@
 # Project Manifest
 
-**Status:** P0-G0 — `PASS for static-only P1` (2026-08-14) **+ P3..P6 live (2026-08-17/18)**. Custom React admin SPA at `/admin/` (ADM-1 cutover LOG-0163); Wagtail fallback `/admin-wagtail/`; `/static/*`, CMS `/health/`, TOTP (`RISK-0009` CLOSED), public published-only `/api/` + `/media/` (`DEFER-0017` CLOSED), P4–P6 public routes live. `RISK-0003` CLOSED; `DEFER-0015` CLOSED; `DEFER-0023` CLOSED. **Custom admin rebuild (ADR-0026):** SPA + `/api/v1/admin/*`; Wagtail uninstall blocked by schema (`DEBT-0003`); ADM-6 wiring in `docs/plan/ADM-6-frontend-wiring-task-spec.md`. Staging decommissioned (ADR-0025).  
+**Status:** P0-G0 — `PASS for static-only P1` (2026-08-14) **+ P3..P6 live (2026-08-17/18)**. Custom React admin SPA at `/admin/` (ADM-1 cutover LOG-0163); Django staff HTML at `/staff/` (Wagtail removed, `DEBT-0003` CLOSED / LOG-0193); `/static/*`, CMS `/health/`, TOTP (`RISK-0009` CLOSED), public published-only `/api/` + `/media/` (`DEFER-0017` CLOSED), P4–P6 public routes live. `RISK-0003` CLOSED; `DEFER-0015` CLOSED; `DEFER-0023` CLOSED. **Custom admin rebuild (ADR-0026):** SPA + `/api/v1/admin/*`; ADM-6 wiring remainder in `docs/plan/archive/pending/ADM-6-frontend-wiring-task-spec.md`. Staging decommissioned (ADR-0025). **Redesign v2 (ADR-0031, 2026-08-24):** dark-first Glass Constellation identity approved; binding plan `reDesign_plan.md` (root); tracked as WS-R on the master board.  
 **Last verified:** 2026-08-19  
 **Source of truth for commands:** این فایل؛ دستور تأییدنشده را اجرا یا مستند نکنید.
 
@@ -23,7 +23,7 @@
 | Layer | Approved baseline | Current state |
 |---|---|---|
 | Public frontend | Astro + TypeScript + React Islands | Scaffolded; static-only P1 built and deployed (static P1 live on tahamohamadi.ir) — Language Gateway + `/fa/` + `/en/` landing |
-| Styling/UI | Tailwind CSS + project design system + shadcn/Radix | Tailwind v4 + project design tokens applied; shadcn/Radix not used in P1 |
+| Styling/UI | Tailwind CSS v4 + project design tokens + component layer (`primitives/ui/patterns/sections/islands` per ADR-0031) | Tailwind v4 + project design tokens applied; component layer lands with redesign phases; shadcn/Radix still not used in public build |
 | Backend/CMS/API | Python 3.12.13 + Django 5.2.9 LTS + Django Ninja 1.6.2 (Wagtail 7.4.2 pending removal per ADR-0026) | Runtime live as Compose `taha-cms` on `127.0.0.1:18000`; public `/admin*`, `/static*`, `/health/`, published-only `/api/` + `/media/` proxied |
 | Database | PostgreSQL 17 (Compose `taha-cms-db-1`) | Provisioned for CMS only; restic restore/import evidence still `RISK-0003` |
 | Public search | Pagefind at the approved phase | Not provisioned |
@@ -136,8 +136,8 @@ RTK's token figures are local estimates of compacted command output, not a
 billing guarantee. Fresh OpenCode main-agent and delegated general sub-agent
 sessions both demonstrated automatic rewriting; already-running sessions must
 be restarted to load the plugin. Operational rules and rollback are in
-`docs/plan/SMALL-MODEL-EXECUTION-PLAN.md` and
-`docs/plan/R0-rtk-opencode-task-spec.md`.
+`docs/plan/archive/SMALL-MODEL-EXECUTION-PLAN.md` and
+`docs/plan/archive/R0-rtk-opencode-task-spec.md`.
 
 ## P1 first-live technical decisions (G0-04 freeze)
 
@@ -152,12 +152,12 @@ be restarted to load the plugin. Operational rules and rollback are in
 | Styling | Tailwind CSS v4 + project design tokens from `docs/design.md` | VERIFIED for decision |
 | React islands | Not installed in R2 (no single approved, tested, valuable interaction) | NOT USED IN R2 |
 | shadcn/Radix | Not added until a concrete P1 interaction justifies it | NOT USED IN R2 |
-| Motion / GSAP / Three.js | Locked in `apps/web/` for a future, explicitly approved island; `motion` 13.1.0, `gsap` 3.15.0 and `three` 0.185.1 are installed but have no import, client bundle or R2 behavior | AVAILABLE, NOT USED IN R2 |
-| D3 / React Three Fiber | Not installed; evaluate only for a documented visualization requirement | NOT USED IN R2 |
+| Motion / GSAP / Three.js | Authorized per ADR-0030 + ADR-0031 motion ladder: `motion` 13.1.0, `gsap` 3.15.0, `three` 0.185.1 installed; use only in lazy islands within budgets (≤35KB default, three ≤150KB) with static fallbacks; M2 pointer interactions are plain CSS+rAF | AUTHORIZED (ADR-0030/0031); ConstellationHero upgrade + JourneyScroll pending redesign phases |
+| D3 / React Three Fiber | D3 authorized for TopicGraph research island per ADR-0031 (≤60KB gzip, lazy); R3F not planned — plain three | AUTHORIZED (d3), NOT USED yet |
 | Design DNA / external UI resources | Design DNA is a local Codex skill, not a production dependency; Beautiful UI and UI8 DNA have no approved local artifact or verified use-right | TOOLING ONLY; `DEFER-0012` |
 | Search (Pagefind) | Not used in R2 | NOT USED IN R2 |
 | Analytics | Not used in R2 (no provider/consent/retention approved) | NOT USED IN R2 |
-| Dark mode | Not in R2; full dark mode deferred with ID | NOT USED IN R2 |
+| Dark mode | ~~Not in R2; full dark mode deferred with ID~~ Superseded by ADR-0031: single night theme ships as the ONLY theme via redesign phases; no toggle, no dual-theme | SUPERSEDED (ADR-0031; DEFER-0025 closes WONTFIX-dual-theme) |
 | Fonts | Self-hosted `Vazirmatn Variable` for `fa`/Arabic script + `Inter Variable` for `en`/Latin script; both OFL-1.1 and locked in `apps/web/` | VERIFIED |
 | Logo | Approved asset or a text mark only; no invented geometry | OPEN (owner) |
 | Media | Static curated assets only (portrait/OG optional) | OPEN (owner) |
