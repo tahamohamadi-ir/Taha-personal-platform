@@ -38,6 +38,17 @@ if [[ -z "${CMS_IMAGE:-}" ]]; then
   exit 1
 fi
 
+# Compose is fail-closed (LOG-0238: ${WEB_IMAGE:?}). This script updates the CMS
+# service only — derive the current web image from the running container so the
+# compose interpolation succeeds without touching the web artifact.
+if [[ -z "${WEB_IMAGE:-}" ]]; then
+  WEB_IMAGE="$(docker inspect taha-cms-web-1 --format '{{.Config.Image}}' 2>/dev/null || true)"
+  if [[ -n "$WEB_IMAGE" ]]; then
+    export WEB_IMAGE
+    echo "Using WEB_IMAGE=${WEB_IMAGE} (derived from running taha-cms-web-1)"
+  fi
+fi
+
 cd "$CMS_REPO_DIR"
 
 if [[ ! -f infra/cms/.env ]]; then
