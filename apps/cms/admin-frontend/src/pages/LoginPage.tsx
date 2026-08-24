@@ -58,9 +58,19 @@ export default function LoginPage(): ReactElement {
               onChange={(event) => setEmail(event.target.value)}
               autoComplete="username"
               required
+              aria-invalid={fieldErrors.email?.[0] !== undefined}
+              aria-describedby={
+                fieldErrors.email?.[0] !== undefined
+                  ? "login-email-error"
+                  : undefined
+              }
             />
             {fieldErrors.email?.[0] !== undefined && (
-              <p className="mt-1 text-xs" style={{ color: "var(--admin-danger)" }}>
+              <p
+                id="login-email-error"
+                className="mt-1 text-xs"
+                style={{ color: "var(--admin-danger)" }}
+              >
                 {fieldErrors.email[0]}
               </p>
             )}
@@ -78,9 +88,19 @@ export default function LoginPage(): ReactElement {
               onChange={(event) => setPassword(event.target.value)}
               autoComplete="current-password"
               required
+              aria-invalid={fieldErrors.password?.[0] !== undefined}
+              aria-describedby={
+                fieldErrors.password?.[0] !== undefined
+                  ? "login-password-error"
+                  : undefined
+              }
             />
             {fieldErrors.password?.[0] !== undefined && (
-              <p className="mt-1 text-xs" style={{ color: "var(--admin-danger)" }}>
+              <p
+                id="login-password-error"
+                className="mt-1 text-xs"
+                style={{ color: "var(--admin-danger)" }}
+              >
                 {fieldErrors.password[0]}
               </p>
             )}
@@ -97,15 +117,26 @@ export default function LoginPage(): ReactElement {
               value={otpToken}
               onChange={(event) => setOtpToken(event.target.value)}
               autoComplete="one-time-code"
+              aria-invalid={fieldErrors.otpToken?.[0] !== undefined}
+              aria-describedby={
+                fieldErrors.otpToken?.[0] !== undefined
+                  ? "login-otp-error"
+                  : undefined
+              }
             />
             {fieldErrors.otpToken?.[0] !== undefined && (
-              <p className="mt-1 text-xs" style={{ color: "var(--admin-danger)" }}>
+              <p
+                id="login-otp-error"
+                className="mt-1 text-xs"
+                style={{ color: "var(--admin-danger)" }}
+              >
                 {fieldErrors.otpToken[0]}
               </p>
             )}
           </div>
           {formError !== null && (
             <div
+              role="alert"
               className="mb-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm"
               style={{ color: "var(--admin-danger)" }}
             >
