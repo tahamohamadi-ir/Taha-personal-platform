@@ -46,10 +46,8 @@ function requireListPayload<T>(
   throwIfCmsError(result, context);
   if (result.kind === "unset") return null;
   if (result.kind === "http") {
-    // Web-ahead-of-CMS bridge (LOG-0238): /api/courses goes live with
-    // content.0015 prod migrate. Until that attended dispatch, 404 = honest
-    // empty. FLIP TO THROW after migrate lands (same as publications.ts).
-    if (result.status === 404) return null;
+    // Bridge removed 2026-08-24: production CMS migrated content.0015
+    // (run 32705516385) — /api/courses is live, 404 must fail-build.
     throw new CmsOriginError(`${context}: unexpected HTTP ${result.status}`, result.status);
   }
   return unwrapItems(result.data);

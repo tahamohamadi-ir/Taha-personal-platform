@@ -36,6 +36,22 @@ const navItems = [
   { href: `/${content.lang}/contact/`, label: content.contact.heading },
   { href: `/${content.lang}/search/`, label: content.search.navLabel },
 ];
+// E9/P13 (owner decision 2026-08-24, option B): P8 catalogs live in a "More"
+// disclosure group — keeps the top-level header compact, no mega-menu.
+const moreLabel = content.lang === "fa" ? "بیشتر" : "More";
+const moreItems = [
+  {
+    href: `/${content.lang}/publications/`,
+    label: content.catalog.publicationsHeading,
+  },
+  { href: `/${content.lang}/books/`, label: content.catalog.booksHeading },
+  { href: `/${content.lang}/talks/`, label: content.catalog.talksHeading },
+  {
+    href: `/${content.lang}/downloads/`,
+    label: content.catalog.downloadsHeading,
+  },
+];
+const moreActive = moreItems.some((item) => isCurrent(item.href));
 ---
 
 <header class="site-header glass-surface">
@@ -59,7 +75,42 @@ const navItems = [
     <div class="header-nav-group">
       <nav class="header-nav" aria-label={content.navLabel}>
         {
-          navItems.map((item) => (
+          navItems.slice(0, 4).map((item) => (
+            <a
+              href={item.href}
+              class="header-link"
+              aria-current={isCurrent(item.href) ? "page" : undefined}
+            >
+              {item.label}
+            </a>
+          ))
+        }
+        <details class="nav-more" data-active={moreActive ? "true" : undefined}>
+          <summary
+            class="header-link nav-more-summary"
+            aria-current={moreActive ? "page" : undefined}
+          >
+            {moreLabel}
+            <svg class="nav-more-caret" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+              <path d="M1 3l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+          </summary>
+          <div class="nav-more-panel">
+            {
+              moreItems.map((item) => (
+                <a
+                  href={item.href}
+                  class="nav-more-link"
+                  aria-current={isCurrent(item.href) ? "page" : undefined}
+                >
+                  {item.label}
+                </a>
+              ))
+            }
+          </div>
+        </details>
+        {
+          navItems.slice(4).map((item) => (
             <a
               href={item.href}
               class="header-link"
@@ -179,6 +230,68 @@ const navItems = [
     height: 2px;
     border-radius: 999px;
     background-color: var(--color-brand);
+  }
+
+  /* E9/P13: no-JS "More" disclosure — <details> keeps keyboard + touch working
+     without JavaScript; panel styled as a compact dropdown. */
+  .nav-more {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .nav-more-summary {
+    list-style: none;
+    cursor: pointer;
+    gap: 0.3rem;
+  }
+
+  .nav-more-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .nav-more-caret {
+    transition: transform var(--duration-fast, 140ms) var(--ease-out, ease-out);
+  }
+
+  .nav-more[open] .nav-more-caret {
+    transform: rotate(180deg);
+  }
+
+  .nav-more-panel {
+    position: absolute;
+    inset-inline-start: 0;
+    top: calc(100% + 0.25rem);
+    z-index: 40;
+    display: grid;
+    min-width: 11rem;
+    padding: 0.35rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+  }
+
+  .nav-more-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding-inline: 0.75rem;
+    border-radius: var(--radius-sm, 8px);
+    text-decoration: none;
+    color: var(--color-ink-secondary);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .nav-more-link:hover,
+  .nav-more-link:focus-visible {
+    color: var(--color-brand);
+    background-color: var(--color-brand-soft);
+  }
+
+  .nav-more-link[aria-current="page"] {
+    color: var(--color-ink);
+    background-color: var(--color-brand-soft);
   }
 
   /* About + Writing + CV + language switch: wrap inside the viewport instead

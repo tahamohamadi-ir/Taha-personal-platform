@@ -45,6 +45,7 @@ When an entity is published in one locale and absent in the requested locale:
 - Do not create empty category pages or placeholder shells for future content.
 - A header link that 404s is a defect, not progressive disclosure.
 - Current live routes: `/`, `/{locale}/`, `/{locale}/about/`, `/{locale}/about/{section}/`, `/{locale}/about/{section}/{slug}/` when detail content exists, `/{locale}/cv/`, `/{locale}/writing/`, `/{locale}/writing/{slug}/`, `/{locale}/writing/series/{slug}/`, `/{locale}/writing/tag/{slug}/`, `/{locale}/writing/rss.xml`, `/{locale}/research/` (plus published statement/topics/projects/publications detail), `/{locale}/projects/` (plus detail), `/{locale}/publications/`, `/{locale}/books/`, `/{locale}/talks/`, `/{locale}/downloads/` (plus detail), `/{locale}/contact/`, `404`. `/{locale}/blog/**` exists only as permanent redirects to writing.
+- **Header nav contract (E9/P13, owner decision option B, 2026-08-24):** top-level header = About · Research · Projects · Writing · **More▾** (Publications, Books, Talks, Downloads in a no-JS `<details>` disclosure) · CV & Resume · Contact · Search · language. The More group MUST mark `aria-current="page"` when any child route is current. Footer explore stays the full sitemap. Mobile overflow QA required after any nav change.
 - `KI-0002` is CLOSED in this checkout and must not regress.
 
 ## 4b. P8 catalog URL tree (Publications / Books / Talks / Downloads)

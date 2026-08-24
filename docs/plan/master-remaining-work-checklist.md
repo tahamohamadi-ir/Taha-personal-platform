@@ -288,9 +288,9 @@
   - حذف shadcn/Radix/Motion/GSAP/D3/Three از بلوک افتتاحیه به‌عنوان foundation؛ حذف self-score؛ بستن «final typeface open» (ADR-0019)؛ هم‌راستایی با E1.
   - شواهد: LOG-0241 — status block (vision vs in-force)؛ self-score retired؛ typefaces DECIDED ADR-0019؛ DEBT-0015/0001 CLOSED.
 
-- [ ] **E9 — تصمیم IA برای findability کاتالوگ‌های P8 (P13)** — `P2` · `owner→agent` · `S`
+- [x] **E9 — تصمیم IA برای findability کاتالوگ‌های P8 (P13)** — `P2` · `owner→agent` · `S`
   - تصمیم محصول: افزودن publications/books/talks/downloads به هدر/فوتر (یا گروه More). سپس تغییر Header/Footer + QA overflow.
-  - شواهد: LOG-____
+  - شواهد: LOG-0245 (option B: no-JS details More group in header; IA-CONTRACT §4 updated; DEFER-0037 CLOSED)
 
 - [x] **E10 — تأیید بصری مرورگری P1 قبل/بعد** — `P1` · `joint` · `S` · deps: E1
   - فایل مشکلات صریح می‌گوید P1 فقط از CSS cascade استنباط شده؛ اسکرین‌شات واقعی قبل و بعد لازم است (همچنین ورودی B9).
