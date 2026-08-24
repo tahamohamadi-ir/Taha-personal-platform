@@ -133,7 +133,11 @@ export default function CompositionListPage(): ReactElement {
       </p>
 
       {isApiError(error) && (
-        <div className="mt-3 rounded border px-3 py-2 text-sm" style={{ color: "var(--admin-danger)" }}>
+        <div
+          role="alert"
+          className="mt-3 rounded border px-3 py-2 text-sm"
+          style={{ color: "var(--admin-danger)" }}
+        >
           {error.message}
           <button type="button" className="admin-btn ml-2 text-xs" onClick={() => void load()}>
             تلاش مجدد
@@ -169,7 +173,7 @@ export default function CompositionListPage(): ReactElement {
                 <td dir="ltr" className="admin-muted text-xs">{item.key}</td>
                 <td>{item.locale === "fa" ? "فارسی" : "English"}</td>
                 <td>
-                  <span className={`admin-status-${item.status}`}>
+                  <span className={`admin-status-badge admin-status-${item.status}`}>
                     {item.status === "draft" && "پیش‌نویس"}
                     {item.status === "review" && "در بازبینی"}
                     {item.status === "published" && "منتشرشده"}
