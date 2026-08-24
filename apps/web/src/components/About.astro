@@ -628,7 +628,7 @@ function sectionHref(section: string): string {
     width: 3.5rem;
     height: 3px;
     margin-block-start: 0.875rem;
-    background-color: var(--color-gold-500);
+    background-color: var(--color-signature);
   }
 
   .rule {
@@ -644,7 +644,7 @@ function sectionHref(section: string): string {
     top: -1px;
     height: 3px;
     width: 64px;
-    background-color: var(--color-gold-500);
+    background-color: var(--color-signature);
   }
 
   .about-bio,
@@ -969,7 +969,7 @@ function sectionHref(section: string): string {
 
   .socials { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-block-end: 2rem; }
   .social-link { display: inline-flex; align-items: center; min-height: 2.75rem; padding-inline: 1rem; color: var(--color-brand); text-decoration: none; font-weight: 600; border: 1px solid var(--color-border-strong); border-radius: var(--radius-md); }
-  .social-link:hover { background-color: var(--color-brand-soft); border-color: var(--color-brand); }
+  .social-link:hover, .social-link:focus-visible { background-color: var(--color-brand-soft); border-color: var(--color-brand); }
 
   .availability { background-color: var(--color-surface-muted); border-radius: var(--radius-lg); padding: 1.5rem 2rem; margin-block-end: 2rem; }
   .availability-text { margin: 0; color: var(--color-ink); font-weight: 600; max-width: 60ch; text-align: justify; text-justify: inter-word; }

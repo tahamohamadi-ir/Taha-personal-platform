@@ -26,10 +26,13 @@
   --color-surface: #ffffff;
   --color-surface-muted: #f1f4f2;
   --color-ink: #182328;
-  --color-ink-secondary: #657278;
+  --color-ink-secondary: #616e74;
   --color-inverse: #ffffff;
   --color-brand: #087c73;
   --color-brand-emphasis: #0d9689;
+  /* E2/KI-0003: text-bearing fill hover MUST be darker than rest on light
+     surfaces (white on #0a6a62 = 5.4:1). #0d9689 stays for dark surfaces. */
+  --color-brand-emphasis-hover: #0a6a62;
   --color-brand-soft: #e4f7f4;
   --color-signature: #a77b28;
   --color-signature-soft: #f3e8cf;
@@ -39,6 +42,9 @@
   --color-context-soft: #e5f2ed;
   --color-border-subtle: #dde5e3;
   --color-border-strong: #b9c7c3;
+  /* E2/KI-0004: interactive control boundary (3:1 on canvas); decorative
+     hairlines keep border-subtle/strong. */
+  --color-control-border: #748682;
   --color-focus: #087c73;
 
   /* radius / spacing in design.md */
@@ -84,6 +90,14 @@
   --space-gutter: clamp(1rem, 0.75rem + 1.5vw, 2.5rem);
   --space-section: clamp(3rem, 2rem + 4vw, 6rem);
 
+  /*
+    Sticky header height (DEFER-0034): Header.astro inner row is 2.75rem
+    min-height + 2 x 0.625rem block padding + 1px bottom border = 65px.
+    Consumed by html { scroll-padding-top } so skip targets clear the header.
+    The wrapped mobile layouts render taller; this covers the default row.
+  */
+  --space-sticky-offset: calc(2.75rem + 1.25rem + 1px);
+
   /* Type scale (overlapping Tailwind defaults keep their default values) */
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -117,9 +131,11 @@
   --radius-xl: 24px;
   --radius-pill: 999px;
 
-  /* Glass completion (Gateway + sticky header only — DESIGN-CONTRACT §2b) */
-  --glass-blur: 14px;
-  --glass-saturate: 160%;
+  /* Glass completion (Gateway + sticky header only — DESIGN-CONTRACT §2b).
+     Blur/saturate mirror the two live surfaces; consumed by .glass-surface. */
+  --glass-blur-light: 10px;
+  --glass-blur-dark: 16px;
+  --glass-saturate: 120%;
   --glass-border-light: rgba(185, 199, 195, 0.4);
   --glass-shadow-light: 0 16px 48px rgba(24, 35, 40, 0.1);
   --glass-solid-dark: #0b1630;
@@ -139,6 +155,7 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    scroll-padding-top: var(--space-sticky-offset);
   }
 
   body {
@@ -169,6 +186,11 @@
     outline-offset: 2px;
   }
 
+  /*
+    DEBT-0013: overridable reduced-motion kill switch. Same effect as the old
+    hard-coded 0.01ms !important, but consumers may set --reduced-motion-duration
+    to keep a longer floor for essential feedback.
+  */
   @media (prefers-reduced-motion: reduce) {
     html {
       scroll-behavior: auto;
@@ -177,10 +199,9 @@
     *,
     *::before,
     *::after {
-      animation-duration: 0.01ms !important;
+      animation-duration: var(--reduced-motion-duration, 0.01ms) !important;
       animation-iteration-count: 1 !important;
-      scroll-behavior: auto !important;
-      transition-duration: 0.01ms !important;
+      transition-duration: var(--reduced-motion-duration, 0.01ms) !important;
     }
   }
 }
@@ -212,5 +233,61 @@
     clip: rect(0 0 0 0);
     white-space: nowrap;
     border: 0;
+  }
+
+  /* S25: rest-state link affordance for list links (board E6-S25) */
+  .catalog-list a,
+  .article-card-title a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* S27: honest empty-state panel for catalog indexes (board E6-S27) */
+  .empty-state {
+    max-width: 60ch;
+    margin-block: 1.5rem 0;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface-muted);
+    color: var(--color-ink-muted);
+  }
+
+  .empty-state p {
+    margin: 0;
+  }
+
+  .empty-state p + p {
+    margin-top: 0.5rem;
+  }
+
+  /*
+    DEBT-0012: THE single glass pattern (DESIGN-CONTRACT §2b). Opaque-first —
+    browsers without backdrop-filter keep the solid fallback declared before
+    @supports; capable browsers upgrade inside this one shared block. Allowed
+    surfaces only: sticky header (.glass-surface) and gateway (.glass-surface--dark).
+  */
+  .glass-surface {
+    background-color: var(--glass-solid-light);
+  }
+
+  .glass-surface--dark {
+    background-color: var(--glass-solid-dark);
+    border: 1px solid var(--glass-border-dark);
+    box-shadow: var(--glass-shadow-dark);
+  }
+
+  @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass-surface {
+      background-color: var(--glass-bg-light);
+      -webkit-backdrop-filter: blur(var(--glass-blur-light)) saturate(var(--glass-saturate));
+      backdrop-filter: blur(var(--glass-blur-light)) saturate(var(--glass-saturate));
+    }
+
+    .glass-surface--dark {
+      background-color: var(--glass-bg-dark);
+      -webkit-backdrop-filter: blur(var(--glass-blur-dark)) saturate(var(--glass-saturate));
+      backdrop-filter: blur(var(--glass-blur-dark)) saturate(var(--glass-saturate));
+    }
   }
 }

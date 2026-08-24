@@ -44,7 +44,8 @@ Use these names. They are defined in `global.css` under `@theme`.
 | Meta / caption text | `--color-ink-tertiary` | `#7c8a8f` |
 | Text on dark | `--color-inverse` | `#ffffff` |
 | Primary action | `--color-brand` | `#087c73` |
-| Primary hover | `--color-brand-emphasis` | `#0d9689` |
+| Primary hover | `--color-brand-emphasis-hover` | `#0a6a62` |
+| Control border (interactive) | `--color-control-border` | `#748682` |
 | Brand tint | `--color-brand-soft` | `#e4f7f4` |
 | Signature gold | `--color-signature` | `#a77b28` |
 | Gold tint | `--color-signature-soft` | `#f3e8cf` |
@@ -64,7 +65,7 @@ Use these names. They are defined in `global.css` under `@theme`.
 |---|---|
 | Radius | `--radius-xs` 4px · `--radius-sm` 8px · `--radius-md` 12px · `--radius-lg` 16px · `--radius-xl` 24px · `--radius-pill` |
 | Spacing | `--space-1` … `--space-24` on a 4px rhythm (`0.25rem` → `6rem`) |
-| Fluid rhythm | `--space-section` (section padding) · `--space-gutter` (page inset) |
+| Fluid rhythm | `--space-section` (section padding) · `--space-gutter` (page inset) · `--space-sticky-offset` (sticky header height; feeds `html { scroll-padding-top }`) |
 | Type | `--text-xs` `--text-sm` `--text-base` `--text-lg` `--text-xl` `--text-2xl` `--text-3xl` `--text-display` |
 | Measure | `--measure-prose` 62ch · `--measure-narrow` 42ch · `--measure-page` 1280px |
 | Elevation | `--shadow-sm` (resting card) · `--shadow-md` (hover/focus) · `--shadow-lg` (overlay) |
@@ -102,9 +103,9 @@ Dark mode is out of scope. Do not add a theme toggle.
 | Class | Use |
 |---|---|
 | `.skip-link` | Keyboard skip target, already wired in the layout |
-| `.glass-light` | Sticky header only |
-| `.glass-dark` | Language Gateway panel only |
-| `.surface-interactive` | A card that responds to hover or focus |
+| `.glass-surface` | Sticky header only (light variant; opaque-first fallback built in) |
+| `.glass-surface--dark` | Language Gateway panel only — adds dark chrome + shadow to `.glass-surface` |
+| `.surface-interactive` | A card that responds to hover or focus (documented, not yet in build — E8) |
 
 ---
 
@@ -126,6 +127,11 @@ Non-negotiable rules:
    `@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)))`.
    A browser without blur support must get a solid, readable surface — not a
    washed-out translucent one.
+   **Implemented once (DEBT-0012 closed 2026-08-23):** the only glass
+   `@supports` block in the build is the `.glass-surface` /
+   `.glass-surface--dark` utility in `apps/web/src/styles/global.css`. Header
+   and Gateway consume it; never write a second `@supports` glass pattern in a
+   component.
 2. **The opaque fallback is the contrast reference.** Verify text contrast against
    the solid colour. If it only passes because of the blur, it does not pass.
 3. **Light glass stays near-opaque** (`0.9`). The header scrolls over unknown
@@ -172,16 +178,38 @@ These replace subjective wording. They are checkable.
 - Glass tokens are for the Gateway and the header only. See §2b.
 
 **Interaction**
+- **Hover-darker rule (E2/KI-0003, 2026-08-23):** on light surfaces, a
+  text-bearing fill's hover MUST be **darker** than its rest state, never
+  lighter. Primary hover = `--color-brand-emphasis-hover` `#0a6a62`
+  (white-on-hover 5.4:1). `#0d9689`/`#16b8a6` are for dark surfaces and large
+  graphics only.
+- **Control boundary (E2/KI-0004):** interactive controls (buttons, inputs,
+  selects, ghost CTAs) use `--color-control-border` `#748682` (3:1 on canvas).
+  `--color-border-subtle/strong` remain for decorative card hairlines.
 - Minimum touch target 44×44px, including header links and CTAs.
-- Every `:hover` style MUST have a matching `:focus-visible` style. Keyboard parity is not optional.
+  Named exception (DEFER-0035): **below 224px CSS width** (`max-width: 14rem`
+  zoom-safety grid in `Header.astro`), 36px min-height is allowed for header
+  links. Everywhere else the 44px floor holds.
+- Every `:hover` style MUST have a matching `:focus-visible` style — the same
+  fill, border colour and shadow/glow as hover, while keeping the outline ring.
+  Ring colours: inverse/white on navy surfaces, brand on light surfaces
+  (the global `--color-focus` outline is the default). Keyboard parity is not optional.
 - The current page MUST be marked with `aria-current="page"` and shown with more
   than colour — the header uses weight plus a 2px rule.
 - Transitions use `--duration-fast` or `--duration-base` with `--ease-out`.
 - Animate `box-shadow`, `border-color`, `transform` and `opacity` only. Never
   `width`, `height`, `top` or `left` — they reflow and cause layout shift.
-- A hover lift is `translateY(-2px)`, and it must be removed under
-  `prefers-reduced-motion: reduce` while the colour state stays.
+- ~~A hover lift is `translateY(-2px)`, and it must be removed under
+  `prefers-reduced-motion: reduce` while the colour state stays.~~
+  **Struck (DEBT-0013 closed 2026-08-23):** no hover-lift transforms exist in
+  the build; hover/focus states are colour-only and are covered by
+  `--duration-fast` / `--duration-base`. Reinstate this clause together with
+  the first real hover lift.
 - Motion is never required to read content.
+- Reduced motion: the global kill switch in `global.css`
+  (`prefers-reduced-motion: reduce`) zeroes animation/transition durations via
+  `var(--reduced-motion-duration, 0.01ms)` — overridable per surface when
+  essential feedback needs a longer floor.
 - One primary call to action per screen. Secondary actions are visually quieter.
 
 **Icons and images**
@@ -227,5 +255,5 @@ The audience is PhD admissions and senior industry readers. They scan for proof.
 - [ ] Contrast verified for new colour pairs — **including hover and focus states**,
       which is where it usually breaks.
 - [ ] Any glass surface defines its opaque fallback first and passes contrast against it.
-- [ ] Hover lift removed under `prefers-reduced-motion`.
+- [ ] Motion honours `prefers-reduced-motion: reduce` (global overridable kill switch).
 - [ ] No new dependency added.

@@ -1,6 +1,7 @@
 ---
 import type { LocaleContent } from "../data/content";
 import type { Profile } from "../data/profile";
+import Constellation3D from "./islands/Constellation3D";
 
 interface Props {
   content: LocaleContent;
@@ -40,11 +41,11 @@ const selectedPublications = localeProfile.publications.slice(0, 2);
         xmlns="http://www.w3.org/2000/svg"
       >
         <g stroke="var(--color-navy-800)" stroke-width="1.5">
-          <path d="M220 240 L100 110" />
-          <path d="M220 240 L340 130" />
-          <path d="M220 240 L80 300" />
-          <path d="M220 240 L360 330" />
-          <path d="M220 240 L225 70" />
+          <path class="spoke" pathLength="1" d="M220 240 L100 110" />
+          <path class="spoke" pathLength="1" d="M220 240 L340 130" />
+          <path class="spoke" pathLength="1" d="M220 240 L80 300" />
+          <path class="spoke" pathLength="1" d="M220 240 L360 330" />
+          <path class="spoke" pathLength="1" d="M220 240 L225 70" />
         </g>
         <g
           stroke="var(--color-navy-800)"
@@ -52,32 +53,35 @@ const selectedPublications = localeProfile.publications.slice(0, 2);
           stroke-dasharray="4 7"
           opacity="0.55"
         >
-          <path d="M100 110 L225 70" />
-          <path d="M340 130 L360 330" />
-          <path d="M80 300 L100 110" />
+          <path class="link" d="M100 110 L225 70" />
+          <path class="link" d="M340 130 L360 330" />
+          <path class="link" d="M80 300 L100 110" />
         </g>
         <g stroke="var(--color-border-strong)" stroke-width="1" opacity="0.7">
-          <path d="M28 28 h18 M28 28 v18" />
-          <path d="M412 28 h-18 M412 28 v18" />
-          <path d="M28 412 h18 M28 412 v-18" />
-          <path d="M412 412 h-18 M412 412 v-18" />
+          <path class="tick" pathLength="1" d="M28 28 h18 M28 28 v18" />
+          <path class="tick" pathLength="1" d="M412 28 h-18 M412 28 v18" />
+          <path class="tick" pathLength="1" d="M28 412 h18 M28 412 v-18" />
+          <path class="tick" pathLength="1" d="M412 412 h-18 M412 412 v-18" />
         </g>
-        <circle cx="100" cy="110" r="7" fill="var(--color-turquoise-500)" />
-        <circle cx="340" cy="130" r="7" fill="var(--color-turquoise-500)" />
-        <circle cx="80" cy="300" r="7" fill="var(--color-turquoise-500)" />
-        <circle cx="360" cy="330" r="7" fill="var(--color-turquoise-500)" />
-        <circle cx="225" cy="70" r="9" fill="var(--color-purple-500)" />
+        <circle class="node node-1" cx="100" cy="110" r="7" fill="var(--color-turquoise-500)" />
+        <circle class="node node-2" cx="340" cy="130" r="7" fill="var(--color-turquoise-500)" />
+        <circle class="node node-3" cx="80" cy="300" r="7" fill="var(--color-turquoise-500)" />
+        <circle class="node node-4" cx="360" cy="330" r="7" fill="var(--color-turquoise-500)" />
+        <circle class="node node-5" cx="225" cy="70" r="9" fill="var(--color-purple-500)" />
         <circle
+          class="ring"
+          pathLength="1"
           cx="220"
           cy="240"
           r="36"
           fill="none"
-          stroke="var(--color-gold-500)"
+          stroke="var(--color-signature)"
           stroke-width="1.5"
           opacity="0.5"
         />
-        <circle cx="220" cy="240" r="12" fill="var(--color-gold-500)" />
+        <circle class="core" cx="220" cy="240" r="12" fill="var(--color-signature)" />
       </svg>
+      <Constellation3D client:visible />
     </div>
   </div>
 </section>
@@ -217,7 +221,7 @@ const selectedPublications = localeProfile.publications.slice(0, 2);
     width: 3.5rem;
     height: 3px;
     margin-block-start: 0.875rem;
-    background-color: var(--color-gold-500);
+    background-color: var(--color-signature);
   }
 
   .hero-proposition {
@@ -256,9 +260,9 @@ const selectedPublications = localeProfile.publications.slice(0, 2);
     color: var(--color-inverse);
   }
 
-  .cta--primary:hover {
-    background-color: var(--color-brand-emphasis);
-  }
+    .cta--primary:hover {
+      background-color: var(--color-brand-emphasis-hover);
+    }
 
   .cta--primary:focus-visible {
     outline-color: var(--color-navy-950);
@@ -266,10 +270,11 @@ const selectedPublications = localeProfile.publications.slice(0, 2);
 
   .cta--ghost {
     color: var(--color-brand);
-    border: 1px solid var(--color-border-strong);
+    border: 1px solid var(--color-control-border);
   }
 
-  .cta--ghost:hover {
+  .cta--ghost:hover,
+  .cta--ghost:focus-visible {
     background-color: var(--color-brand-soft);
     border-color: var(--color-brand);
   }
@@ -284,6 +289,145 @@ const selectedPublications = localeProfile.publications.slice(0, 2);
     max-width: 420px;
     height: auto;
     display: block;
+  }
+
+  .hero-visual :global(.constellation-3d) {
+    display: none;
+    width: 100%;
+    max-width: 420px;
+    aspect-ratio: 1 / 1;
+  }
+
+  .hero-visual :global(.constellation-3d[data-ready="true"]) {
+    display: block;
+  }
+
+  .hero-visual:has(:global(.constellation-3d[data-ready="true"]))
+    .constellation {
+    display: none;
+  }
+
+  /* One-time constellation entrance (B5 Candidate 1, ADR-0030).
+     CSS-only: no JS, hero copy untouched. Reduced-motion and no-JS
+     users get the static constellation (base styles above are final-state). */
+  @media (prefers-reduced-motion: no-preference) {
+    .constellation .spoke,
+    .constellation .tick,
+    .constellation .ring {
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1;
+      animation: landing-const-draw 1.2s var(--ease-out) forwards;
+    }
+
+    .constellation .ring {
+      animation-delay: 0ms;
+    }
+
+    .constellation .spoke:nth-of-type(1) {
+      animation-delay: 100ms;
+    }
+
+    .constellation .spoke:nth-of-type(2) {
+      animation-delay: 150ms;
+    }
+
+    .constellation .spoke:nth-of-type(3) {
+      animation-delay: 200ms;
+    }
+
+    .constellation .spoke:nth-of-type(4) {
+      animation-delay: 250ms;
+    }
+
+    .constellation .spoke:nth-of-type(5) {
+      animation-delay: 300ms;
+    }
+
+    .constellation .tick:nth-of-type(1) {
+      animation-delay: 550ms;
+    }
+
+    .constellation .tick:nth-of-type(2) {
+      animation-delay: 620ms;
+    }
+
+    .constellation .tick:nth-of-type(3) {
+      animation-delay: 690ms;
+    }
+
+    .constellation .tick:nth-of-type(4) {
+      animation-delay: 760ms;
+    }
+
+    /* Dashed connectors keep their 4/7 dash look, so they fade instead of drawing. */
+    .constellation .link {
+      opacity: 0;
+      animation: landing-const-fade 600ms var(--ease-out) forwards;
+    }
+
+    .constellation .link:nth-of-type(1) {
+      animation-delay: 750ms;
+    }
+
+    .constellation .link:nth-of-type(2) {
+      animation-delay: 850ms;
+    }
+
+    .constellation .link:nth-of-type(3) {
+      animation-delay: 950ms;
+    }
+
+    .constellation .node,
+    .constellation .core {
+      opacity: 0;
+      transform-box: fill-box;
+      transform-origin: center;
+      transform: scale(0.3);
+      animation: landing-const-node 450ms var(--ease-out) forwards;
+    }
+
+    .constellation .node-1 {
+      animation-delay: 700ms;
+    }
+
+    .constellation .node-2 {
+      animation-delay: 770ms;
+    }
+
+    .constellation .node-3 {
+      animation-delay: 840ms;
+    }
+
+    .constellation .node-4 {
+      animation-delay: 910ms;
+    }
+
+    .constellation .node-5 {
+      animation-delay: 980ms;
+    }
+
+    .constellation .core {
+      animation-delay: 1100ms;
+    }
+  }
+
+  @keyframes landing-const-draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes landing-const-fade {
+    to {
+      opacity: 0.55;
+    }
+  }
+
+  @keyframes landing-const-node {
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
 
   .section {
@@ -347,7 +491,7 @@ const selectedPublications = localeProfile.publications.slice(0, 2);
     top: -1px;
     height: 3px;
     width: 64px;
-    background-color: var(--color-gold-500);
+    background-color: var(--color-signature);
   }
 
   .perspectives-grid {
@@ -520,6 +664,10 @@ const selectedPublications = localeProfile.publications.slice(0, 2);
     .constellation {
       max-width: 240px;
       opacity: 0.9;
+    }
+
+    .hero-visual :global(.constellation-3d) {
+      max-width: 240px;
     }
   }
 
