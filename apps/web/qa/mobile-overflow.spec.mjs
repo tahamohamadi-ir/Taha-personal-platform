@@ -82,6 +82,11 @@ try {
         }
         for (let i = 0; i < controlCount; i += 1) {
           const control = page.locator(entry.controls).nth(i);
+          // Skip hidden controls (closed <details> panel etc.) — they are not reachable but also not visible.
+          if (!(await control.isVisible())) {
+            console.log(`SKIP ${label} control ${i} hidden`);
+            continue;
+          }
           await control.scrollIntoViewIfNeeded({ timeout: ACTION_TIMEOUT });
           const box = await control.boundingBox({ timeout: ACTION_TIMEOUT });
           const viewportSize = page.viewportSize();
