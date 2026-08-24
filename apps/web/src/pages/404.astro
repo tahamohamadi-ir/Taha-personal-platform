@@ -37,25 +37,7 @@ const cvHref = locale ? `/${page.lang}/cv/` : null;
   </head>
   <body class="notfound">
     <a class="skip-link" href="#main">{skip}</a>
-    <svg
-      class="notfound-field"
-      aria-hidden="true"
-      viewBox="0 0 1440 900"
-      preserveAspectRatio="xMidYMid slice"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <g stroke="rgba(255,255,255,0.08)" stroke-width="1">
-        <path d="M720 460 L420 260" />
-        <path d="M720 460 L1010 300" />
-        <path d="M720 460 L400 640" />
-        <path d="M720 460 L1040 660" />
-      </g>
-      <circle cx="420" cy="260" r="5" fill="rgba(22,184,166,0.4)" />
-      <circle cx="1010" cy="300" r="5" fill="rgba(22,184,166,0.4)" />
-      <circle cx="400" cy="640" r="5" fill="rgba(22,184,166,0.4)" />
-      <circle cx="1040" cy="660" r="5" fill="rgba(22,184,166,0.4)" />
-    </svg>
-    <main class="notfound-panel" id="main">
+    <main class="notfound-panel glass-surface glass-surface--dark" id="main">
       <p class="notfound-code">{page.notfound.code}</p>
       <h1 class="notfound-title">
         {locale ? (
@@ -92,20 +74,17 @@ const cvHref = locale ? `/${page.lang}/cv/` : null;
     min-height: 100vh;
     min-height: 100svh;
     overflow-x: clip;
-    background-color: var(--color-navy-950);
-    color: var(--color-inverse);
+    background-color: var(--canvas-night);
+    color: var(--ink-hi);
     display: grid;
     place-items: center;
+    padding: clamp(1.25rem, 4vw, 2rem);
   }
 
-  .notfound-field {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-  }
-
+  /* Glass background/border/shadow/blur come from the shared
+     .glass-surface--dark utility (global.css, DEBT-0012); navy-900 is its
+     opaque fallback when backdrop-filter is unsupported. The A-01 aurora
+     body::before supplies the depth behind the card. */
   .notfound-panel {
     position: relative;
     display: flex;
@@ -114,8 +93,9 @@ const cvHref = locale ? `/${page.lang}/cv/` : null;
     gap: 1rem;
     text-align: center;
     margin-block: auto;
-    padding: clamp(2rem, 6vw, 3rem) clamp(1rem, 5vw, 2rem);
+    padding: clamp(2rem, 6vw, 3rem) clamp(1.25rem, 6vw, 2.5rem);
     max-width: 34rem;
+    border-radius: var(--radius-lg);
   }
 
   .notfound-code {
@@ -124,7 +104,7 @@ const cvHref = locale ? `/${page.lang}/cv/` : null;
     font-size: clamp(4rem, 3rem + 6vw, 7rem);
     line-height: 1;
     font-weight: 700;
-    color: var(--color-turquoise-500);
+    color: var(--brand-text);
     letter-spacing: 0.04em;
   }
 
@@ -136,7 +116,7 @@ const cvHref = locale ? `/${page.lang}/cv/` : null;
     margin: 0;
     font-size: clamp(1.25rem, 1rem + 1.2vw, 1.75rem);
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.92);
+    color: var(--ink-hi);
   }
 
   .notfound-title span {
@@ -151,6 +131,8 @@ const cvHref = locale ? `/${page.lang}/cv/` : null;
     margin-block-start: 1rem;
   }
 
+  /* Same glass card pattern as the gateway language cards — fill + edge,
+     hover brightens the fill; home link carries the brand accent. */
   .notfound-actions a {
     display: inline-flex;
     align-items: center;
@@ -158,32 +140,28 @@ const cvHref = locale ? `/${page.lang}/cv/` : null;
     min-height: 3rem;
     padding: 0.625rem 1.375rem;
     border-radius: var(--radius-md);
+    background-color: var(--glass-fill);
+    color: var(--ink-mid);
+    border: 1px solid var(--glass-edge);
     text-decoration: none;
     font-weight: 700;
-    color: var(--color-gold-500);
-    border: 1px solid var(--color-gold-500);
-    transition: background-color 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
-      color 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: background-color var(--duration-night-fast) var(--ease-night),
+      border-color var(--duration-night-fast) var(--ease-night);
   }
 
-  .notfound-actions a:hover {
-    background-color: var(--color-gold-500);
-    color: var(--color-navy-950);
+  .notfound-actions a:hover,
+  .notfound-actions a:focus-visible {
+    background-color: var(--glass-fill-strong);
+    color: var(--ink-hi);
   }
 
   .notfound-actions a:focus-visible {
-    outline-color: var(--color-inverse);
+    outline-color: var(--ink-hi);
+    outline-offset: 3px;
   }
 
   .notfound-actions a:first-child {
-    color: var(--color-turquoise-500);
-    border-color: var(--color-turquoise-500);
-  }
-
-  .notfound-actions a:first-child:hover,
-  .notfound-actions a:first-child:focus-visible {
-    background-color: var(--color-turquoise-500);
-    color: var(--color-navy-950);
+    color: var(--brand-text);
   }
 
   @media (max-width: 14rem) {

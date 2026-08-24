@@ -41,55 +41,6 @@ const canonical = new URL("/", site.url).href;
   </head>
   <body class="gateway">
     <a class="skip-link" href="#main">{en.skip}</a>
-    <svg
-      class="gateway-field"
-      aria-hidden="true"
-      viewBox="0 0 1440 900"
-      preserveAspectRatio="xMidYMid slice"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <defs>
-        <pattern id="dot-field" width="28" height="28" patternUnits="userSpaceOnUse">
-          <circle cx="1.5" cy="1.5" r="1.5" fill="rgba(255,255,255,0.05)" />
-        </pattern>
-      </defs>
-      <rect width="1440" height="900" fill="url(#dot-field)" />
-      <g stroke="rgba(255,255,255,0.09)" stroke-width="1">
-        <path d="M430 450 L150 230" />
-        <path d="M430 450 L760 270" />
-        <path d="M430 450 L140 630" />
-        <path d="M430 450 L780 660" />
-        <path d="M430 450 L470 140" />
-      </g>
-      <g
-        stroke="rgba(255,255,255,0.07)"
-        stroke-width="1"
-        stroke-dasharray="3 8"
-      >
-        <path d="M150 230 L470 140" />
-        <path d="M760 270 L780 660" />
-        <path d="M140 630 L150 230" />
-      </g>
-      <circle cx="150" cy="230" r="6" fill="rgba(22,184,166,0.42)" />
-      <circle cx="760" cy="270" r="6" fill="rgba(22,184,166,0.42)" />
-      <circle cx="140" cy="630" r="6" fill="rgba(22,184,166,0.42)" />
-      <circle cx="780" cy="660" r="6" fill="rgba(22,184,166,0.42)" />
-      <circle cx="470" cy="140" r="8" fill="rgba(96,71,184,0.45)" />
-      <circle
-        cx="430"
-        cy="450"
-        r="26"
-        fill="none"
-        stroke="rgba(200,155,60,0.35)"
-        stroke-width="1"
-      />
-      <g stroke="rgba(255,255,255,0.14)" stroke-width="1">
-        <path d="M40 40 h24 M40 40 v24" />
-        <path d="M1400 40 h-24 M1400 40 v24" />
-        <path d="M40 860 h24 M40 860 v-24" />
-        <path d="M1400 860 h-24 M1400 860 v-24" />
-      </g>
-    </svg>
     <main class="gateway-stage" id="main">
       <div class="gateway-panel glass-surface glass-surface--dark">
         <img
@@ -142,22 +93,11 @@ const canonical = new URL("/", site.url).href;
     min-height: 100vh;
     min-height: 100svh;
     overflow-x: clip;
-    background-color: var(--color-navy-950);
-    color: var(--color-inverse);
+    background-color: var(--canvas-night);
+    color: var(--ink-hi);
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     place-items: center;
-  }
-
-  .gateway-field {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    opacity: 0.82;
-    overflow: hidden;
   }
 
   .gateway-stage {
@@ -220,6 +160,24 @@ const canonical = new URL("/", site.url).href;
     font-weight: 500;
   }
 
+  /* Gold signature line under the bilingual name — decorative only,
+     drawn from ::after so the DOM structure stays unchanged. */
+  .gateway-name::after {
+    content: "";
+    display: block;
+    width: clamp(3.5rem, 32%, 6rem);
+    height: 2px;
+    border-radius: var(--radius-pill);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--gold) 30%,
+      var(--gold) 70%,
+      transparent
+    );
+    box-shadow: 0 0 12px rgba(227, 185, 92, 0.35);
+  }
+
   .gateway-prompt {
     display: flex;
     align-items: center;
@@ -227,7 +185,7 @@ const canonical = new URL("/", site.url).href;
     gap: 0.55rem;
     flex-wrap: wrap;
     margin: 0;
-    color: rgba(255, 255, 255, 0.72);
+    color: var(--ink-mid);
     max-width: 100%;
     min-width: 0;
     overflow-wrap: anywhere;
@@ -239,7 +197,7 @@ const canonical = new URL("/", site.url).href;
     justify-content: center;
     gap: 0.45rem;
     margin: 0;
-    color: var(--color-turquoise-500);
+    color: var(--brand-text);
     font-size: var(--text-xs);
     font-weight: 700;
     letter-spacing: 0.08em;
@@ -262,7 +220,7 @@ const canonical = new URL("/", site.url).href;
   }
 
   .gateway-prompt-divider {
-    color: var(--color-gold-500);
+    color: var(--gold);
     opacity: 0.8;
   }
 
@@ -275,6 +233,8 @@ const canonical = new URL("/", site.url).href;
     min-width: 0;
   }
 
+  /* Language cards — §0 glass recipe: fill + edge, hover brightens the fill
+     only so the brand label colors stay AA on night (no color inversion). */
   .gateway-action {
     display: inline-flex;
     align-items: center;
@@ -283,44 +243,32 @@ const canonical = new URL("/", site.url).href;
     min-height: 3rem;
     padding: 0.75rem 1.5rem;
     border-radius: var(--radius-md);
-    background-color: rgba(255, 255, 255, 0.04);
-    color: var(--color-inverse);
-    border: 1px solid transparent;
+    background-color: var(--glass-fill);
+    color: var(--ink-hi);
+    border: 1px solid var(--glass-edge);
     text-decoration: none;
     font-weight: 700;
     overflow-wrap: anywhere;
     cursor: pointer;
-    transition: background-color 140ms cubic-bezier(0.2, 0.8, 0.2, 1),
-      color 140ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: background-color var(--duration-night-fast) var(--ease-night),
+      border-color var(--duration-night-fast) var(--ease-night);
   }
 
   .gateway-action:hover,
   .gateway-action:focus-visible {
-    color: var(--color-navy-950);
+    background-color: var(--glass-fill-strong);
   }
 
   .gateway-action--en {
-    color: var(--color-turquoise-500);
-    border-color: var(--color-turquoise-500);
-  }
-
-  .gateway-action--en:hover,
-  .gateway-action--en:focus-visible {
-    background-color: var(--color-turquoise-500);
+    color: var(--brand-text);
   }
 
   .gateway-action--fa {
-    color: var(--color-gold-500);
-    border-color: var(--color-gold-500);
-  }
-
-  .gateway-action--fa:hover,
-  .gateway-action--fa:focus-visible {
-    background-color: var(--color-gold-500);
+    color: var(--gold);
   }
 
   .gateway-action:focus-visible {
-    outline-color: var(--color-inverse);
+    outline-color: var(--ink-hi);
     outline-offset: 3px;
   }
 
