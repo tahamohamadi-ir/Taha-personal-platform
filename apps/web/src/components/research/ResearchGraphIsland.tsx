@@ -32,7 +32,7 @@ export interface ResearchGraphIslandProps {
 const KIND_FILL: Record<string, string> = {
   topic: "var(--color-brand)",
   project: "var(--color-navy-950)",
-  publication: "var(--color-ink-secondary)",
+  publication: "var(--color-research)",
 };
 
 const MIN_SCALE = 0.55;
@@ -40,6 +40,29 @@ const MAX_SCALE = 2.4;
 
 function clamp(n: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, n));
+}
+
+function normalizeTitle(title: string): string {
+  return title.trim().toLocaleLowerCase();
+}
+
+/** Curved edge path: quadratic bezier bowed perpendicular to the midpoint. */
+function edgePath(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+): string {
+  const mx = (x1 + x2) / 2;
+  const my = (y1 + y2) / 2;
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const len = Math.hypot(dx, dy) || 1;
+  // fixed-size bow independent of zoom; flip side by column direction
+  const bow = Math.min(36, len * 0.12) * (dx >= 0 ? -1 : 1);
+  const cx = mx + (-dy / len) * bow;
+  const cy = my + (dx / len) * bow;
+  return `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`;
 }
 
 export default function ResearchGraphIsland({
@@ -72,6 +95,41 @@ export default function ResearchGraphIsland({
     }
     return set;
   }, [focusedId, graph.edges]);
+
+  // Titles that appear under more than one kind (e.g. a topic and its
+  // companion project share a name) get a kind suffix so the graph does not
+  // show two visually identical labels for different entities.
+  const ambiguousTitles = useMemo(() => {
+    const byTitle = new Map<string, Set<string>>();
+    for (const node of graph.nodes) {
+      const key = normalizeTitle(node.title);
+      const kinds = byTitle.get(key) ?? new Set<string>();
+      kinds.add(node.kind);
+      byTitle.set(key, kinds);
+    }
+    const ambiguous = new Set<string>();
+    for (const [key, kinds] of byTitle) {
+      if (kinds.size > 1) ambiguous.add(key);
+    }
+    return ambiguous;
+  }, [graph.nodes]);
+
+  const displayLabel = (node: (typeof graph.nodes)[number]): string => {
+    const base =
+      node.title.length > 30
+        ? `${node.title.slice(0, 28).trimEnd()}…`
+        : node.title;
+    if (ambiguousTitles.has(normalizeTitle(node.title))) {
+      return `${base} · ${kindLabelOf(node.kind)}`;
+    }
+    return base;
+  };
+
+  const kindLabelOf = (kind: string) => {
+    if (kind === "topic") return labels.topicKind;
+    if (kind === "project") return labels.projectKind;
+    return labels.publicationKind;
+  };
 
   const resetView = useCallback(() => {
     setFocusedId(null);
@@ -180,12 +238,6 @@ export default function ResearchGraphIsland({
     }
   };
 
-  const kindLabel = (kind: string) => {
-    if (kind === "topic") return labels.topicKind;
-    if (kind === "project") return labels.projectKind;
-    return labels.publicationKind;
-  };
-
   return (
     <div
       className="rg-island"
@@ -211,6 +263,26 @@ export default function ResearchGraphIsland({
         </div>
       </div>
       <p className="rg-hint">{labels.focusHint}</p>
+      <div className="rg-legend" aria-hidden="true">
+        <span className="rg-legend-item">
+          <svg width="14" height="14" viewBox="0 0 14 14">
+            <circle cx="7" cy="7" r="6" fill={KIND_FILL.topic} />
+          </svg>
+          {labels.topicKind}
+        </span>
+        <span className="rg-legend-item">
+          <svg width="14" height="14" viewBox="0 0 14 14">
+            <rect x="1.5" y="1.5" width="11" height="11" rx="3" fill={KIND_FILL.project} />
+          </svg>
+          {labels.projectKind}
+        </span>
+        <span className="rg-legend-item">
+          <svg width="14" height="14" viewBox="0 0 14 14">
+            <rect x="2.6" y="2.6" width="8.8" height="8.8" transform="rotate(45 7 7)" fill={KIND_FILL.publication} />
+          </svg>
+          {labels.publicationKind}
+        </span>
+      </div>
       <svg
         ref={svgRef}
         className="rg-svg"
@@ -232,12 +304,10 @@ export default function ResearchGraphIsland({
               neighborIds.has(edge.from) ||
               neighborIds.has(edge.to);
             return (
-              <line
+              <path
                 key={edge.id}
-                x1={from.x}
-                y1={from.y}
-                x2={to.x}
-                y2={to.y}
+                d={edgePath(from.x, from.y, to.x, to.y)}
+                fill="none"
                 className={active ? "rg-edge rg-edge-active" : "rg-edge"}
               />
             );
@@ -245,18 +315,44 @@ export default function ResearchGraphIsland({
           {graph.nodes.map((node) => {
             const dimmed = Boolean(focusedId) && !neighborIds.has(node.id);
             const focused = focusedId === node.id;
-            const r = focused ? 18 : 14;
+            const r = focused ? 17 : 13;
+            const fill = KIND_FILL[node.kind] ?? "currentColor";
             return (
               <g
                 key={node.id}
                 className={dimmed ? "rg-node rg-node-dim" : "rg-node"}
                 transform={`translate(${node.x} ${node.y})`}
+                onPointerEnter={() => setFocusedId(node.id)}
               >
-                <circle
-                  r={r}
-                  fill={KIND_FILL[node.kind] ?? "currentColor"}
-                  className={focused ? "rg-node-circle rg-node-focused" : "rg-node-circle"}
-                />
+                {node.kind === "topic" && (
+                  <circle
+                    r={r}
+                    fill={fill}
+                    className={focused ? "rg-node-shape rg-node-focused" : "rg-node-shape"}
+                  />
+                )}
+                {node.kind === "project" && (
+                  <rect
+                    x={-r + 2}
+                    y={-r + 2}
+                    width={r * 2 - 4}
+                    height={r * 2 - 4}
+                    rx={5}
+                    fill={fill}
+                    className={focused ? "rg-node-shape rg-node-focused" : "rg-node-shape"}
+                  />
+                )}
+                {node.kind === "publication" && (
+                  <rect
+                    x={-r + 3}
+                    y={-r + 3}
+                    width={r * 2 - 6}
+                    height={r * 2 - 6}
+                    transform={`rotate(45)`}
+                    fill={fill}
+                    className={focused ? "rg-node-shape rg-node-focused" : "rg-node-shape"}
+                  />
+                )}
                 <a
                   id={`rg-node-${node.id}`}
                   href={node.href}
@@ -266,18 +362,16 @@ export default function ResearchGraphIsland({
                     /* keep focus highlight until another node or Escape */
                   }}
                   onClick={() => setFocusedId(node.id)}
-                  aria-label={`${kindLabel(node.kind)}: ${node.title}`}
+                  aria-label={`${kindLabelOf(node.kind)}: ${node.title}`}
                 >
-                  <title>{node.title}</title>
+                  <title>{`${kindLabelOf(node.kind)}: ${node.title}`}</title>
                   <circle r={22} fill="transparent" />
                   <text
                     y={36}
                     textAnchor="middle"
                     className="rg-node-label"
                   >
-                    {node.title.length > 28
-                      ? `${node.title.slice(0, 26).trimEnd()}…`
-                      : node.title}
+                    {displayLabel(node)}
                   </text>
                 </a>
               </g>
@@ -329,9 +423,25 @@ export default function ResearchGraphIsland({
           outline-offset: 2px;
         }
         .rg-hint {
-          margin: 0.5rem 0 0.75rem;
+          margin: 0.5rem 0 0.5rem;
           font-size: 0.8125rem;
           color: var(--color-ink-secondary);
+        }
+        .rg-legend {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.35rem 1.25rem;
+          margin: 0 0 0.6rem;
+          font-size: 0.8125rem;
+          color: var(--color-ink-secondary);
+        }
+        .rg-legend-item {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+        }
+        .rg-legend-item svg {
+          flex: none;
         }
         .rg-svg {
           display: block;
@@ -349,9 +459,9 @@ export default function ResearchGraphIsland({
           cursor: grabbing;
         }
         .rg-edge {
-          stroke: var(--color-border-subtle);
+          stroke: var(--color-border-strong);
           stroke-width: 1.5;
-          opacity: 0.35;
+          opacity: 0.4;
         }
         .rg-edge-active {
           stroke: color-mix(in srgb, var(--color-brand) 55%, var(--color-border-subtle));
@@ -360,24 +470,30 @@ export default function ResearchGraphIsland({
         .rg-node-dim {
           opacity: 0.28;
         }
-        .rg-node-circle {
+        .rg-node {
+          cursor: pointer;
+        }
+        .rg-node-shape {
           stroke: var(--color-surface);
           stroke-width: 2;
+          transition: opacity var(--duration-fast, 140ms) var(--ease-out, ease-out);
         }
         .rg-node-focused {
-          stroke: var(--color-brand);
+          stroke: var(--color-signature);
           stroke-width: 3;
         }
         .rg-node-link {
           outline: none;
         }
         .rg-node-link:focus-visible circle:first-of-type,
-        .rg-node-link:focus-visible ~ .rg-node-circle {
-          /* focus ring via surrounding transparent hit target + label color */
-        }
         .rg-node-link:focus-visible text {
           fill: var(--color-brand);
           font-weight: 700;
+        }
+        .rg-node-link:focus-visible ~ .rg-node-shape,
+        .rg-node:hover .rg-node-shape {
+          stroke: var(--color-signature);
+          stroke-width: 3;
         }
         .rg-node-label {
           fill: var(--color-ink);

@@ -183,14 +183,51 @@ export async function getResearchGraph(
     href: `/${locale}/research/topics/${t.slug}/`,
   }));
 
-  const projectNodes = projectDetails.map((p) => ({
+  const topicIndexBySlug = new Map(topicNodes.map((t, i) => [t.slug, i]));
+
+  // Order projects/publications within their column by the index of their
+  // first linked topic so connected triples sit adjacent — this keeps edges
+  // short and readable instead of a crossing tangle.
+  const firstTopicIndexForProject = new Map<string, number>();
+  for (const project of projectDetails) {
+    let best = Number.POSITIVE_INFINITY;
+    for (const t of project.topics) {
+      const idx = topicIndexBySlug.get(t.slug);
+      if (idx !== undefined && idx < best) best = idx;
+    }
+    firstTopicIndexForProject.set(project.slug, best);
+  }
+  const orderedProjects = [...projectDetails].sort((a, b) => {
+    const ai = firstTopicIndexForProject.get(a.slug) ?? Number.POSITIVE_INFINITY;
+    const bi = firstTopicIndexForProject.get(b.slug) ?? Number.POSITIVE_INFINITY;
+    return ai - bi || a.slug.localeCompare(b.slug);
+  });
+
+  const firstTopicIndexForPublication = new Map<string, number>();
+  for (const pub of publications) {
+    let best = Number.POSITIVE_INFINITY;
+    for (const topic of topicDetails) {
+      if (topic.publications.some((p) => p.slug === pub.slug)) {
+        const idx = topicIndexBySlug.get(topic.slug);
+        if (idx !== undefined && idx < best) best = idx;
+      }
+    }
+    firstTopicIndexForPublication.set(pub.slug, best);
+  }
+  const orderedPublications = [...publications].sort((a, b) => {
+    const ai = firstTopicIndexForPublication.get(a.slug) ?? Number.POSITIVE_INFINITY;
+    const bi = firstTopicIndexForPublication.get(b.slug) ?? Number.POSITIVE_INFINITY;
+    return ai - bi || a.slug.localeCompare(b.slug);
+  });
+
+  const projectNodes = orderedProjects.map((p) => ({
     kind: "project" as const,
     slug: p.slug,
     title: p.title,
     href: `/${locale}/research/projects/${p.slug}/`,
   }));
 
-  const publicationNodes = publications.map((p) => ({
+  const publicationNodes = orderedPublications.map((p) => ({
     kind: "publication" as const,
     slug: p.slug,
     title: p.title,

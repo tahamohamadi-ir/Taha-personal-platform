@@ -347,7 +347,7 @@ export const content: Record<LocaleCode, LocaleContent> = {
       collaboratorsHeading: "Collaborators",
       fundingHeading: "Funding",
       contactNote:
-        "For collaboration inquiries, see About. A contact form is not published yet.",
+        "For collaboration inquiries, see About or use the contact page.",
       missingTranslation: "This research page is not yet translated into Persian.",
       caseStudyLinkLabel: "View full case study",
       filterLabel: "Filter",
@@ -626,7 +626,7 @@ export const content: Record<LocaleCode, LocaleContent> = {
       collaboratorsHeading: "همکاران",
       fundingHeading: "حمایت مالی",
       contactNote:
-        "برای همکاری، صفحهٔ درباره را ببینید. فرم تماس هنوز منتشر نشده است.",
+        "برای همکاری، صفحهٔ درباره یا صفحهٔ تماس را ببینید.",
       missingTranslation: "این صفحهٔ پژوهشی هنوز به انگلیسی ترجمه نشده است.",
       caseStudyLinkLabel: "مشاهدهٔ مطالعهٔ موردی کامل",
       filterLabel: "فیلتر",
