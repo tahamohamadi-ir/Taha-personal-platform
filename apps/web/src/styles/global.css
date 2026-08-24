@@ -5,7 +5,11 @@
 /*
   Design tokens — source of truth: docs/design.md (light theme).
   Raw primitives are mapped to semantic tokens; components consume semantic
-  tokens only. Dark mode is out of R2 scope.
+  tokens only.
+  ADR-0031: the site migrates to the dark-first «Glass Constellation» night
+  system (DESIGN-CONTRACT §0). Both token sets live here during the phased
+  migration — legacy pages consume the light table, migrated pages consume
+  ONLY the §0 night set.
 */
 
 @theme static {
@@ -57,9 +61,12 @@
   --glass-shadow-dark: 0 16px 48px rgba(0, 0, 0, 0.24);
   --glass-bg-light: rgba(247, 248, 245, 0.82);
 
-  /* self-hosted bilingual font pair; decision recorded in ADR-0019 */
-  --font-latin: "Inter", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
-  --font-persian: "Vazirmatn", "Inter", "Segoe UI", system-ui, sans-serif;
+  /* self-hosted bilingual font pair; decision recorded in ADR-0019.
+     The @fontsource-variable packages register their families WITH the
+     "Variable" suffix — stacks naming them without it silently fell back
+     to system fonts. */
+  --font-latin: "Inter Variable", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-persian: "Vazirmatn Variable", "Inter Variable", "Segoe UI", system-ui, sans-serif;
   --font-sans: var(--font-latin);
   --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Code", Consolas,
     monospace;
@@ -141,6 +148,39 @@
   --glass-solid-dark: #0b1630;
   --glass-solid-light: #f7f8f5;
 
+  /*
+    v2 night tokens (DESIGN-CONTRACT §0 · reDesign_plan §۱.۲ — ADR-0031).
+    Additive in Phase 0: the light table above keeps serving legacy pages
+    until each page migrates; migrated pages consume ONLY this set.
+  */
+  --canvas-night: #071225;
+  --canvas-deep: #0b1630;
+  --surface-read: #101f3c;
+  --glass-fill: rgba(255, 255, 255, 0.08);
+  --glass-fill-strong: rgba(255, 255, 255, 0.14);
+  --glass-edge: rgba(255, 255, 255, 0.16);
+  --ink-hi: #f2f6fa;
+  --ink-mid: #a8b8c8;
+  --ink-low: #6e8095;
+  --brand: #16b8a6;
+  --brand-text: #3dd6c5;
+  --brand-deep: #0d9689;
+  --gold: #e3b95c;
+  --violet: #8e75e6;
+  --danger: #ff6b5e;
+
+  /*
+    Night motion language (reDesign_plan §۱.۵ M0 ladder). Deliberately new
+    names: legacy --duration-* / --ease-* keep their §2 values until pages
+    migrate. micro = press feedback · fast = hover/focus · base = open/close
+    · slow = journey reveals.
+  */
+  --ease-night: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-night-micro: 120ms;
+  --duration-night-fast: 160ms;
+  --duration-night-base: 240ms;
+  --duration-night-slow: 360ms;
+
   /* Semantic aliases consumed by components (E1/P14) — single dictionary:
      muted = secondary ink, tertiary per contract table, accent = brand,
      raised surface = card white, display/body faces = the bilingual pair. */
@@ -174,6 +214,50 @@
   :lang(en) {
     font-family: var(--font-latin);
     line-height: 1.65;
+  }
+
+  /*
+    Aurora ambience (reDesign_plan §۱.۲ · DESIGN-CONTRACT §0): fixed,
+    CSS-only light fields behind the whole document. Negative z-index on
+    fixed pseudo-elements is the robust equivalent of
+    `background-attachment: fixed` (no iOS Safari repaint quirk) and keeps
+    both layers strictly BEHIND all content. Purely decorative — surfaces
+    and ink colors are untouched, so text contrast never includes them.
+    Static by design; zero JS, nothing for prefers-reduced-motion to mute.
+  */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    background:
+      radial-gradient(
+        48rem 48rem at 18% -12%,
+        rgba(22, 184, 166, 0.08),
+        transparent 65%
+      ),
+      radial-gradient(
+        56rem 56rem at 88% 12%,
+        rgba(142, 117, 230, 0.06),
+        transparent 70%
+      ),
+      radial-gradient(
+        64rem 64rem at 50% 118%,
+        rgba(22, 184, 166, 0.05),
+        transparent 72%
+      );
+  }
+
+  /* Anti-banding grain: SVG fractal noise tile at ~3% opacity. */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23grain)'/%3E%3C/svg%3E");
   }
 
   ::selection {
