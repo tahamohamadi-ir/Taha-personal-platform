@@ -1,9 +1,11 @@
 # Design contract card — buildable rules
 
-> **v2 (2026-08-24, ADR-0031):** the visual identity is **dark-first «Glass Constellation»**.
-> This card now describes BOTH states during the migration: §0 lists the v2 night tokens
-> that land in Phase 0; the legacy light table in §2 stays valid only until each page
-> migrates. When a page migrates, it consumes ONLY §0 tokens.
+> **v2.1 (2026-08-25):** the visual identity is **dark-first «Glass Constellation»** (ADR-0031).
+> Migration status: **home (gateway + landing) is fully night** — Hero, PerspectiveGrid,
+> FocusStrip, EvidenceSection, WritingLatest, ContactCTA, night header/footer, 404, contact
+> and search all consume §0 tokens only. The legacy light table in §2 remains valid ONLY
+> for pages not yet migrated in Wave D (about/cv/research/projects/writing trees and P8
+> catalogs). When a page migrates, it consumes ONLY §0 tokens.
 > Source of truth for **visual intent**: `reDesign_plan.md` v2 + `docs/design.md`.
 > Source of truth for **tokens that exist today**: `apps/web/src/styles/global.css`.
 
@@ -55,18 +57,19 @@ surfaces' text contrast computation (contrast is checked against
 ## 0b. Component layer (ADR-0031)
 
 ```
-components/primitives/   Btn, Chip, Kicker, MetaRow, Field, Icon      ← atoms, zero logic
-components/ui/           SiteHeader, SiteFooter, Breadcrumbs, EmptyState, Pagination, ThemeAurora
-components/patterns/     ArticleCard, ProjectCard, ResearchCard, PublicationRow, CatalogPage (single), DetailShell
-components/sections/     HeroSection, PerspectiveGrid, FocusStrip, EvidenceSection, JourneySection, WritingLatest, ContactCTA
-components/islands/      React islands with an interaction justification ONLY
-lib/format.ts            formatDate/formatNumber — fa Jalali + Persian digits at build time
+components/primitives/   Btn, Chip, Kicker, MetaRow                    ← SHIPPED (#106)
+components/ui/           SiteHeader, SiteFooter (nighted #112), Breadcrumbs, EmptyState, Pagination
+components/patterns/     CatalogPage + DetailShell                     ← SHIPPED (#107)
+components/sections/     HeroSection (#108), PerspectiveGrid/FocusStrip/EvidenceSection/WritingLatest/ContactCTA (#111) — SHIPPED; JourneySection reserved
+components/islands/      Constellation3D (drag-rotate, #108) — React islands with an interaction justification ONLY
+lib/format.ts            formatDate/formatNumber — fa Jalali + Persian digits at build time (#100)
 ```
 
 Rules:
 - No raw hex/px-gap/ms anywhere outside `global.css`. CI grep enforces this for pages/components.
 - No page-local `<style>` block that duplicates a shared class; page styles compose shared classes + variants.
 - A catalog page is built from `CatalogPage`; a detail page from `DetailShell`. New copies are defects.
+  (Wave D migrates the remaining page groups onto these patterns.)
 
 ## 1. Stack boundary (updated by ADR-0030/0031)
 
@@ -146,9 +149,10 @@ These names are defined in `global.css` as aliases into the tables above
 `--brand-primary`, `--focus-ring`). Those names do **not** exist in the build.
 Translate to the table above.
 
-Note: `global.css` declares its token block as `@theme static` so every token
-above is emitted to the built CSS even when no utility consumes it yet
-(Tailwind v4 otherwise tree-shakes unused variables).
+Note: Tailwind was removed from the build (#103, 2026-08-24). `global.css` is
+plain CSS: the §0 token block is a plain custom-property block (no `@theme`),
+so every token is always emitted. The border-box reset replaces the part of
+Tailwind preflight the layout silently depended on.
 
 ~~Dark mode is out of scope. Do not add a theme toggle.~~
 **Superseded (ADR-0031):** there is no dual-theme system and no toggle; the site

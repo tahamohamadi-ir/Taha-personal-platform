@@ -1,29 +1,30 @@
 # Taha Personal Platform
 
-Bilingual Persian/English personal research, professional and knowledge platform for Taha Mohammadi, live at https://tahamohamadi.ir. The public root is a Language Gateway (`/`) with direct locale roots `/fa/` (RTL) and `/en/` (LTR); all public content is static-first and readable without JavaScript, served as a versioned artifact by Caddy from `/opt/taha/site/current`. This repository is a monorepo: `apps/web/` is the Astro static public frontend, `apps/cms/` is the Django/Ninja CMS (runtime live; Wagtail admin being replaced by a custom React admin SPA per ADR-0026), `infra/` holds deploy scripts and the CMS Compose stack, and `docs/` holds policies, ADRs, task specs and status ledgers. Source of truth for product, environments and commands: [PROJECT_MANIFEST.md](PROJECT_MANIFEST.md).
+Bilingual Persian/English personal research, professional and knowledge platform for Taha Mohammadi, live at https://tahamohamadi.ir. The public root is a Language Gateway (`/`) with direct locale roots `/fa/` (RTL) and `/en/` (LTR); all public content is static-first and readable without JavaScript, served by the Compose Caddy edge. This repository is a modular monorepo: `apps/web/` is the Astro static public frontend (Glass Constellation night identity per ADR-0031), `apps/admin/` is the independent React admin SPA served at `/admin/` (own image + CI, ADR-0032), `apps/cms/` is the Django/Ninja CMS backend (Wagtail removed, `DEBT-0003` CLOSED), `infra/` holds deploy scripts and the Compose stack, and `docs/` holds policies, ADRs, contracts, task specs and status ledgers. Source of truth for product, environments and commands: [PROJECT_MANIFEST.md](PROJECT_MANIFEST.md).
 
 ## Repository layout
 
 ```text
-apps/web/       Astro 7 + TypeScript static public frontend (Language Gateway, /fa/ + /en/ landing, about, cv, 404, health, robots, sitemap)
-apps/cms/       Django 5.2.9 / Django Ninja 1.6.2 / psycopg 3.3.4 on Python 3.12.13 — runtime on 127.0.0.1:18000 (Wagtail 7.4.2 pending removal per ADR-0026)
-infra/deploy/   versioned artifact switch (update-release.sh), smoke.sh, update-cms.sh, smoke-cms.sh
-infra/cms/      CMS Compose + Dockerfile + Caddy snippet (apply `/static*` before file_server)
-infra/caddy/    static-site Caddy config candidate
+apps/web/       Astro 7 + TypeScript static public frontend (Language Gateway, /fa/ + /en/ home, about, cv, research, projects, writing, catalogs, contact, search, 404, health, robots, sitemap)
+apps/admin/     React 18 + Vite admin SPA — independent project per ADR-0032 (served at /admin/, own Dockerfile/nginx + ci-admin.yml)
+apps/cms/       Django 5.2.9 / Django Ninja 1.6.2 / psycopg 3.3.4 on Python 3.12.13 — CMS backend (Wagtail removed per ADR-0026 / DEBT-0003 CLOSED)
+infra/deploy/   deploy scripts (cd-cms-migrate.sh, cd-rebuild-web.sh, caddy-compose-reload.sh, s5-admin-cutover.sh, smoke.sh)
+infra/cms/      Compose stack: db + cms + web + admin + caddy edge (Dockerfile.cms has no SPA stage per ADR-0032)
+infra/caddy/    Caddyfile.compose (live edge) + Caddyfile.cms.snippet
 infra/backup/   restic/rclone backup timer and .env.example
-docs/adr/       accepted/proposed architecture decisions (ADR-0002..0025 + index)
+docs/adr/       accepted/proposed architecture decisions (ADR-0002..0032 + index)
 docs/governance/ release, deploy, backup, server-access and documentation policies and runbooks
-docs/status/    WORK_LOG, RISK_REGISTER, deferred-validation, TECH_DEBT, known-issues, CHANGELOG, BACKLOG
-docs/plan/      task specs and phase plans (P0-G0, P0-A, P1, P2, P3, S-PLAN-STATE, RELEASE-P1)
+docs/status/    WORK_LOG, RISK_REGISTER, deferred-validation, TECH_DEBT, known-issues, CHANGELOG
+docs/plan/      active plans: PARALLEL_EXECUTION_PLAN.md (waves), REMAINING-WORK-CONSOLIDATED.md, master-remaining-work-checklist.md; finished specs under archive/
 docs/design.md  design tokens and visual design baseline
 docs/templates/  task specification template
-.github/        GitHub Actions workflows: ci.yml (web) and ci-cms.yml (CMS)
+.github/        GitHub Actions workflows: ci.yml (web), ci-cms.yml (+e2e lifecycle), ci-admin.yml (admin SPA), ci-cms-image.yml, cd.yml
 PROJECT_MANIFEST.md  product, approved baseline, environments, canonical commands
 AGENTS.md       agent and developer contract, ownership boundaries, current gate
 Task-list.md    phased implementation plan (P0-G0 → P11)
 ```
 
-New public assets: header logo `apps/web/public/logo.png` (cropped and transparent, from the approved base asset) and CV/Resume downloads `apps/web/public/downloads/*.md`, served on the `/fa/cv/` and `/en/cv/` pages. `apps/web/` and `apps/cms/` are the canonical paths; do not recreate `frontend/` or `backend/`.
+New public assets: header logo `apps/web/public/logo.png` (cropped and transparent, from the approved base asset) and CV/Resume downloads `apps/web/public/downloads/*.md`, served on the `/fa/cv/` and `/en/cv/` pages. `apps/web/`, `apps/admin/` and `apps/cms/` are the canonical paths; do not recreate `frontend/` or `backend/`.
 
 ## Getting started
 
