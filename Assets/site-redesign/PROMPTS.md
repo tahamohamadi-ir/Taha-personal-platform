@@ -2,8 +2,26 @@
 
 Mode: OpenAI built-in image generation. Each file was generated as a distinct
 project-bound asset; `learning-sage-library.png` received one image-edit pass to
-remove an open book with glyph-like page texture. No concept screenshot was
-used as a pixel source.
+remove an open book with glyph-like page texture. The requested language-gateway
+concept was used only as the edit source for `portal-centered-dark.png`; its
+Light companion was derived from that cleaned standalone master.
+
+## `art/portal-centered-dark.png`
+
+Precise-object edit using the requested language-gateway concept: remove every
+interface and identity element—English/Persian text, name, subtitle, language
+buttons, logo, and theme icon—while preserving the centered arch, stairs,
+orbital geometry, nodes, floor illumination, and deep-navy atmosphere. Recompose
+as a clean 16:9 master with generous negative space. No words, letters, numbers,
+logos, UI, buttons, watermark, or border.
+
+## `art/portal-centered-light.png`
+
+Theme-only edit of the cleaned centered Dark portal: preserve exact geometry,
+node positions, framing, negative space, and composition; convert material and
+lighting to warm ivory, pale sand, subtle ink-navy lines, turquoise nodes,
+antique-gold accents, faint lavender points, and museum-like daylight. No text,
+logo, UI, people, props, watermark, or border.
 
 ## `art/portal-orbit-dark.png`
 
@@ -68,3 +86,25 @@ royal-violet form, and a restrained turquoise reflection. Elegant spatial
 balance, tactile materials, precise lighting, calm negative space, useful for a
 gallery preview or hero crop. No words, letters, numbers, logos, UI, browser
 frame, watermark, border, people, or framed pictures.
+
+## `art/project-visual-communication-network.png`
+
+Standalone 3:2 project cover: connected translucent turquoise, teal, mint,
+ivory, and silver architectural blocks with fine relationship lines, sparse
+nodes, soft daylight, and one antique-gold accent. Premium academic-editorial 3D
+still life; no text, charts, flags, faces, screens, logo, UI, watermark, or
+border.
+
+## `art/project-dashboard-systems.png`
+
+Standalone 3:2 project cover: modular graphite server-like blocks and stacked
+analytical modules with restrained turquoise light channels and antique-gold
+paths. Architectural rather than literal dashboard UI; no text, numbers, code,
+charts, logo, browser chrome, watermark, or border.
+
+## `art/project-placeholder-ivory-stairs.png`
+
+Standalone 3:2 honest placeholder: a warm-ivory arch and ascending staircase,
+restrained geometric blocks, soft light, faint turquoise shadow, and one small
+antique-gold point. No people, evidence claims, text, logo, UI, watermark, or
+border.

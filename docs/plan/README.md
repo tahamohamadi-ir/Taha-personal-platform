@@ -27,6 +27,7 @@ Last reconciled: 2026-08-25.
 | `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | Remaining: ?18 manual QA (`DEFER-0032` PARTIAL). |
 | `P14-personal-platform-experience-redesign-task-spec.md` | DONE (design package) | agent + owner | Quality-audited dual-theme direction, RTL/mobile/detail/admin concepts, and UX/CMS/graph handoff complete; no frontend or route changes. |
 | `P14A-redesign-asset-pack-task-spec.md` | DONE (asset pack) | agent | Authoritative logo PNGs, six standalone artworks, seven final concept references, prompt/source/crop/alt/performance documentation, and integrity hashes; no runtime changes. |
+| `P14B-requested-concept-asset-extraction-task-spec.md` | DONE (asset extension) | agent | Preserved five requested concept sources and added centered Dark/Light portal plus three missing project-cover masters; dynamic UI/graph remains native. |
 | `P0-A-stack-inventory-task-spec.md` | BLOCKED (owner) | owner | Read-only VPS inventory. Not an agent task. |
 | `master-remaining-work-checklist.md` | ACTIVE board | agent + owner | Single remaining-work board (LOG-0218). Bakes in owner constraints: all content CMS-managed, complete admin UX, minimal VPS SSH, RISK-0011 de-risking. Execute items only from this board. |
 

@@ -11,6 +11,7 @@ frontend or any CMS record is live.
 | `brand/` | Exact derivatives of the existing owner logo | Yes, after route/theme QA |
 | `art/` | Standalone, text-free generated artwork | Only after owner approval and responsive optimization |
 | `concepts/` | Art-direction references for layout and interaction | No; rebuild as native components |
+| `concepts/requested-2026-08-25/` | Exact copies of the five newly requested source images | No; provenance/reference only |
 
 The generated images contain no intended UI copy, logo, CV claim, contact data,
 employer data, or real project data. Text visible in the concept screenshots is
@@ -36,7 +37,12 @@ against `taha-mark-primary.png` before replacing the PNG.
 |---|---|---|---|---|
 | `art/portal-orbit-dark.png` | Dark language gateway or Home hero atmosphere | Prefer `object-position: 72% 50%`; preserve the right arch and left negative space | Decorative when paired with adjacent heading: empty `alt` | Candidate approved for integration |
 | `art/portal-orbit-light.png` | Light companion for gateway/Home | Prefer `object-position: 74% 50%`; preserve arch and orbit center | Decorative when paired with adjacent heading: empty `alt` | Candidate approved for integration |
+| `art/portal-centered-dark.png` | Centered Dark language-gateway portal from the requested concept | Center crop; keep the full arch and surrounding orbit | Decorative behind native language controls: empty `alt` | Candidate approved for integration |
+| `art/portal-centered-light.png` | Exact-layout Light companion to the centered portal | Center crop; preserve pale orbital lines and stairs | Decorative behind native language controls: empty `alt` | Candidate approved for integration |
 | `art/project-data-architecture.png` | Research/project preview or detail hero | Center crop; keep cube cluster and database cylinder together | Describe only if it carries meaning beyond the project title | Candidate approved for integration |
+| `art/project-visual-communication-network.png` | Visual/political communication research preview | Center crop; preserve connected teal/ivory block field | `Connected translucent architectural blocks` when content-bearing | Candidate approved for integration |
+| `art/project-dashboard-systems.png` | Dashboard/data-systems project preview | Center crop; preserve the modular dark system cluster | `Modular dark data-system blocks with turquoise paths` when content-bearing | Candidate approved for integration |
+| `art/project-placeholder-ivory-stairs.png` | Honest future/selected-work placeholder | Prefer `object-position: 68% 50%`; preserve arch and stairs | Decorative if the adjacent card explicitly says placeholder: empty `alt` | Candidate approved for integration |
 | `art/blog-coral-stairs.png` | Blog preview and editorial landing artwork | Center-right focal crop; the figure is anonymous and is not Taha | `Abstract coral arch and stairs with an anonymous figure` when content-bearing | Candidate approved for integration |
 | `art/learning-sage-library.png` | Learning preview/library landing artwork | Center crop; keep arch, sphere, and book forms | `Sculptural green and ivory library forms` when content-bearing | Candidate approved for integration |
 | `art/gallery-ivory-forms.png` | Gallery preview/collection placeholder | Center crop; retain violet form and turquoise glass plane | `Ivory geometric gallery installation with violet and turquoise forms` when content-bearing | Candidate approved for integration |
@@ -60,7 +66,7 @@ implementation:
 
 ## 4. Concept references
 
-The seven files in `concepts/` are convenience copies of the authoritative P14
+The seven top-level files in `concepts/` are convenience copies of the authoritative P14
 references in `docs/design-redesign/visuals/`:
 
 - matching Light/Dark Home v3 finals;
@@ -73,6 +79,12 @@ references in `docs/design-redesign/visuals/`:
 They must not be sliced into production UI. Rebuild the design with semantic
 components, CMS fields, real typography, logical RTL properties, accessible
 focus states, reduced-motion fallbacks, and data-driven SVG/WebGL graph output.
+
+The five files under `concepts/requested-2026-08-25/` preserve the exact source
+images explicitly requested by the owner. Three are byte-identical to already
+cataloged P14 files: the centered gateway, Light Home v3 final, and Dark Home v3
+final. The Dark safe reference is the existing P14 v2-safe image. The Light
+alternate is an additional reference, not a replacement for the v3 authority.
 
 ## 5. Official dependency sources
 
@@ -145,7 +157,9 @@ content. The P14 v3 final pair is the only Home art-direction authority.
 ## 9. Integrity
 
 `MANIFEST.md` records dimensions and roles. `SHA256SUMS.txt` records every
-binary asset in this pack at handoff. If a file is
+managed binary under `art/`, `brand/`, and `concepts/` at handoff. If an
+unmanaged `others/` drop folder is present, it is intentionally outside this
+approval/hash contract and is not modified by P14A/P14B. If a managed file is
 re-generated, edited, recompressed, or replaced with an original SVG, update its
 source note, approval state, prompt/history where applicable, dimensions, and
 hash in the same change.
