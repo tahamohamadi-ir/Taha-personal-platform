@@ -1,3 +1,9 @@
+## LOG-0250 — 2026-08-25 — ADR-0032 stabilization: e2e + settings wiring (PRs #113/#114 follow-ups)
+
+- PR #113 merged with only its first 2 commits (push raced the merge); the e2e-stack fix landed after. Cherry-picked to main as fd1656f: run_e2e_stack.sh now points at `apps/admin/dist` via `ADMIN_SPA_ROOT`; ci-cms builds apps/admin for the lifecycle stack.
+- Second failure (run 32846203898 → `/admin/login` 404): admin_spa.py read getattr(settings, ADMIN_SPA_ROOT) but no settings module defined it, so the env export was ignored. Fixed in f47689f (#114): base.py surfaces os.environ.get(ADMIN_SPA_ROOT, ""). Verified locally, then Playwright content-lifecycle green on CI.
+- Final state @ f47689f: CI ✓ CMS CI ✓ CMS image ✓ CD deploy ✓ — all pipelines green; site 200, /admin/ 200.
+
 ## LOG-0249 — 2026-08-25 — Hotfix-Home live + ADR-0032 admin SPA separation (S1–S4)
 
 - Hotfix-Home (PR #112, merged & deployed): header → `glass-surface--dark`, footer → `--canvas-deep` + §0 tokens; WritingLatest meta got `·` separator (was rendering «16 August 20261 min read») and `--ink-mid` contrast. Live-verified.
