@@ -132,7 +132,8 @@ const displayTagline = cmsTagline ?? (isCms ? "" : content.footer.tagline);
     max-width: 1280px;
     margin-inline: auto;
     width: 100%;
-    border-block-start: 1px solid var(--color-border-subtle);
+    background-color: var(--canvas-deep, #0b1630);
+    border-block-start: 1px solid var(--glass-border-dark);
   }
 
   .footer-brand {
@@ -157,13 +158,13 @@ const displayTagline = cmsTagline ?? (isCms ? "" : content.footer.tagline);
   }
 
   .footer-name {
-    color: var(--color-ink);
+    color: var(--ink-hi, #f2f6fa);
     font-weight: 600;
     overflow-wrap: anywhere;
   }
 
   .footer-tagline {
-    color: var(--color-ink-secondary);
+    color: var(--ink-mid, #a8b8c8);
     font-size: 0.875rem;
     overflow-wrap: anywhere;
   }
@@ -175,7 +176,7 @@ const displayTagline = cmsTagline ?? (isCms ? "" : content.footer.tagline);
   }
 
   .footer-explore a {
-    color: var(--color-ink-secondary);
+    color: var(--ink-mid, #a8b8c8);
     text-decoration: none;
     font-weight: 600;
     min-height: 2.75rem;
@@ -185,7 +186,7 @@ const displayTagline = cmsTagline ?? (isCms ? "" : content.footer.tagline);
 
   .footer-explore a:hover,
   .footer-explore a:focus-visible {
-    color: var(--color-brand);
+    color: var(--brand-text, #3dd6c5);
   }
 
   .footer-meta {
@@ -200,10 +201,10 @@ const displayTagline = cmsTagline ?? (isCms ? "" : content.footer.tagline);
     align-items: center;
     min-height: 2.75rem;
     padding-inline: 0.875rem;
-    color: var(--color-brand);
+    color: var(--brand-text, #3dd6c5);
     text-decoration: none;
     font-weight: 600;
-    border: 1px solid var(--color-border-subtle);
+    border: 1px solid var(--glass-edge, rgba(255,255,255,.16));
     border-radius: var(--radius-md);
     transition: border-color 140ms cubic-bezier(0.2, 0.8, 0.2, 1),
       background-color 140ms cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -211,12 +212,12 @@ const displayTagline = cmsTagline ?? (isCms ? "" : content.footer.tagline);
 
   .footer-switch:hover,
   .footer-switch:focus-visible {
-    border-color: var(--color-brand);
-    background-color: var(--color-brand-soft);
+    border-color: var(--brand-text, #3dd6c5);
+    background-color: var(--glass-fill, rgba(255,255,255,.08));
   }
 
   .contact-state {
-    color: var(--color-ink-secondary);
+    color: var(--ink-mid, #a8b8c8);
     font-size: 0.875rem;
   }
 
@@ -230,7 +231,7 @@ const displayTagline = cmsTagline ?? (isCms ? "" : content.footer.tagline);
 
   .contact-heading {
     font-weight: 600;
-    color: var(--color-ink);
+    color: var(--ink-hi, #f2f6fa);
   }
 
   .contact-links {
@@ -244,7 +245,7 @@ const displayTagline = cmsTagline ?? (isCms ? "" : content.footer.tagline);
   }
 
   .contact-links a {
-    color: var(--color-ink-secondary);
+    color: var(--ink-mid, #a8b8c8);
     text-decoration: none;
     min-height: 2.75rem;
     display: inline-flex;
@@ -253,7 +254,7 @@ const displayTagline = cmsTagline ?? (isCms ? "" : content.footer.tagline);
 
   .contact-links a:hover,
   .contact-links a:focus-visible {
-    color: var(--color-brand);
+    color: var(--brand-text, #3dd6c5);
   }
 
   .contact-form {
@@ -265,16 +266,16 @@ const displayTagline = cmsTagline ?? (isCms ? "" : content.footer.tagline);
 
   .contact-form-intro {
     margin: 0;
-    color: var(--color-ink-secondary);
+    color: var(--ink-mid, #a8b8c8);
     font-size: 0.8125rem;
   }
 
   .contact-form input:not(.contact-honeypot),
   .contact-form textarea {
     font: inherit;
-    color: var(--color-ink);
-    background: var(--color-surface);
-    border: 1px solid var(--color-border-subtle);
+    color: var(--ink-hi, #f2f6fa);
+    background: var(--surface-read, #101f3c);
+    border: 1px solid var(--glass-edge, rgba(255,255,255,.16));
     border-radius: var(--radius-sm, 8px);
     padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
   }
@@ -290,8 +291,8 @@ const displayTagline = cmsTagline ?? (isCms ? "" : content.footer.tagline);
     font: inherit;
     font-weight: 600;
     color: var(--color-inverse);
-    background: var(--color-brand);
-    border: 1px solid var(--color-brand);
+    background: var(--brand-text, #3dd6c5);
+    border: 1px solid var(--brand-text, #3dd6c5);
     border-radius: var(--radius-sm, 8px);
     cursor: pointer;
     transition: background-color var(--duration-fast, 140ms) var(--ease-out, ease-out);
@@ -311,7 +312,7 @@ const displayTagline = cmsTagline ?? (isCms ? "" : content.footer.tagline);
   }
 
   .footer-identity {
-    color: var(--color-ink-secondary);
+    color: var(--ink-mid, #a8b8c8);
     font-size: 0.8125rem;
   }
 </style>

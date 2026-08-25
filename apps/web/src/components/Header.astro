@@ -54,7 +54,7 @@ const moreItems = [
 const moreActive = moreItems.some((item) => isCurrent(item.href));
 ---
 
-<header class="site-header glass-surface">
+<header class="site-header glass-surface glass-surface--dark">
   <div class="site-header-inner">
     <a
       href={homeHref}
@@ -137,13 +137,15 @@ const moreActive = moreItems.some((item) => isCurrent(item.href));
 </header>
 
 <style>
-  /* Glass background/blur come from the shared .glass-surface utility
-     (global.css, DEBT-0012): solid canvas fallback, near-opaque glass upgrade. */
+  /* Glass background/blur come from the shared .glass-surface--dark utility
+     (global.css, DEBT-0012): solid night-canvas fallback, near-opaque glass
+     upgrade. Border uses the dark hairline so the sticky bar sits on the
+     night canvas (Hotfix-Home). */
   .site-header {
     position: sticky;
     top: 0;
     z-index: 30;
-    border-bottom: 1px solid var(--color-border-subtle);
+    border-bottom: 1px solid var(--glass-border-dark);
   }
 
   .site-header-inner {
