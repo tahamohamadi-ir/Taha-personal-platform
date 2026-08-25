@@ -29,6 +29,7 @@ export interface LocaleContent {
     primaryCta: string;
     secondaryCta: string;
     focusLabel: string;
+    chips?: string[];
   };
   evidence: {
     label: string;
@@ -260,6 +261,7 @@ export const content: Record<LocaleCode, LocaleContent> = {
       primaryCta: "About",
       secondaryCta: "CV",
       focusLabel: "Current focus",
+      chips: ["Open to PhD", "Open to collaborate", "Tehran · Remote"],
     },
     evidence: {
       label: "03 · Evidence",
@@ -527,6 +529,7 @@ export const content: Record<LocaleCode, LocaleContent> = {
       primaryCta: "درباره",
       secondaryCta: "رزومه و CV",
       focusLabel: "تمرکز فعلی",
+      chips: ["آمادهٔ دورهٔ دکتری", "آمادهٔ همکاری", "تهران · دورکاری"],
     },
     evidence: {
       label: "۰۳ · شواهد",
