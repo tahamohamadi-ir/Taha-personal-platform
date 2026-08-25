@@ -1,3 +1,10 @@
+## LOG-0248 — 2026-08-25 — Wave C sections + home CMS honesty (PRs #110/#111) — home v2 assembled & live
+
+- Outcome: **خانهٔ Glass Constellation مونتاژ شد و لایو است.** Landing 631خطی به composition ۵۸ خطی تبدیل شد: `sections/` = HeroSection (قبلی) + PerspectiveGrid جدید (۳ کارت شیشه‌ای با حاشیهٔ spotlight دنبال‌کنندهٔ pointer — rAF `--mx/--my`، gated روی `(hover:hover) and (pointer:fine)`، reduced-motion-safe، fallback مرکزی بدون JS)، FocusStrip (نوار availability با نقطهٔ طلایی)، EvidenceSection (ردیف‌های `.list-row` شیشه‌ای برای پژوهش/انتشارات منتخب)، WritingLatest (۳ مقالهٔ آخر با تاریخ جلالی build-time از `formatDate`)، ContactCTA (پنل عریض شیشه‌ای با خط امضای طلا). همهٔ copy/i18n بدون تغییر؛ فقط توکن‌های §0؛ RTL logical props.
+- X-01/A1: اسپک `qa/home-cms-build.spec.mjs` اضافه شد — meta `cms-build-origin=snapshot` روی خانه‌های en/fa، gateway بدون origin جعلی، و fail-build روی CMS unreachable (از طریق throw موجود `loadLandingProfile`). PR #110.
+- Gates: check 0 errors · build Complete! · mobile-overflow 212 PASS / 0 FAIL (با preview server) · budget PASS 187KB gzip · demo-embed PASS. CI+CD سبز؛ live probe: perspective/focus-strip/writing-latest/contact-cta روی `/en/` سرو می‌شوند.
+- Notes: بلاک legacy `#about` از خانه حذف شد (طبق ترتیب §۴ reDesign_plan؛ shortBio در `/about/` lives)؛ Journey slot بین Evidence و Writing برای موج بعدی رزرو است.
+
 ## LOG-0247 — 2026-08-25 — KI-0007 CLOSED (owner Cloudflare toggle) + live verification
 
 - Outcome: owner turned **Scrape Shield → Email Address Obfuscation OFF** in the Cloudflare dashboard (the one-toggle fix from LOG-0230). Live probe 2026-08-25: `/en/contact/` and `/en/cv/` now serve `href="mailto:taha.mohammadi@shahed.ac.ir"` directly (×2 per page); zero `email-protection` hrefs. Public no-JS contact contract restored.
