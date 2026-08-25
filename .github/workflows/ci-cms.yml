@@ -78,8 +78,12 @@ jobs:
         run: uv sync --python 3.12
 
       # ADR-0032 S1: admin SPA moved to apps/admin (own CI: ci-admin.yml).
-      # CMS pipeline no longer builds it; admin_spa.py serves whatever
-      # ADMIN_SPA_ROOT points at (tests use a stub dir).
+      # The e2e stack still serves it via ADMIN_SPA_ROOT, so build it here.
+      - name: Build admin SPA (for e2e stack)
+        working-directory: apps/admin
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
 
       - name: Install web + Playwright
         working-directory: apps/web
