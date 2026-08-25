@@ -12,11 +12,13 @@ infra/deploy/   deploy scripts (cd-cms-migrate.sh, cd-rebuild-web.sh, caddy-comp
 infra/cms/      Compose stack: db + cms + web + admin + caddy edge (Dockerfile.cms has no SPA stage per ADR-0032)
 infra/caddy/    Caddyfile.compose (live edge) + Caddyfile.cms.snippet
 infra/backup/   restic/rclone backup timer and .env.example
+Assets/         owner source materials (CV masters, logo originals) — reference data, not served by any app
 docs/adr/       accepted/proposed architecture decisions (ADR-0002..0032 + index)
 docs/governance/ release, deploy, backup, server-access and documentation policies and runbooks
 docs/status/    WORK_LOG, RISK_REGISTER, deferred-validation, TECH_DEBT, known-issues, CHANGELOG
 docs/plan/      active plans: PARALLEL_EXECUTION_PLAN.md (waves), REMAINING-WORK-CONSOLIDATED.md, master-remaining-work-checklist.md; finished specs under archive/
 docs/design.md  design tokens and visual design baseline
+docs/IDEA-vision.md  original platform vision note (historical)
 docs/templates/  task specification template
 .github/        GitHub Actions workflows: ci.yml (web), ci-cms.yml (+e2e lifecycle), ci-admin.yml (admin SPA), ci-cms-image.yml, cd.yml
 PROJECT_MANIFEST.md  product, approved baseline, environments, canonical commands
