@@ -18,7 +18,11 @@ const ORBITS: OrbitParams[] = [
 ];
 
 const TURQUOISE = 0x16b8a6;
-const GOLD = 0xc89b3c;
+const GOLD = 0xe3b95c; // --gold #E3B95C (ADR-0031)
+
+let dragRot = { x: 0, y: 0 };
+let dragging = false;
+let lastPointer = { x: 0, y: 0 };
 
 export default function Constellation3D() {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -166,8 +170,20 @@ export default function Constellation3D() {
           if (rect.width === 0 || rect.height === 0) return;
           parallax.targetX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
           parallax.targetY = ((event.clientY - rect.top) / rect.height) * 2 - 1;
+          // Drag-rotate (C-01): accumulate while dragging
+          if (dragging) {
+            dragRot.y += (event.clientX - lastPointer.x) * 0.004;
+            dragRot.x += (event.clientY - lastPointer.y) * 0.004;
+            lastPointer = { x: event.clientX, y: event.clientY };
+          }
         };
-        container.addEventListener("pointermove", onPointerMove);
+        const onPointerDown = (e: PointerEvent) => {
+          dragging = true;
+          lastPointer = { x: e.clientX, y: e.clientY };
+        };
+        const onPointerUp = () => { dragging = false; };
+        container.addEventListener("pointerdown", onPointerDown);
+        window.addEventListener("pointerup", onPointerUp);
 
         const resize = (): void => {
           const width = container.clientWidth;
@@ -189,10 +205,13 @@ export default function Constellation3D() {
           elapsed += delta;
           spin.rotation.y += delta * 0.22;
           const blend = 1 - Math.exp(-delta * DAMPING);
+          // Drag-rotate (C-01): ease accumulated drag offsets back toward rest
+          dragRot.x *= 1 - Math.min(1, delta * 2.5);
+          dragRot.y *= 1 - Math.min(1, delta * 2.5);
           parallax.x += (parallax.targetX * 0.4 - parallax.x) * blend;
           parallax.y += (parallax.targetY * 0.28 - parallax.y) * blend;
-          rig.rotation.y = parallax.x;
-          rig.rotation.x = parallax.y;
+          rig.rotation.y = parallax.x + dragRot.y * 0.15;
+          rig.rotation.x = parallax.y + dragRot.x * 0.15;
           placeNodes(elapsed);
           updateLinks();
           renderer.render(scene, camera);
@@ -212,7 +231,9 @@ export default function Constellation3D() {
         cleanup = () => {
           cancelAnimationFrame(raf);
           observer.disconnect();
+          container.removeEventListener("pointerdown", onPointerDown);
           container.removeEventListener("pointermove", onPointerMove);
+          window.removeEventListener("pointerup", onPointerUp);
           spokeGeometry.dispose();
           ringGeometry.dispose();
           nodeGeometry.dispose();

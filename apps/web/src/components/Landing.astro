@@ -2,6 +2,7 @@
 import type { LocaleContent } from "../data/content";
 import type { Profile } from "../data/profile";
 import Constellation3D from "./islands/Constellation3D";
+import HeroSection from "./sections/HeroSection.astro";
 
 interface Props {
   content: LocaleContent;
@@ -20,71 +21,7 @@ const selectedResearch = localeProfile.researchProjects.slice(0, 2);
 const selectedPublications = localeProfile.publications.slice(0, 2);
 ---
 
-<section class="hero">
-  <div class="hero-grid">
-    <div class="hero-copy">
-      <p class="hero-eyebrow">{content.hero.eyebrow}</p>
-      <h1 class="hero-name">{content.name}</h1>
-      <p class="hero-positioning">{content.positioning}</p>
-      <p class="hero-proposition">{content.proposition}</p>
-      <div class="hero-actions">
-        <a href={`${home}about/`} class="cta cta--primary">{content.hero.primaryCta}</a>
-        <a href={`${home}cv/`} class="cta cta--ghost">{content.hero.secondaryCta}</a>
-      </div>
-    </div>
-    <div class="hero-visual" aria-hidden="true">
-      <svg
-        class="constellation"
-        viewBox="0 0 440 440"
-        role="presentation"
-        focusable="false"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <g stroke="var(--color-navy-800)" stroke-width="1.5">
-          <path class="spoke" pathLength="1" d="M220 240 L100 110" />
-          <path class="spoke" pathLength="1" d="M220 240 L340 130" />
-          <path class="spoke" pathLength="1" d="M220 240 L80 300" />
-          <path class="spoke" pathLength="1" d="M220 240 L360 330" />
-          <path class="spoke" pathLength="1" d="M220 240 L225 70" />
-        </g>
-        <g
-          stroke="var(--color-navy-800)"
-          stroke-width="1"
-          stroke-dasharray="4 7"
-          opacity="0.55"
-        >
-          <path class="link" d="M100 110 L225 70" />
-          <path class="link" d="M340 130 L360 330" />
-          <path class="link" d="M80 300 L100 110" />
-        </g>
-        <g stroke="var(--color-border-strong)" stroke-width="1" opacity="0.7">
-          <path class="tick" pathLength="1" d="M28 28 h18 M28 28 v18" />
-          <path class="tick" pathLength="1" d="M412 28 h-18 M412 28 v18" />
-          <path class="tick" pathLength="1" d="M28 412 h18 M28 412 v-18" />
-          <path class="tick" pathLength="1" d="M412 412 h-18 M412 412 v-18" />
-        </g>
-        <circle class="node node-1" cx="100" cy="110" r="7" fill="var(--color-turquoise-500)" />
-        <circle class="node node-2" cx="340" cy="130" r="7" fill="var(--color-turquoise-500)" />
-        <circle class="node node-3" cx="80" cy="300" r="7" fill="var(--color-turquoise-500)" />
-        <circle class="node node-4" cx="360" cy="330" r="7" fill="var(--color-turquoise-500)" />
-        <circle class="node node-5" cx="225" cy="70" r="9" fill="var(--color-purple-500)" />
-        <circle
-          class="ring"
-          pathLength="1"
-          cx="220"
-          cy="240"
-          r="36"
-          fill="none"
-          stroke="var(--color-signature)"
-          stroke-width="1.5"
-          opacity="0.5"
-        />
-        <circle class="core" cx="220" cy="240" r="12" fill="var(--color-signature)" />
-      </svg>
-      <Constellation3D client:visible />
-    </div>
-  </div>
-</section>
+<HeroSection content={content} />
 
 <section id="perspectives" class="section">
   <div class="section-head">

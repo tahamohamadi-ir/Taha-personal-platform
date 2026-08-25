@@ -1,0 +1,101 @@
+---
+import Constellation3D from "../islands/Constellation3D";
+
+interface Props {
+  content: any;
+}
+const { content } = Astro.props;
+const home = `/${content.lang}/`;
+const aboutHref = `${home}about/`;
+const cvHref = `${home}cv/`;
+---
+
+<section class="hero" aria-labelledby="hero-name">
+  <div class="hero__copy">
+    <p class="kicker">{content.hero.eyebrow}</p>
+    <h1 class="hero__name" id="hero-name">{content.name}</h1>
+    <div class="hero__signature" aria-hidden="true"></div>
+    <p class="hero__positioning">{content.positioning}</p>
+    <p class="hero__proposition">{content.proposition}</p>
+    <div class="hero__actions">
+      <a class="btn btn--primary" href={aboutHref}>{content.hero.primaryCta}</a>
+      <a class="btn btn--ghost" href={cvHref}>{content.hero.secondaryCta}</a>
+    </div>
+    <ul class="hero__chips" role="list">
+      {(content.hero.chips ?? []).filter(Boolean).map((chip: string) => (
+        <li class="chip">{chip}</li>
+      ))}
+    </ul>
+  </div>
+  <div class="hero__visual" aria-hidden="true">
+    <Constellation3D client:visible />
+  </div>
+</section>
+
+<style>
+  .hero {
+    display: grid;
+    gap: var(--space-6, 2rem);
+    padding-block: var(--space-9, 6rem) var(--space-8, 4rem);
+    max-width: var(--measure-wide, 72rem);
+    margin-inline: auto;
+    padding-inline: clamp(1rem, 5vw, 2.5rem);
+  }
+  @media (min-width: 900px) {
+    .hero {
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+      align-items: center;
+      min-height: min(44rem, 76dvh);
+    }
+  }
+  .hero__copy {
+    display: grid;
+    gap: var(--space-4, 1rem);
+    align-content: center;
+  }
+  .hero__name {
+    margin: 0;
+    color: var(--ink-hi, #f2f6fa);
+    font-size: var(--text-display, clamp(2.6rem, 1.6rem + 3vw, 4.2rem));
+    font-weight: 700;
+    line-height: 1.15;
+  }
+  :global([dir="rtl"]) .hero__name { letter-spacing: 0; }
+  .hero__signature {
+    inline-size: 8rem;
+    block-size: 2px;
+    background: var(--gold, #e3b95c);
+    border-radius: 999px;
+  }
+  .hero__positioning,
+  .hero__proposition {
+    margin: 0;
+    color: var(--ink-mid, #a8b8c8);
+    line-height: 1.7;
+    max-inline-size: 52ch;
+  }
+  :lang(fa) .hero__positioning,
+  :lang(fa) .hero__proposition { line-height: 1.95; }
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3, 0.75rem);
+    padding-block-start: var(--space-2, 0.5rem);
+  }
+  .hero__chips {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2, 0.5rem);
+    margin: var(--space-2, 0.5rem) 0 0;
+    padding: 0;
+  }
+  .hero__visual {
+    display: grid;
+    place-items: center;
+    min-block-size: 18rem;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero__visual { min-block-size: auto; }
+  }
+</style>
