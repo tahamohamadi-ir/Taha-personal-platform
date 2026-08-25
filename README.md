@@ -12,7 +12,7 @@ infra/deploy/   deploy scripts (cd-cms-migrate.sh, cd-rebuild-web.sh, caddy-comp
 infra/cms/      Compose stack: db + cms + web + admin + caddy edge (Dockerfile.cms has no SPA stage per ADR-0032)
 infra/caddy/    Caddyfile.compose (live edge) + Caddyfile.cms.snippet
 infra/backup/   restic/rclone backup timer and .env.example
-Assets/         owner source materials (CV masters, logo originals) — reference data, not served by any app
+Assets/         owner design sources for future frontend work (logo masters, CV originals, character art) — PROTECTED: tracked, never cleaned, never served raw; crops/optimized copies go to apps/web/public
 docs/adr/       accepted/proposed architecture decisions (ADR-0002..0032 + index)
 docs/governance/ release, deploy, backup, server-access and documentation policies and runbooks
 docs/status/    WORK_LOG, RISK_REGISTER, deferred-validation, TECH_DEBT, known-issues, CHANGELOG
