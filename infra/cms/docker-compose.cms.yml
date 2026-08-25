@@ -105,6 +105,29 @@ services:
         aliases:
           - web
 
+  # ADR-0032 S3 — independent admin SPA container (nginx, own image/pipeline).
+  # Caddy routes /admin/* here (Caddyfile.compose); Django admin_spa.py stays
+  # as ADMIN_SPA_ROOT fallback for non-edge/local runs.
+  admin:
+    image: ${ADMIN_IMAGE:-taha-admin:local}
+    build:
+      context: ../admin
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:13081:80"
+    mem_limit: 64m
+    cpus: "0.125"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1/admin/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      cms_internal:
+        aliases:
+          - admin
+
   # ADR-0027 Slice 4 / DEFER-0031 — public TLS edge inside Compose.
   # Profile `edge` keeps ordinary `compose up -d` (CD) from binding 80/443 while
   # host systemd Caddy still owns those ports. Owner cutover only.

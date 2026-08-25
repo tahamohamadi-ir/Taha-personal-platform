@@ -18,12 +18,9 @@ COPY apps/cms/pyproject.toml apps/cms/uv.lock ./
 RUN uv sync --frozen --no-dev \
     && .venv/bin/python -c "import argon2, whitenoise, gunicorn, django, qrcode"
 
-FROM node:20-alpine AS frontend-builder
-WORKDIR /build/admin-frontend
-COPY apps/cms/admin-frontend/package*.json ./
-RUN npm ci --no-audit --no-fund
-COPY apps/cms/admin-frontend/ ./
-RUN npm run build
+# ADR-0032 S4: the admin SPA moved to apps/admin with its own image/pipeline
+# (Dockerfile.admin + ci-admin.yml + cd). This image no longer builds or bakes
+# it; Django's admin_spa.py serves ADMIN_SPA_ROOT if set (transition fallback).
 
 FROM python:3.12-slim AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -34,7 +31,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 COPY --from=builder /build/.venv ./.venv
 COPY apps/cms ./
-COPY --from=frontend-builder /build/admin-frontend/dist ./admin-frontend/dist
 RUN useradd --create-home --uid 10001 --shell /usr/sbin/nologin app \
     && mkdir -p staticfiles media \
     && chown -R app:app /app

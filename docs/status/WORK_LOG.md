@@ -1,3 +1,9 @@
+## LOG-0249 — 2026-08-25 — Hotfix-Home live + ADR-0032 admin SPA separation (S1–S4)
+
+- Hotfix-Home (PR #112, merged & deployed): header → `glass-surface--dark`, footer → `--canvas-deep` + §0 tokens; WritingLatest meta got `·` separator (was rendering «16 August 20261 min read») and `--ink-mid` contrast. Live-verified.
+- **ADR-0032 — admin SPA is now an independent project** (owner direction): `apps/cms/admin-frontend` → `apps/admin` (git mv). Own artifacts: `Dockerfile` (nginx, `/admin/` SPA fallback + `/healthz`), `nginx.conf`, `ci-admin.yml` (replaces deleted `ci-admin-frontend.yml`). CMS decoupled: Dockerfile.cms dropped the frontend-builder stage; ci-cms no longer builds the SPA; `admin_spa.py` reads `ADMIN_SPA_ROOT` env (legacy path default = transition/rollback fallback). Compose gained an `admin` service (nginx, 127.0.0.1:13081, healthz) and Caddyfile.compose routes `/admin/*` → `admin:80` (same-origin, cookies unchanged).
+- Verify: apps/admin check+build green; cms admin-spa tests 9 passed. S5 deploy cutover (build/push ADMIN_IMAGE, compose up admin, Caddy reload) happens at next attended deploy.
+
 ## LOG-0248 — 2026-08-25 — Wave C sections + home CMS honesty (PRs #110/#111) — home v2 assembled & live
 
 - Outcome: **خانهٔ Glass Constellation مونتاژ شد و لایو است.** Landing 631خطی به composition ۵۸ خطی تبدیل شد: `sections/` = HeroSection (قبلی) + PerspectiveGrid جدید (۳ کارت شیشه‌ای با حاشیهٔ spotlight دنبال‌کنندهٔ pointer — rAF `--mx/--my`، gated روی `(hover:hover) and (pointer:fine)`، reduced-motion-safe، fallback مرکزی بدون JS)، FocusStrip (نوار availability با نقطهٔ طلایی)، EvidenceSection (ردیف‌های `.list-row` شیشه‌ای برای پژوهش/انتشارات منتخب)، WritingLatest (۳ مقالهٔ آخر با تاریخ جلالی build-time از `formatDate`)، ContactCTA (پنل عریض شیشه‌ای با خط امضای طلا). همهٔ copy/i18n بدون تغییر؛ فقط توکن‌های §0؛ RTL logical props.

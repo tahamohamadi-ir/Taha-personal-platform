@@ -26,5 +26,6 @@ ADRها immutable هستند: تغییر تصمیم با ADR جدید انجام
 | 0028 | Research relationship graph as progressive React island (SVG + `motion`, 35KB gzip budget; no gsap/three) | Accepted 2026-08-22; library scope widened by ADR-0030 (2026-08-23); graph itself replaced by D3 TopicGraph per ADR-0031 |
 | 0030 | Visual-interaction libraries authorized: motion / GSAP / D3 / Three.js with budgets and fallbacks | Accepted 2026-08-23 (owner attestation) |
 | 0031 | Redesign v2 «Glass Constellation»: dark-first glass identity, primitives/ui/patterns/sections/islands component layer, M0–M4 motion ladder; supersedes light-only surface philosophy & `DEFER-0025` dual-theme framing | Accepted 2026-08-24 (owner attestation) |
+| 0032 | Admin SPA separation: `apps/admin` independent project (own Dockerfile/nginx, own `ci-admin.yml`, compose `admin` service); Caddy serves `/admin/*` from admin container; Django keeps `ADMIN_SPA_ROOT` fallback. Same-origin cookies unchanged; rollback = flip env/var | Accepted 2026-08-25 (owner direction) |
 
 The technology baseline still governs the remaining architecture decisions. Create a new ADR only when a decision is non-obvious, expensive to reverse, security/operations relevant, or changes a frozen contract.

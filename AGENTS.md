@@ -34,7 +34,8 @@ P0-G0 is **PASS for static-only P1** (2026-08-14). Staging is decommissioned (AD
 ## Ownership
 
 - `apps/web/`: public frontend only.
-- `apps/cms/`: Django/Ninja only (Wagtail removal authorized per ADR-0026; custom React admin SPA lives under `apps/cms/admin-frontend/` once scaffolded).
+- `apps/admin/`: admin SPA project (independent since ADR-0032 — own build, image and CI; served at `/admin/`).
+- `apps/cms/`: Django/Ninja only (Wagtail removal authorized per ADR-0026).
 - `infra/`: deploy, Caddy, Compose and backup only.
 - `docs/`: policies, ADRs, planning and status only.
 - `.github/`: GitHub Actions and repository automation only.
