@@ -1,0 +1,151 @@
+---
+import type { LocaleContent } from "../../data/content";
+import { getPublishedArticles } from "../../lib/cms/articles";
+import { formatDate, formatNumber } from "../../lib/format";
+
+interface Props {
+  content: LocaleContent;
+}
+
+const { content } = Astro.props;
+const home = `/${content.lang}/`;
+const latest = (await getPublishedArticles(content.lang)).slice(0, 3);
+---
+
+{
+  latest.length > 0 && (
+    <section class="writing-latest" aria-labelledby="writing-heading">
+      <div class="head-row">
+        <h2 id="writing-heading" class="heading">
+          {content.blog.heading}
+        </h2>
+        <a class="all-link" href={`${home}writing/`}>
+          {content.blog.heading}
+          <span class="arrow" aria-hidden="true">
+            →
+          </span>
+        </a>
+      </div>
+      <ul class="rows" role="list">
+        {latest.map((article) => (
+          <li class="list-row row">
+            <span class="meta">
+              {article.published_at && (
+                <time datetime={article.published_at}>
+                  {formatDate(article.published_at, content.lang)}
+                </time>
+              )}
+              {article.reading_time_minutes > 0 && (
+                <span>
+                  {formatNumber(article.reading_time_minutes, content.lang)}{" "}
+                  {content.blog.readingLabel}
+                </span>
+              )}
+            </span>
+            <a class="row-link" href={`${home}writing/${article.slug}/`}>
+              {article.title}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+<style>
+  .writing-latest {
+    max-width: var(--measure-wide, 72rem);
+    margin-inline: auto;
+    padding-block: var(--space-8, 4rem);
+    padding-inline: clamp(1rem, 5vw, 2.5rem);
+  }
+
+  .head-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4, 1rem);
+    flex-wrap: wrap;
+    margin-block-end: var(--space-6, 2rem);
+    min-width: 0;
+  }
+
+  .heading {
+    font-size: clamp(1.75rem, 1.5rem + 1.5vw, 2.5rem);
+    line-height: 1.15;
+    margin: 0;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+  }
+
+  .all-link {
+    color: var(--brand-text, #3dd6c5);
+    font-weight: 600;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  .all-link:hover,
+  .all-link:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .arrow {
+    display: inline-block;
+    margin-inline-start: 0.25rem;
+  }
+
+  :global([dir="rtl"]) .arrow {
+    transform: scaleX(-1);
+  }
+
+  .rows {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+  }
+
+  /* Shared .list-row hairline; readable surface under body text. */
+  .row {
+    background-color: var(--surface-read, #101f3c);
+    border: 1px solid var(--glass-edge, rgba(255, 255, 255, 0.16));
+    border-radius: var(--radius-md, 12px);
+    padding: var(--space-4, 1rem) var(--space-6, 2rem);
+    margin-block-end: var(--space-3, 0.75rem);
+    transition: border-color var(--duration-night-fast, 160ms) ease-out,
+      transform var(--duration-night-fast, 160ms)
+        var(--ease-night, cubic-bezier(0.22, 1, 0.36, 1));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .row {
+      transition: none;
+    }
+  }
+
+  .row:hover {
+    border-color: var(--brand-text, #3dd6c5);
+    transform: translateY(-0.125rem);
+  }
+
+  .meta {
+    color: var(--ink-low, #6e8095);
+    font-size: 0.875rem;
+  }
+
+  .row-link {
+    color: var(--ink-hi, #f2f6fa);
+    font-weight: 600;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  .row-link:hover,
+  .row-link:focus-visible {
+    color: var(--brand-text, #3dd6c5);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+</style>
