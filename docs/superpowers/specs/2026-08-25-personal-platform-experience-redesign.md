@@ -1,6 +1,6 @@
 # Taha Personal Platform — Experience Redesign
 
-**Status:** DESIGN REVIEW  
+**Status:** DESIGN PACKAGE COMPLETE  
 **Date:** 2026-08-25  
 **Audience priority:** PhD supervisors and academic reviewers first; senior
 industry and LinkedIn visitors second.
@@ -31,10 +31,19 @@ available. Theme never changes the meaning or availability of content.
 
 Visual references:
 
-- `docs/design-redesign/visuals/home-light-concept-v1.png`
-- `docs/design-redesign/visuals/home-dark-concept-v1.png`
+- `docs/design-redesign/visuals/home-light-concept-v3-final.png`
+- `docs/design-redesign/visuals/home-dark-concept-v3-final.png`
 
 The images are art direction, not content authority.
+
+### 2.1 Visual coverage
+
+The primary Home pair is supplemented by focused concepts for the separate
+language gateway, Persian RTL mobile Home, Persian project detail, Persian
+long-form Blog, and the admin 2D graph editor. These screens validate the page
+family and responsive/locale direction without pretending to be production
+screenshots. Their inventory and authority boundary are in
+`docs/design-redesign/README.md`.
 
 ## 3. Experience architecture
 
@@ -226,6 +235,17 @@ reading rhythm over decorative display type.
 - cards separate standalone objects only; lists use lightweight dividers;
 - glass is selective and always has an opaque accessible fallback.
 
+Responsive behavior is recomposition, not proportional scaling:
+
+| Surface | Desktop | Tablet | Mobile |
+|---|---|---|---|
+| Header | six-item navigation + utilities | compact navigation | menu + one language icon + theme utility |
+| Hero | two-column identity/scene | balanced split | one reading flow; scene supports rather than precedes the claim |
+| Graph | graph + context panel | graph above details | focused-node map with list toggle |
+| Timeline | horizontal milestones | wrapped/compact | vertical sequence |
+| Preview grids | 3–5 items | 2–3 items | one primary item; swipe only for homogeneous media |
+| Detail pages | reading column + sticky index | reading column + compact index | single column; in-flow table of contents |
+
 ### 6.4 Core components
 
 Header, language popover, theme toggle, chapter index, button/link, content
@@ -284,9 +304,31 @@ and arbitrary plugin systems are explicitly out of scope for the first product.
 - provide descriptive alternative text and captions for meaningful media;
 - never encode a research relationship or status by color alone.
 
+Static token preflight on the proposed Canvas pairs produced these contrast
+ratios: Light primary `14.21:1`, Light secondary `5.66:1`, Light action
+`4.58:1`, Dark primary `17.23:1`, Dark secondary `10.00:1`, Dark action
+`9.37:1`, and Dark gold `9.48:1`. These pass normal-text AA for the tested
+pairs. Component-level hover/focus/disabled combinations still require measured
+implementation QA; the preflight is not a blanket accessibility certification.
+
+## 10.1 Mock-data and claim integrity
+
+- Public-facing identity and evidence visuals may use only
+  owner-provided/source-visible titles or an explicit `Placeholder` /
+  `awaiting approved CMS copy` label. Admin-only concepts may use clearly
+  generic interface mock records but never present them as approved content.
+- A visual must not invent degrees, candidate status, institutions, employers,
+  venues, publication years, metrics, collaborators, evaluation results, or
+  contact channels.
+- The public site never reads copy from design files. Only published,
+  locale-specific CMS records are renderable.
+- Placeholder slots demonstrate density and component behavior; they never
+  create a route, sitemap entry, feed item, structured-data entity, or search
+  result.
+
 ## 11. Acceptance criteria for the design phase
 
-- Light and Dark Home concepts visibly share one layout and component system.
+- Light and Dark v3 Home concepts visibly share one layout and component system.
 - Home follows the approved eight-part order and stays preview-first.
 - Canonical detail-page rules cover every requested content family.
 - The admin boundary separates content control from locked design control.
@@ -294,3 +336,7 @@ and arbitrary plugin systems are explicitly out of scope for the first product.
 - Generated mockup copy is explicitly non-authoritative.
 - Any implementation that changes existing canonical routes first receives an
   IA/ADR migration decision.
+- A Persian RTL mobile composition, a canonical detail template, an independent
+  long-form template, and the Phase 1 admin graph editor have visual evidence.
+- The quality audit records an evidence-bounded score above the owner-requested
+  `9.8/10` design-package threshold without claiming runtime validation.

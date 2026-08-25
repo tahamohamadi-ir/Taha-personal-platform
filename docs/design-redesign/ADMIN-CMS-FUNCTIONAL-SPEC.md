@@ -148,6 +148,12 @@ when a CTA points to an unavailable locale route.
 
 ## 6. Graph editor
 
+Visual reference:
+`visuals/admin-graph-editor-dark-concept-v1.png`. It demonstrates the intended
+Phase 1 working state—palette, 2D canvas, selected-node inspector, version,
+validation, publish, minimap, and a visibly unavailable Phase 2 control. It is
+not a content or API authority.
+
 ### Phase 1 — 2D editor and 2D public output
 
 - infinite 2D canvas with pan, zoom, minimap, grid, snap, and alignment guides;
@@ -249,4 +255,3 @@ Locked across deployments:
 
 Arbitrary CSS/JS injection, shared tenant data, runtime marketplace plugins,
 billing, and cross-customer analytics are not part of this phase.
-

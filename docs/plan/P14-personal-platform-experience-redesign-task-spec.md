@@ -1,6 +1,6 @@
 # P14 — Personal Platform Experience Redesign Deliverables
 
-**Status:** PARTIAL — visual and functional design package ready; owner review pending
+**Status:** DONE — owner-approved direction, quality audit, and handoff complete
 
 ## Task: P14 / design foundation and handoff
 
@@ -14,7 +14,8 @@
 
 ## Scope
 
-- In scope: Light/Dark Home art direction, information architecture proposal,
+- In scope: Light/Dark Home art direction, language/RTL/mobile/detail/admin
+  coverage concepts, information architecture proposal,
   canonical detail-page model, design system, admin requirements, graph/motion
   handoff, and future single-tenant white-label boundary.
 - Non-goals: frontend replacement, schema migration, route migration, Figma
@@ -44,8 +45,10 @@
 ## Verification and release
 
 - Tests/commands to run: image presence/dimensions, Markdown link/path scan,
-  placeholder/contradiction scan, `git diff --check`, and exact changed-file list.
-- Manual QA path: inspect both full-page concepts and read all three handoff docs.
+  placeholder/contradiction scan, contrast preflight, `git diff --check`, and
+  exact changed-file list.
+- Manual QA path: inspect the v3 Home pair plus gateway, RTL mobile, project
+  detail, Blog detail, and admin graph concepts; read all handoff documents.
 - Acceptance criteria: dual modes share one layout; Home order is preserved;
   every substantial content type can have a gated canonical detail page; admin
   curation and locked Design System are separated; graph phases share one model.
@@ -58,6 +61,5 @@
 - Verification actually run: recorded in `WORK_LOG`.
 - Deferred/risk IDs: no release deferral; frontend implementation is outside this
   design task.
-- Explicit blockers and next input: owner review of the visual concepts and
-  written design package.
-
+- Explicit blockers and next input: none for P14. Frontend implementation and
+  superseding contract/route decisions require a separate authorized task.
