@@ -1,19 +1,22 @@
 #!/usr/bin/env bash
 # Start a disposable CMS stack for Playwright lifecycle (admin SPA + Ninja API).
-# Requires: uv, built apps/cms/admin-frontend/dist, bash.
+# Requires: uv, built apps/admin/dist (ADR-0032: SPA lives in its own project), bash.
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-cd "$ROOT"
+CMS_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+ADMIN_DIST="$CMS_ROOT/../admin/dist"
+cd "$CMS_ROOT"
 
 # Always use e2e settings (file SQLite). Do not inherit CI's config.settings.test
 # (:memory: DB) — migrate and seed are separate processes and would not share state.
 export DJANGO_SETTINGS_MODULE="config.settings.e2e"
 
-if [[ ! -f admin-frontend/dist/index.html ]]; then
-  echo "Admin SPA missing — run: (cd admin-frontend && npm ci && npm run build)" >&2
+# ADR-0032: point Django's admin_spa.py at the moved SPA build.
+if [[ ! -f "$ADMIN_DIST/index.html" ]]; then
+  echo "Admin SPA missing — run: (cd apps/admin && npm ci && npm run build)" >&2
   exit 1
 fi
+export ADMIN_SPA_ROOT="$ADMIN_DIST"
 
 rm -f e2e.sqlite3
 uv run python manage.py migrate --noinput
