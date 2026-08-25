@@ -1,7 +1,7 @@
 # Master Execution Plan v3 — فازبندی موازی‌پذیر برای چند ایجنت
 
-**Status:** ACTIVE — جانشین ساختار WS-A..WS-H در `master-remaining-work-checklist.md` (آن فایل به‌عنوان دفتر جزئیات آیتم‌ها و شواهد باقی می‌ماند؛ این سند «ترتیب و تخصیص» را می‌دهد).
-**Created:** 2026-08-24 (LOG-0246+) · **مالک تخته:** Project owner + agentها
+**Status:** ACTIVE — Wave A ✅ DEPLOYED (PRs #99–103: tokens/format/Tailwind-removal/budget+demo specs) · Wave B ✅ DEPLOYED (#104–107: admin UX audit, primitives, gateway/404 night, CatalogPage+DetailShell) · Wave C ✅ HOME LIVE (#108 hero+drag-rotate, #110 home-CMS honesty spec, #111 sections split, #112 hotfix night header/footer). **Wave D (page migrations) = next.** X-01/A1 partial done via qa/home-cms-build.spec.mjs.
+**Created:** 2026-08-24 (LOG-0246+) · آخرین sync: 2026-08-25 (LOG-0251) · **مالک تخته:** Project owner + agentها
 **هدف:** اجرای همزمان توسط N ایجنت بدون تداخل فایل؛ هر تسک = یک branch مستقل، یک دامنهٔ فایل، یک خروجی قابل انتشار.
 **مجوز حرکت/هویت:** ADR-0030 + ADR-0031 · **پلن بازطراحی:** `reDesign_plan.md` v2
 

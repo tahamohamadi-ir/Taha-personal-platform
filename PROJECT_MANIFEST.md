@@ -22,11 +22,12 @@
 
 | Layer | Approved baseline | Current state |
 |---|---|---|
-| Public frontend | Astro + TypeScript + React Islands | Scaffolded; static-only P1 built and deployed (static P1 live on tahamohamadi.ir) — Language Gateway + `/fa/` + `/en/` landing |
-| Styling/UI | Tailwind CSS v4 + project design tokens + component layer (`primitives/ui/patterns/sections/islands` per ADR-0031) | Tailwind v4 + project design tokens applied; component layer lands with redesign phases; shadcn/Radix still not used in public build |
-| Backend/CMS/API | Python 3.12.13 + Django 5.2.9 LTS + Django Ninja 1.6.2 (Wagtail 7.4.2 pending removal per ADR-0026) | Runtime live as Compose `taha-cms` on `127.0.0.1:18000`; public `/admin*`, `/static*`, `/health/`, published-only `/api/` + `/media/` proxied |
+| Public frontend | Astro + TypeScript + React Islands | Live: Language Gateway + `/fa/` + `/en/` home v2 (Glass Constellation night identity, ADR-0031) + about/cv/research/projects/writing/catalogs/contact/search |
+| Styling/UI | Plain CSS design tokens (§0 night) + component layer (`primitives/patterns/sections/islands` per ADR-0031) | Tailwind REMOVED (#103); §0 night tokens live; primitives + CatalogPage/DetailShell patterns shipped; page migrations continue in Wave D; shadcn/Radix not used in public build |
+| Admin panel | React 18 + Vite SPA — independent project `apps/admin/` per ADR-0032 | Own Dockerfile/nginx image + ci-admin.yml; served at `/admin/` by compose `admin` service via Caddy; Django serves only ADMIN_SPA_ROOT fallback |
+| Backend/CMS/API | Python 3.12.13 + Django 5.2.9 LTS + Django Ninja 1.6.2 (Wagtail removed — `DEBT-0003` CLOSED) | Runtime live as Compose `taha-cms`; Caddy edge proxies `/admin*` (→ admin container), `/static*`, `/health/`, published-only `/api/` + `/media/` |
 | Database | PostgreSQL 17 (Compose `taha-cms-db-1`) | Provisioned for CMS only; restic restore/import evidence still `RISK-0003` |
-| Public search | Pagefind at the approved phase | Not provisioned |
+| Public search | Pagefind at the approved phase | Live at `/{locale}/search/` (Pagefind, night-styled UI); noscript fallback list |
 | Deployment | Docker Compose + Caddy on VPS | Static artifact via `/opt/taha/site/current`; CMS Compose live; Caddy `/static*` handle still required |
 | Git/CI | GitHub + GitHub Actions hosted standard runners | Workflows `ci.yml` (web) and `ci-cms.yml` (CMS) green on hosted runners on `main` |
 | Backup | Encrypted restic repository through rclone on Google Drive | restic 0.18.1 and Ubuntu rclone 1.60.1 build installed; OAuth, repository, PostgreSQL/media/config snapshots, `restic check`, retention, enabled daily timer and isolated file-level restore verified; staging database import remains |
@@ -36,8 +37,9 @@ Python 3.12 is selected for ecosystem maturity and remains security-supported th
 ## Repository ownership
 
 ```text
-apps/web/               Astro public frontend
-apps/cms/               Django, Wagtail (removal authorized per ADR-0026) and Django Ninja; custom React admin SPA (admin-frontend/) once scaffolded
+apps/web/               Astro public frontend (Glass Constellation night identity)
+apps/admin/             React admin SPA — independent project per ADR-0032 (served at /admin/)
+apps/cms/               Django + Django Ninja backend only (Wagtail removed per ADR-0026/DEBT-0003 CLOSED)
 infra/                  Caddy, Compose, deploy and backup infrastructure
 docs/adr/               accepted/proposed architecture decisions
 docs/governance/        durable project policies

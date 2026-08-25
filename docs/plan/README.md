@@ -7,7 +7,7 @@ Rule:
 Execute a spec only if it appears under **Active** below.
 Everything under **Archive** is history. Read it for context; never execute it.
 
-Last reconciled: 2026-08-24 (docs reorg — 56 finished/stale specs moved to `archive/`).
+Last reconciled: 2026-08-25 (post ADR-0032 cutover + Waves A–C deploy sync).
 
 ---
 
@@ -15,10 +15,10 @@ Last reconciled: 2026-08-24 (docs reorg — 56 finished/stale specs moved to `ar
 
 | Spec | State | Who runs it | Notes |
 |---|---|---|---|
-| **`PARALLEL_EXECUTION_PLAN.md`** | **ACTIVE — execution order & agent assignment** | N agents | Phase waves A→B→C/D→X(parallel)→Z; file-domain locks so tasks never collide. A+B merged & deployed (PRs #99–109). |
+| **`PARALLEL_EXECUTION_PLAN.md`** | **ACTIVE — execution order & agent assignment** | N agents | Phase waves A→B→C/D→X(parallel)→Z; file-domain locks so tasks never collide. **A+B+C done & deployed (PRs #99–112); Wave D = page migrations, next.** |
 | `REMAINING-WORK-CONSOLIDATED.md` | ACTIVE — consolidated non-redesign backlog | agent + owner | One table per WS-A/B/C/ledgers/G/H + profile-data quality. |
 | `master-remaining-work-checklist.md` | Ledger of item details + evidence | agent + owner | Single ledger (LOG-0218); acceptance criteria live here. |
-| `reDesign_plan.md` (repo root) | ACTIVE — binding redesign v2 plan | agent | Glass Constellation identity; ADR-0031. |
+| `reDesign_plan.md` (repo root) | ACTIVE — binding redesign v2 plan | agent | Glass Constellation identity; ADR-0031. Home v2 live; Journey slot reserved. |
 
 > The canonical board file is `master-remaining-work-checklist.md` — item-level
 > acceptance criteria and evidence lines live there; scheduling lives in
@@ -58,7 +58,7 @@ Staging-host instructions inside archived specs are obsolete (ADR-0025).
 
 | File | Role |
 |---|---|
-| `custom-admin-rebuild-fa.md` | Master plan for the custom admin rebuild (ADM-0..ADM-6 context, §14 remaining work). Reference for board items B*/A*. |
+| `custom-admin-rebuild-fa.md` | Historical master plan of the custom admin rebuild (ADM-0..ADM-6). Superseded operationally by ADR-0032 (`apps/admin` split, S5 cutover done 2026-08-25) — kept for context. |
 | `LICENSES.md` | Third-party licence notes incl. GSAP acceptance (ADR-0030). |
 | `manual-test-checklists/` | S6 ADM QA checklist + publish/rebuild chain checklist (used by DEFER-0032 remainder). |
 

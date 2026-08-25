@@ -113,7 +113,7 @@
 - [ ] **B1 — ممیزی UI/UX جامع SPA + رفع یافته‌ها** — `P1` · `agent` · `L` · deps: —
   - گام ۱ (docs): گزارش ممیزی `admin-frontend` مقابل توکن‌ها/contract: حالت loading/error/empty در همه صفحات، پیام اعتبارسنجی فیلدها، focus states، RTL/LTR، ترتیب tab، پیام‌های خطای API (`{status,code,message,fields[]}`) نمایش انسانی، responsive ≥360px.
   - گام ۲ (code): رفع به تفکیک PR کوچک؛ هر PR با اسکرین‌شات before/after در WORK_LOG.
-  - پذیرش: چک‌لیست ممیزی صفر مورد بحرانی؛ `cd apps/cms/admin-frontend && npm run build && npx tsc --noEmit` PASS؛ Playwright admin matrix همچنان PASS.
+  - پذیرش: چک‌لیست ممیزی صفر مورد بحرانی؛ `cd apps/admin && npm run check && npm run build` PASS (ADR-0032: SPA lives in apps/admin)؛ Playwright admin matrix همچنان PASS.
   - شواهد: LOG-____
 
 - [ ] **B2 — ادیتورهای detail دوزبانه برای سایر موجودیت‌ها (صف P7-admin-detail-pages)** — `P2` · `agent` · `L` · deps: B1

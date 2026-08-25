@@ -9,7 +9,7 @@
 
 | ID | آیتم | وضعیت |
 |---|---|---|
-| A1 | خانهٔ `/en/`,`/fa/` از CMS (`landing.ts` + fail-build honesty spec) | OPEN |
+| A1 | خانهٔ `/en/`,`/fa/` از CMS (`landing.ts` + fail-build honesty spec) | PARTIAL — data layer + `qa/home-cms-build.spec.mjs` shipped (#110); CMS-fed content wiring remains |
 | A2 | Featured spotlight خانه از CMS | OPEN |
 | A3 | هدر/فوتر/tagline/SEO defaults از `/api/site` | OPEN |
 | A4 | CV کاملاً ادمین‌محور؛ حذف md های commit‌شده از آرتیفکت | OPEN |
@@ -42,7 +42,7 @@
 | C2 | سلف‌سرویس cd.yml + GitHub Environment protection | OPEN |
 | C3 | web image از GHCR به‌جای build روی VPS | OPEN (deps C2) |
 | C4 | توسعه smoke پس از deploy | OPEN |
-| C5 | پاک‌سازی اسکریپت‌های کهنه infra | DONE (LOG-0224) — close row |
+| C5 | ~~پاک‌سازی اسکریپت‌های کهنه infra~~ | DONE (LOG-0224) — CLOSED |
 | C6 | Runbook zero-SSH operations | OPEN (deps C2,C4) |
 | C7 | Dependabot npm/GHA (+uv دوراهی documented) | OPEN |
 | C8 | Observability پایه (uptime/disk/5xx alert) | OPEN (joint) |
@@ -61,7 +61,7 @@
 | F10 | پاک‌سازی ارجاع Wagtail در runbooks | عمدتاً DONE (A-07/C5) — residual sweep |
 | F11 | تصمیم DEBT-0002 tabs/find-in-page | owner→agent |
 | F12 | sync checkboxهای کهنه Task-list §5/§19 | PARTIAL (LOG-0224) |
-| KI-0007 | **Cloudflare Email Obfuscation خاموش شود** (toggle داشبورد Cloudflare؛ mailto بدون JS مرده است) | **owner — یک کلیک** |
+| KI-0007 | ~~Cloudflare Email Obfuscation خاموش شود~~ **CLOSED 2026-08-25** — مالک toggle را زد؛ mailto لایو تمیز است (LOG-0247) | — |
 
 ## ۵) فازهای آینده (WS-G) — مالک: owner-gated
 
