@@ -11,13 +11,16 @@ sudo docker build -f apps/admin/Dockerfile -t taha-admin:local apps/admin
 
 echo "== 2) start admin service WITH the env vars compose requires =="
 # Interpolation needs CMS_IMAGE/WEB_IMAGE; reuse the images of the running containers.
+# NOTE: `sudo -E` is unsupported here, so pass vars explicitly after sudo.
 CMS_IMAGE="$(docker inspect taha-cms-cms-1 --format '{{.Config.Image}}')"
 WEB_IMAGE="$(docker inspect taha-cms-web-1 --format '{{.Config.Image}}')"
-export CMS_IMAGE WEB_IMAGE ADMIN_IMAGE=taha-admin:local
+export ADMIN_IMAGE=taha-admin:local
 cd infra/cms
-sudo -E docker compose -f docker-compose.cms.yml up -d admin
+sudo env "CMS_IMAGE=$CMS_IMAGE" "WEB_IMAGE=$WEB_IMAGE" "ADMIN_IMAGE=$ADMIN_IMAGE" \
+  docker compose -f docker-compose.cms.yml up -d admin
 sleep 3
-sudo -E docker compose -f docker-compose.cms.yml ps admin
+sudo env "CMS_IMAGE=$CMS_IMAGE" "WEB_IMAGE=$WEB_IMAGE" "ADMIN_IMAGE=$ADMIN_IMAGE" \
+  docker compose -f docker-compose.cms.yml ps admin
 echo "local nginx check:"
 curl -s -o /dev/null -w "  127.0.0.1:13081/admin/ -> %{http_code}\n" http://127.0.0.1:13081/admin/
 
