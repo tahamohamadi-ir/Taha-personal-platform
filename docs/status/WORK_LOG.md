@@ -1,3 +1,9 @@
+## LOG-0251 — 2026-08-25 — ADR-0032 S5 cutover DONE — admin split fully live
+
+- Owner ran `infra/deploy/s5-admin-cutover.sh` on VPS: `taha-admin:local` built (nginx, cached), `taha-cms-admin-1` up on 127.0.0.1:13081, Caddyfile verified (`reverse_proxy admin:80`) and reloaded clean.
+- Public verification: `/admin/` 200 · `/admin/login` 200 · `/api/site` 200; SPA asset served as `text/javascript` with no Django FileResponse headers → the nginx admin container is now the serving path (Django fallback idle).
+- ADR-0032 CLOSED as fully implemented. Stack = modular monorepo: apps/web / apps/admin / apps/cms — independent build+CI+runtime, one repo (owner decision: no repo split, no admin subdomain for now).
+
 ## LOG-0250 — 2026-08-25 — ADR-0032 stabilization: e2e + settings wiring (PRs #113/#114 follow-ups)
 
 - PR #113 merged with only its first 2 commits (push raced the merge); the e2e-stack fix landed after. Cherry-picked to main as fd1656f: run_e2e_stack.sh now points at `apps/admin/dist` via `ADMIN_SPA_ROOT`; ci-cms builds apps/admin for the lifecycle stack.
