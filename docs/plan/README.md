@@ -15,8 +15,9 @@ Last reconciled: 2026-08-24 (docs reorg — 56 finished/stale specs moved to `ar
 
 | Spec | State | Who runs it | Notes |
 |---|---|---|---|
-| **`PARALLEL_EXECUTION_PLAN.md`** | **ACTIVE — execution order & agent assignment** | N agents | Phase waves A→B→C/D→X(parallel)→Z; file-domain locks so tasks never collide. |
-| `master-remaining-work-checklist.md` | Ledger of item details + evidence | agent + owner | Single ledger (LOG-0218); redesign phases now expressed as Waves A–Z in the parallel plan. |
+| **`PARALLEL_EXECUTION_PLAN.md`** | **ACTIVE — execution order & agent assignment** | N agents | Phase waves A→B→C/D→X(parallel)→Z; file-domain locks so tasks never collide. A+B merged & deployed (PRs #99–109). |
+| `REMAINING-WORK-CONSOLIDATED.md` | ACTIVE — consolidated non-redesign backlog | agent + owner | One table per WS-A/B/C/ledgers/G/H + profile-data quality. |
+| `master-remaining-work-checklist.md` | Ledger of item details + evidence | agent + owner | Single ledger (LOG-0218); acceptance criteria live here. |
 | `reDesign_plan.md` (repo root) | ACTIVE — binding redesign v2 plan | agent | Glass Constellation identity; ADR-0031. |
 
 > The canonical board file is `master-remaining-work-checklist.md` — item-level
