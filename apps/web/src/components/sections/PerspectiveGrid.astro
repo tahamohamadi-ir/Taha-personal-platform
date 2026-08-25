@@ -1,0 +1,258 @@
+---
+import type { LocaleContent } from "../../data/content";
+
+interface Props {
+  content: LocaleContent;
+}
+
+const { content } = Astro.props;
+const home = `/${content.lang}/`;
+const perspectiveHref: Record<string, string> = {
+  research: `${home}research/`,
+  engineering: `${home}projects/`,
+  writing: `${home}writing/`,
+};
+---
+
+<section id="perspectives" class="perspectives">
+  <div class="head">
+    <p class="kicker">{content.perspectives.label}</p>
+    <h2 class="heading">{content.perspectives.heading}</h2>
+    <p class="intro">{content.perspectives.intro}</p>
+  </div>
+  <div class="grid">
+    {
+      content.perspectives.items.map((item) => {
+        const href = perspectiveHref[item.id];
+        return (
+          <article
+            class={`card perspective perspective--${item.id}`}
+            data-spotlight
+          >
+            <h3 class="title">
+              {href ? (
+                <a class="stretch" href={href}>
+                  {item.title}
+                </a>
+              ) : (
+                item.title
+              )}
+            </h3>
+            <p class="audience">{item.audience}</p>
+            <p class="description">{item.description}</p>
+          </article>
+        );
+      })
+    }
+  </div>
+  <p class="note">{content.perspectives.note}</p>
+</section>
+
+<script>
+  /* M2 spotlight border (reDesign_plan §۱.۵): --mx/--my follow the cursor so
+     each card's border glows underneath the pointer. Pure enhancement —
+     without JS the CSS falls back to a centered hover glow and the plain
+     glass edge; touch/reduced-motion never attach the listener. */
+  const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  if (finePointer.matches && !reducedMotion.matches) {
+    let frame = 0;
+    let target: HTMLElement | null = null;
+    let nextX = "50%";
+    let nextY = "50%";
+
+    const apply = () => {
+      frame = 0;
+      if (target) {
+        target.style.setProperty("--mx", nextX);
+        target.style.setProperty("--my", nextY);
+      }
+    };
+
+    for (const card of document.querySelectorAll<HTMLElement>("[data-spotlight]")) {
+      card.addEventListener(
+        "pointermove",
+        (event) => {
+          const rect = card.getBoundingClientRect();
+          target = card;
+          nextX = `${event.clientX - rect.left}px`;
+          nextY = `${event.clientY - rect.top}px`;
+          if (!frame) frame = requestAnimationFrame(apply);
+        },
+        { passive: true },
+      );
+      card.addEventListener("pointerleave", () => {
+        if (frame) cancelAnimationFrame(frame);
+        frame = 0;
+        target = null;
+      });
+    }
+  }
+</script>
+
+<style>
+  .perspectives {
+    max-width: var(--measure-wide, 72rem);
+    margin-inline: auto;
+    padding-block: var(--space-8, 4rem);
+    padding-inline: clamp(1rem, 5vw, 2.5rem);
+  }
+
+  .head {
+    margin-block-end: var(--space-6, 2rem);
+    min-width: 0;
+  }
+
+  .kicker {
+    color: var(--brand-text, #3dd6c5);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    margin: 0 0 var(--space-2, 0.5rem);
+  }
+
+  :global([dir="rtl"]) .kicker {
+    letter-spacing: 0;
+  }
+
+  .heading {
+    font-size: clamp(1.75rem, 1.5rem + 1.5vw, 2.5rem);
+    line-height: 1.15;
+    margin: 0 0 var(--space-3, 0.75rem);
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+  }
+
+  .intro {
+    color: var(--ink-mid, #a8b8c8);
+    max-inline-size: 60ch;
+    margin: 0;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr));
+    gap: var(--space-4, 1rem);
+    min-width: 0;
+  }
+
+  /* Glass card (shared .card supplies fill/blur/edge/shadow); the spotlight
+     ring is painted by ::after as a masked gradient band over the border.
+     Without --mx/--my it centers at 50% so no-JS hover still reads. */
+  .perspective {
+    position: relative;
+    padding: var(--space-6, 2rem) var(--space-5, 1.25rem);
+    min-width: 0;
+    transition: transform var(--duration-night-fast, 160ms)
+        var(--ease-night, cubic-bezier(0.22, 1, 0.36, 1));
+  }
+
+  .perspective::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: radial-gradient(
+      14rem circle at var(--mx, 50%) var(--my, 50%),
+      var(--brand-text, #3dd6c5),
+      transparent 70%
+    );
+    opacity: 0;
+    transition: opacity var(--duration-night-fast, 160ms) ease-out;
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .perspective:hover,
+  .perspective:focus-within {
+    transform: translateY(-0.25rem);
+  }
+
+  .perspective:hover::after,
+  .perspective:focus-within::after {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .perspective:hover,
+    .perspective:focus-within {
+      transform: none;
+    }
+  }
+
+  /* Whole-card link stretch + visible focus twin of the hover state. */
+  .stretch::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+
+  .perspective:has(.stretch:focus-visible),
+  .stretch:focus-visible {
+    outline: 2px solid var(--brand-text, #3dd6c5);
+    outline-offset: 2px;
+  }
+
+  .title {
+    font-size: 1.25rem;
+    line-height: 1.3;
+    margin: 0 0 var(--space-2, 0.5rem);
+    color: var(--ink-hi, #f2f6fa);
+    overflow-wrap: anywhere;
+  }
+
+  .stretch {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .audience {
+    color: var(--brand-text, #3dd6c5);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    margin: 0 0 var(--space-3, 0.75rem);
+    overflow-wrap: anywhere;
+  }
+
+  .description {
+    color: var(--ink-mid, #a8b8c8);
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  /* Per-path accent: research violet, engineering brand, writing gold
+     (night token counterparts of the legacy hue mapping). */
+  .perspective--research {
+    border-inline-start: 2px solid var(--violet, #8e75e6);
+  }
+  .perspective--research .audience {
+    color: var(--violet, #8e75e6);
+  }
+
+  .perspective--engineering {
+    border-inline-start: 2px solid var(--brand, #16b8a6);
+  }
+
+  .perspective--writing {
+    border-inline-start: 2px solid var(--gold, #e3b95c);
+  }
+  .perspective--writing .audience {
+    color: var(--gold, #e3b95c);
+  }
+
+  .note {
+    color: var(--ink-mid, #a8b8c8);
+    font-size: 0.875rem;
+    margin: var(--space-5, 1.25rem) 0 0;
+    overflow-wrap: anywhere;
+  }
+</style>
