@@ -49,6 +49,9 @@ pixel-copying raster text.
 - Motion, interaction, and graph behavior is in `MOTION-GRAPH-HANDOFF.md`.
 - The scored review, corrections, and evidence limits are in
   `QUALITY-AUDIT-v2.md`.
+- The implementation-ready logo/art/concept pack, source links, prompt log,
+  crop/alt guidance, and integrity hashes are in
+  `../../Assets/site-redesign/README.md`.
 
 ## Working rule
 
