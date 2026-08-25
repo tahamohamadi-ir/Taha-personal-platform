@@ -25,6 +25,7 @@ Last reconciled: 2026-08-23.
 | `blog-story-composition-task-spec.md` | PARTIAL | agent | Blog/entity stories in repo; keep content publishing honest. |
 | `rich-blocks-v2-task-spec.md` | DONE | agent | Six no-JS story blocks. Live via web rebuilds. |
 | `ADM-6-frontend-wiring-task-spec.md` | PARTIAL | agent | Remaining: ?18 manual QA (`DEFER-0032` PARTIAL). |
+| `P14-personal-platform-experience-redesign-task-spec.md` | PARTIAL (design review) | agent + owner | Dual-theme visual concepts and detailed UX/admin/graph handoff are ready; no frontend or route changes yet. |
 | `P0-A-stack-inventory-task-spec.md` | BLOCKED (owner) | owner | Read-only VPS inventory. Not an agent task. |
 | `master-remaining-work-checklist.md` | ACTIVE board | agent + owner | Single remaining-work board (LOG-0218). Bakes in owner constraints: all content CMS-managed, complete admin UX, minimal VPS SSH, RISK-0011 de-risking. Execute items only from this board. |
 
