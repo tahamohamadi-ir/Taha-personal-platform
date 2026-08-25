@@ -1,6 +1,24 @@
 @import "@fontsource-variable/inter";
 @import "@fontsource-variable/vazirmatn";
-@import "tailwindcss";
+
+/* Tailwind v4 removed (A-03): only `flex min-h-screen flex-col` on <body> was
+   consumed — replaced by the .site-shell utility below. Utilities are plain CSS
+   from here on. The border-box reset below replaces the part of Tailwind
+   preflight the layout silently depended on (without it, padding+border inflate
+   fixed-width elements and reintroduce mobile overflow). */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+.site-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.site-main {
+  flex: 1 1 auto;
+}
 
 /*
   Design tokens — source of truth: docs/design.md (light theme).
