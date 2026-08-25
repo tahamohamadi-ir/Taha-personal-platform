@@ -37,6 +37,7 @@ const latest = (await getPublishedArticles(content.lang)).slice(0, 3);
               )}
               {article.reading_time_minutes > 0 && (
                 <span>
+                  {article.published_at && <span class="meta-sep" aria-hidden="true">·</span>}
                   {formatNumber(article.reading_time_minutes, content.lang)}{" "}
                   {content.blog.readingLabel}
                 </span>
@@ -131,8 +132,13 @@ const latest = (await getPublishedArticles(content.lang)).slice(0, 3);
   }
 
   .meta {
-    color: var(--ink-low, #6e8095);
+    color: var(--ink-mid, #a8b8c8);
     font-size: 0.875rem;
+  }
+
+  .meta-sep {
+    margin-inline: 0.375rem;
+    color: var(--ink-low, #6e8095);
   }
 
   .row-link {
