@@ -53,7 +53,9 @@ tahamohamadi.ir {
 	redir /admin /admin/ 308
 
 	handle /admin/* {
-		reverse_proxy cms:8000 {
+		# ADR-0032 S3: SPA served by the independent taha-admin nginx container.
+		# Same-origin, so session/CSRF cookies keep working unchanged.
+		reverse_proxy admin:80 {
 			header_down X-Robots-Tag "noindex, nofollow"
 			header_down Cache-Control "no-store, no-cache, must-revalidate"
 		}

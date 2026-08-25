@@ -72,17 +72,14 @@ jobs:
           cache: npm
           cache-dependency-path: |
             apps/web/package-lock.json
-            apps/cms/admin-frontend/package-lock.json
 
       - name: Install CMS Python deps
         working-directory: apps/cms
         run: uv sync --python 3.12
 
-      - name: Build admin SPA
-        working-directory: apps/cms/admin-frontend
-        run: |
-          npm ci
-          npm run build
+      # ADR-0032 S1: admin SPA moved to apps/admin (own CI: ci-admin.yml).
+      # CMS pipeline no longer builds it; admin_spa.py serves whatever
+      # ADMIN_SPA_ROOT points at (tests use a stub dir).
 
       - name: Install web + Playwright
         working-directory: apps/web

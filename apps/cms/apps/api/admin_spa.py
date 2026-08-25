@@ -12,7 +12,13 @@ from django.conf import settings
 from django.http import FileResponse, Http404
 from django.views.decorators.http import require_GET
 
-SPA_ROOT = Path(settings.BASE_DIR) / "admin-frontend" / "dist"
+# S1 (ADR-0032): the admin SPA moved to apps/admin. Default keeps the legacy
+# in-image path; production overrides via ADMIN_SPA_ROOT (Caddy-served volume
+# or baked copy). Missing builds fail loudly either way.
+SPA_ROOT = Path(
+    getattr(settings, "ADMIN_SPA_ROOT", "")
+    or (Path(settings.BASE_DIR) / "admin-frontend" / "dist")
+)
 
 
 @require_GET
