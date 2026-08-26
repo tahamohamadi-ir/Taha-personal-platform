@@ -1,0 +1,77 @@
+# Page-family production register
+
+**Status:** Active  
+**Visual system:** P14 Light Editorial / Dark Scientific Atlas  
+**Content authority:** published locale-specific CMS records only
+
+## Frame register
+
+| ID | Project filename | Theme | Primary template | Direction shown | Generation state | Review state | Dimensions | SHA-256 |
+|---|---|---|---|---|---|---|---|---|
+| PF-01 | `creative-index-light.png` | Light Editorial | Collection index / visual variant | LTR reference | Not generated | Not reviewed | Not available | Not available |
+| PF-02 | `creative-detail-dark.png` | Dark Scientific Atlas | Visual-work detail | LTR reference | Not generated | Not reviewed | Not available | Not available |
+| PF-03 | `writing-index-light.png` | Light Editorial + coral | Editorial index | LTR reference | Not generated | Not reviewed | Not available | Not available |
+| PF-04 | `projects-index-dark.png` | Dark Scientific Atlas | Collection index / evidence variant | LTR reference | Not generated | Not reviewed | Not available | Not available |
+| PF-05 | `research-publications-index-light.png` | Light Editorial | Research/publication index | LTR reference | Not generated | Not reviewed | Not available | Not available |
+| PF-06 | `teaching-index-dark.png` | Dark Scientific Atlas + sage | Editorial/learning index | LTR reference | Not generated | Not reviewed | Not available | Not available |
+| PF-07 | `about-cv-light.png` | Light Editorial | Profile/CV narrative | LTR reference | Not generated | Not reviewed | Not available | Not available |
+| PF-08 | `contact-dark.png` | Dark Scientific Atlas | Contact/collaboration | LTR reference | Not generated | Not reviewed | Not available | Not available |
+
+Persian RTL and mobile behavior are specified in the shared handoff rather than
+redrawing all eight permutations. The existing Persian Blog-detail,
+Project-detail, and mobile-Home concepts are the visual RTL references.
+
+## Source-image roles
+
+| Source | Role |
+|---|---|
+| `home-light-concept-v3-final.png` | Layout, spacing, Light surfaces, shared header/footer, academic hierarchy |
+| `home-dark-concept-v3-final.png` | Dark surfaces, glow restraint, graph language, shared geometry |
+| `blog-detail-fa-light-concept-v1.png` | Long-form reading measure, TOC, captions, RTL editorial behavior |
+| `project-detail-fa-dark-concept-v1.png` | Evidence detail, confidentiality disclosure, outputs, related records |
+| `art/gallery-ivory-forms.png` | PF-01/PF-02 visual-work media direction |
+| `art/blog-coral-stairs.png` | PF-03 editorial cover direction |
+| `art/learning-sage-library.png` | PF-06 learning-media direction |
+| project art masters | PF-04 sanitized selected-project preview direction |
+
+## Prompt-wide invariants
+
+### Light Editorial
+
+- warm ivory canvas and mineral-white surfaces;
+- navy display/body hierarchy with turquoise primary action;
+- gold limited to one short rule, one identity-graphic stroke, or one badge;
+- architectural daylight, subtle translucent depth, and large calm margins;
+- editorial lists before card walls.
+
+### Dark Scientific Atlas
+
+- deep navy canvas, royal raised surfaces, warm ivory text;
+- turquoise identity/action with restrained orbital glow;
+- violet, emerald, coral, or gold only when the content family needs it;
+- borders and grouping before heavy elevation;
+- scientific/architectural atmosphere without dashboard density.
+
+### Shared
+
+- maximum content shell approximately 1280px on a 1440px-wide concept;
+- only two font families active per locale;
+- one primary action per viewport;
+- body reading size represented at 16px or larger;
+- no browser chrome, device frame, watermark, fake analytics, or engagement
+  metrics;
+- no invented biography, degree, institution, employer, date, venue, result,
+  metric, URL, email, phone number, or social handle;
+- no meaning encoded by color alone;
+- generated text is illustrative and never publishable authority;
+- Light/Dark mode changes visual tokens, not content or component anatomy.
+
+## Review states
+
+- `Not generated`: no project-bound output exists.
+- `Generated`: project-bound file exists; direct visual review is incomplete.
+- `Revision required`: a visible hierarchy, claim, privacy, clipping, or family
+  consistency defect prevents acceptance.
+- `Reviewed`: direct inspection passed for art-direction handoff; runtime,
+  browser, accessibility, CMS, and production validation remain open.
+
