@@ -1,3 +1,13 @@
+## LOG-0256 — 2026-08-26 — P14D reference pushed and production pipeline green
+
+- Outcome: Published the canonical, self-contained P14D implementation reference to `origin/main` at `bb1e0f7609c9f7cd548f08170d079adb9895d873`. GitHub Actions completed successfully: CI run `32973740026`, CMS CI run `32973739925`, and production CD run `32973739917`. The deployment rebuilt the existing public frontend; this documentation/asset release did not alter public routes, CMS schema, API contracts or runtime UI.
+- Why: The owner explicitly requested a complete Git update, push and deployment after the multi-agent reference package was prepared.
+- Scope / files: Git publication and deployment evidence for `Assets/site-redesign/implementation-reference/**`, P14D plan/index and LOG-0255. No application, CMS, migration, infrastructure or workflow file changed.
+- Verification actually performed and result: local `npm run check` returned 0 errors; local `npm run build` built 58 pages; reference validator PASS; packaged asset integrity 33/33 PASS; all three GitHub workflows above concluded `success`; `bash infra/deploy/smoke.sh https://tahamohamadi.ir` returned 9 PASS; live `/health.json` returned `{"status":"ok","service":"static","version":"0.1.0"}`.
+- Decisions / assumptions: The main checkout contained owner-owned uncommitted asset-catalog edits, so release integration was performed in a clean worktree based on the latest `origin/main`; those local edits were not overwritten. The final Git package versions only the bounded implementation-reference subtree and excludes the raw duplicate `others/` archive.
+- Deferred or risk IDs: none opened; no release blocker observed.
+- Rollback / recovery: revert the P14D reference commits and push; production can restore the preceding immutable artifact through the existing release rollback path. Because the public app code is unchanged, rollback is not currently indicated.
+
 ## LOG-0255 — 2026-08-26 — P14D canonical agent-ready implementation reference
 
 - Outcome: Consolidated the next-generation frontend handoff under `Assets/site-redesign/implementation-reference/` as the canonical reference for multiple implementation agents. The package contains a master specification, 13 dependency-aware work packets (`ATLAS-00` through `ATLAS-12`), exclusive file ownership and merge order, nine acceptance gates, a project-document migration map, source/supersession inventory, reproducible worktree snapshot, machine-readable manifest, current-Light/proposed-Dark tokens, 24 component contracts, six templates, ten asset references, a validator, and an optional offline local Figma builder. It is self-contained in a clean clone: 33 reviewed PNG assets plus their provenance, prompts, hash ledger and the retired design-history documents are mirrored under the reference root; raw duplicate generations remain owner-local. No frontend, CMS, route, API, migration or infrastructure implementation changed.
@@ -2661,5 +2671,4 @@ ode --check Ùˆ YAML validation ØªÙˆØ³Ø· agent.
 - Verification actually performed and result: CMS/admin CI already PASS on PR #45; web CI re-run after this commit.
 - Deferred or risk IDs: DEFER-0026 unchanged.
 - Rollback / recovery: revert this commit.
-
 
