@@ -14,8 +14,8 @@
 | PF-04 | `projects-index-dark.png` | Dark Scientific Atlas | Collection index / evidence variant | LTR reference | Generated | Reviewed | 853 x 1844 | `5edfb769e61cb11b6a8e4272cdde9218b85ef0bca5b29975a51c43ed5890303a` |
 | PF-05 | `research-publications-index-light.png` | Light Editorial | Research/publication index | LTR reference | Generated | Reviewed | 863 x 1823 | `dc78c3831c2cce225f28d2a6c106e3aa82919caaea6fbc0855c396bf6956b919` |
 | PF-06 | `teaching-index-dark.png` | Dark Scientific Atlas + sage | Editorial/learning index | LTR reference | Generated | Reviewed | 875 x 1798 | `fd15db30701f954e17c4600d9d3f99da9e93456d7da4174d8e93f0bfc1a942bc` |
-| PF-07 | `about-cv-light.png` | Light Editorial | Profile/CV narrative | LTR reference | Not generated | Not reviewed | Not available | Not available |
-| PF-08 | `contact-dark.png` | Dark Scientific Atlas | Contact/collaboration | LTR reference | Not generated | Not reviewed | Not available | Not available |
+| PF-07 | `about-cv-light.png` | Light Editorial | Profile/CV narrative | LTR reference | Generated | Reviewed | 862 x 1824 | `b26103b898b837b3dfc1574974cd9bf7b6fd7614c897a5cf3c94b56ed577a6e2` |
+| PF-08 | `contact-dark.png` | Dark Scientific Atlas | Contact/collaboration | LTR reference | Generated | Reviewed | 862 x 1825 | `fb1f14d9a7d3d4ebf4b62c2570fc626dd7c5bb6f44dc223e13f3883ae6ca35f1` |
 
 Persian RTL and mobile behavior are specified in the shared handoff rather than
 redrawing all eight permutations. The existing Persian Blog-detail,
@@ -133,3 +133,24 @@ Project-detail, and mobile-Home concepts are the visual RTL references.
 - Handoff note: this is a publishing library, not an LMS; there are no inferred
   enrollments, learner progress, completion, ratings, testimonials, or course
   metrics.
+
+### PF-07 About and CV — Light Editorial
+
+- Source result: `exec-67b950c3-a542-44f8-9866-391b3155aa1a.png`
+- Direct review: profile hierarchy, abstract portrait placeholder, local CV
+  tabs, working principles, interdisciplinary journey, record previews, skill
+  groups, selected outputs, CV CTA, collaboration CTA, and shared footer
+  passed.
+- Handoff note: journey labels and skills are visual taxonomy examples, not a
+  substitute for owner-approved biography/CV records; public detail links exist
+  only for published records.
+
+### PF-08 Contact — Dark Scientific Atlas
+
+- Source result: `exec-f5c05dc7-8754-4beb-a201-6be7c25c3822.png`
+- Direct review: collaboration-purpose selection, CMS-bound contact methods,
+  accessible form, no-database-storage disclosure, anti-spam status, send-state
+  model, preparation checklist, CV alternative, FAQ, and shared footer passed.
+- Handoff note: phone and Gmail are prohibited. The academic email, LinkedIn,
+  ORCID, availability, attachment support, and FAQ answers render only when the
+  relevant approved CMS/config record enables them.
