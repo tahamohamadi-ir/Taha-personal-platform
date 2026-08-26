@@ -1,6 +1,6 @@
 # P14C — Public page-family visual atlas
 
-**Status:** AWAITING OWNER WRITTEN REVIEW
+**Status:** APPROVED — IMPLEMENTATION PLAN READY
 
 ## Task: Complete the public-site UI/UX family before frontend replacement
 
@@ -89,10 +89,9 @@
 
 ## Handoff
 
-- Current phase output: written visual-atlas specification for owner review.
-- Next phase after approval: create and QA eight concepts, update the complete
-  handoff package, score coverage/consistency, and issue the Figma decision.
+- Current phase output: owner-approved visual-atlas specification and a
+  task-by-task implementation plan.
+- Next phase: create and QA eight concepts, update the complete handoff package,
+  score coverage/consistency, and issue the Figma decision.
 - Deferred/risk IDs: none opened for this design-only phase.
-- Explicit blocker: visual production waits for owner review of the written
-  specification, as required by the approved architectural-design workflow.
-
+- Explicit blocker: none. Execution approach selection is the next handoff.

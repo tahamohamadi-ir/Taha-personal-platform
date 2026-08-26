@@ -28,7 +28,7 @@ Last reconciled: 2026-08-25.
 | `P14-personal-platform-experience-redesign-task-spec.md` | DONE (design package) | agent + owner | Quality-audited dual-theme direction, RTL/mobile/detail/admin concepts, and UX/CMS/graph handoff complete; no frontend or route changes. |
 | `P14A-redesign-asset-pack-task-spec.md` | DONE (asset pack) | agent | Authoritative logo PNGs, six standalone artworks, seven final concept references, prompt/source/crop/alt/performance documentation, and integrity hashes; no runtime changes. |
 | `P14B-requested-concept-asset-extraction-task-spec.md` | DONE (asset extension) | agent | Preserved five requested concept sources and added centered Dark/Light portal plus three missing project-cover masters; dynamic UI/graph remains native. |
-| `P14C-public-page-family-visual-atlas-task-spec.md` | REVIEW | agent + owner | Written family/template scope is ready for owner review; after approval, produce eight concepts and issue the bounded Figma decision. No runtime work. |
+| `P14C-public-page-family-visual-atlas-task-spec.md` | PLAN READY | agent + owner | Owner approved the written family/template scope; the execution plan produces eight concepts and a bounded Figma decision. No runtime work. |
 | `P0-A-stack-inventory-task-spec.md` | BLOCKED (owner) | owner | Read-only VPS inventory. Not an agent task. |
 | `master-remaining-work-checklist.md` | ACTIVE board | agent + owner | Single remaining-work board (LOG-0218). Bakes in owner constraints: all content CMS-managed, complete admin UX, minimal VPS SSH, RISK-0011 de-risking. Execute items only from this board. |
 
