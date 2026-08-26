@@ -12,8 +12,8 @@
 | PF-02 | `creative-detail-dark.png` | Dark Scientific Atlas | Visual-work detail | LTR reference | Generated | Reviewed | 793 x 1983 | `a4f04e3597116c28eb82bfdbcf478e44610699862fc07ac45b00df9900774526` |
 | PF-03 | `writing-index-light.png` | Light Editorial + coral | Editorial index | LTR reference | Generated | Reviewed | 888 x 1771 | `72d54716202bcfb661f3a20f1b75988fb347a44a4f0b23daa41f8f46df53a1f2` |
 | PF-04 | `projects-index-dark.png` | Dark Scientific Atlas | Collection index / evidence variant | LTR reference | Generated | Reviewed | 853 x 1844 | `5edfb769e61cb11b6a8e4272cdde9218b85ef0bca5b29975a51c43ed5890303a` |
-| PF-05 | `research-publications-index-light.png` | Light Editorial | Research/publication index | LTR reference | Not generated | Not reviewed | Not available | Not available |
-| PF-06 | `teaching-index-dark.png` | Dark Scientific Atlas + sage | Editorial/learning index | LTR reference | Not generated | Not reviewed | Not available | Not available |
+| PF-05 | `research-publications-index-light.png` | Light Editorial | Research/publication index | LTR reference | Generated | Reviewed | 863 x 1823 | `dc78c3831c2cce225f28d2a6c106e3aa82919caaea6fbc0855c396bf6956b919` |
+| PF-06 | `teaching-index-dark.png` | Dark Scientific Atlas + sage | Editorial/learning index | LTR reference | Generated | Reviewed | 875 x 1798 | `fd15db30701f954e17c4600d9d3f99da9e93456d7da4174d8e93f0bfc1a942bc` |
 | PF-07 | `about-cv-light.png` | Light Editorial | Profile/CV narrative | LTR reference | Not generated | Not reviewed | Not available | Not available |
 | PF-08 | `contact-dark.png` | Dark Scientific Atlas | Contact/collaboration | LTR reference | Not generated | Not reviewed | Not available | Not available |
 
@@ -113,3 +113,23 @@ Project-detail, and mobile-Home concepts are the visual RTL references.
 - Handoff note: titles and descriptive copy are illustrative. Public records
   must suppress confidential fields and render only the sanitized published
   project projection.
+
+### PF-05 Research and publications index — Light Editorial
+
+- Source result: `exec-8d40974a-9996-4c12-b245-9cdfb6fe5037.png`
+- Direct review: local research navigation, constellation filtering model,
+  research-fit band, direction list, selected citation records, draft/status
+  disclosure, collaboration CTA, and shared footer passed.
+- Handoff note: publications keep independent canonical URLs while remaining
+  nested under Research in primary navigation; status, files, venue, authors,
+  and dates are published-record fields only.
+
+### PF-06 Teaching index — Dark Scientific Atlas + sage
+
+- Source result: `exec-aed65a55-4fbf-4da2-a825-e5b8bfc969d0.png`
+- Direct review: learning-library identity, filters, featured path, numbered
+  sequence, mixed editorial records, path anatomy, empty state, optional
+  updates, collaboration CTA, and shared footer passed.
+- Handoff note: this is a publishing library, not an LMS; there are no inferred
+  enrollments, learner progress, completion, ratings, testimonials, or course
+  metrics.
