@@ -1,6 +1,6 @@
 # Page-family production register
 
-**Status:** Active  
+**Status:** Complete — eight reviewed art-direction frames  
 **Visual system:** P14 Light Editorial / Dark Scientific Atlas  
 **Content authority:** published locale-specific CMS records only
 

@@ -1,6 +1,6 @@
 # Taha Personal Platform — implementation asset pack
 
-Status: **design handoff / owner review**, 2026-08-25. These files are stored in
+Status: **design handoff / visual atlas reviewed**, 2026-08-26. These files are stored in
 the project for implementation. They are not evidence that the redesigned
 frontend or any CMS record is live.
 
@@ -11,11 +11,14 @@ frontend or any CMS record is live.
 | `brand/` | Exact derivatives of the existing owner logo | Yes, after route/theme QA |
 | `art/` | Standalone, text-free generated artwork | Only after owner approval and responsive optimization |
 | `concepts/` | Art-direction references for layout and interaction | No; rebuild as native components |
+| `concepts/page-families/` | Eight reviewed P14C public page-family concepts | No; implementation reference only |
 | `concepts/requested-2026-08-25/` | Exact copies of the five newly requested source images | No; provenance/reference only |
 
-The generated images contain no intended UI copy, logo, CV claim, contact data,
-employer data, or real project data. Text visible in the concept screenshots is
-illustrative only; the CMS remains the only source for publishable content.
+The standalone `art/` masters contain no intended UI copy, logo, identity, or
+real project data. Concept screenshots intentionally contain illustrative UI
+copy and may repeat source-visible contact examples from supplied references;
+none of that text is publishable authority. Production binds only to the
+approved locale-specific CMS record.
 
 ## 2. Brand assets
 
@@ -79,6 +82,12 @@ references in `docs/design-redesign/visuals/`:
 They must not be sliced into production UI. Rebuild the design with semantic
 components, CMS fields, real typography, logical RTL properties, accessible
 focus states, reduced-motion fallbacks, and data-driven SVG/WebGL graph output.
+
+The eight files under `concepts/page-families/` complete the visual atlas for
+Creative/Gallery index and detail, Writing index, Projects index,
+Research/Publications index, Learning/Teaching index, About/CV, and Contact.
+Their reusable template, state, responsive, RTL, CMS/admin, and Figma decisions
+are documented under `docs/design-redesign/page-families/`.
 
 The five files under `concepts/requested-2026-08-25/` preserve the exact source
 images explicitly requested by the owner. Three are byte-identical to already
@@ -157,7 +166,8 @@ content. The P14 v3 final pair is the only Home art-direction authority.
 ## 9. Integrity
 
 `MANIFEST.md` records dimensions and roles. `SHA256SUMS.txt` records every
-managed binary under `art/`, `brand/`, and `concepts/` at handoff. If an
+managed binary under `art/`, `brand/`, and `concepts/` at handoff (33 PNGs in
+the P14C handoff). If an
 unmanaged `others/` drop folder is present, it is intentionally outside this
 approval/hash contract and is not modified by P14A/P14B. If a managed file is
 re-generated, edited, recompressed, or replaced with an original SVG, update its

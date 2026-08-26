@@ -1,6 +1,6 @@
 # P14C — Public page-family visual atlas
 
-**Status:** APPROVED — IMPLEMENTATION PLAN READY
+**Status:** DONE — VISUAL ATLAS AND HANDOFF COMPLETE
 
 ## Task: Complete the public-site UI/UX family before frontend replacement
 
@@ -89,9 +89,14 @@
 
 ## Handoff
 
-- Current phase output: owner-approved visual-atlas specification and a
-  task-by-task implementation plan.
-- Next phase: create and QA eight concepts, update the complete handoff package,
-  score coverage/consistency, and issue the Figma decision.
+- Current phase output: eight reviewed page-family concepts, complete route and
+  component matrix, responsive/RTL/state/motion specification, CMS/admin-panel
+  mapping, prompt/manifest/hash provenance, and a scored Figma decision.
+- Decision: `FIGMA_LITE_RECOMMENDED` at 12/16, bounded to foundations, reusable
+  components, six templates, representative responsive/RTL frames, and one
+  prototype path. Figma does not block frontend implementation.
+- Next phase: separately authorize Figma Lite or native frontend implementation;
+  neither is part of this design-only completion.
 - Deferred/risk IDs: none opened for this design-only phase.
-- Explicit blocker: none. Execution approach selection is the next handoff.
+- Explicit blocker: none for design handoff. Runtime/browser/CMS/accessibility/
+  performance/production validation remains open by design.

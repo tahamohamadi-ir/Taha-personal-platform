@@ -108,3 +108,118 @@ Standalone 3:2 honest placeholder: a warm-ivory arch and ascending staircase,
 restrained geometric blocks, soft light, faint turquoise shadow, and one small
 antique-gold point. No people, evidence claims, text, logo, UI, watermark, or
 border.
+
+# P14C public page-family concept prompts
+
+Mode: OpenAI built-in image generation, one independent generation call per
+concept. All outputs are art-direction references; generated text is never
+publishable content authority. Each call referenced the exact project logo and
+the closest approved Home/detail/art sources.
+
+| ID | Project file | Generated result | Primary references | Review |
+|---|---|---|---|---|
+| PF-01 | `concepts/page-families/creative-index-light.png` | `exec-f7a80680-e3f7-47c4-b4c4-ada11c4a154d.png` | Light Home, Gallery art, owner logo | Reviewed |
+| PF-02 | `concepts/page-families/creative-detail-dark.png` | `exec-d44fe536-231d-4b99-9478-a8101dc604ce.png` | Dark Home, Gallery art, owner logo | Reviewed |
+| PF-03 | `concepts/page-families/writing-index-light.png` | `exec-e6de06d5-637d-4f1f-b65f-e4d7381b3d75.png` | Light Home, Persian Blog detail, coral art, owner logo | Reviewed |
+| PF-04 | `concepts/page-families/projects-index-dark.png` | `exec-8a2e2736-e01e-4f11-8a4b-ecf476f5866c.png` | Dark Home, Persian Project detail, project art, owner logo | Reviewed |
+| PF-05 | `concepts/page-families/research-publications-index-light.png` | `exec-8d40974a-9996-4c12-b245-9cdfb6fe5037.png` | Light Home, graph editor, Creative index, owner logo | Reviewed |
+| PF-06 | `concepts/page-families/teaching-index-dark.png` | `exec-aed65a55-4fbf-4da2-a825-e5b8bfc969d0.png` | Dark Home, Writing index, sage library art, owner logo | Reviewed |
+| PF-07 | `concepts/page-families/about-cv-light.png` | `exec-67b950c3-a542-44f8-9866-391b3155aa1a.png` | Light Home, old About IA screenshots, Light portal, owner logo | Reviewed |
+| PF-08 | `concepts/page-families/contact-dark.png` | `exec-f5c05dc7-8754-4beb-a201-6be7c25c3822.png` | Dark Home, old Contact IA screenshot, Dark portal, owner logo | Reviewed |
+
+## PF-01 — Creative/Gallery index
+
+```text
+Create a full-page desktop Creative/Gallery collection index matching the
+approved Light Editorial Home: warm ivory, navy editorial hierarchy,
+turquoise action, scarce gold, calm architectural depth. Include shared header,
+collection statement, one featured work, medium/year/role filters, stable
+asymmetric media grid, pagination, collaboration CTA, and shared footer. Use
+neutral structural labels and Awaiting approved CMS copy. No invented identity,
+dates, clients, awards, metrics, links, contact values, browser chrome, or
+watermark. Use the exact supplied owner logo without redrawing it.
+```
+
+## PF-02 — Creative/Gallery detail
+
+```text
+Create a full-page desktop visual-work detail matching Dark Scientific Atlas:
+deep navy, royal surfaces, warm ivory type, turquoise action, scarce gold, and
+restrained violet. Include full lead media, counter and keyboard-safe lightbox
+cue, medium/year/role/context metadata, captioned sequence, process strip,
+credits/licence, related works, previous/next, collaboration CTA, and footer.
+Use Awaiting approved CMS copy and dashes for missing facts. No invented title,
+year, client, exhibition, award, metric, identity claim, chrome, or watermark.
+```
+
+## PF-03 — Writing/Blog index
+
+```text
+Create a full-page independent Blog/Writing index matching Light Editorial with
+a restrained coral family accent while turquoise remains the global action.
+Position it for essays, notes, memories, and political/social reflection,
+explicitly separate from projects. Include featured writing, editorial list,
+topic/archive/search controls, optional updates, pagination, collaboration CTA,
+and footer. Use CMS-safe placeholders; no engagement metrics, invented dates,
+biography, institutions, URLs, or private contact data.
+```
+
+## PF-04 — Projects index
+
+```text
+Create a full-page Projects index matching Dark Scientific Atlas. Present
+projects as curated sanitized evidence, not the owner's whole identity. Include
+a no-sensitive-data disclosure, one featured project, type/topic filters,
+mixed editorial evidence rows, explicit sanitized/public states, methods/
+artifacts/code/docs availability anatomy, pagination, CTA, and footer. No real
+operational data, confidential detail, invented results, metrics, employers,
+dates, URLs, chrome, or watermark.
+```
+
+## PF-05 — Research and Publications
+
+```text
+Create a full-page PhD-focused Research and Publications overview matching
+Light Editorial. Publications keep independent URLs but appear under Research
+navigation. Include local tabs, an accessible relationship-graph preview,
+research fit, directions, related-record links, citation-style selected
+publication rows, explicit CMS-derived status/files, collaboration and CV CTAs,
+and footer. Do not invent institutions, supervisors, venues, authors, dates,
+identifiers, metrics, or publication status.
+```
+
+## PF-06 — Learning/Teaching index
+
+```text
+Create a full-page Learning library matching Dark Scientific Atlas with a sage
+family identity. It is a publishing library, not a commercial LMS. Include
+filters, one featured path, numbered editorial sequence, tutorial/guide/note/
+resource rows, path anatomy, honest empty state, optional updates,
+collaboration CTA, and footer. No fake enrollment, learner progress,
+certificate, rating, institution, duration, or course metric.
+```
+
+## PF-07 — About and CV
+
+```text
+Create a full-page About/CV narrative matching Light Editorial. Present Taha
+Mohammadi as Researcher · Engineer · Designer and show the interdisciplinary
+journey Architecture to Visual Design to Software to Data to AI. Since no
+portrait exists, use an explicit abstract portrait/identity placeholder. Include
+local profile tabs, working principles, journey, experience/education previews,
+skill groups without ratings, outputs, CV and collaboration CTAs, and footer.
+Do not invent degrees, institutions, employers, dates, titles, metrics, or a
+face; unapproved records use Awaiting approved CMS copy.
+```
+
+## PF-08 — Contact
+
+```text
+Create a full-page Contact/collaboration page matching Dark Scientific Atlas.
+Prioritize PhD/research fit, technical opportunities, and selected creative
+work. Include purpose selection, CMS-bound academic email/profile slots, no
+phone, accessible message form, anti-spam state, send states, preparation
+checklist, CV alternative, FAQ, privacy copy that messages are emailed directly
+and not stored in the website database, and footer. Never expose a personal
+mail address, phone, invented profile link, employer, or availability promise.
+```
