@@ -8,8 +8,8 @@
 
 | ID | Project filename | Theme | Primary template | Direction shown | Generation state | Review state | Dimensions | SHA-256 |
 |---|---|---|---|---|---|---|---|---|
-| PF-01 | `creative-index-light.png` | Light Editorial | Collection index / visual variant | LTR reference | Not generated | Not reviewed | Not available | Not available |
-| PF-02 | `creative-detail-dark.png` | Dark Scientific Atlas | Visual-work detail | LTR reference | Not generated | Not reviewed | Not available | Not available |
+| PF-01 | `creative-index-light.png` | Light Editorial | Collection index / visual variant | LTR reference | Generated | Reviewed | 864 x 1821 | `0b07398f53ec531e9840b8f01a0000cd0e82745e563e216bb04be55ec4c521b1` |
+| PF-02 | `creative-detail-dark.png` | Dark Scientific Atlas | Visual-work detail | LTR reference | Generated | Reviewed | 793 x 1983 | `a4f04e3597116c28eb82bfdbcf478e44610699862fc07ac45b00df9900774526` |
 | PF-03 | `writing-index-light.png` | Light Editorial + coral | Editorial index | LTR reference | Not generated | Not reviewed | Not available | Not available |
 | PF-04 | `projects-index-dark.png` | Dark Scientific Atlas | Collection index / evidence variant | LTR reference | Not generated | Not reviewed | Not available | Not available |
 | PF-05 | `research-publications-index-light.png` | Light Editorial | Research/publication index | LTR reference | Not generated | Not reviewed | Not available | Not available |
@@ -75,3 +75,21 @@ Project-detail, and mobile-Home concepts are the visual RTL references.
 - `Reviewed`: direct inspection passed for art-direction handoff; runtime,
   browser, accessibility, CMS, and production validation remain open.
 
+## Generation records
+
+### PF-01 Creative index — Light Editorial
+
+- Source result: `exec-f7a80680-e3f7-47c4-b4c4-ada11c4a154d.png`
+- Direct review: hierarchy, featured-work emphasis, filter row, varied gallery
+  rhythm, pagination, collaboration CTA, and shared footer passed.
+- Handoff note: `Awaiting approved CMS copy` is intentional and must resolve
+  from the published locale record at runtime.
+
+### PF-02 Creative detail — Dark Scientific Atlas
+
+- Source result: `exec-d44fe536-231d-4b99-9478-a8101dc604ce.png`
+- Direct review: lead-media priority, image counter, lightbox affordance,
+  thumbnail sequence, process narrative, credits/licence, related work, and
+  previous/next navigation passed.
+- Handoff note: metadata dashes are intentional empty states; no year, role,
+  context, credit, or licence may be inferred by the public frontend.
