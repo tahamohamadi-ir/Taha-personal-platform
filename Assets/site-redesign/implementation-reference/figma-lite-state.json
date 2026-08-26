@@ -1,0 +1,53 @@
+{
+  "runId": "figma-lite-2026-08-26-v1",
+  "fileKey": "Ox7wf2M3WzfApdQIDVp3Hk",
+  "fileUrl": "https://www.figma.com/design/Ox7wf2M3WzfApdQIDVp3Hk",
+  "phase": "local-builder",
+  "step": "local-plugin-created-runtime-run-pending",
+  "entities": {
+    "collections": {
+      "primitives": "VariableCollectionId:2:2",
+      "semanticLight": "VariableCollectionId:2:3",
+      "semanticDark": "VariableCollectionId:2:4",
+      "motionDefault": "VariableCollectionId:2:5",
+      "motionReduced": "VariableCollectionId:2:6"
+    },
+    "variables": {},
+    "pages": {
+      "foundationsLibrary": "0:1",
+      "templatesScreens": "14:2",
+      "prototypeHandoff": "14:3"
+    },
+    "styles": {
+      "textStyleCount": 18,
+      "effectStyleCount": 6
+    },
+    "components": {},
+    "templates": {},
+    "prototype": {}
+  },
+  "pendingValidations": [
+    "Import local plugin manifest in Figma Desktop",
+    "Run builder in target file",
+    "Inspect generated pages and text rendering",
+    "Record final Figma runtime QA"
+  ],
+  "completedSteps": [
+    "P0.a",
+    "P0.b",
+    "P0.c",
+    "P0.d",
+    "P0.e",
+    "P0.f",
+    "P1.a",
+    "P1.b",
+    "P1.c",
+    "P1.d",
+    "P1.e",
+    "P1.f",
+    "P1.g",
+    "P1.h",
+    "P2.local-agent-kit",
+    "P3.local-figma-builder-static"
+  ]
+}

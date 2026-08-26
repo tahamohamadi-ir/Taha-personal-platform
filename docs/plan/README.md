@@ -29,6 +29,7 @@ Last reconciled: 2026-08-25.
 | `P14A-redesign-asset-pack-task-spec.md` | DONE (asset pack) | agent | Authoritative logo PNGs, six standalone artworks, seven final concept references, prompt/source/crop/alt/performance documentation, and integrity hashes; no runtime changes. |
 | `P14B-requested-concept-asset-extraction-task-spec.md` | DONE (asset extension) | agent | Preserved five requested concept sources and added centered Dark/Light portal plus three missing project-cover masters; dynamic UI/graph remains native. |
 | `P14C-public-page-family-visual-atlas-task-spec.md` | DONE (design atlas) | agent + owner | Eight reviewed page-family concepts, 9.86/10 design-package audit, complete CMS/RTL/state/component handoff, 33 managed PNG hashes, and a 12/16 Figma-Lite recommendation; no runtime work. |
+| `P14D-agent-ready-design-kit-task-spec.md` | DONE (canonical implementation reference) | agent + owner | Master spec, 13 dependency-aware work packets, coordination/gates/document migration, machine-readable agent kit, optional free local Figma builder and worktree snapshot under `Assets/site-redesign/implementation-reference/`; no runtime work. |
 | `P0-A-stack-inventory-task-spec.md` | BLOCKED (owner) | owner | Read-only VPS inventory. Not an agent task. |
 | `master-remaining-work-checklist.md` | ACTIVE board | agent + owner | Single remaining-work board (LOG-0218). Bakes in owner constraints: all content CMS-managed, complete admin UX, minimal VPS SSH, RISK-0011 de-risking. Execute items only from this board. |
 

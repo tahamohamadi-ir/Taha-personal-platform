@@ -1,5 +1,10 @@
 # Personal Platform Experience Redesign
 
+> Canonical implementation planning has moved to
+> `Assets/site-redesign/implementation-reference/`. This folder remains the
+> design-history and evidence source; future agents start from the asset-pack
+> reference entry point.
+
 Status: **quality-audited design package complete** (2026-08-25).
 
 This folder is the handoff package for the new public experience. It is a

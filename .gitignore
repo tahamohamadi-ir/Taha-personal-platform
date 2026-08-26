@@ -43,8 +43,15 @@ postgres-data/
 Thumbs.db
 desktop.ini
 
-# Owner source assets (drafts; processed files in apps/web/public/)
-Assets/
+# Owner source assets (drafts; processed files in apps/web/public/).
+# The reviewed site-redesign implementation reference is intentionally
+# versioned so agents/worktrees share one canonical handoff; other owner assets
+# remain ignored.
+Assets/*
+!Assets/site-redesign/
+Assets/site-redesign/*
+!Assets/site-redesign/implementation-reference/
+!Assets/site-redesign/implementation-reference/**
 
 # Editors and IDEs
 .idea/

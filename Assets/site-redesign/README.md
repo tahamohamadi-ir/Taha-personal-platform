@@ -13,6 +13,7 @@ frontend or any CMS record is live.
 | `concepts/` | Art-direction references for layout and interaction | No; rebuild as native components |
 | `concepts/page-families/` | Eight reviewed P14C public page-family concepts | No; implementation reference only |
 | `concepts/requested-2026-08-25/` | Exact copies of the five newly requested source images | No; provenance/reference only |
+| `implementation-reference/` | Canonical master specification, multi-agent task list, gates, worktree snapshot and machine-readable agent kit | No; development/reference only |
 
 The standalone `art/` masters contain no intended UI copy, logo, identity, or
 real project data. Concept screenshots intentionally contain illustrative UI
@@ -87,7 +88,10 @@ The eight files under `concepts/page-families/` complete the visual atlas for
 Creative/Gallery index and detail, Writing index, Projects index,
 Research/Publications index, Learning/Teaching index, About/CV, and Contact.
 Their reusable template, state, responsive, RTL, CMS/admin, and Figma decisions
-are documented under `docs/design-redesign/page-families/`.
+are consolidated for implementation under
+`implementation-reference/README.md`. The older documents under
+`docs/design-redesign/` remain design-history inputs until the implementation
+tasks reconcile their owner documents.
 
 The five files under `concepts/requested-2026-08-25/` preserve the exact source
 images explicitly requested by the owner. Three are byte-identical to already
@@ -134,10 +138,12 @@ visual-behavior references supplied by the owner:
   visibility come from the graph schema; no raster graph is authoritative.
 - Timeline, theme illumination, cursor response, and GSAP sequences are runtime
   behavior. Their rules are documented in
+  `implementation-reference/MASTER-SPEC.md` and the historical handoff in
   `docs/design-redesign/MOTION-GRAPH-HANDOFF.md`.
 - CTA labels, Home order, selected projects, preview records, and alt text remain
   admin/CMS-managed within the locked design-system boundaries documented in
-  `docs/design-redesign/ADMIN-CMS-FUNCTIONAL-SPEC.md`.
+  `implementation-reference/MASTER-SPEC.md` and the historical functional spec
+  in `docs/design-redesign/ADMIN-CMS-FUNCTIONAL-SPEC.md`.
 
 ## 8. Reviewed owner assets not promoted into this pack
 

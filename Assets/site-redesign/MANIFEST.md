@@ -47,3 +47,11 @@ generated masters; prompts and provenance are in `PROMPTS.md`.
 
 The optional `others/` directory is an unmanaged owner/drop-zone folder and is
 excluded from this manifest and the approval/hash contract.
+
+## Non-binary implementation reference
+
+`implementation-reference/` is the canonical text/machine-readable handoff for
+future agents. It contains no production-served binary and is intentionally not
+listed in `SHA256SUMS.txt`, whose contract covers managed PNG assets. Its own
+validator parses JSON, checks required asset references and confirms that the
+optional Figma builder is offline.
