@@ -29,19 +29,19 @@ not claim a design target is already live.
 
 ## Consolidated design-history inputs
 
-- `docs/superpowers/specs/2026-08-25-personal-platform-experience-redesign.md`
-- `docs/superpowers/specs/2026-08-25-public-page-family-visual-atlas.md`
-- `docs/design-redesign/README.md`
-- `docs/design-redesign/ADMIN-CMS-FUNCTIONAL-SPEC.md`
-- `docs/design-redesign/MOTION-GRAPH-HANDOFF.md`
-- `docs/design-redesign/QUALITY-AUDIT-v2.md`
-- `docs/design-redesign/page-families/README.md`
-- `docs/design-redesign/page-families/PAGE-FAMILY-COMPONENT-MATRIX.md`
-- `docs/design-redesign/page-families/RESPONSIVE-RTL-STATE-SPEC.md`
-- `docs/design-redesign/page-families/CMS-CONTENT-MAPPING.md`
-- `docs/design-redesign/page-families/FIGMA-DECISION.md`
-- `docs/design-redesign/page-families/QUALITY-AUDIT.md`
-- `docs/design-redesign/page-families/PRODUCTION-REGISTER.md`
+- `history/specs/2026-08-25-personal-platform-experience-redesign.md`
+- `history/specs/2026-08-25-public-page-family-visual-atlas.md`
+- `history/design-redesign/README.md`
+- `history/design-redesign/ADMIN-CMS-FUNCTIONAL-SPEC.md`
+- `history/design-redesign/MOTION-GRAPH-HANDOFF.md`
+- `history/design-redesign/QUALITY-AUDIT-v2.md`
+- `history/design-redesign/page-families/README.md`
+- `history/design-redesign/page-families/PAGE-FAMILY-COMPONENT-MATRIX.md`
+- `history/design-redesign/page-families/RESPONSIVE-RTL-STATE-SPEC.md`
+- `history/design-redesign/page-families/CMS-CONTENT-MAPPING.md`
+- `history/design-redesign/page-families/FIGMA-DECISION.md`
+- `history/design-redesign/page-families/QUALITY-AUDIT.md`
+- `history/design-redesign/page-families/PRODUCTION-REGISTER.md`
 
 These remain evidence/history. Where they differ from `MASTER-SPEC.md` for the
 next generation, the Master Spec is the implementation brief. Where a current
@@ -49,13 +49,19 @@ runtime contract differs, the runtime contract remains binding until adoption.
 
 ## Visual and binary sources
 
-- `Assets/site-redesign/brand/` — authoritative existing mark derivatives.
-- `Assets/site-redesign/art/` — standalone implementation candidates.
-- `Assets/site-redesign/concepts/` — top-level visual references.
-- `Assets/site-redesign/concepts/page-families/` — eight family references.
-- `Assets/site-redesign/concepts/requested-2026-08-25/` — preserved owner inputs.
-- `Assets/site-redesign/{README.md,MANIFEST.md,PROMPTS.md,SHA256SUMS.txt}` —
-  provenance, usage, dimensions and integrity.
+- `assets/brand/` — authoritative existing mark derivatives.
+- `assets/art/` — standalone implementation candidates.
+- `assets/concepts/` — top-level visual references.
+- `assets/concepts/page-families/` — eight family references.
+- `assets/concepts/requested-2026-08-25/` — preserved owner inputs.
+- `assets/{README.md,MANIFEST.md,PROMPTS.md,SHA256SUMS.txt}` — provenance,
+  usage, dimensions and integrity.
+- `assets/page-families/PRODUCTION-REGISTER.md` — page-family register mirrored
+  from the historical design workspace.
+
+All paths above are relative to this implementation-reference directory and
+therefore exist in a clean clone. The owner-only sibling asset archive remains
+local evidence and is not required by agents.
 
 Concepts are never sliced into native controls. Generated copy inside images is
 not content authority.
@@ -71,4 +77,3 @@ Neither is required for implementation and neither outranks code or contracts.
 `WORKTREE-SNAPSHOT.md` replaces a dangerous physical copy of the Git worktree.
 Commits and branch references are reproducible; `.git` worktree administration
 files must never be copied into this asset pack.
-

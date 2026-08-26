@@ -26,7 +26,7 @@
 - `apps/**`, `infra/**`, `.github/**`, CMS data, migrations, production content,
   and deployment are forbidden.
 - Allowed files are `Assets/site-redesign/**`, this Task Spec,
-  `docs/plan/README.md`, `docs/design-redesign/README.md`, and
+  `docs/plan/README.md`, and
   `docs/status/WORK_LOG.md`; `.gitignore` may change only to version the bounded
   `Assets/site-redesign/implementation-reference/**` subtree while all other
   owner assets remain ignored.

@@ -14,8 +14,8 @@
     "machineContracts": "agent-kit",
     "runtimeTokensCurrent": "apps/web/src/styles/global.css",
     "routesCurrent": "docs/contracts/IA-CONTRACT.md",
-    "visualConcepts": "Assets/site-redesign/concepts",
-    "productionAssets": "Assets/site-redesign/art and Assets/site-redesign/brand"
+    "visualConcepts": "Assets/site-redesign/implementation-reference/assets/concepts",
+    "productionAssets": "Assets/site-redesign/implementation-reference/assets/art and Assets/site-redesign/implementation-reference/assets/brand"
   },
   "status": {
     "referencePackage": "validated",

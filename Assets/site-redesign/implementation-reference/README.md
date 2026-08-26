@@ -11,6 +11,11 @@ catalog, multi-agent work breakdown, review gates, and worktree evidence in one
 place. Future agents must not start from screenshots, Figma, chat history, or a
 copied prompt.
 
+The package is self-contained in Git. Reviewed brand derivatives, production
+artwork, visual concepts, source notes and integrity records are mirrored under
+`assets/`. Raw duplicated generations from the owner-only `others/` archive are
+intentionally excluded.
+
 ## Read order
 
 1. Repository `AGENTS.md`, `docs/README.md`, and `PROJECT_MANIFEST.md`.
