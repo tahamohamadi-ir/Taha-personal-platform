@@ -10,8 +10,8 @@
 |---|---|---|---|---|---|---|---|---|
 | PF-01 | `creative-index-light.png` | Light Editorial | Collection index / visual variant | LTR reference | Generated | Reviewed | 864 x 1821 | `0b07398f53ec531e9840b8f01a0000cd0e82745e563e216bb04be55ec4c521b1` |
 | PF-02 | `creative-detail-dark.png` | Dark Scientific Atlas | Visual-work detail | LTR reference | Generated | Reviewed | 793 x 1983 | `a4f04e3597116c28eb82bfdbcf478e44610699862fc07ac45b00df9900774526` |
-| PF-03 | `writing-index-light.png` | Light Editorial + coral | Editorial index | LTR reference | Not generated | Not reviewed | Not available | Not available |
-| PF-04 | `projects-index-dark.png` | Dark Scientific Atlas | Collection index / evidence variant | LTR reference | Not generated | Not reviewed | Not available | Not available |
+| PF-03 | `writing-index-light.png` | Light Editorial + coral | Editorial index | LTR reference | Generated | Reviewed | 888 x 1771 | `72d54716202bcfb661f3a20f1b75988fb347a44a4f0b23daa41f8f46df53a1f2` |
+| PF-04 | `projects-index-dark.png` | Dark Scientific Atlas | Collection index / evidence variant | LTR reference | Generated | Reviewed | 853 x 1844 | `5edfb769e61cb11b6a8e4272cdde9218b85ef0bca5b29975a51c43ed5890303a` |
 | PF-05 | `research-publications-index-light.png` | Light Editorial | Research/publication index | LTR reference | Not generated | Not reviewed | Not available | Not available |
 | PF-06 | `teaching-index-dark.png` | Dark Scientific Atlas + sage | Editorial/learning index | LTR reference | Not generated | Not reviewed | Not available | Not available |
 | PF-07 | `about-cv-light.png` | Light Editorial | Profile/CV narrative | LTR reference | Not generated | Not reviewed | Not available | Not available |
@@ -93,3 +93,23 @@ Project-detail, and mobile-Home concepts are the visual RTL references.
   previous/next navigation passed.
 - Handoff note: metadata dashes are intentional empty states; no year, role,
   context, credit, or licence may be inferred by the public frontend.
+
+### PF-03 Writing index — Light Editorial + coral
+
+- Source result: `exec-e6de06d5-637d-4f1f-b65f-e4d7381b3d75.png`
+- Direct review: independent-blog positioning, featured essay, topic/archive
+  filters, editorial list rhythm, optional updates, pagination, CTA, and shared
+  footer passed.
+- Handoff note: the concept's visible contact/location values were inherited
+  from supplied approved visual references; production must still bind only to
+  the published locale-specific CMS contact record.
+
+### PF-04 Projects index — Dark Scientific Atlas
+
+- Source result: `exec-8a2e2736-e01e-4f11-8a4b-ecf476f5866c.png`
+- Direct review: sanitized-work disclosure, featured project, filters, mixed
+  evidence list, publication-state strip, pagination, CTA, and shared footer
+  passed.
+- Handoff note: titles and descriptive copy are illustrative. Public records
+  must suppress confidential fields and render only the sanitized published
+  project projection.
