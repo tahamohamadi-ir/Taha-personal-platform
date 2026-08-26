@@ -1,6 +1,6 @@
 # Public page-family visual atlas
 
-Status: **production in progress / unpublished design reference**.
+Status: **visual atlas reviewed / implementation handoff ready**.
 
 This folder extends the approved P14 Home direction across the remaining public
 page families. The PNG concepts are layout and art-direction references. They
@@ -14,6 +14,11 @@ which UI controls should be sliced.
 - Long-form detail: `Assets/site-redesign/concepts/blog-detail-fa-light-concept-v1.png`
 - Evidence detail: `Assets/site-redesign/concepts/project-detail-fa-dark-concept-v1.png`
 - Production register: `PRODUCTION-REGISTER.md`
+- Route and component matrix: `PAGE-FAMILY-COMPONENT-MATRIX.md`
+- Responsive, RTL, state, and motion specification:
+  `RESPONSIVE-RTL-STATE-SPEC.md`
+- CMS and admin-panel mapping: `CMS-CONTENT-MAPPING.md`
+- Figma decision: `FIGMA-DECISION.md`
 
 ## Delivery boundary
 
@@ -32,3 +37,6 @@ Every PF frame must be inspected directly for hierarchy, visual-family fit,
 clipping, malformed text, accidental claims, privacy leakage, and realistic
 implementation structure before it can move from `Generated` to `Reviewed`.
 
+All eight PF frames are reviewed art-direction references. Runtime browser,
+accessibility, performance, CMS integration, route, and production validation
+remain separate implementation gates.
