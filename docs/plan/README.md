@@ -19,6 +19,7 @@ Last reconciled: 2026-08-25 (post ADR-0032 cutover + Waves A–C deploy sync).
 | `REMAINING-WORK-CONSOLIDATED.md` | ACTIVE — consolidated non-redesign backlog | agent + owner | One table per WS-A/B/C/ledgers/G/H + profile-data quality. |
 | `master-remaining-work-checklist.md` | Ledger of item details + evidence | agent + owner | Single ledger (LOG-0218); acceptance criteria live here. |
 | `reDesign_plan.md` (repo root) | ACTIVE — binding redesign v2 plan | agent | Glass Constellation identity; ADR-0031. Home v2 live; Journey slot reserved. |
+| `P14D-agent-ready-design-kit-task-spec.md` | DONE (canonical implementation reference) | agent + owner | Master spec, 13 dependency-aware work packets, coordination/gates/document migration, machine-readable agent kit, optional free local Figma builder and worktree snapshot under `Assets/site-redesign/implementation-reference/`; no runtime work. |
 
 > The canonical board file is `master-remaining-work-checklist.md` — item-level
 > acceptance criteria and evidence lines live there; scheduling lives in
