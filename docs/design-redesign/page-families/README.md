@@ -19,6 +19,7 @@ which UI controls should be sliced.
   `RESPONSIVE-RTL-STATE-SPEC.md`
 - CMS and admin-panel mapping: `CMS-CONTENT-MAPPING.md`
 - Figma decision: `FIGMA-DECISION.md`
+- Scored visual-atlas audit: `QUALITY-AUDIT.md`
 
 ## Delivery boundary
 
