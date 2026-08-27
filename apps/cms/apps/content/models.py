@@ -1609,3 +1609,79 @@ class ContentRevision(models.Model):
 
     def __str__(self) -> str:
         return f"{self.entity_key}:{self.object_id}@{self.pk}"
+
+
+class HomeModuleKey(models.TextChoices):
+    """Home page module slots (BK-01; admin write side is AB-02)."""
+
+    IDENTITY = "identity", "Identity"
+    GRAPH = "graph", "Graph"
+    RESEARCH_FIT = "research-fit", "Research fit"
+    JOURNEY = "journey", "Journey"
+    PROJECTS = "projects", "Projects"
+    PUBLICATIONS = "publications", "Publications"
+    PREVIEWS = "previews", "Previews"
+    CTA = "cta", "Call to action"
+
+
+class SelectionMode(models.TextChoices):
+    """How a home module selects its content (manual picks vs rules)."""
+
+    MANUAL = "manual", "Manual"
+    RULE = "rule", "Rule"
+    HYBRID = "hybrid", "Hybrid"
+
+
+class HomeModuleQuerySet(ContentQuerySet):
+    """Home composition public gate: lifecycle-published AND explicitly visible."""
+
+    def visible_for_locale(self, locale: str) -> HomeModuleQuerySet:
+        """Published+visible rows for one locale, ordered by ``order``."""
+        return self.public().filter(locale=locale, visible=True).order_by("order", "id")
+
+
+class HomeModuleManager(models.Manager.from_queryset(HomeModuleQuerySet)):
+    """Default manager; ``visible_for_locale`` is the public read gate."""
+
+
+class HomeModule(LifecycleMixin):
+    """Per-locale home page composition row (BK-01, LAUNCH-CRITICAL).
+
+    Per-locale-row interpretation of the BK-01 contract: one row per
+    ``(locale, key)`` carrying its own ``visible``/``order`` state; the
+    ``unique(locale, key)`` constraint forbids a shared row holding both
+    locales. Public reads go through
+    :meth:`HomeModuleQuerySet.visible_for_locale` only.
+    """
+
+    locale = models.CharField(max_length=2, choices=Locale.choices, db_index=True)
+    key = models.CharField(max_length=32, choices=HomeModuleKey.choices)
+    visible = models.BooleanField(default=False)
+    order = models.PositiveIntegerField(default=0)
+    selection_mode = models.CharField(
+        max_length=32,
+        choices=SelectionMode.choices,
+        default=SelectionMode.MANUAL,
+    )
+    provenance_note = models.CharField(max_length=300, blank=True)
+
+    objects = HomeModuleManager()
+
+    class Meta:
+        db_table = "content_home_module"
+        ordering = ["locale", "order"]
+        indexes = [
+            models.Index(
+                fields=["locale", "status", "visible"],
+                name="home_module_loc_st_vis_idx",
+            ),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["locale", "key"],
+                name="content_home_module_unique_locale_key",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.key} ({self.locale})"

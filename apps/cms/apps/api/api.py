@@ -25,7 +25,9 @@ from apps.content.models import (
     Course,
     CreativeWork,
     Download,
+    HomeModule,
     Landing,
+    Locale,
     Profile,
     Project,
     Publication,
@@ -1375,6 +1377,38 @@ def list_creative(request, locale: str):
 )
 def get_creative(request, locale: str, slug: str) -> CreativeWork:
     return get_creative_work(request, locale, slug)
+
+
+class HomeModuleOut(Schema):
+    """One visible home composition slot: key + order only (BK-01)."""
+
+    key: str
+    order: int
+
+
+class HomeCompositionOut(Schema):
+    """Public home composition (published+visible rows only, fail-closed)."""
+
+    revision: str
+    modules: list[HomeModuleOut] = Field(default_factory=list)
+
+
+@api.get(
+    "/home-composition/{locale}",
+    response=HomeCompositionOut,
+    summary="Home composition for a locale (published+visible rows, ordered)",
+)
+def get_home_composition(request, locale: str) -> HomeCompositionOut:
+    """Fail-closed: 404 unless locale is fa/en and at least one row projects."""
+    if locale not in Locale.values:
+        raise HttpError(404, "home composition not found")
+    rows = list(HomeModule.objects.visible_for_locale(locale))
+    if not rows:
+        raise HttpError(404, "home composition not found")
+    return HomeCompositionOut(
+        revision=max(row.updated_at for row in rows).isoformat(),
+        modules=[HomeModuleOut(key=row.key, order=row.order) for row in rows],
+    )
 
 
 from apps.api.public_contact import contact_router  # noqa: E402
