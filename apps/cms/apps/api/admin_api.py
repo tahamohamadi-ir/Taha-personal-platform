@@ -268,3 +268,11 @@ admin_api.add_router("", siteconfig_router)
 from apps.api.admin_mfa import mfa_router  # noqa: E402
 
 admin_api.add_router("/auth/mfa", mfa_router)
+
+# [ADMIN-API] Track AB begin - home composition router (AB-00/AB-02).
+# Registration mechanism: this add_router sequence (the existing surface);
+# no separate admin_urls.py aggregation module is warranted.
+from apps.api.admin_home import home_router  # noqa: E402
+
+admin_api.add_router("/home-modules", home_router)
+# [ADMIN-API] Track AB end
