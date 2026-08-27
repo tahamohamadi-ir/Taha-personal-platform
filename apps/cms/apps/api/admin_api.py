@@ -275,4 +275,8 @@ admin_api.add_router("/auth/mfa", mfa_router)
 from apps.api.admin_home import home_router  # noqa: E402
 
 admin_api.add_router("/home-modules", home_router)
+
+from apps.api.admin_timeline import timeline_router  # noqa: E402
+
+admin_api.add_router("/timeline", timeline_router)
 # [ADMIN-API] Track AB end
