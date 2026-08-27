@@ -14,6 +14,7 @@ import SettingsPage from "./pages/SettingsPage";
 import TagsPage from "./pages/TagsPage";
 import FeaturedPage from "./pages/FeaturedPage";
 import SecurityPage from "./pages/SecurityPage";
+import HomeComposerPage from "./pages/HomeComposer/HomeComposerPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 function ContentEditRedirect(): ReactElement {
@@ -49,6 +50,11 @@ export default function App() {
             <Route path="/tags" element={<TagsPage />} />
             <Route path="/featured" element={<FeaturedPage />} />
             <Route path="/security" element={<SecurityPage />} />
+            <Route
+              path="/home-composer"
+              element={<Navigate to="/home-composer/fa" replace />}
+            />
+            <Route path="/home-composer/:locale" element={<HomeComposerPage />} />
           </Route>
         </Route>
         <Route path="*" element={<NotFoundPage />} />

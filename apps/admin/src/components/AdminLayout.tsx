@@ -33,6 +33,10 @@ const NAV_GROUPS: NavGroup[] = [
     items: [{ label: "بهداشت و ترجمه", to: "/overview" }],
   },
   {
+    title: "بازطراحی",
+    items: [{ label: "چیدمان صفحهٔ اصلی", to: "/home-composer/fa" }],
+  },
+  {
     title: "تنظیمات",
     items: [
       { label: "تنظیمات سایت", to: "/settings" },

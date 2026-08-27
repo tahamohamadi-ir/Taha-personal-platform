@@ -246,7 +246,7 @@ function toApiError(response: Response, data: unknown): ApiError {
   };
 }
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   headers.set("Accept", "application/json");
   if (init.body !== undefined) {
