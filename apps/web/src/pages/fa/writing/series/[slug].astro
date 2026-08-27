@@ -1,8 +1,20 @@
 ---
+/* WF-07E adoption: writing series page onto EditorialIndexTemplate (frozen
+   route-map family "writing series"). Results are ContentRow rows from the
+   existing series loader helpers; the loader exposes no featured flag, no
+   pagination and the family had no filter controls, so the featured slot
+   and the filters slot stay honestly unfilled - nothing is invented. The
+   date label reuses the existing generic dictionary value from the
+   projects namespace (the blog namespace carries no date label today).
+   All copy comes from the locale dictionary. */
 import BaseLayout from "../../../../layouts/BaseLayout.astro";
 import Breadcrumbs from "../../../../components/Breadcrumbs.astro";
-import ArticleCard from "../../../../components/blog/ArticleCard.astro";
+import EditorialIndexTemplate from "../../../../layouts/EditorialIndexTemplate.astro";
+import SectionLead from "../../../../components/content/SectionLead.astro";
+import ContentRow from "../../../../components/content/ContentRow.astro";
+import ContentState from "../../../../components/ui/ContentState.astro";
 import { content } from "../../../../data/content";
+import { formatDate } from "../../../../lib/format";
 import {
   articlesForSeries,
   getPublishedArticles,
@@ -23,6 +35,7 @@ const pageContent = content[locale];
 const blog = pageContent.blog;
 const { series } = Astro.props;
 const articles = articlesForSeries(await getPublishedArticles(locale), series.slug);
+const dateLabel = pageContent.projects.dateLabel;
 ---
 
 <BaseLayout
@@ -35,48 +48,41 @@ const articles = articlesForSeries(await getPublishedArticles(locale), series.sl
   }}
   alternateHref={`/en/writing/series/${series.slug}/`}
 >
-  <section class="blog-page">
+  <EditorialIndexTemplate>
     <Breadcrumbs
+      slot="breadcrumbs"
       items={[
         { label: pageContent.name, href: `/${locale}/` },
         { label: blog.heading, href: `/${locale}/writing/` },
         { label: series.title },
       ]}
     />
-    <h1>{series.title}</h1>
-    {series.description && <p class="blog-intro">{series.description}</p>}
+    <SectionLead
+      slot="sectionLead"
+      as="h1"
+      heading={series.title}
+      summary={series.description || undefined}
+    />
     {
       articles.length === 0 ? (
-        <p class="blog-empty">{blog.empty}</p>
+        <ContentState slot="results" kind="empty" explanation={blog.empty} />
       ) : (
-        articles.map((article) => (
-          <ArticleCard
-            locale={locale}
-            article={article}
-            readingLabel={blog.readingLabel}
-          />
-        ))
+        <div slot="results">
+          {articles.map((article) => (
+            <ContentRow
+              title={article.title}
+              href={`/${locale}/writing/${article.slug}/`}
+              excerpt={article.excerpt}
+              metadata={
+                article.published_at
+                  ? [{ label: dateLabel, value: formatDate(article.published_at, locale) }]
+                  : undefined
+              }
+              tags={article.topic_tags.map((tag) => tag.name)}
+            />
+          ))}
+        </div>
       )
     }
-  </section>
+  </EditorialIndexTemplate>
 </BaseLayout>
-
-<style>
-  .blog-page {
-    max-width: 44rem;
-    margin-inline: auto;
-    padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem;
-  }
-
-  .blog-page h1 {
-    font-family: var(--font-display);
-    font-size: clamp(1.75rem, 4vw, 2.4rem);
-    margin: 0 0 0.75rem;
-  }
-
-  .blog-intro,
-  .blog-empty {
-    color: var(--color-ink-muted);
-    margin: 0 0 1.5rem;
-  }
-</style>

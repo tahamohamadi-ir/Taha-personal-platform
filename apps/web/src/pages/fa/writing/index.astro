@@ -1,15 +1,38 @@
 ﻿---
+/* WF-07E adoption: writing index onto EditorialIndexTemplate (frozen
+   route-map family "writing"). Results are ContentRow rows built from the
+   existing article loader; taxonomy chips render through ContentRow's
+   frozen tags anatomy (the component renders Chip taxonomy labels - it
+   has no link API), while the URL-driven tag/series links live in the
+   filters slot. The article loader exposes no featured flag/pin and no
+   pagination, so the featured slot and the results slot pagination stay
+   honestly unfilled - nothing is invented. The date label reuses the
+   existing generic dictionary value from the projects namespace (the blog
+   namespace carries no date label today; content copy is not editable in
+   this packet). All copy comes from the locale dictionary. */
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Breadcrumbs from "../../../components/Breadcrumbs.astro";
-import ArticleCard from "../../../components/blog/ArticleCard.astro";
+import EditorialIndexTemplate from "../../../layouts/EditorialIndexTemplate.astro";
+import SectionLead from "../../../components/content/SectionLead.astro";
+import ContentRow from "../../../components/content/ContentRow.astro";
+import Chip from "../../../components/ui/Chip.astro";
+import ContentState from "../../../components/ui/ContentState.astro";
 import { content } from "../../../data/content";
 import { isCmsOriginBuild } from "../../../lib/cms/client";
-import { getPublishedArticles } from "../../../lib/cms/articles";
+import { formatDate } from "../../../lib/format";
+import {
+  getPublishedArticles,
+  getPublishedSeries,
+  getTopicTags,
+} from "../../../lib/cms/articles";
 
 const locale = "fa" as const;
 const pageContent = content[locale];
-const articles = await getPublishedArticles(locale);
 const blog = pageContent.blog;
+const articles = await getPublishedArticles(locale);
+const seriesList = await getPublishedSeries(locale);
+const tagList = await getTopicTags(locale);
+const dateLabel = pageContent.projects.dateLabel;
 ---
 
 <BaseLayout cmsBuildOrigin={isCmsOriginBuild() ? "cms" : "snapshot"}
@@ -22,49 +45,92 @@ const blog = pageContent.blog;
   }}
   alternateHref="/en/writing/"
 >
-  <section class="blog-page">
+  <EditorialIndexTemplate>
     <Breadcrumbs
+      slot="breadcrumbs"
       items={[
         { label: pageContent.name, href: `/${locale}/` },
         { label: blog.heading },
       ]}
     />
-    <h1>{blog.heading}</h1>
-    <p class="blog-intro">{blog.intro}</p>
+    <SectionLead
+      slot="sectionLead"
+      as="h1"
+      heading={blog.heading}
+      summary={blog.intro}
+    />
+    {
+      (seriesList.length > 0 || tagList.length > 0) && (
+        <div slot="filters" class="writing-filters">
+          {seriesList.length > 0 && (
+            <nav class="writing-filters__series" aria-label={blog.seriesNavLabel}>
+              <ul role="list" class="writing-filters__links">
+                {seriesList.map((series) => (
+                  <li>
+                    <a href={`/${locale}/writing/series/${series.slug}/`}>{series.title}</a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )}
+          {tagList.length > 0 && (
+            <ul role="list" class="writing-filters__chips">
+              {tagList.map((tag) => (
+                <li>
+                  <a href={`/${locale}/writing/tag/${tag.slug}/`}>
+                    <Chip variant="taxonomy">{tag.name}</Chip>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )
+    }
     {
       articles.length === 0 ? (
-        <p class="blog-empty">{blog.empty}</p>
+        <ContentState slot="results" kind="empty" explanation={blog.empty} />
       ) : (
-        <div class="blog-list">
+        <div slot="results">
           {articles.map((article) => (
-            <ArticleCard
-              locale={locale}
-              article={article}
-              readingLabel={blog.readingLabel}
+            <ContentRow
+              title={article.title}
+              href={`/${locale}/writing/${article.slug}/`}
+              excerpt={article.excerpt}
+              metadata={
+                article.published_at
+                  ? [{ label: dateLabel, value: formatDate(article.published_at, locale) }]
+                  : undefined
+              }
+              tags={article.topic_tags.map((tag) => tag.name)}
             />
           ))}
         </div>
       )
     }
-  </section>
+  </EditorialIndexTemplate>
 </BaseLayout>
 
 <style>
-  .blog-page {
-    max-width: 44rem;
-    margin-inline: auto;
-    padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem;
+  .writing-filters {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
   }
 
-  .blog-page h1 {
-    font-family: var(--font-display);
-    font-size: clamp(1.75rem, 4vw, 2.4rem);
-    margin: 0 0 0.75rem;
+  .writing-filters__links,
+  .writing-filters__chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
 
-  .blog-intro,
-  .blog-empty {
-    color: var(--color-ink-muted);
-    margin: 0 0 1.5rem;
+  .writing-filters__chips a {
+    text-decoration: none;
   }
 </style>
