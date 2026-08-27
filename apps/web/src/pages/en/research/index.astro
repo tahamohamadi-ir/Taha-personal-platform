@@ -12,8 +12,10 @@ import SectionLead from "../../../components/content/SectionLead.astro";
 import ContentRow from "../../../components/content/ContentRow.astro";
 import Chip from "../../../components/ui/Chip.astro";
 import ContentState from "../../../components/ui/ContentState.astro";
+import ResearchGraph from "../../../components/research/ResearchGraph.astro";
 import { content } from "../../../data/content";
 import { isCmsOriginBuild } from "../../../lib/cms/client";
+import { getResearchGraph } from "../../../lib/cms/research-graph";
 import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../data/structured";
 import {
   getResearchProjects,
@@ -29,6 +31,9 @@ const topics = await getResearchTopics(locale);
 const projects = await getResearchProjects(locale);
 const publications = await getResearchPublications(locale);
 const statement = await getResearchStatement(locale);
+/* WF-08: the relationship graph renders from the BK-05 published payload;
+   null/empty omits the section honestly. */
+const graph = await getResearchGraph(locale);
 const empty =
   topics.length === 0 &&
   projects.length === 0 &&
@@ -182,34 +187,41 @@ validateStructuredData(...structured);
         </div>
       )
     }
-    <div slot="results" data-research-list>
+    <div slot="results">
+      <div data-research-list>
+        {
+          empty ? (
+            <ContentState kind="empty" explanation={research.empty} />
+          ) : (
+            cards.map((card) => (
+              <div
+                data-research-item
+                data-kind={card.kind}
+                data-title={card.title}
+                data-published={card.publishedAt ?? ""}
+                data-sort-key={card.sortKey}
+              >
+                <ContentRow
+                  type={card.kindLabel}
+                  title={card.title}
+                  href={card.href}
+                  excerpt={card.excerpt}
+                />
+              </div>
+            ))
+          )
+        }
+        <p class="research-contact-note">
+          <a href={`/${locale}/about/`}>{pageContent.about.heading}</a>
+          {" \u2014 "}
+          {research.contactNote}
+        </p>
+      </div>
       {
-        empty ? (
-          <ContentState kind="empty" explanation={research.empty} />
-        ) : (
-          cards.map((card) => (
-            <div
-              data-research-item
-              data-kind={card.kind}
-              data-title={card.title}
-              data-published={card.publishedAt ?? ""}
-              data-sort-key={card.sortKey}
-            >
-              <ContentRow
-                type={card.kindLabel}
-                title={card.title}
-                href={card.href}
-                excerpt={card.excerpt}
-              />
-            </div>
-          ))
+        graph && graph.nodes.length > 0 && (
+          <ResearchGraph graph={graph} heading={research.relatedHeading} />
         )
       }
-      <p class="research-contact-note">
-        <a href={`/${locale}/about/`}>{pageContent.about.heading}</a>
-        {" \u2014 "}
-        {research.contactNote}
-      </p>
     </div>
   </CollectionIndexTemplate>
 </BaseLayout>

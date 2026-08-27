@@ -13,9 +13,45 @@
    no new raw design values are introduced.
    Seams: home blocks are HomeTemplate slots (order via the WF-07A adapter);
    another fixed-night page reuses this wrapper instead of re-authoring the
-   stage. Theming cascades from tokens. */
+   stage. Theming cascades from tokens.
+   WF-09: the stage also carries the portal-orbit-dark hero atmosphere
+   (README section 3) as a decorative, aria-hidden full-bleed layer behind
+   the lead block: responsive AVIF/WebP srcset from /art-derived/, lossless
+   800w PNG fallback, object-position 72% 50% per the master's crop
+   guidance, plus a token-only scrim (flat var(--canvas-night) veil +
+   color-mix fade to the opaque canvas) so copy contrast never depends on
+   the artwork. The stage is fixed-night in both themes (ADR-0031), so only
+   the dark master is wired; the light companion stays
+   generated-but-unwired (a <picture> can key on prefers-color-scheme but
+   not on the site's data-theme attribute - recorded gap in WORK_LOG). No
+   imports: this stays a zero-import wrapper. */
 ---
 <div class="landing">
+  <div class="landing__art" aria-hidden="true">
+    <picture>
+      <source
+        type="image/avif"
+        srcset="/art-derived/portal-orbit-dark-800w.avif 800w, /art-derived/portal-orbit-dark-1200w.avif 1200w, /art-derived/portal-orbit-dark-1600w.avif 1600w"
+        sizes="100vw"
+      />
+      <source
+        type="image/webp"
+        srcset="/art-derived/portal-orbit-dark-800w.webp 800w, /art-derived/portal-orbit-dark-1200w.webp 1200w, /art-derived/portal-orbit-dark-1600w.webp 1600w"
+        sizes="100vw"
+      />
+      <img
+        class="landing__art-image"
+        src="/art-derived/portal-orbit-dark-800w.png"
+        alt=""
+        width="1600"
+        height="900"
+        loading="eager"
+        decoding="async"
+      />
+    </picture>
+    <div class="landing__art-scrim"></div>
+    <div class="landing__art-fade"></div>
+  </div>
   <slot />
 </div>
 
@@ -26,6 +62,10 @@
     body-level aurora paints behind this wrapper's opaque background).
   */
   .landing {
+    position: relative;
+    /* Stacking context: the -1 art layer paints above the night canvas but
+       below the slotted HomeTemplate blocks (WF-09). */
+    isolation: isolate;
     background-color: var(--canvas-night, #071225);
     background-image:
       radial-gradient(
@@ -63,5 +103,46 @@
     --color-control-border: var(--ink-low);
     --color-focus: var(--brand-text);
     --shadow-sm: var(--glass-shadow-dark);
+  }
+
+  /* WF-09 hero art: portal-orbit-dark covers the first viewport of the
+     stage (the lead block's backdrop) and fades into the opaque canvas at
+     its bottom edge, so there is no seam against the page background. The
+     flat scrim is the token-only veil (works without color-mix support);
+     the color-mix fade adds the tuned falloff where it is supported. Copy
+     contrast rests on the remapped night tokens, never on the artwork. */
+  .landing__art {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: min(100svh, 52rem);
+    z-index: -1;
+    overflow: hidden;
+  }
+
+  .landing__art-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* README crop guidance: preserve the right arch and left negative space. */
+    object-position: 72% 50%;
+  }
+
+  .landing__art-scrim {
+    position: absolute;
+    inset: 0;
+    background-color: var(--canvas-night);
+    opacity: 0.3;
+  }
+
+  .landing__art-fade {
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--canvas-night) 55%, transparent) 0%,
+      color-mix(in srgb, var(--canvas-night) 22%, transparent) 42%,
+      var(--canvas-night) 100%
+    );
   }
 </style>

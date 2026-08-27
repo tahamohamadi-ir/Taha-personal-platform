@@ -17,6 +17,8 @@ import { loadLandingProfile } from "../../lib/cms/landing";
 import { getPublishedArticles } from "../../lib/cms/articles";
 import { getProjects } from "../../lib/cms/projects";
 import { getPublications } from "../../lib/cms/publications";
+import { getResearchGraph } from "../../lib/cms/research-graph";
+import ResearchGraph from "../../components/research/ResearchGraph.astro";
 import { formatDate } from "../../lib/format";
 
 /* WF-07A (LAUNCH-CRITICAL, Option B): the locale home composes the
@@ -57,6 +59,10 @@ const order = composition.order ?? DEFAULT_HOME_ORDER;
 const projects = (await getProjects(locale)).slice(0, 3);
 const publications = (await getPublications(locale)).slice(0, 3);
 const previews = (await getPublishedArticles(locale)).slice(0, 3);
+/* WF-08: the home "graph" block consumes the BK-05 published payload via
+   the fail-closed research-graph adapter; null/empty omits the block
+   honestly (HomeTemplate renders slot-filled blocks only). */
+const graph = await getResearchGraph(locale);
 const home = `/${pageContent.lang}/`;
 ---
 
@@ -67,6 +73,15 @@ const home = `/${pageContent.lang}/`;
       {profile.availability && (
         <FocusStrip slot="lead" content={pageContent} profile={profile} />
       )}
+      {
+        graph && graph.nodes.length > 0 && (
+          <ResearchGraph
+            slot="graph"
+            graph={graph}
+            heading={pageContent.research.relatedHeading}
+          />
+        )
+      }
       {
         projects.length > 0 && (
           <Fragment slot="projects">

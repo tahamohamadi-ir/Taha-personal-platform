@@ -1,0 +1,208 @@
+---
+/* research/ResearchGraph - WF-08 graph Phase 1 consumer. The semantic
+   linked-list equivalent of the relationship graph (MASTER-SPEC home block
+   2), rendered from ONE published BK-05 payload (lib/cms/research-graph
+   getResearchGraph) BEFORE any interactive island exists. Pure Astro
+   markup, zero client JS, zero hrefs: relatedRecords arrive as
+   {family, id} with no slug, so no related-record URL may be invented -
+   the island packet owns link/selection resolution and must consume the
+   same data surface (data-graph-node / data-graph-edge /
+   data-graph-related / data-graph-accessible-label / data-graph-weight),
+   which is the selection-parity contract: the list and any later 2D view
+   resolve identical ids from the identical payload.
+   Fail-closed: the parser already dropped missing-label nodes, orphan
+   edges and duplicate edge ids; this section renders nothing when the
+   node set is empty (IA-CONTRACT S9: omit rather than invent).
+   Copy arrives via props (heading) and the payload; no container metrics
+   here - the home block inherits the HomeTemplate container and the
+   research index composes this section inside tpl-collection. Theming
+   cascades from tokens. */
+import Badge from "../ui/Badge.astro";
+import type { GraphEdgeDto, ResearchGraph } from "../../lib/cms/research-graph";
+
+interface Props {
+  graph: ResearchGraph;
+  heading: string;
+}
+
+const { graph, heading } = Astro.props;
+
+const nodes = graph.nodes;
+const hasNodes = nodes.length > 0;
+const nodeById = new Map(nodes.map((node) => [node.id, node]));
+const edgesByNode = new Map<string, GraphEdgeDto[]>();
+for (const edge of graph.edges) {
+  for (const endpoint of new Set([edge.source, edge.target])) {
+    const list = edgesByNode.get(endpoint) ?? [];
+    list.push(edge);
+    edgesByNode.set(endpoint, list);
+  }
+}
+---
+{
+  hasNodes && (
+    <section
+      class="research-graph"
+      data-research-graph
+      aria-labelledby="research-graph-heading"
+    >
+      <h2 class="research-graph__heading" id="research-graph-heading">
+        {heading}
+      </h2>
+      <ol class="research-graph__list" role="list">
+        {nodes.map((node) => {
+          const relations = edgesByNode.get(node.id) ?? [];
+          return (
+            <li
+              class="research-graph__node"
+              id={`graph-node-${node.id}`}
+              data-graph-node={node.id}
+              data-graph-weight={String(node.weight)}
+              data-graph-accessible-label={node.accessibleLabel || node.label}
+              data-graph-related={JSON.stringify(node.relatedRecords)}
+            >
+              <div class="research-graph__node-head">
+                {node.type && <Badge variant="type">{node.type}</Badge>}
+                <h3 class="research-graph__label">{node.label}</h3>
+              </div>
+              {node.summary && <p class="research-graph__summary">{node.summary}</p>}
+              {relations.length > 0 && (
+                <ul class="research-graph__relations" role="list">
+                  {relations.map((edge) => {
+                    const peerId =
+                      edge.source === node.id ? edge.target : edge.source;
+                    const peer = nodeById.get(peerId);
+                    return (
+                      <li
+                        class="research-graph__relation"
+                        data-graph-edge={edge.id}
+                        data-graph-relation={edge.relationType}
+                        data-graph-peer={peerId}
+                        data-graph-directed={edge.directed ? "true" : "false"}
+                      >
+                        <span class="research-graph__direction" aria-hidden="true">
+                          {!edge.directed ? "--" : edge.source === node.id ? "->" : "<-"}
+                        </span>
+                        <span class="research-graph__peer">
+                          {peer ? peer.label : peerId}
+                        </span>
+                        <span class="research-graph__relation-type">{edge.relationType}</span>
+                        {edge.explanation && (
+                          <span class="research-graph__explanation">{edge.explanation}</span>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  )
+}
+
+<style>
+  .research-graph {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  .research-graph__heading {
+    margin: 0;
+    color: var(--color-ink);
+    font-size: var(--text-display);
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .research-graph__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .research-graph__node {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding-block: var(--space-5);
+    border-block-end: 1px solid var(--color-border-subtle);
+  }
+
+  .research-graph__node:first-child {
+    padding-block-start: 0;
+  }
+
+  .research-graph__node-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .research-graph__label {
+    margin: 0;
+    color: var(--color-ink);
+    font-size: var(--text-lg);
+    font-weight: 600;
+  }
+
+  .research-graph__summary {
+    margin: 0;
+    color: var(--color-ink-secondary);
+    max-width: var(--measure-prose);
+  }
+
+  .research-graph__relations {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  .research-graph__relation {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--color-ink-secondary);
+  }
+
+  .research-graph__direction {
+    flex-shrink: 0;
+    color: var(--color-ink-tertiary);
+    font-weight: 600;
+  }
+
+  [dir="rtl"] .research-graph__direction {
+    transform: scaleX(-1);
+  }
+
+  .research-graph__peer {
+    color: var(--color-ink);
+    font-weight: 600;
+  }
+
+  .research-graph__relation-type {
+    padding-inline: var(--space-2);
+    border-radius: var(--radius-pill);
+    background-color: var(--color-surface-muted);
+    color: var(--color-ink);
+    font-size: var(--text-xs);
+    font-weight: 600;
+  }
+
+  .research-graph__explanation {
+    color: var(--color-ink-secondary);
+  }
+</style>
