@@ -1,0 +1,56 @@
+---
+/* design-atlas/sections/ResponsiveMotionSection - WF-06. Responsive and
+   motion specimens: the six required viewport checks (applied to the
+   stage by the Viewport control), a token-only reflow row, and the
+   default-vs-reduced-motion comparison pair (the pair cell keeps its own
+   [data-motion] scope so the comparison works independently of the
+   control bar). */
+import Chip from "../../components/ui/Chip.astro";
+import Badge from "../../components/ui/Badge.astro";
+import Button from "../../components/ui/Button.astro";
+
+const viewportWidths = [320, 390, 768, 1024, 1280, 1440];
+---
+<section class="atlas-section" data-atlas-id="atlas-responsive-motion">
+  <h2 class="atlas-section__heading">Responsive and motion</h2>
+
+  <div class="atlas-specimen" data-atlas-id="responsive-viewport-checks">
+    <h3 class="atlas-specimen__name">Required viewport checks - apply via the Viewport control above</h3>
+    <p class="atlas-mono">{viewportWidths.join(" / ")} CSS px + full width</p>
+    <p class="atlas-prose">
+      The Viewport control narrows only the specimen boundary (#atlas-viewport);
+      atlas chrome keeps the full window. Playwright drives the same boundary
+      through data-atlas-viewport-width.
+    </p>
+  </div>
+
+  <div class="atlas-specimen" data-atlas-id="responsive-reflow">
+    <h3 class="atlas-specimen__name">Reflow specimen - wrapping row of controls (watch 320 / 390)</h3>
+    <div class="atlas-reflow">
+      <Button variant="secondary">Fixture control</Button>
+      <Badge variant="status" tone="brand">Fixture badge</Badge>
+      <Chip>Fixture chip one</Chip>
+      <Chip variant="taxonomy">Fixture chip two</Chip>
+      <Chip variant="selected">Fixture chip three</Chip>
+      <Badge variant="type">Fixture type badge</Badge>
+    </div>
+  </div>
+
+  <div class="atlas-specimen" data-atlas-id="atlas-motion">
+    <h3 class="atlas-specimen__name">Motion comparison - default vs reduced (same token duration)</h3>
+    <div class="atlas-row">
+      <div class="atlas-motion-cell">
+        <span class="atlas-pulse" aria-hidden="true"></span>
+        <span>Default motion</span>
+      </div>
+      <div class="atlas-motion-cell" data-motion="reduced">
+        <span class="atlas-pulse" aria-hidden="true"></span>
+        <span>Reduced motion (locked)</span>
+      </div>
+    </div>
+    <p class="atlas-prose">
+      The Reduced-motion control in the bar mutes every specimen inside the
+      stage; this pair demonstrates the locked contrast on its own.
+    </p>
+  </div>
+</section>

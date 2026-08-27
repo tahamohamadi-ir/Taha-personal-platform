@@ -8,6 +8,8 @@
     "build": "astro build && npm run pagefind:index",
     "pagefind:index": "node scripts/pagefind-index.mjs",
     "preview": "astro preview",
+    "atlas": "node scripts/design-atlas.mjs",
+    "qa:atlas": "node qa/design-atlas.spec.mjs",
     "check": "astro check",
     "test": "vitest run --dir src",
     "test:e2e": "playwright test",

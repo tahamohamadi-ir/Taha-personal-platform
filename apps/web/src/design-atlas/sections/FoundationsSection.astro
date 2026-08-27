@@ -1,0 +1,100 @@
+---
+/* design-atlas/sections/FoundationsSection - WF-06. Token foundations
+   sheet: semantic color roles, type scale, spacing rhythm, radii, border
+   strengths, elevation, focus ring and the motion pair - all consumed as
+   design tokens from src/styles/global.css (no raw values). Atlas-only
+   chrome; never part of the default build. */
+const colorRoles = [
+  "canvas",
+  "surface",
+  "surface-muted",
+  "ink",
+  "ink-secondary",
+  "ink-tertiary",
+  "inverse",
+  "brand",
+  "brand-emphasis",
+  "brand-emphasis-hover",
+  "brand-soft",
+  "signature",
+  "signature-soft",
+  "research",
+  "research-soft",
+  "context",
+  "context-soft",
+  "border-subtle",
+  "border-strong",
+  "control-border",
+  "focus",
+  "danger",
+];
+const typeScale = ["xs", "sm", "base", "lg", "xl", "2xl", "3xl", "display"];
+const spaceScale = [1, 2, 3, 4, 5, 6, 8, 11, 16, 24];
+const radiusScale = ["xs", "sm", "md", "lg", "xl", "pill"];
+const shadowScale = ["sm", "md", "lg"];
+---
+<section class="atlas-section" data-atlas-id="atlas-foundations">
+  <h2 class="atlas-section__heading">Foundations</h2>
+
+  <h3 class="atlas-specimen__name">Color roles (semantic tokens)</h3>
+  <div class="atlas-grid" data-atlas-id="atlas-foundations-color">
+    {colorRoles.map((role) => (
+      <div class="atlas-swatch">
+        <span class="atlas-swatch__chip" style={`background: var(--color-${role});`} />
+        <span class="atlas-swatch__label">{`--color-${role}`}</span>
+      </div>
+    ))}
+  </div>
+
+  <h3 class="atlas-specimen__name">Type scale</h3>
+  <div class="atlas-specimen" data-atlas-id="atlas-foundations-type">
+    {typeScale.map((size) => (
+      <p class="atlas-type" style={`font-size: var(--text-${size});`}>
+        {`--text-${size} - The quick brown fox jumps over the lazy dog`}
+      </p>
+    ))}
+  </div>
+
+  <h3 class="atlas-specimen__name">Spacing rhythm</h3>
+  <div class="atlas-specimen" data-atlas-id="atlas-foundations-spacing">
+    {spaceScale.map((step) => (
+      <div class="atlas-space-row">
+        <span class="atlas-space-bar" style={`width: calc(var(--space-${step}) * 4);`} />
+        <span class="atlas-mono">{`--space-${step}`}</span>
+      </div>
+    ))}
+  </div>
+
+  <h3 class="atlas-specimen__name">Radii, borders, elevation</h3>
+  <div class="atlas-specimen" data-atlas-id="atlas-foundations-radii">
+    <div class="atlas-row atlas-row--stacked">
+      {radiusScale.map((radius) => (
+        <span class="atlas-radius" style={`border-radius: var(--radius-${radius});`}>
+          {`--radius-${radius}`}
+        </span>
+      ))}
+    </div>
+    <div class="atlas-row atlas-row--stacked">
+      {shadowScale.map((shadow) => (
+        <span class="atlas-shadow" style={`box-shadow: var(--shadow-${shadow});`}>
+          {`--shadow-${shadow}`}
+        </span>
+      ))}
+    </div>
+    <div class="atlas-row">
+      <span class="atlas-border-cell atlas-border-cell--subtle">border-subtle</span>
+      <span class="atlas-border-cell atlas-border-cell--strong">border-strong</span>
+      <span class="atlas-border-cell atlas-border-cell--control">control-border</span>
+    </div>
+  </div>
+
+  <h3 class="atlas-specimen__name">Focus and motion</h3>
+  <div class="atlas-specimen atlas-row" data-atlas-id="atlas-foundations-focus-motion">
+    <button class="atlas-focus-demo" type="button">Focus me with the keyboard</button>
+    <div class="atlas-motion-cell">
+      <span class="atlas-pulse" aria-hidden="true"></span>
+      <span>atlas-pulse (motion demo)</span>
+    </div>
+    <p class="atlas-mono">--duration-fast / --duration-base / --duration-slow with --ease-out / --ease-in</p>
+  </div>
+</section>

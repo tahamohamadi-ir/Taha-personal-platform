@@ -1,0 +1,132 @@
+---
+/* design-atlas/pages/index - WF-06 local-only Component Playground route
+   (/_design/). Injected by astro.config.mjs ONLY when DESIGN_ATLAS=1; the
+   default build never contains this route or its imports (gate G4,
+   qa/design-atlas.spec.mjs). Specimens import the REAL production
+   components and the authoritative token sheet - markup is never copied
+   (MASTER-SPEC 7). Atlas-only chrome: the unpublished-fixture warning, the
+   scoped theme/direction/viewport/reduced-motion controls, and stable
+   data-atlas-id hooks for the Playwright screenshot pass. */
+import "../../styles/global.css";
+import "../../design-atlas/atlas.css";
+import FoundationsSection from "../sections/FoundationsSection.astro";
+import UiComponentsSection from "../sections/UiComponentsSection.astro";
+import ContentComponentsSection from "../sections/ContentComponentsSection.astro";
+import TemplatesSection from "../sections/TemplatesSection.astro";
+import StatesSection from "../sections/StatesSection.astro";
+import ResponsiveMotionSection from "../sections/ResponsiveMotionSection.astro";
+import AssetsSection from "../sections/AssetsSection.astro";
+
+const viewportWidths = [320, 390, 768, 1024, 1280, 1440];
+---
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Visual Atlas (local-only) - unpublished fixtures</title>
+  </head>
+  <body class="atlas-body">
+    <p class="atlas-banner" role="note">
+      UNPUBLISHED FIXTURES - every specimen below renders placeholder data
+      (unpublished: true): no real private data, no invented academic facts,
+      no production publication state. This page exists only in
+      DESIGN_ATLAS=1 local builds and is never deployed.
+    </p>
+    <header class="atlas-header">
+      <h1 class="atlas-header__title">Visual Atlas</h1>
+      <p class="atlas-header__note">
+        Local-only component playground - real production components and
+        tokens; fixtures are never published.
+      </p>
+    </header>
+    <form id="atlas-controls" class="atlas-controls">
+      <fieldset>
+        <legend>Theme</legend>
+        <label><input type="radio" name="atlas-theme" value="light" checked /> Light</label>
+        <label><input type="radio" name="atlas-theme" value="dark" /> Dark</label>
+        <label><input type="radio" name="atlas-theme" value="system" /> System</label>
+      </fieldset>
+      <fieldset>
+        <legend>Direction</legend>
+        <label><input type="radio" name="atlas-dir" value="ltr" checked /> LTR</label>
+        <label><input type="radio" name="atlas-dir" value="rtl" /> RTL</label>
+      </fieldset>
+      <fieldset>
+        <legend>Viewport</legend>
+        <select name="atlas-viewport">
+          <option value="full" selected>Full</option>
+          {viewportWidths.map((width) => (
+            <option value={String(width)}>{String(width)}</option>
+          ))}
+        </select>
+      </fieldset>
+      <fieldset>
+        <legend>Motion</legend>
+        <label><input type="checkbox" name="atlas-motion" /> Reduced motion</label>
+      </fieldset>
+    </form>
+    <div id="atlas-stage" class="atlas-stage" data-theme="light" dir="ltr">
+      <div id="atlas-viewport" class="atlas-viewport" data-atlas-viewport-width="full">
+        <FoundationsSection />
+        <UiComponentsSection />
+        <ContentComponentsSection />
+        <TemplatesSection />
+        <StatesSection />
+        <ResponsiveMotionSection />
+        <AssetsSection />
+      </div>
+    </div>
+    <script is:inline>
+      (function () {
+        var stage = document.getElementById("atlas-stage");
+        var viewport = document.getElementById("atlas-viewport");
+        var form = document.getElementById("atlas-controls");
+        if (!stage || !viewport || !form) return;
+        var media = window.matchMedia("(prefers-color-scheme: dark)");
+        function valueOf(name) {
+          var checked = form.querySelector('[name="' + name + '"]:checked');
+          return checked ? checked.value : null;
+        }
+        /* Every mutation below targets ONLY the specimen boundary
+           (#atlas-stage / #atlas-viewport) - never the atlas chrome,
+           never a global surface (WF-06 control contract). */
+        function applyTheme() {
+          var mode = valueOf("atlas-theme") || "light";
+          var resolved = mode === "system" ? (media.matches ? "dark" : "light") : mode;
+          stage.setAttribute("data-theme", resolved);
+        }
+        function applyDirection() {
+          stage.setAttribute("dir", valueOf("atlas-dir") || "ltr");
+        }
+        function applyViewport() {
+          var select = form.querySelector('select[name="atlas-viewport"]');
+          var value = select ? select.value : "full";
+          viewport.style.maxWidth = value === "full" ? "100%" : value + "px";
+          viewport.setAttribute("data-atlas-viewport-width", value);
+        }
+        function applyMotion() {
+          var box = form.querySelector('input[name="atlas-motion"]');
+          if (box && box.checked) {
+            stage.setAttribute("data-motion", "reduced");
+          } else {
+            stage.removeAttribute("data-motion");
+          }
+        }
+        function applyAll() {
+          applyTheme();
+          applyDirection();
+          applyViewport();
+          applyMotion();
+        }
+        form.addEventListener("change", applyAll);
+        if (typeof media.addEventListener === "function") {
+          media.addEventListener("change", applyTheme);
+        }
+        applyAll();
+      })();
+    </script>
+  </body>
+</html>

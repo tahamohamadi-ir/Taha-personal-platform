@@ -1,0 +1,148 @@
+---
+/* design-atlas/sections/UiComponentsSection - WF-06. Every WF-02 ui
+   primitive with its essential variants and states, imported from the
+   REAL production components (markup is never copied). Fixture strings
+   come from fixtures/uiFixtures.ts (unpublished: true). */
+import Button from "../../components/ui/Button.astro";
+import IconButton from "../../components/ui/IconButton.astro";
+import LinkAction from "../../components/ui/LinkAction.astro";
+import Chip from "../../components/ui/Chip.astro";
+import Badge from "../../components/ui/Badge.astro";
+import InputField from "../../components/ui/InputField.astro";
+import TextareaField from "../../components/ui/TextareaField.astro";
+import { content } from "../../data/content";
+import {
+  emailFieldFixture,
+  inputErrorFixture,
+  messageFieldFixture,
+  textareaErrorFixture,
+} from "../fixtures/uiFixtures";
+---
+<section class="atlas-section" data-atlas-id="atlas-ui-components">
+  <h2 class="atlas-section__heading">UI primitives</h2>
+
+  <div class="atlas-specimen" data-atlas-id="ui-button">
+    <h3 class="atlas-specimen__name">Button - primary / secondary / quiet, md / sm, icon slot, disabled</h3>
+    <div class="atlas-row">
+      <Button href="#ui-button">Primary link</Button>
+      <Button variant="secondary" href="#ui-button">Secondary link</Button>
+      <Button variant="quiet" href="#ui-button">Quiet link</Button>
+      <Button>Primary button</Button>
+      <Button variant="secondary">Secondary button</Button>
+      <Button variant="quiet">Quiet button</Button>
+      <Button disabled>Disabled</Button>
+      <Button size="sm" variant="secondary">Small secondary</Button>
+      <Button href="#ui-button">
+        <svg slot="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 12h14m-6-6 6 6-6 6" />
+        </svg>
+        With icon
+      </Button>
+    </div>
+  </div>
+
+  <div class="atlas-specimen" data-atlas-id="ui-icon-button">
+    <h3 class="atlas-specimen__name">IconButton - accessible name mandatory, quiet / outlined</h3>
+    <div class="atlas-row">
+      <IconButton label="Fixture close action">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M18 6 6 18M6 6l12 12" />
+        </svg>
+      </IconButton>
+      <IconButton label="Fixture settings action" variant="outlined">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M12 2v3m0 14v3M2 12h3m14 0h3M4.9 4.9l2.1 2.1m10 10 2.1 2.1m0-14.2-2.1 2.1m-10 10-2.1 2.1" />
+        </svg>
+      </IconButton>
+      <IconButton label="Fixture disabled action" variant="outlined" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 12h14" />
+        </svg>
+      </IconButton>
+    </div>
+  </div>
+
+  <div class="atlas-specimen" data-atlas-id="ui-link-action">
+    <h3 class="atlas-specimen__name">LinkAction - inline / standalone, arrow, RTL arrow flip</h3>
+    <div class="atlas-column">
+      <p>
+        Inline in prose:
+        <LinkAction href="#ui-link-action" arrow>Fixture inline link</LinkAction>
+      </p>
+      <LinkAction href="#ui-link-action" variant="standalone" arrow>Fixture standalone link</LinkAction>
+      <LinkAction href="#ui-link-action" variant="standalone" arrow arrowSide="start">Arrow at start</LinkAction>
+      <div dir="rtl" lang="fa">
+        <LinkAction href="#ui-link-action" variant="standalone" arrow>
+          {content.fa.blog.readingLabel}
+        </LinkAction>
+      </div>
+    </div>
+  </div>
+
+  <div class="atlas-specimen" data-atlas-id="ui-chip">
+    <h3 class="atlas-specimen__name">Chip - neutral / selected / taxonomy, remove slot</h3>
+    <div class="atlas-row">
+      <Chip>Neutral fixture chip</Chip>
+      <Chip variant="selected">Selected fixture chip</Chip>
+      <Chip variant="taxonomy">Taxonomy fixture chip</Chip>
+      <Chip variant="selected">
+        Removable fixture chip
+        <IconButton slot="remove" label="Remove fixture chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
+        </IconButton>
+      </Chip>
+    </div>
+  </div>
+
+  <div class="atlas-specimen" data-atlas-id="ui-badge">
+    <h3 class="atlas-specimen__name">Badge - status / type across tones (shape + text, never color-only)</h3>
+    <div class="atlas-row">
+      <Badge variant="type">Fixture type</Badge>
+      <Badge variant="status">Fixture status</Badge>
+      <Badge variant="status" tone="brand">Brand tone</Badge>
+      <Badge variant="status" tone="signature">Signature tone</Badge>
+      <Badge variant="status" tone="research">Research tone</Badge>
+      <Badge variant="status" tone="context">Context tone</Badge>
+    </div>
+  </div>
+
+  <div class="atlas-specimen" data-atlas-id="ui-input">
+    <h3 class="atlas-specimen__name">InputField - persistent label, hint, error, value retention, disabled</h3>
+    <div class="atlas-column">
+      <InputField
+        label={emailFieldFixture.label}
+        name={emailFieldFixture.name}
+        hint={emailFieldFixture.hint}
+        value={emailFieldFixture.value}
+      />
+      <InputField
+        label={inputErrorFixture.label}
+        name={inputErrorFixture.name}
+        error={inputErrorFixture.error}
+        value={inputErrorFixture.value}
+      />
+      <InputField label="Fixture disabled field" name="atlas-disabled-input" value="fixture value" disabled />
+    </div>
+  </div>
+
+  <div class="atlas-specimen" data-atlas-id="ui-textarea">
+    <h3 class="atlas-specimen__name">TextareaField - persistent label, hint, error</h3>
+    <div class="atlas-column">
+      <TextareaField
+        label={messageFieldFixture.label}
+        name={messageFieldFixture.name}
+        hint={messageFieldFixture.hint}
+        value={messageFieldFixture.value}
+      />
+      <TextareaField
+        label={textareaErrorFixture.label}
+        name={textareaErrorFixture.name}
+        error={textareaErrorFixture.error}
+        value={textareaErrorFixture.value}
+      />
+    </div>
+  </div>
+</section>

@@ -1,0 +1,111 @@
+---
+/* design-atlas/sections/ContentComponentsSection - WF-06. The WF-04
+   shared content components with fixture data (unpublished: true),
+   imported from the REAL production components - markup is never copied.
+   Includes a real-FA-locale RTL specimen using strings from
+   src/data/content.ts (public site copy, not private data). */
+import SectionLead from "../../components/content/SectionLead.astro";
+import FeaturedRecord from "../../components/content/FeaturedRecord.astro";
+import ContentRow from "../../components/content/ContentRow.astro";
+import PublicationRow from "../../components/content/PublicationRow.astro";
+import MetadataGroup from "../../components/content/MetadataGroup.astro";
+import Timeline from "../../components/content/Timeline.astro";
+import TableOfContents from "../../components/content/TableOfContents.astro";
+import MediaTile from "../../components/content/MediaTile.astro";
+import ContactCTA from "../../components/content/ContactCTA.astro";
+import { content } from "../../data/content";
+import {
+  contactCtaFixture,
+  contentRowsFixture,
+  featuredRecordFixture,
+  mediaTilesFixture,
+  metadataFixture,
+  publicationFixture,
+  sectionLeadFixture,
+  timelineFixture,
+  tocFixture,
+} from "../fixtures/contentFixtures";
+---
+<section class="atlas-section" data-atlas-id="atlas-content-components">
+  <h2 class="atlas-section__heading">Content components</h2>
+
+  <div class="atlas-specimen" data-atlas-id="content-section-lead">
+    <h3 class="atlas-specimen__name">SectionLead - eyebrow / heading / summary + actions</h3>
+    <SectionLead
+      eyebrow={sectionLeadFixture.eyebrow}
+      heading={sectionLeadFixture.heading}
+      summary={sectionLeadFixture.summary}
+    />
+  </div>
+
+  <div class="atlas-specimen" data-atlas-id="content-featured-record">
+    <h3 class="atlas-specimen__name">FeaturedRecord - selected record with metadata</h3>
+    <FeaturedRecord {...featuredRecordFixture} />
+  </div>
+
+  <div class="atlas-specimen" data-atlas-id="content-row">
+    <h3 class="atlas-specimen__name">ContentRow - linked / unlinked, metadata, tags</h3>
+    <div class="atlas-column">
+      {contentRowsFixture.map((row) => (
+        <ContentRow {...row} />
+      ))}
+    </div>
+  </div>
+
+  <div class="atlas-specimen" data-atlas-id="content-publication-row">
+    <h3 class="atlas-specimen__name">PublicationRow - unverified venue/date/identifier stay honest</h3>
+    <PublicationRow {...publicationFixture} />
+  </div>
+
+  <div class="atlas-specimen" data-atlas-id="content-metadata">
+    <h3 class="atlas-specimen__name">MetadataGroup - definition list, bdi isolation for LTR values</h3>
+    <MetadataGroup items={metadataFixture} />
+  </div>
+
+  <div class="atlas-specimen" data-atlas-id="content-timeline">
+    <h3 class="atlas-specimen__name">Timeline - ordered list of TimelineNode records</h3>
+    <Timeline items={timelineFixture} />
+  </div>
+
+  <div class="atlas-specimen" data-atlas-id="content-toc">
+    <h3 class="atlas-specimen__name">TableOfContents - two levels, aria-current wiring</h3>
+    <TableOfContents label="Fixture table of contents" items={tocFixture} activeId="atlas-toc-1" />
+  </div>
+
+  <div class="atlas-specimen" data-atlas-id="content-media-tile">
+    <h3 class="atlas-specimen__name">MediaTile - grid / lead / failed (caption + record link survive)</h3>
+    <div class="atlas-reflow">
+      {mediaTilesFixture.map((tile) => (
+        <div class="atlas-tile-slot">
+          <MediaTile {...tile} />
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <div class="atlas-specimen" data-atlas-id="content-contact-cta">
+    <h3 class="atlas-specimen__name">ContactCTA - statement + primary/secondary actions</h3>
+    <ContactCTA
+      statement={contactCtaFixture.statement}
+      primary={contactCtaFixture.primary}
+      secondary={contactCtaFixture.secondary}
+    />
+  </div>
+
+  <div class="atlas-specimen" data-atlas-id="content-rtl-specimen">
+    <h3 class="atlas-specimen__name">RTL specimen - real fa locale strings (public site copy)</h3>
+    <div dir="rtl" lang="fa" class="atlas-column">
+      <SectionLead
+        eyebrow={content.fa.hero.eyebrow}
+        heading={content.fa.blog.heading}
+        summary={content.fa.blog.intro}
+      />
+      <ContentRow
+        title={content.fa.projects.heading}
+        excerpt={content.fa.projects.intro}
+        href="/_design/"
+        tags={[content.fa.gateway.persianLabel]}
+      />
+    </div>
+  </div>
+</section>

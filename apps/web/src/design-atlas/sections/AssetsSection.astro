@@ -1,0 +1,49 @@
+---
+/* design-atlas/sections/AssetsSection - WF-06. Asset inventory with role,
+   crop, alt and review state (fixture review state; derived responsive
+   masters belong to WF-09) plus the MediaTile asset anatomy specimens. */
+import MediaTile from "../../components/content/MediaTile.astro";
+import { assetInventoryFixture } from "../fixtures/assetFixtures";
+import { mediaTilesFixture } from "../fixtures/contentFixtures";
+
+const columns = ["Role", "Asset", "Crop", "Alt", "Review state"];
+---
+<section class="atlas-section" data-atlas-id="atlas-assets">
+  <h2 class="atlas-section__heading">Assets</h2>
+
+  <div class="atlas-specimen" data-atlas-id="assets-inventory">
+    <h3 class="atlas-specimen__name">Asset inventory (review states are fixture-only)</h3>
+    <table class="atlas-table">
+      <thead>
+        <tr>
+          {columns.map((column) => (
+            <th scope="col">{column}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {assetInventoryFixture.map((row) => (
+          <tr>
+            <td>{row.role}</td>
+            <td><span class="atlas-mono">{row.asset}</span></td>
+            <td>{row.crop}</td>
+            <td>{row.alt}</td>
+            <td>{row.approval}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="atlas-specimen" data-atlas-id="assets-media-anatomy">
+    <h3 class="atlas-specimen__name">MediaTile anatomy - aspect-ratio reservation, caption + record link</h3>
+    <div class="atlas-reflow">
+      <div class="atlas-tile-slot">
+        <MediaTile {...mediaTilesFixture[0]} />
+      </div>
+      <div class="atlas-tile-slot">
+        <MediaTile {...mediaTilesFixture[2]} />
+      </div>
+    </div>
+  </div>
+</section>

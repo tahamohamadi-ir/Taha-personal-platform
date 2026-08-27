@@ -1,0 +1,156 @@
+---
+/* design-atlas/sections/TemplatesSection - WF-06. Six page-template
+   specimens composed from the REAL production layouts and shell/content
+   components (never copied markup) with fixture data (unpublished: true).
+   Each specimen keeps the template's real slot anatomy, including
+   SectionLead as="h1" so the one-H1-per-template contract is visible. */
+import HomeTemplate from "../../layouts/HomeTemplate.astro";
+import CollectionIndexTemplate from "../../layouts/CollectionIndexTemplate.astro";
+import EditorialIndexTemplate from "../../layouts/EditorialIndexTemplate.astro";
+import LongFormTemplate from "../../layouts/LongFormTemplate.astro";
+import EvidenceDetailTemplate from "../../layouts/EvidenceDetailTemplate.astro";
+import UtilityTemplate from "../../layouts/UtilityTemplate.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import SectionLead from "../../components/content/SectionLead.astro";
+import FeaturedRecord from "../../components/content/FeaturedRecord.astro";
+import ContentRow from "../../components/content/ContentRow.astro";
+import PublicationRow from "../../components/content/PublicationRow.astro";
+import MetadataGroup from "../../components/content/MetadataGroup.astro";
+import Timeline from "../../components/content/Timeline.astro";
+import TableOfContents from "../../components/content/TableOfContents.astro";
+import MediaTile from "../../components/content/MediaTile.astro";
+import ContactCTA from "../../components/content/ContactCTA.astro";
+import LinkAction from "../../components/ui/LinkAction.astro";
+import Chip from "../../components/ui/Chip.astro";
+import {
+  contactCtaFixture,
+  contentRowsFixture,
+  featuredRecordFixture,
+  mediaTilesFixture,
+  metadataFixture,
+  publicationFixture,
+  sectionLeadFixture,
+  timelineFixture,
+  tocFixture,
+} from "../fixtures/contentFixtures";
+import {
+  breadcrumbsFixture,
+  evidenceBodyFixture,
+  evidenceLimitationsFixture,
+  homeLeadFixture,
+  longFormBodyFixture,
+  utilityContentFixture,
+} from "../fixtures/templateFixtures";
+---
+<section class="atlas-section" data-atlas-id="atlas-templates">
+  <h2 class="atlas-section__heading">Page templates</h2>
+
+  <div class="atlas-specimen" data-atlas-id="template-home">
+    <h3 class="atlas-specimen__name">HomeTemplate - canonical narrative blocks (graph block omitted until WF-08)</h3>
+    <HomeTemplate>
+      <SectionLead slot="lead" as="h1" eyebrow={homeLeadFixture.eyebrow} heading={homeLeadFixture.heading} summary={homeLeadFixture.summary} />
+      <ContentRow slot="researchFit" {...contentRowsFixture[0]} />
+      <Timeline slot="journey" items={timelineFixture} />
+      <FeaturedRecord slot="projects" {...featuredRecordFixture} />
+      <PublicationRow slot="publications" {...publicationFixture} />
+      <MediaTile slot="previews" {...mediaTilesFixture[1]} />
+      <ContactCTA slot="cta" statement={contactCtaFixture.statement} primary={contactCtaFixture.primary} secondary={contactCtaFixture.secondary} />
+    </HomeTemplate>
+  </div>
+
+  <div class="atlas-specimen" data-atlas-id="template-collection-index">
+    <h3 class="atlas-specimen__name">CollectionIndexTemplate - breadcrumbs / lead / filters / results / pagination</h3>
+    <CollectionIndexTemplate>
+      <Breadcrumbs slot="breadcrumbs" items={breadcrumbsFixture} />
+      <SectionLead slot="sectionLead" as="h1" eyebrow={sectionLeadFixture.eyebrow} heading={sectionLeadFixture.heading} summary={sectionLeadFixture.summary} />
+      <div slot="filters" class="atlas-row">
+        <Chip>All</Chip>
+        <Chip variant="selected">Fixture filter</Chip>
+        <Chip variant="taxonomy">Fixture topic</Chip>
+      </div>
+      <div slot="results" class="atlas-column">
+        {contentRowsFixture.map((row) => (
+          <ContentRow {...row} />
+        ))}
+      </div>
+      <div slot="pagination" class="atlas-row">
+        <LinkAction href="/_design/" variant="standalone" arrow arrowSide="start">Fixture previous</LinkAction>
+        <span class="atlas-mono">Fixture page 1 of 2</span>
+        <LinkAction href="/_design/" variant="standalone" arrow>Fixture next</LinkAction>
+      </div>
+    </CollectionIndexTemplate>
+  </div>
+
+  <div class="atlas-specimen" data-atlas-id="template-editorial-index">
+    <h3 class="atlas-specimen__name">EditorialIndexTemplate - with optional featured rail</h3>
+    <EditorialIndexTemplate>
+      <Breadcrumbs slot="breadcrumbs" items={breadcrumbsFixture} />
+      <SectionLead slot="sectionLead" as="h1" eyebrow={sectionLeadFixture.eyebrow} heading={sectionLeadFixture.heading} summary={sectionLeadFixture.summary} />
+      <FeaturedRecord slot="featured" {...featuredRecordFixture} />
+      <div slot="filters" class="atlas-row">
+        <Chip>All</Chip>
+        <Chip variant="taxonomy">Fixture series</Chip>
+      </div>
+      <div slot="results" class="atlas-column">
+        {contentRowsFixture.map((row) => (
+          <ContentRow {...row} />
+        ))}
+      </div>
+      <div slot="pagination" class="atlas-row">
+        <LinkAction href="/_design/" variant="standalone" arrow>Fixture next</LinkAction>
+      </div>
+    </EditorialIndexTemplate>
+  </div>
+
+  <div class="atlas-specimen" data-atlas-id="template-longform">
+    <h3 class="atlas-specimen__name">LongFormTemplate - article lead / TOC / body / related</h3>
+    <LongFormTemplate>
+      <Breadcrumbs slot="breadcrumbs" items={breadcrumbsFixture} />
+      <SectionLead slot="articleLead" as="h1" eyebrow={sectionLeadFixture.eyebrow} heading={sectionLeadFixture.heading} summary={sectionLeadFixture.summary} />
+      <TableOfContents slot="toc" label="Fixture table of contents" items={tocFixture} />
+      <div slot="body" class="atlas-prose">
+        {longFormBodyFixture.map((paragraph) => (
+          <p>{paragraph}</p>
+        ))}
+      </div>
+      <div slot="related" class="atlas-row">
+        <LinkAction href="/_design/" variant="standalone" arrow>Fixture related article</LinkAction>
+      </div>
+    </LongFormTemplate>
+  </div>
+
+  <div class="atlas-specimen" data-atlas-id="template-evidence-detail">
+    <h3 class="atlas-specimen__name">EvidenceDetailTemplate - breadcrumbs / lead / metadata / media / body / limitations / related</h3>
+    <EvidenceDetailTemplate>
+      <Breadcrumbs slot="breadcrumbs" items={breadcrumbsFixture} />
+      <SectionLead slot="lead" as="h1" eyebrow={sectionLeadFixture.eyebrow} heading={sectionLeadFixture.heading} summary={sectionLeadFixture.summary} />
+      <MetadataGroup slot="metadata" items={metadataFixture} />
+      <MediaTile slot="media" {...mediaTilesFixture[1]} />
+      <div slot="body" class="atlas-prose">
+        {evidenceBodyFixture.map((paragraph) => (
+          <p>{paragraph}</p>
+        ))}
+      </div>
+      <div slot="limitations" class="atlas-prose">
+        <p>{evidenceLimitationsFixture}</p>
+      </div>
+      <div slot="related" class="atlas-column">
+        {contentRowsFixture.map((row) => (
+          <ContentRow {...row} />
+        ))}
+      </div>
+    </EvidenceDetailTemplate>
+  </div>
+
+  <div class="atlas-specimen" data-atlas-id="template-utility">
+    <h3 class="atlas-specimen__name">UtilityTemplate - lead / content (no breadcrumbs: About/Contact/Search rule)</h3>
+    <UtilityTemplate>
+      <SectionLead slot="lead" as="h1" eyebrow={sectionLeadFixture.eyebrow} heading={sectionLeadFixture.heading} summary={sectionLeadFixture.summary} />
+      <div slot="content" class="atlas-prose">
+        {utilityContentFixture.map((paragraph) => (
+          <p>{paragraph}</p>
+        ))}
+      </div>
+    </UtilityTemplate>
+  </div>
+</section>

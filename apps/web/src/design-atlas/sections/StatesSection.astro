@@ -1,0 +1,86 @@
+---
+/* design-atlas/sections/StatesSection - WF-06. State sheet: the exact six
+   ContentState kinds from src/design-system/contracts (never redefined)
+   plus the control-state trio (disabled, error, failed media). All
+   specimens render the REAL production components. */
+import ContentState from "../../components/ui/ContentState.astro";
+import Button from "../../components/ui/Button.astro";
+import InputField from "../../components/ui/InputField.astro";
+import MediaTile from "../../components/content/MediaTile.astro";
+import { inputErrorFixture } from "../fixtures/uiFixtures";
+import { mediaTilesFixture } from "../fixtures/contentFixtures";
+import type { ContentState as ContentStateKind } from "../../design-system/contracts";
+
+const kinds: ContentStateKind[] = [
+  "ready",
+  "loading",
+  "empty",
+  "no-results",
+  "error",
+  "unavailable-translation",
+];
+
+const kindCopy: Record<ContentStateKind, { heading: string; explanation: string }> = {
+  ready: {
+    heading: "Fixture ready state",
+    explanation: "Placeholder confirmation copy for the ready state.",
+  },
+  loading: {
+    heading: "Fixture loading state",
+    explanation: "Placeholder copy while a section loads (geometry-stable).",
+  },
+  empty: {
+    heading: "Fixture empty state",
+    explanation: "Placeholder copy for an honestly empty collection.",
+  },
+  "no-results": {
+    heading: "Fixture no-results state",
+    explanation: "Placeholder copy when a filter has no matches.",
+  },
+  error: {
+    heading: "Fixture error state",
+    explanation: "Placeholder copy for a recoverable failure.",
+  },
+  "unavailable-translation": {
+    heading: "Fixture unavailable-translation state",
+    explanation: "Placeholder copy when the locale version is missing.",
+  },
+};
+---
+<section class="atlas-section" data-atlas-id="atlas-states">
+  <h2 class="atlas-section__heading">State sheet</h2>
+
+  <div class="atlas-specimen" data-atlas-id="state-content-kinds">
+    <h3 class="atlas-specimen__name">ContentState - the exact six kinds</h3>
+    <div class="atlas-column">
+      {kinds.map((kind) => (
+        <ContentState
+          kind={kind}
+          heading={kindCopy[kind].heading}
+          explanation={kindCopy[kind].explanation}
+          headingTag="h4"
+        />
+      ))}
+    </div>
+  </div>
+
+  <div class="atlas-specimen" data-atlas-id="state-controls">
+    <h3 class="atlas-specimen__name">Control states - disabled, error, failed media</h3>
+    <div class="atlas-column">
+      <div class="atlas-row">
+        <Button disabled>Disabled primary</Button>
+        <Button variant="secondary" disabled>Disabled secondary</Button>
+        <Button variant="quiet" disabled>Disabled quiet</Button>
+      </div>
+      <InputField
+        label={inputErrorFixture.label}
+        name={inputErrorFixture.name}
+        error={inputErrorFixture.error}
+        value={inputErrorFixture.value}
+      />
+      <div class="atlas-tile-slot">
+        <MediaTile {...mediaTilesFixture[2]} />
+      </div>
+    </div>
+  </div>
+</section>
