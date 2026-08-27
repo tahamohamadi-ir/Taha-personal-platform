@@ -68,9 +68,9 @@ This table is live. `global.css` and `tokens.json:semanticLight` MUST agree byte
 
 Runtime bilingual pair (live): **Inter Variable** (EN) + **Vazirmatn Variable** (FA) — 2 families max per locale. Display targets per `MASTER-SPEC.md` §6 / `tokens.json:type` — **Newsreader** (EN) + **Estedad** (FA) — are **design-target, pending ATLAS token task**. Do not activate display fonts until that packet lands; when they do, the per-locale 2-family cap still holds (body + display).
 
-### 2.2 Dark — design-target (not live, ATLAS-01)
+### 2.2 Dark — runtime-ready behind [data-theme="dark"] (WF-01)
 
-Semantic roles exist in `tokens.json:semanticDark` (`status: "design-target"`). Values will be activated via ATLAS-01 dual-theme implementation and MUST then match `global.css` byte-for-role. Do not ship Dark by hand-editing a component.
+Dark semantic roles are now LANDED in `global.css` behind `[data-theme="dark"]` (runtime-ready) and MUST match `tokens.json:semanticDark` byte-for-role — enforced by `apps/web/qa/design-tokens.spec.mjs`. Default theme activation is `system` per owner decision 2026-08-26; the ThemeToggle UI itself is WF-03 scope. Do not ship Dark values by hand-editing a component.
 
 | Purpose | Token | Dark target |
 |---|---|---|

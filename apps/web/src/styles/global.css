@@ -30,6 +30,8 @@
   ONLY the §0 night set.
 */
 
+/* design-tokens: begin */
+
 @theme static {
   /* primitives */
   --color-navy-950: #071225;
@@ -209,6 +211,39 @@
   --font-body: var(--font-latin);
   --font-display: var(--font-latin);
 }
+
+/*
+  Dark theme (WF-01): semanticDark values from agent-kit/tokens.json v1.0.0,
+  mapped to the SAME custom-property names as the Light table above, which
+  stays byte-for-role untouched (runtime-authoritative). This block is inert
+  until [data-theme="dark"] is set on <html>; default theme activation is
+  "system" per owner decision 2026-08-26. ThemeToggle UI itself is WF-03
+  scope. Enforced by qa/design-tokens.spec.mjs.
+*/
+[data-theme="dark"] {
+  --color-canvas: #071225;
+  --color-surface: #0b1630;
+  --color-surface-muted: #122343;
+  --color-ink: #f7f3ea;
+  --color-ink-secondary: #b8c5cc;
+  --color-ink-tertiary: #8797a0;
+  --color-inverse: #071225;
+  --color-brand: #16b8a6;
+  --color-brand-emphasis-hover: #42d1c2;
+  --color-brand-soft: #103b40;
+  --color-signature: #c89b3c;
+  --color-signature-soft: #332b1c;
+  --color-research: #8b75dc;
+  --color-research-soft: #272341;
+  --color-context: #42a98c;
+  --color-context-soft: #17372f;
+  --color-border-subtle: #263955;
+  --color-border-strong: #405476;
+  --color-control-border: #71839e;
+  --color-focus: #6be6d9;
+}
+
+/* design-tokens: end */
 
 @layer base {
   html {
@@ -436,7 +471,7 @@
 }
 .btn--primary {
   background: var(--brand);
-  color: #071225;
+  color: var(--canvas-night);
 }
 .btn--primary:hover { background: var(--brand-text); }
 .btn--ghost {
@@ -492,7 +527,7 @@
 .chip--active {
   background: var(--brand);
   border-color: var(--brand);
-  color: #071225;
+  color: var(--canvas-night);
 }
 
 .meta-row {
