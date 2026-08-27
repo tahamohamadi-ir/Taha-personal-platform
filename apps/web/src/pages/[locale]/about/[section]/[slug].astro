@@ -1,6 +1,16 @@
 ---
+/* WF-07G: gated About detail page adopted onto UtilityTemplate. The
+   breadcrumbs slot stays FILLED (sub-pages may carry breadcrumbs; existing
+   behavior + breadcrumb JSON-LD kept). The lead is SectionLead as="h1" with
+   the item eyebrow/title, followed by the item meta and summary in the
+   original order; the body keeps the published-story branch (StoryBody) and
+   the detailBody paragraph fallback. Build-time gating (Latin slug +
+   non-empty body/story via hasDetailContent) and the CMS profile loader
+   unchanged. */
 import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import UtilityTemplate from "../../../../layouts/UtilityTemplate.astro";
 import Breadcrumbs from "../../../../components/Breadcrumbs.astro";
+import SectionLead from "../../../../components/content/SectionLead.astro";
 import { content as allContent } from "../../../../data/content";
 import {
   getAboutSection,
@@ -76,6 +86,11 @@ if (!item || profileResult.kind !== "profile") {
   Astro.response.status = 404;
 }
 
+const nextStepTitle = locale === "fa" ? "گام بعدی" : "Next step";
+const nextStepCopy =
+  locale === "fa"
+    ? "به فهرست این بخش برگردید یا نمای کامل پروفایل را در صفحهٔ درباره ببینید."
+    : "Return to this section index, or go back to About for the full profile context.";
 const breadcrumbs =
   item && section
     ? [
@@ -121,18 +136,18 @@ const description = item?.body ?? content.meta.description;
   title={title}
   description={description}
 >
-  {
-    item && section ? (
-      <article class="about-detail">
-        <div class="about-detail-shell">
-          <Breadcrumbs items={breadcrumbs} />
-          <header class="about-detail-header">
-            {item.eyebrow && <p class="about-detail-eyebrow">{item.eyebrow}</p>}
-            <h1 class="about-detail-title">{item.title}</h1>
-            {item.meta && <p class="about-detail-meta">{item.meta}</p>}
-            {item.body && <p class="about-detail-summary">{item.body}</p>}
-          </header>
-
+  <UtilityTemplate>
+    {
+      item && section && <Breadcrumbs slot="breadcrumbs" items={breadcrumbs} />
+    }
+    <Fragment slot="lead">
+      <SectionLead as="h1" eyebrow={item?.eyebrow} heading={item ? item.title : content.about.heading} />
+      {item?.meta && <p class="about-detail-meta">{item.meta}</p>}
+      {item?.body && <p class="about-detail-summary">{item.body}</p>}
+    </Fragment>
+    {
+      item && section ? (
+        <article class="about-detail-body-wrap" slot="content">
           <div class="about-detail-body">
             {
               itemHasStory && item?.story ? (
@@ -145,12 +160,10 @@ const description = item?.body ?? content.meta.description;
 
           <aside class="about-detail-next-step">
             <h2 class="about-detail-next-step-title">
-              {locale === "fa" ? "گام بعدی" : "Next step"}
+              {nextStepTitle}
             </h2>
             <p class="about-detail-next-step-copy">
-              {locale === "fa"
-                ? "به فهرست این بخش برگردید یا نمای کامل پروفایل را در صفحهٔ درباره ببینید."
-                : "Return to this section index, or go back to About for the full profile context."}
+              {nextStepCopy}
             </p>
             <div class="about-detail-next-step-actions">
               <a class="about-detail-next-step-link" href={`/${locale}/about/${sectionId}/`}>
@@ -161,47 +174,21 @@ const description = item?.body ?? content.meta.description;
               </a>
             </div>
           </aside>
-        </div>
-      </article>
-    ) : null
-  }
+        </article>
+      ) : null
+    }
+  </UtilityTemplate>
 </BaseLayout>
 
 <style>
-  .about-detail {
-    padding-block: var(--space-section);
-    padding-inline: var(--space-gutter);
-  }
-
-  .about-detail-shell {
-    max-width: var(--measure-page);
-    margin-inline: auto;
-  }
-
-  .about-detail-header {
-    max-width: var(--measure-prose);
-    margin-block-end: var(--space-8);
-  }
-
-  .about-detail-eyebrow,
   .about-detail-meta {
-    margin: 0 0 var(--space-2);
+    margin: 0;
     color: var(--color-ink-secondary);
     font-size: var(--text-sm);
   }
 
-  .about-detail-eyebrow {
-    color: var(--color-brand);
-    font-weight: 600;
-  }
-
-  .about-detail-title {
-    margin: 0 0 var(--space-3);
-    font-size: var(--text-display);
-  }
-
   .about-detail-summary {
-    margin: 0;
+    margin: var(--space-2) 0 0;
     color: var(--color-ink-secondary);
   }
 

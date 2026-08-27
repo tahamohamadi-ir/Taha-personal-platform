@@ -1,6 +1,19 @@
 ---
+/* WF-07G: about index adopted onto UtilityTemplate. The lead slot carries
+   identity + positioning from the CMS profile aggregate via SectionLead
+   as="h1"; the content slot keeps the radio-CSS no-JS tabs mechanism
+   verbatim (qa/about-tabs.spec.mjs drives those class hooks) with the
+   sticky toolbar offset tokenized to --space-sticky-offset. A journey
+   overview renders through the shared Timeline from profile
+   experience/education when present. Gated detail links keep the existing
+   Latin-slug + non-empty body/story logic. No breadcrumbs: IA-CONTRACT S7
+   forbids them on About. The legacy About component import is retired
+   (adopt = the shared layer owns rendering; the file remains for the
+   WF-CLEAN sweep). */
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import About from "../../components/About.astro";
+import UtilityTemplate from "../../layouts/UtilityTemplate.astro";
+import SectionLead from "../../components/content/SectionLead.astro";
+import Timeline from "../../components/content/Timeline.astro";
 import TranslationUnavailable from "../../components/TranslationUnavailable.astro";
 import { content } from "../../data/content";
 import { loadPublicProfile } from "../../data/cmsProfile";
@@ -9,6 +22,72 @@ import { personJsonLd, websiteJsonLd } from "../../data/structured";
 const fa = content.fa;
 const profileResult = await loadPublicProfile("fa");
 const alternateHref = "/en/about/";
+const sections = fa.sections;
+const profile = profileResult.kind === "profile" ? profileResult.profile : null;
+
+const tabs = profile
+  ? [
+      { id: "experience", label: sections?.experience ?? "", visible: profile.experience.length > 0 },
+      { id: "education", label: sections?.education ?? "", visible: profile.education.length > 0 },
+      { id: "skills", label: sections?.skills ?? "", visible: profile.skills.length > 0 },
+      { id: "research", label: sections?.research ?? "", visible: profile.researchProjects.length > 0 },
+      { id: "publications", label: sections?.publications ?? "", visible: profile.publications.length > 0 },
+      { id: "certificates", label: sections?.certificates ?? "", visible: profile.certificates.length > 0 },
+    ].filter((tab) => tab.visible && tab.label)
+  : [];
+
+const experienceOrgs = profile
+  ? [...new Set(profile.experience.map((entry) => entry.organization))]
+  : [];
+const educationInstitutions = profile
+  ? [...new Set(profile.education.map((entry) => entry.institution))]
+  : [];
+const skillCategories = profile
+  ? [...new Set(profile.skills.map((skill) => skill.category))].sort()
+  : [];
+const publicationStatuses = profile
+  ? [...new Set(profile.publications.map((entry) => entry.status))]
+  : [];
+
+const journeyExperience = profile
+  ? profile.experience.map((entry) => ({
+      type: entry.organization,
+      label: entry.role,
+      period: entry.period,
+    }))
+  : [];
+const journeyEducation = profile
+  ? profile.education.map((entry) => ({
+      type: entry.institution,
+      label: `${entry.degree} — ${entry.field}`,
+      period: entry.period,
+    }))
+  : [];
+
+function searchText(parts: Array<string | undefined>): string {
+  return parts.filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
+}
+
+function detailHref(
+  section: string,
+  entry: {
+    slug?: string;
+    detailBody?: string;
+    detail_body?: string;
+    story?: { sections?: unknown[] } | null;
+  },
+): string | null {
+  const body = entry.detailBody?.trim() || entry.detail_body?.trim();
+  const hasStory = Boolean(entry.story && Array.isArray(entry.story.sections) && entry.story.sections.length > 0);
+  if (!entry.slug || (!body && !hasStory)) {
+    return null;
+  }
+  return `/${fa.lang}/about/${section}/${entry.slug}/`;
+}
+
+function sectionHref(section: string): string {
+  return `/${fa.lang}/about/${section}/`;
+}
 ---
 
 <BaseLayout
@@ -22,8 +101,503 @@ const alternateHref = "/en/about/";
   }
 >
   {
-    profileResult.kind === "profile" ? (
-      <About content={fa} profile={profileResult.profile} />
+    profile ? (
+      <UtilityTemplate>
+        <SectionLead slot="lead" as="h1" eyebrow={fa.about.label} heading={fa.name} summary={fa.positioning} />
+        <div class="about" slot="content">
+          <p class="about-bio">{profile.shortBio}</p>
+          {profile.longBio && <p class="about-bio-long">{profile.longBio}</p>}
+
+          {profile.experience.length > 0 && sections?.experience && (
+            <section class="about-journey">
+              <SectionLead as="h2" heading={sections.experience} />
+              <Timeline items={journeyExperience} />
+            </section>
+          )}
+          {profile.education.length > 0 && sections?.education && (
+            <section class="about-journey">
+              <SectionLead as="h2" heading={sections.education} />
+              <Timeline items={journeyEducation} />
+            </section>
+          )}
+
+          {tabs.length > 1 && (
+            <div class="about-tabs" data-about-tabs>
+              <input
+                class="about-show-all-input"
+                type="checkbox"
+                id="about-show-all"
+                aria-controls="about-tab-panels"
+              />
+
+              {
+                tabs.map((tab, index) => (
+                  <input
+                    class="about-tab-input"
+                    type="radio"
+                    name="about-sections"
+                    id={`about-tab-${tab.id}`}
+                    checked={index === 0}
+                    aria-label={tab.label}
+                  />
+                ))
+              }
+
+              <div class="about-tab-toolbar">
+                <div class="about-tab-controls" role="radiogroup" aria-label={fa.about.heading}>
+                  {
+                    tabs.map((tab) => (
+                      <label class="about-tab-label" for={`about-tab-${tab.id}`}>
+                        {tab.label}
+                      </label>
+                    ))
+                  }
+                </div>
+                <label class="about-show-all-label" for="about-show-all">
+                  <span class="when-tabs">{fa.about.showAllLabel}</span>
+                  <span class="when-expanded">{fa.about.showTabsLabel}</span>
+                </label>
+              </div>
+
+              <div class="about-tab-panels" id="about-tab-panels">
+                {profile.experience.length > 0 && (
+                  <section
+                    class="about-tab-panel about-panel-experience"
+                    id="experience"
+                    aria-labelledby="about-tab-experience"
+                  >
+                    <h2 class="about-panel-heading">
+                      <a class="about-section-index-link" href={sectionHref("experience")}>{sections?.experience}</a>
+                    </h2>
+                    <div class="about-panel-filter">
+                      <label class="about-filter-label" for="about-filter-experience">
+                        {fa.about.filterLabel}
+                      </label>
+                      <input
+                        type="search"
+                        id="about-filter-experience"
+                        class="about-filter-input"
+                        placeholder={fa.about.filterPlaceholder}
+                        autocomplete="off"
+                        enterkeyhint="search"
+                      />
+                      {experienceOrgs.length > 1 && (
+                        <div class="about-filter-chips" role="group" aria-label={fa.about.filterLabel}>
+                          <button
+                            type="button"
+                            class="about-filter-chip is-active"
+                            data-filter-chip
+                            data-filter-value=""
+                          >
+                            {fa.about.filterAll}
+                          </button>
+                          {experienceOrgs.map((org) => (
+                            <button type="button" class="about-filter-chip" data-filter-chip data-filter-value={org}>
+                              {org}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      <p class="about-filter-empty" hidden>{fa.about.filterEmpty}</p>
+                    </div>
+                    <div class="entries">
+                      {profile.experience.map((entry) => (
+                        <article
+                          class="entry about-filter-item"
+                          data-search={searchText([
+                            entry.role,
+                            entry.organization,
+                            entry.period,
+                            entry.location,
+                            ...entry.bullets,
+                          ])}
+                          data-facet={entry.organization}
+                        >
+                          <h3 class="entry-title">
+                            {detailHref("experience", entry) ? (
+                              <a class="about-detail-link" href={detailHref("experience", entry)!}>
+                                {entry.role}
+                              </a>
+                            ) : (
+                              entry.role
+                            )}
+                            {entry.website && (
+                              <a class="entry-link" href={entry.website} rel="noopener" target="_blank">
+                                {" "}{entry.organization}
+                              </a>
+                            )}
+                            {!entry.website && <span class="entry-org">{entry.organization}</span>}
+                          </h3>
+                          <p class="entry-meta">
+                            {entry.period}
+                            {entry.location && <span aria-hidden="true"> · </span>}
+                            {entry.location}
+                          </p>
+                          <ul class="entry-bullets">
+                            {entry.bullets.map((bullet) => <li>{bullet}</li>)}
+                          </ul>
+                        </article>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {profile.education.length > 0 && (
+                  <section
+                    class="about-tab-panel about-panel-education"
+                    id="education"
+                    aria-labelledby="about-tab-education"
+                  >
+                    <h2 class="about-panel-heading">
+                      <a class="about-section-index-link" href={sectionHref("education")}>{sections?.education}</a>
+                    </h2>
+                    <div class="about-panel-filter">
+                      <label class="about-filter-label" for="about-filter-education">
+                        {fa.about.filterLabel}
+                      </label>
+                      <input
+                        type="search"
+                        id="about-filter-education"
+                        class="about-filter-input"
+                        placeholder={fa.about.filterPlaceholder}
+                        autocomplete="off"
+                        enterkeyhint="search"
+                      />
+                      {educationInstitutions.length > 1 && (
+                        <div class="about-filter-chips" role="group" aria-label={fa.about.filterLabel}>
+                          <button
+                            type="button"
+                            class="about-filter-chip is-active"
+                            data-filter-chip
+                            data-filter-value=""
+                          >
+                            {fa.about.filterAll}
+                          </button>
+                          {educationInstitutions.map((institution) => (
+                            <button
+                              type="button"
+                              class="about-filter-chip"
+                              data-filter-chip
+                              data-filter-value={institution}
+                            >
+                              {institution}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      <p class="about-filter-empty" hidden>{fa.about.filterEmpty}</p>
+                    </div>
+                    <div class="entries">
+                      {profile.education.map((entry) => (
+                        <article
+                          class="entry about-filter-item"
+                          data-search={searchText([
+                            entry.degree,
+                            entry.field,
+                            entry.institution,
+                            entry.period,
+                            entry.gpa,
+                            entry.thesis,
+                          ])}
+                          data-facet={entry.institution}
+                        >
+                          <h3 class="entry-title">
+                            {detailHref("education", entry) ? (
+                              <a class="about-detail-link" href={detailHref("education", entry)!}>
+                                {entry.degree} — {entry.field}
+                              </a>
+                            ) : (
+                              `${entry.degree} — ${entry.field}`
+                            )}
+                          </h3>
+                          <p class="entry-meta">
+                            {entry.institution}
+                            <span aria-hidden="true"> · </span>
+                            {entry.period}
+                            {entry.gpa && fa.gpaLabel && <span> · {fa.gpaLabel} {entry.gpa}</span>}
+                          </p>
+                          {entry.thesis && <p class="entry-thesis">{entry.thesis}</p>}
+                        </article>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {profile.skills.length > 0 && (
+                  <section
+                    class="about-tab-panel about-panel-skills"
+                    id="skills"
+                    aria-labelledby="about-tab-skills"
+                  >
+                    <h2 class="about-panel-heading">
+                      <a class="about-section-index-link" href={sectionHref("skills")}>{sections?.skills}</a>
+                    </h2>
+                    <div class="about-panel-filter">
+                      <label class="about-filter-label" for="about-filter-skills">
+                        {fa.about.filterLabel}
+                      </label>
+                      <input
+                        type="search"
+                        id="about-filter-skills"
+                        class="about-filter-input"
+                        placeholder={fa.about.filterPlaceholder}
+                        autocomplete="off"
+                        enterkeyhint="search"
+                      />
+                      {skillCategories.length > 1 && (
+                        <div class="about-filter-chips" role="group" aria-label={fa.about.filterLabel}>
+                          <button
+                            type="button"
+                            class="about-filter-chip is-active"
+                            data-filter-chip
+                            data-filter-value=""
+                          >
+                            {fa.about.filterAll}
+                          </button>
+                          {skillCategories.map((category) => (
+                            <button
+                              type="button"
+                              class="about-filter-chip"
+                              data-filter-chip
+                              data-filter-value={category}
+                            >
+                              {category}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      <p class="about-filter-empty" hidden>{fa.about.filterEmpty}</p>
+                    </div>
+                    <ul class="skills">
+                      {profile.skills.map((skill) => (
+                        <li
+                          class="skill about-filter-item"
+                          data-search={searchText([skill.name, skill.category, skill.source])}
+                          data-facet={skill.category}
+                        >
+                          <h3 class="skill-name">
+                            {detailHref("skills", skill) ? (
+                              <a class="about-detail-link" href={detailHref("skills", skill)!}>
+                                {skill.name}
+                              </a>
+                            ) : (
+                              skill.name
+                            )}
+                          </h3>
+                          <p class="skill-meta">
+                            <span class="skill-category">{skill.category}</span>
+                            <span class="skill-separator" aria-hidden="true">·</span>
+                            <span class="skill-source">{skill.source}</span>
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+
+                {profile.researchProjects.length > 0 && (
+                  <section
+                    class="about-tab-panel about-panel-research"
+                    id="research"
+                    aria-labelledby="about-tab-research"
+                  >
+                    <h2 class="about-panel-heading">
+                      <a class="about-section-index-link" href={sectionHref("research")}>{sections?.research}</a>
+                    </h2>
+                    <div class="about-panel-filter">
+                      <label class="about-filter-label" for="about-filter-research">
+                        {fa.about.filterLabel}
+                      </label>
+                      <input
+                        type="search"
+                        id="about-filter-research"
+                        class="about-filter-input"
+                        placeholder={fa.about.filterPlaceholder}
+                        autocomplete="off"
+                        enterkeyhint="search"
+                      />
+                      <p class="about-filter-empty" hidden>{fa.about.filterEmpty}</p>
+                    </div>
+                    <div class="entries">
+                      {profile.researchProjects.map((project) => (
+                        <article
+                          class="entry about-filter-item"
+                          data-search={searchText([project.title, project.summary, project.linkLabel])}
+                        >
+                          <h3 class="entry-title">
+                            {detailHref("research", project) ? (
+                              <a class="about-detail-link" href={detailHref("research", project)!}>
+                                {project.title}
+                              </a>
+                            ) : (
+                              project.title
+                            )}
+                            {project.url && project.linkLabel && (
+                              <a class="entry-link" href={project.url} rel="noopener" target="_blank">
+                                {" "}· {project.linkLabel}
+                              </a>
+                            )}
+                          </h3>
+                          <p class="entry-text">{project.summary}</p>
+                        </article>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {profile.publications.length > 0 && (
+                  <section
+                    class="about-tab-panel about-panel-publications"
+                    id="publications"
+                    aria-labelledby="about-tab-publications"
+                  >
+                    <h2 class="about-panel-heading">
+                      <a class="about-section-index-link" href={sectionHref("publications")}>{sections?.publications}</a>
+                    </h2>
+                    <div class="about-panel-filter">
+                      <label class="about-filter-label" for="about-filter-publications">
+                        {fa.about.filterLabel}
+                      </label>
+                      <input
+                        type="search"
+                        id="about-filter-publications"
+                        class="about-filter-input"
+                        placeholder={fa.about.filterPlaceholder}
+                        autocomplete="off"
+                        enterkeyhint="search"
+                      />
+                      {publicationStatuses.length > 1 && (
+                        <div class="about-filter-chips" role="group" aria-label={fa.about.filterLabel}>
+                          <button
+                            type="button"
+                            class="about-filter-chip is-active"
+                            data-filter-chip
+                            data-filter-value=""
+                          >
+                            {fa.about.filterAll}
+                          </button>
+                          {publicationStatuses.map((status) => (
+                            <button type="button" class="about-filter-chip" data-filter-chip data-filter-value={status}>
+                              {status}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      <p class="about-filter-empty" hidden>{fa.about.filterEmpty}</p>
+                    </div>
+                    <ul class="plain-list">
+                      {profile.publications.map((publication) => (
+                        <li
+                          class="plain-item about-filter-item"
+                          data-search={searchText([publication.title, publication.status])}
+                          data-facet={publication.status}
+                        >
+                          <h3 class="pub-title">
+                            {detailHref("publications", publication) ? (
+                              <a class="about-detail-link" href={detailHref("publications", publication)!}>
+                                {publication.title}
+                              </a>
+                            ) : (
+                              publication.title
+                            )}
+                          </h3>
+                          <p class="pub-status">{publication.status}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+
+                {profile.certificates.length > 0 && (
+                  <section
+                    class="about-tab-panel about-panel-certificates"
+                    id="certificates"
+                    aria-labelledby="about-tab-certificates"
+                  >
+                    <h2 class="about-panel-heading">
+                      <a class="about-section-index-link" href={sectionHref("certificates")}>{sections?.certificates}</a>
+                    </h2>
+                    <div class="about-panel-filter">
+                      <label class="about-filter-label" for="about-filter-certificates">
+                        {fa.about.filterLabel}
+                      </label>
+                      <input
+                        type="search"
+                        id="about-filter-certificates"
+                        class="about-filter-input"
+                        placeholder={fa.about.filterPlaceholder}
+                        autocomplete="off"
+                        enterkeyhint="search"
+                      />
+                      <p class="about-filter-empty" hidden>{fa.about.filterEmpty}</p>
+                    </div>
+                    <ul class="plain-list">
+                      {profile.certificates.map((certificate) => (
+                        <li
+                          class="plain-item about-filter-item"
+                          data-search={searchText([certificate.name, certificate.detail])}
+                        >
+                          <h3 class="cert-name">
+                            {detailHref("certificates", certificate) ? (
+                              <a class="about-detail-link" href={detailHref("certificates", certificate)!}>
+                                {certificate.name}
+                              </a>
+                            ) : (
+                              certificate.name
+                            )}
+                          </h3>
+                          {certificate.detail && <p class="cert-detail">{certificate.detail}</p>}
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+              </div>
+            </div>
+          )}
+
+          {tabs.length <= 1 && profile.skills.length > 0 && (
+            <section class="about-section">
+              <ul class="skills">
+                {profile.skills.map((skill) => (
+                  <li class="skill">
+                    <h2 class="skill-name">{skill.name}</h2>
+                    <p class="skill-meta">
+                      <span class="skill-category">{skill.category}</span>
+                      <span class="skill-separator" aria-hidden="true">·</span>
+                      <span class="skill-source">{skill.source}</span>
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {profile.socials.length > 0 && (
+            <div class="socials">
+              {profile.socials.map((social) => (
+                <a class="social-link" href={social.url} rel="me noopener" target="_blank">
+                  {social.platform}
+                </a>
+              ))}
+            </div>
+          )}
+
+          <aside class="availability">
+            <p class="availability-text">{profile.availability}</p>
+          </aside>
+
+          <div class="about-links">
+            <a class="about-link" href={`/${fa.lang}/cv/`}>{fa.downloads.heading}</a>
+            <a class="about-link" href={`/${fa.lang}/contact/`}>{fa.contact.heading}</a>
+          </div>
+
+          <div class="contact-state">
+            <span class="contact-state-label">{fa.contact.heading}</span>
+            <p class="contact-state-text">{fa.contact.unavailable}</p>
+          </div>
+        </div>
+      </UtilityTemplate>
     ) : (
       <TranslationUnavailable
         kicker="ترجمه در دسترس نیست"
@@ -37,3 +611,419 @@ const alternateHref = "/en/about/";
     )
   }
 </BaseLayout>
+
+<script is:inline>
+  (function () {
+    function initPanel(panel) {
+      const input = panel.querySelector(".about-filter-input");
+      const chips = panel.querySelectorAll("[data-filter-chip]");
+      const items = panel.querySelectorAll(".about-filter-item");
+      const empty = panel.querySelector(".about-filter-empty");
+      if (!input || items.length === 0) return;
+
+      let facet = "";
+
+      function apply() {
+        const query = input.value.trim().toLowerCase();
+        let visible = 0;
+        items.forEach((item) => {
+          const haystack = (item.getAttribute("data-search") || item.textContent || "").toLowerCase();
+          const itemFacet = item.getAttribute("data-facet") || "";
+          const matchesQuery = !query || haystack.includes(query);
+          const matchesFacet = !facet || itemFacet === facet;
+          const show = matchesQuery && matchesFacet;
+          item.hidden = !show;
+          if (show) visible += 1;
+        });
+        if (empty) empty.hidden = visible > 0;
+      }
+
+      input.addEventListener("input", apply);
+
+      chips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          const value = chip.getAttribute("data-filter-value") || "";
+          facet = value;
+          chips.forEach((other) => {
+            other.classList.toggle("is-active", other === chip);
+          });
+          apply();
+        });
+      });
+    }
+
+    document.querySelectorAll(".about-tab-panel").forEach(initPanel);
+  })();
+</script>
+
+<style>
+  .about-bio,
+  .about-bio-long,
+  .entry-text,
+  .entry-thesis,
+  .entry-bullets,
+  .pub-status,
+  .cert-detail {
+    text-align: justify;
+    text-justify: inter-word;
+  }
+
+  .about-bio {
+    max-width: 60ch;
+    margin-inline: auto;
+    color: var(--color-ink);
+    font-size: clamp(1.125rem, 1rem + 0.6vw, 1.375rem);
+    margin-block-end: var(--space-8);
+  }
+
+  .about-bio-long {
+    max-width: 68ch;
+    margin-inline: auto;
+    color: var(--color-ink-secondary);
+    font-size: var(--text-base);
+    margin-block-end: var(--space-12);
+  }
+
+  .about-journey {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-5);
+    margin-block-end: var(--space-10);
+  }
+
+  .about-tabs {
+    display: block;
+    margin-block-end: var(--space-12);
+  }
+
+  .about-show-all-input,
+  .about-tab-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .about-tab-toolbar {
+    position: sticky;
+    top: var(--space-sticky-offset);
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding-block: var(--space-3);
+    margin-block-end: var(--space-2);
+    background-color: var(--color-canvas);
+    border-block-end: 1px solid transparent;
+  }
+
+  .about-tab-controls {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
+    gap: var(--space-2);
+    padding-block-end: var(--space-1);
+  }
+
+  .about-tab-label,
+  .about-show-all-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--space-11);
+    padding-inline: var(--space-4);
+    color: var(--color-ink-secondary);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: color var(--duration-fast) var(--ease-out),
+      background-color var(--duration-fast) var(--ease-out),
+      border-color var(--duration-fast) var(--ease-out);
+  }
+
+  .about-show-all-label {
+    align-self: flex-start;
+    font-size: var(--text-sm);
+  }
+
+  .about-show-all-label .when-expanded { display: none; }
+
+  #about-show-all:checked ~ .about-tab-toolbar .about-show-all-label {
+    color: var(--color-inverse);
+    border-color: var(--color-brand);
+    background-color: var(--color-brand);
+  }
+
+  #about-show-all:checked ~ .about-tab-toolbar .about-show-all-label .when-tabs { display: none; }
+  #about-show-all:checked ~ .about-tab-toolbar .about-show-all-label .when-expanded { display: inline; }
+
+  .about-tab-label:hover,
+  .about-show-all-label:hover {
+    color: var(--color-brand);
+    border-color: var(--color-brand);
+    background-color: var(--color-brand-soft);
+  }
+
+  #about-tab-experience:focus-visible ~ .about-tab-toolbar label[for="about-tab-experience"],
+  #about-tab-education:focus-visible ~ .about-tab-toolbar label[for="about-tab-education"],
+  #about-tab-skills:focus-visible ~ .about-tab-toolbar label[for="about-tab-skills"],
+  #about-tab-research:focus-visible ~ .about-tab-toolbar label[for="about-tab-research"],
+  #about-tab-publications:focus-visible ~ .about-tab-toolbar label[for="about-tab-publications"],
+  #about-tab-certificates:focus-visible ~ .about-tab-toolbar label[for="about-tab-certificates"],
+  #about-show-all:focus-visible ~ .about-tab-toolbar label[for="about-show-all"] {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  .about-tab-panels {
+    margin-block-start: var(--space-2);
+  }
+
+  .about-tab-panel {
+    display: none;
+  }
+
+  .about-panel-heading {
+    display: none;
+    font-size: 1.375rem;
+    margin-block-end: var(--space-4);
+  }
+
+  #about-tab-experience:checked ~ .about-tab-toolbar label[for="about-tab-experience"],
+  #about-tab-education:checked ~ .about-tab-toolbar label[for="about-tab-education"],
+  #about-tab-skills:checked ~ .about-tab-toolbar label[for="about-tab-skills"],
+  #about-tab-research:checked ~ .about-tab-toolbar label[for="about-tab-research"],
+  #about-tab-publications:checked ~ .about-tab-toolbar label[for="about-tab-publications"],
+  #about-tab-certificates:checked ~ .about-tab-toolbar label[for="about-tab-certificates"] {
+    color: var(--color-inverse);
+    border-color: var(--color-brand);
+    background-color: var(--color-brand);
+  }
+
+  #about-tab-experience:checked ~ .about-tab-panels .about-panel-experience,
+  #about-tab-education:checked ~ .about-tab-panels .about-panel-education,
+  #about-tab-skills:checked ~ .about-tab-panels .about-panel-skills,
+  #about-tab-research:checked ~ .about-tab-panels .about-panel-research,
+  #about-tab-publications:checked ~ .about-tab-panels .about-panel-publications,
+  #about-tab-certificates:checked ~ .about-tab-panels .about-panel-certificates {
+    display: block;
+  }
+
+  #about-show-all:checked ~ .about-tab-panels .about-tab-panel {
+    display: block;
+    margin-block-end: var(--space-10);
+  }
+
+  #about-show-all:checked ~ .about-tab-panels .about-panel-heading {
+    display: block;
+  }
+
+  .about-panel-filter {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin-block-end: var(--space-4);
+  }
+
+  .about-filter-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .about-filter-input {
+    width: 100%;
+    min-height: var(--space-11);
+    padding-inline: var(--space-3);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+    font: inherit;
+  }
+
+  .about-filter-input:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    border-color: var(--color-brand);
+  }
+
+  .about-filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .about-filter-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--space-9);
+    padding-inline: var(--space-3);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+    color: var(--color-ink-secondary);
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .about-filter-chip:hover,
+  .about-filter-chip:focus-visible {
+    border-color: var(--color-brand);
+    color: var(--color-brand);
+  }
+
+  .about-filter-chip.is-active {
+    color: var(--color-inverse);
+    border-color: var(--color-brand);
+    background-color: var(--color-brand);
+  }
+
+  .about-filter-empty {
+    margin: 0;
+    color: var(--color-ink-secondary);
+    font-size: var(--text-sm);
+  }
+
+  .about-filter-item[hidden] {
+    display: none !important;
+  }
+
+  .entries { display: flex; flex-direction: column; gap: var(--space-5); }
+
+  .entry {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-inline-start: 2px solid var(--color-brand);
+    border-radius: var(--radius-md);
+    padding: var(--space-6);
+  }
+
+  .entry-title { font-size: var(--text-lg); margin-block-end: var(--space-1); }
+
+  .entry-org,
+  .entry-link { font-weight: 600; color: var(--color-brand); }
+
+  .entry-link { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--color-border-strong); }
+  .entry-link:hover { text-decoration-color: var(--color-brand); }
+
+  .entry-meta { margin: 0 0 var(--space-3); color: var(--color-ink-secondary); font-size: var(--text-sm); }
+
+  .entry-bullets {
+    margin: 0;
+    padding-inline-start: var(--space-5);
+    color: var(--color-ink-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .entry-thesis, .entry-text { margin: 0; color: var(--color-ink-secondary); }
+
+  .skills {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: var(--space-4);
+  }
+
+  .skill {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-inline-start: 2px solid var(--color-brand);
+    border-radius: var(--radius-md);
+    padding: var(--space-5) var(--space-6);
+  }
+
+  .skill-name { font-size: 1.0625rem; margin-block-end: 0.375rem; }
+
+  .skill-meta {
+    margin: 0;
+    color: var(--color-ink-secondary);
+    font-size: 0.8125rem;
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+  }
+
+  .skill-category { color: var(--color-brand); font-weight: 600; }
+  .skill-separator { color: var(--color-ink-secondary); }
+
+  .plain-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-4); }
+  .plain-item { background-color: var(--color-surface); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-md); padding: var(--space-5) var(--space-6); }
+  .pub-title, .cert-name { margin: 0 0 var(--space-1); font-size: var(--text-lg); font-weight: 600; }
+  .pub-status, .cert-detail { margin: 0; color: var(--color-ink-secondary); font-size: var(--text-sm); }
+
+  .about-detail-link,
+  .about-section-index-link {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .about-detail-link:hover,
+  .about-detail-link:focus-visible,
+  .about-section-index-link:hover,
+  .about-section-index-link:focus-visible {
+    color: var(--color-brand);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .socials { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-block-end: var(--space-8); }
+  .social-link { display: inline-flex; align-items: center; min-height: var(--space-11); padding-inline: var(--space-4); color: var(--color-brand); text-decoration: none; font-weight: 600; border: 1px solid var(--color-border-strong); border-radius: var(--radius-md); }
+  .social-link:hover, .social-link:focus-visible { background-color: var(--color-brand-soft); border-color: var(--color-brand); }
+
+  .availability { background-color: var(--color-surface-muted); border-radius: var(--radius-lg); padding: var(--space-6) var(--space-8); margin-block-end: var(--space-8); }
+  .availability-text { margin: 0; color: var(--color-ink); font-weight: 600; max-width: 60ch; text-align: justify; text-justify: inter-word; }
+
+  .about-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-block-end: var(--space-8);
+  }
+
+  .about-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--space-11);
+    padding-inline: var(--space-5);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    color: var(--color-brand);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .about-link:hover,
+  .about-link:focus-visible {
+    background-color: var(--color-brand-soft);
+    border-color: var(--color-brand);
+  }
+
+  .contact-state { display: flex; align-items: baseline; gap: var(--space-4); flex-wrap: wrap; border-block-start: 1px solid var(--color-border-subtle); padding-block-start: var(--space-6); }
+  .contact-state-label { font-family: var(--font-mono); font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-brand); }
+  :global(html[dir="rtl"]) .contact-state-label { font-family: var(--font-persian); letter-spacing: 0.02em; }
+  .contact-state-text { margin: 0; color: var(--color-ink-secondary); font-size: var(--text-sm); }
+
+  @media (max-width: 40rem) {
+    .about-tab-toolbar { top: 3.25rem; }
+    .about-tab-label { flex: 0 0 auto; }
+  }
+</style>

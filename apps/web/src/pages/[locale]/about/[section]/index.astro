@@ -1,6 +1,15 @@
 ---
+/* WF-07G: gated About section index adopted onto UtilityTemplate. The
+   breadcrumbs slot stays FILLED: IA-CONTRACT S7 forbids breadcrumbs on the
+   About index, but these gated sub-pages may carry them (existing behavior
+   kept, incl. breadcrumb JSON-LD). The lead is SectionLead as="h1"; the
+   content slot keeps the item cards (detail links only when the child row
+   has a Latin slug + non-empty body/story via hasDetailContent) and the
+   next-step block. Build-time gating and the CMS profile loader unchanged. */
 import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import UtilityTemplate from "../../../../layouts/UtilityTemplate.astro";
 import Breadcrumbs from "../../../../components/Breadcrumbs.astro";
+import SectionLead from "../../../../components/content/SectionLead.astro";
 import TranslationUnavailable from "../../../../components/TranslationUnavailable.astro";
 import { content as allContent } from "../../../../data/content";
 import {
@@ -72,6 +81,10 @@ if (profileResult.kind === "not-found" || (profileResult.kind === "profile" && !
 }
 
 const sectionHref = `/${locale}/about/${sectionId}/`;
+const sectionIntro =
+  locale === "fa"
+    ? "این فهرست از پروفایل CMS در زمان build خوانده شده است."
+    : "This list is read from the CMS-managed profile at build time.";
 const breadcrumbs =
   section && profileResult.kind === "profile"
     ? [
@@ -106,38 +119,41 @@ const description = section
   title={title}
   description={description}
 >
-  {
-    profileResult.kind === "translation-unavailable" ? (
-      <TranslationUnavailable
-        kicker={locale === "fa" ? "ترجمه در دسترس نیست" : "Translation unavailable"}
-        title={content.about.heading}
-        message={
-          locale === "fa"
-            ? "این بخش هنوز به فارسی منتشر نشده است. می‌توانید به صفحهٔ درباره برگردید یا نسخهٔ انگلیسی را ببینید."
-            : "This section is not published in English yet. You can return to About or open the published Persian version."
-        }
-        parentHref={`/${locale}/about/`}
-        parentLabel={content.about.heading}
-        alternateHref={
-          profileResult.availableLocales.includes(alternateLocale)
-            ? `/${alternateLocale}/about/${sectionId}/`
-            : null
-        }
-        alternateLabel={alternateLocale === "fa" ? "فارسی" : "English"}
-      />
-    ) : section ? (
-      <section class="about-section-page">
-        <div class="about-section-shell">
-          <Breadcrumbs items={breadcrumbs} />
-          <header class="about-section-header">
-            <p class="about-section-kicker">{content.about.heading}</p>
-            <h1 class="about-section-title">{section.label}</h1>
-            <p class="about-section-intro">
-              {locale === "fa"
-                ? "این فهرست از پروفایل CMS در زمان build خوانده شده است."
-                : "This list is read from the CMS-managed profile at build time."}
-            </p>
-          </header>
+  <UtilityTemplate>
+    {
+      section && profileResult.kind === "profile" && (
+        <Breadcrumbs slot="breadcrumbs" items={breadcrumbs} />
+      )
+    }
+    <SectionLead
+      slot="lead"
+      as="h1"
+      eyebrow={section ? content.about.heading : undefined}
+      heading={section ? section.label : content.about.heading}
+      summary={section ? sectionIntro : undefined}
+    />
+    {
+      profileResult.kind === "translation-unavailable" ? (
+        <TranslationUnavailable
+          slot="content"
+          kicker={locale === "fa" ? "ترجمه در دسترس نیست" : "Translation unavailable"}
+          title={content.about.heading}
+          message={
+            locale === "fa"
+              ? "این بخش هنوز به فارسی منتشر نشده است. می‌توانید به صفحهٔ درباره برگردید یا نسخهٔ انگلیسی را ببینید."
+              : "This section is not published in English yet. You can return to About or open the published Persian version."
+          }
+          parentHref={`/${locale}/about/`}
+          parentLabel={content.about.heading}
+          alternateHref={
+            profileResult.availableLocales.includes(alternateLocale)
+              ? `/${alternateLocale}/about/${sectionId}/`
+              : null
+          }
+          alternateLabel={alternateLocale === "fa" ? "فارسی" : "English"}
+        />
+      ) : section ? (
+        <div class="about-section-body" slot="content">
           <div class="about-section-list">
             {
               section.items.map((item) => (
@@ -189,45 +205,12 @@ const description = section
             </div>
           </aside>
         </div>
-      </section>
-    ) : null
-  }
+      ) : null
+    }
+  </UtilityTemplate>
 </BaseLayout>
 
 <style>
-  .about-section-page {
-    padding-block: var(--space-section);
-    padding-inline: var(--space-gutter);
-  }
-
-  .about-section-shell {
-    max-width: var(--measure-page);
-    margin-inline: auto;
-  }
-
-  .about-section-header {
-    max-width: var(--measure-prose);
-    margin-block-end: var(--space-8);
-  }
-
-  .about-section-kicker {
-    margin: 0 0 var(--space-3);
-    color: var(--color-brand);
-    font-size: var(--text-sm);
-    font-weight: 600;
-  }
-
-  .about-section-title {
-    margin: 0 0 var(--space-4);
-    font-size: var(--text-display);
-  }
-
-  .about-section-intro {
-    margin: 0;
-    color: var(--color-ink-secondary);
-    max-width: var(--measure-prose);
-  }
-
   .about-section-list {
     display: grid;
     gap: var(--space-5);

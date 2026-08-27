@@ -1,14 +1,184 @@
 ---
+/* WF-07G: CV page adopted onto UtilityTemplate. Lead = SectionLead as="h1"
+   (downloads heading + intro); content = the approved CMS contact path plus
+   the CV/Resume download rows from resolveCvDownloadFiles (href + download
+   attribute preserved) and the honest fallback notice. No breadcrumbs: the
+   existing CV behavior. The legacy Downloads component import is retired
+   (adopt = the shared layer owns rendering; the file remains for the
+   WF-CLEAN sweep). */
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import Downloads from "../../components/Downloads.astro";
+import UtilityTemplate from "../../layouts/UtilityTemplate.astro";
+import SectionLead from "../../components/content/SectionLead.astro";
 import { content } from "../../data/content";
 import { resolveCvDownloadFiles } from "../../data/cvDownloads";
+import { getSiteContact } from "../../lib/cms/siteSettings";
 import { isCmsOriginBuild } from "../../lib/cms/client";
 
 const en = content.en;
 const files = await resolveCvDownloadFiles("en");
+const contact = await getSiteContact();
+const hasContact = contact !== null && (contact.location !== "" || contact.email !== "");
 ---
 
 <BaseLayout content={en} alternateHref="/fa/cv/" cmsBuildOrigin={isCmsOriginBuild() ? "cms" : "snapshot"}>
-  <Downloads content={en} files={files} />
+  <UtilityTemplate>
+    <SectionLead slot="lead" as="h1" heading={en.downloads.heading} summary={en.downloads.intro} />
+    <div class="cv-page" slot="content">
+      {
+        hasContact && contact && (
+          <ul class="cv-contact" aria-label={en.contact.heading}>
+            {contact.location !== "" && <li><span>{contact.location}</span></li>}
+            {contact.email !== "" && (
+              <li>
+                <a href={`mailto:${contact.email}`}>
+                  <bdi>{contact.email}</bdi>
+                </a>
+              </li>
+            )}
+            {contact.employer !== "" && (
+              <li>
+                <span>
+                  {contact.employerUrl !== "" ? (
+                    <a href={contact.employerUrl} rel="noopener noreferrer">
+                      {contact.employer}
+                    </a>
+                  ) : (
+                    contact.employer
+                  )}
+                </span>
+              </li>
+            )}
+            {contact.linkedin !== "" && (
+              <li>
+                <a href={contact.linkedin} rel="me noopener noreferrer">
+                  LinkedIn
+                </a>
+              </li>
+            )}
+            {contact.orcid !== "" && (
+              <li>
+                <a href={contact.orcid} rel="me noopener noreferrer">
+                  ORCID
+                </a>
+              </li>
+            )}
+          </ul>
+        )
+      }
+      <ul class="cv-files">
+        {
+          files.map((file) => (
+            <li class="cv-file">
+              <div class="cv-file-copy">
+                <p class="cv-file-title">{file.title}</p>
+                {file.note !== "" && <p class="cv-file-note">{file.note}</p>}
+                <p class="cv-file-meta">
+                  {file.formatLabel ?? "Markdown"} · {file.sizeKb} KB · {en.downloads.updatedLabel}{" "}
+                  {file.updatedAt ?? "2026-08-16"}
+                </p>
+              </div>
+              <a class="cv-file-link" href={file.href} download={file.downloadName}>
+                {en.downloads.downloadLabel}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="cv-fallback">{en.downloads.fallback}</p>
+    </div>
+  </UtilityTemplate>
 </BaseLayout>
+
+<style>
+  .cv-contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-5);
+    list-style: none;
+    margin: 0 0 var(--space-8);
+    padding: 0;
+    color: var(--color-ink-secondary);
+    font-size: 0.9375rem;
+  }
+
+  .cv-contact a {
+    color: var(--color-ink-secondary);
+    text-decoration: none;
+  }
+
+  .cv-contact a:hover,
+  .cv-contact a:focus-visible {
+    color: var(--color-brand);
+  }
+
+  .cv-files {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .cv-file {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+    padding: var(--space-6);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface);
+  }
+
+  .cv-file-copy {
+    min-width: 0;
+  }
+
+  .cv-file-title {
+    margin: 0;
+    font-weight: 700;
+    font-size: var(--text-lg);
+  }
+
+  .cv-file-note {
+    margin: var(--space-2) 0 0;
+    color: var(--color-ink-secondary);
+    max-width: 62ch;
+  }
+
+  .cv-file-meta {
+    margin: var(--space-2) 0 0;
+    font-size: var(--text-xs);
+    color: var(--color-ink-tertiary);
+  }
+
+  .cv-file-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--space-11);
+    padding-inline: var(--space-5);
+    border-radius: var(--radius-md);
+    background-color: var(--color-navy-950);
+    color: var(--color-inverse);
+    font-weight: 600;
+    text-decoration: none;
+    flex: none;
+  }
+
+  .cv-file-link:hover {
+    background-color: var(--color-brand);
+    color: var(--color-navy-950);
+  }
+
+  .cv-file-link:focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+
+  .cv-fallback {
+    margin: var(--space-6) 0 0;
+    font-size: var(--text-sm);
+    color: var(--color-ink-tertiary);
+  }
+</style>
