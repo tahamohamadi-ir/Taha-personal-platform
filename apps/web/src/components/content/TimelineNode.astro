@@ -1,0 +1,93 @@
+---
+/* content/TimelineNode - WF-04. One ordered-list item of a Timeline: type
+   chip, label heading, period, summary, and an optional detail LinkAction.
+   Unknown dates are absent - an empty/missing period renders no node, no
+   dash, no fallback copy. The li is rendered by this component and ordered
+   by the parent Timeline ol, so the list already reads as an ordered list
+   before any enhancement. Seams: detail is a single href+label pair; richer
+   detail rows need a Timeline proposal, not per-call-site markup. Theming
+   cascades from tokens. */
+import Chip from "../ui/Chip.astro";
+import LinkAction from "../ui/LinkAction.astro";
+
+interface Props {
+  type?: string;
+  label: string;
+  period?: string;
+  summary?: string;
+  detail?: { href: string; label: string };
+}
+const { type, label, period, summary, detail } = Astro.props;
+---
+<li class="content-timeline-node">
+  <div class="content-timeline-node__marker" aria-hidden="true"></div>
+  <div class="content-timeline-node__body">
+    {
+      type && (
+        <p class="content-timeline-node__type">
+          <Chip variant="neutral">{type}</Chip>
+        </p>
+      )
+    }
+    <h3 class="content-timeline-node__label">{label}</h3>
+    {period && <p class="content-timeline-node__period">{period}</p>}
+    {summary && <p class="content-timeline-node__summary">{summary}</p>}
+    {
+      detail && (
+        <p class="content-timeline-node__detail">
+          <LinkAction href={detail.href}>{detail.label}</LinkAction>
+        </p>
+      )
+    }
+  </div>
+</li>
+
+<style>
+  .content-timeline-node {
+    display: flex;
+    gap: var(--space-4);
+  }
+
+  .content-timeline-node__marker {
+    flex-shrink: 0;
+    width: var(--space-3);
+    height: var(--space-3);
+    margin-block-start: var(--space-2);
+    border: 1px solid var(--color-brand);
+    border-radius: var(--radius-pill);
+    background-color: var(--color-brand-soft);
+  }
+
+  .content-timeline-node__body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  .content-timeline-node__type {
+    margin: 0;
+  }
+
+  .content-timeline-node__label {
+    margin: 0;
+    color: var(--color-ink);
+    font-size: var(--text-lg);
+    font-weight: 600;
+  }
+
+  .content-timeline-node__period {
+    margin: 0;
+    color: var(--color-ink-tertiary);
+    font-size: var(--text-sm);
+  }
+
+  .content-timeline-node__summary {
+    margin: 0;
+    color: var(--color-ink-secondary);
+  }
+
+  .content-timeline-node__detail {
+    margin: 0;
+  }
+</style>

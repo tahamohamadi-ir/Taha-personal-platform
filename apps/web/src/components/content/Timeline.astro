@@ -1,0 +1,43 @@
+---
+/* content/Timeline - WF-04. Ordered-list wrapper: renders the <ol> that
+   TimelineNode items belong to, directly from the items prop, so the
+   timeline reads as an ordered list with zero JavaScript. Items without a
+   usable label are filtered; an empty set collapses the whole list (no
+   placeholder). Seams: items map 1:1 onto TimelineNode props - new node
+   fields extend TimelineNode Props and this item shape together. Theming
+   cascades from tokens. */
+import TimelineNode from "./TimelineNode.astro";
+
+interface TimelineItem {
+  type?: string;
+  label: string;
+  period?: string;
+  summary?: string;
+  detail?: { href: string; label: string };
+}
+interface Props {
+  items: TimelineItem[];
+}
+const { items } = Astro.props;
+const visible = items.filter((item) => item.label && item.label.trim().length > 0);
+---
+{
+  visible.length > 0 && (
+    <ol class="content-timeline">
+      {visible.map((item) => (
+        <TimelineNode {...item} />
+      ))}
+    </ol>
+  )
+}
+
+<style>
+  .content-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+</style>

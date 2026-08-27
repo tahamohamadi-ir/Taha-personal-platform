@@ -1,0 +1,112 @@
+---
+/* content/MediaTile - WF-04. Reserved media box: the frame reserves its
+   space with CSS aspect-ratio computed from the width/height props (and
+   the img carries intrinsic width/height), so load and failure never
+   shift layout. caption + record link are core anatomy and render
+   unconditionally - the failed variant (or a missing src) swaps the image
+   for a content-free aria-hidden placeholder shape inside the same frame
+   and keeps the caption + record link intact. Seams: variants grid|lead|
+   failed; a missing media kind (video, gallery) is a new proposal, not a
+   caller hack. Theming cascades from tokens. */
+import LinkAction from "../ui/LinkAction.astro";
+
+interface Props {
+  src?: string;
+  alt?: string;
+  width: number;
+  height: number;
+  caption: string;
+  record: { href: string; label: string };
+  variant?: "grid" | "lead" | "failed";
+}
+const { src, alt, width, height, caption, record, variant = "grid" } = Astro.props;
+const failed = variant === "failed" || !src;
+const frameStyle = `aspect-ratio: ${width} / ${height};`;
+---
+<figure class:list={["content-media-tile", `content-media-tile--${variant}`]}>
+  <div class="content-media-tile__frame" style={frameStyle}>
+    {
+      failed ? (
+        <div class="content-media-tile__placeholder" aria-hidden="true"></div>
+      ) : (
+        <img
+          class="content-media-tile__media"
+          src={src}
+          alt={alt ?? ""}
+          width={width}
+          height={height}
+          loading="lazy"
+          decoding="async"
+        />
+      )
+    }
+  </div>
+  <figcaption class="content-media-tile__caption">
+    <span class="content-media-tile__caption-text">{caption}</span>
+    <LinkAction href={record.href}>{record.label}</LinkAction>
+  </figcaption>
+</figure>
+
+<style>
+  .content-media-tile {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: 0;
+    max-width: 100%;
+  }
+
+  .content-media-tile--lead {
+    gap: var(--space-4);
+  }
+
+  .content-media-tile__frame {
+    overflow: hidden;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface-muted);
+  }
+
+  .content-media-tile__media {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .content-media-tile__placeholder {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border: 1px dashed var(--color-border-strong);
+    border-radius: var(--radius-md);
+  }
+
+  .content-media-tile__placeholder::before,
+  .content-media-tile__placeholder::after {
+    content: "";
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline: var(--space-6);
+    border-top: 1px solid var(--color-border-subtle);
+  }
+
+  .content-media-tile__placeholder::before {
+    transform: rotate(45deg);
+  }
+
+  .content-media-tile__placeholder::after {
+    transform: rotate(-45deg);
+  }
+
+  .content-media-tile__caption {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: var(--space-4);
+    row-gap: var(--space-1);
+    margin: 0;
+    color: var(--color-ink-tertiary);
+    font-size: var(--text-sm);
+  }
+</style>

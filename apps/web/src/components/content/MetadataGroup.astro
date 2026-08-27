@@ -1,0 +1,60 @@
+---
+/* content/MetadataGroup - WF-04. Definition-list semantics for record
+   metadata. Empty values are omitted; the whole dl collapses when nothing
+   remains. Mixed-direction values (DOI, URL, file names) are flagged with
+   ltr: true and render inside <bdi> so Latin fragments stay isolated in
+   Persian text. Items are caller-approved facts via typed props - the
+   component never invents or stubs a value. Seams: extend the item shape
+   here, never per-call-site. Theming cascades from tokens. */
+interface MetadataItem {
+  label: string;
+  value: string;
+  ltr?: boolean;
+}
+interface Props {
+  items: MetadataItem[];
+}
+const { items } = Astro.props;
+const entries = items.filter((item) => item.value && item.value.trim().length > 0);
+---
+{
+  entries.length > 0 && (
+    <dl class="content-metadata">
+      {entries.map((item) => (
+        <div class="content-metadata__row">
+          <dt class="content-metadata__label">{item.label}</dt>
+          <dd class="content-metadata__value">
+            {item.ltr ? <bdi>{item.value}</bdi> : item.value}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  )
+}
+
+<style>
+  .content-metadata {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+  }
+
+  .content-metadata__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: var(--space-3);
+  }
+
+  .content-metadata__label {
+    color: var(--color-ink-tertiary);
+    font-size: var(--text-sm);
+  }
+
+  .content-metadata__value {
+    margin: 0;
+    color: var(--color-ink);
+    font-size: var(--text-sm);
+  }
+</style>

@@ -1,0 +1,116 @@
+---
+/* content/PublicationRow - WF-04. Citation-first row for publications:
+   type/status badges, title, authors, then venue/date/identifier. Only
+   verified facts render - unverified venue, date, or identifier props are
+   omitted entirely (never em-dash or "unknown" stubs). The identifier is
+   bdi-isolated because DOI/URL strings are Latin fragments inside either
+   locale. The files slot is caller-owned; the citation block keeps its
+   space and actions wrap below instead of compressing the citation text.
+   Seams: new source fields extend Props here; citation layout must keep
+   the wrap + non-shrinking-files contract. Theming cascades from tokens. */
+import Badge from "../ui/Badge.astro";
+
+interface Props {
+  type?: string;
+  status?: string;
+  statusTone?: "neutral" | "brand" | "signature" | "research" | "context";
+  title: string;
+  authors: string[];
+  venue?: string;
+  date?: string;
+  identifier?: string;
+}
+const { type, status, statusTone = "neutral", title, authors, venue, date, identifier } = Astro.props;
+const hasFiles = Astro.slots.has("files");
+const visibleAuthors = authors.filter((author) => author && author.trim().length > 0);
+---
+<article class="content-publication">
+  <div class="content-publication__citation">
+    {
+      (type || status) && (
+        <p class="content-publication__flags">
+          {type && <Badge variant="type">{type}</Badge>}
+          {status && (
+            <Badge variant="status" tone={statusTone}>
+              {status}
+            </Badge>
+          )}
+        </p>
+      )
+    }
+    <h3 class="content-publication__title">{title}</h3>
+    <p class="content-publication__authors">{visibleAuthors.join(", ")}</p>
+    {
+      (venue || date || identifier) && (
+        <p class="content-publication__source">
+          {venue && <span class="content-publication__venue">{venue}</span>}
+          {date && <span class="content-publication__date">{date}</span>}
+          {identifier && <bdi class="content-publication__identifier">{identifier}</bdi>}
+        </p>
+      )
+    }
+  </div>
+  {
+    hasFiles && (
+      <div class="content-publication__files">
+        <slot name="files" />
+      </div>
+    )
+  }
+</article>
+
+<style>
+  .content-publication {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4) var(--space-6);
+    padding-block: var(--space-5);
+    border-block-end: 1px solid var(--color-border-subtle);
+  }
+
+  .content-publication__citation {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+  }
+
+  .content-publication__flags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+  }
+
+  .content-publication__title {
+    margin: 0;
+    color: var(--color-ink);
+    font-size: var(--text-lg);
+    font-weight: 600;
+  }
+
+  .content-publication__authors {
+    margin: 0;
+    color: var(--color-ink-secondary);
+    font-size: var(--text-sm);
+  }
+
+  .content-publication__source {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: var(--space-3);
+    margin: 0;
+    color: var(--color-ink-tertiary);
+    font-size: var(--text-sm);
+  }
+
+  .content-publication__identifier {
+    font-size: var(--text-sm);
+  }
+
+  .content-publication__files {
+    flex-shrink: 0;
+  }
+</style>

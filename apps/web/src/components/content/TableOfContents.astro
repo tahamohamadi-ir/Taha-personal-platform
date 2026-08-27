@@ -1,0 +1,101 @@
+---
+/* content/TableOfContents - WF-04. Static table of contents: a labelled
+   nav of fragment links built from the items prop, nested by level (1 top,
+   2 nested). The list is plain server-rendered markup and survives any
+   scroll-observer failure - the activeId prop only adds the current
+   marker, it is never required for reading. Level-2 items appearing before
+   any level-1 item are promoted to top level so no link is dropped. The
+   nav label is a prop (caller-owned locale copy), never hardcoded.
+   Seams: deeper levels are a new proposal, not a caller-side nested hack.
+   Theming cascades from tokens. */
+interface TocItem {
+  id: string;
+  label: string;
+  level: 1 | 2;
+}
+interface Props {
+  label: string;
+  items: TocItem[];
+  activeId?: string;
+}
+const { label, items, activeId } = Astro.props;
+const tree: Array<TocItem & { children: TocItem[] }> = [];
+for (const item of items) {
+  const parent = tree[tree.length - 1];
+  if (item.level === 1 || !parent) {
+    tree.push({ ...item, children: [] });
+  } else {
+    parent.children.push(item);
+  }
+}
+---
+<nav class="content-toc" aria-label={label}>
+  <ol class="content-toc__list">
+    {tree.map((entry) => (
+      <li class="content-toc__item">
+        <a
+          class="content-toc__link"
+          href={`#${entry.id}`}
+          aria-current={activeId === entry.id ? "true" : undefined}
+        >
+          {entry.label}
+        </a>
+        {entry.children.length > 0 && (
+          <ol class="content-toc__list content-toc__list--nested">
+            {entry.children.map((child) => (
+              <li class="content-toc__item">
+                <a
+                  class="content-toc__link"
+                  href={`#${child.id}`}
+                  aria-current={activeId === child.id ? "true" : undefined}
+                >
+                  {child.label}
+                </a>
+              </li>
+            ))}
+          </ol>
+        )}
+      </li>
+    ))}
+  </ol>
+</nav>
+
+<style>
+  .content-toc {
+    padding: var(--space-4);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface-muted);
+  }
+
+  .content-toc__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .content-toc__list--nested {
+    margin-block-start: var(--space-2);
+    padding-inline-start: var(--space-4);
+  }
+
+  .content-toc__link {
+    color: var(--color-ink-secondary);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  .content-toc__link:hover,
+  .content-toc__link:focus-visible {
+    color: var(--color-brand);
+    text-decoration: underline;
+  }
+
+  .content-toc__link[aria-current="true"] {
+    color: var(--color-brand);
+    font-weight: 600;
+  }
+</style>

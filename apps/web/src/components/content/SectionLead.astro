@@ -1,0 +1,90 @@
+---
+/* content/SectionLead - WF-04. Section opener: eyebrow, heading, summary,
+   primary + optional secondary CTA slots, optional media slot. One-H1 rule
+   is a prop contract: the heading renders as h1 ONLY when the caller passes
+   as="h1" (default h2), so a page can never get two h1s by composing leads.
+   Every string arrives via props; absent optional props render nothing.
+   Media failure preserves meaning because media is caller-owned markup.
+   Seams: as="h1"|"h2"; extension below the eyebrow/heading/summary seams
+   is forbidden - compose slots instead. Theming cascades from tokens. */
+interface Props {
+  eyebrow?: string;
+  heading: string;
+  as?: "h1" | "h2";
+  summary?: string;
+}
+const { eyebrow, heading, as = "h2", summary } = Astro.props;
+const HeadingTag = as;
+const hasCta = Astro.slots.has("cta");
+const hasSecondary = Astro.slots.has("secondary");
+const hasMedia = Astro.slots.has("media");
+---
+<header class="content-section-lead">
+  {eyebrow && <p class="content-section-lead__eyebrow">{eyebrow}</p>}
+  <HeadingTag class="content-section-lead__heading">{heading}</HeadingTag>
+  {summary && <p class="content-section-lead__summary">{summary}</p>}
+  {
+    (hasCta || hasSecondary) && (
+      <div class="content-section-lead__actions">
+        {hasCta && <slot name="cta" />}
+        {hasSecondary && <slot name="secondary" />}
+      </div>
+    )
+  }
+  {
+    hasMedia && (
+      <div class="content-section-lead__media">
+        <slot name="media" />
+      </div>
+    )
+  }
+</header>
+
+<style>
+  .content-section-lead {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+    max-width: var(--measure-prose);
+  }
+
+  .content-section-lead__eyebrow {
+    margin: 0;
+    color: var(--color-ink-tertiary);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  [dir="rtl"] .content-section-lead__eyebrow {
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .content-section-lead__heading {
+    margin: 0;
+    color: var(--color-ink);
+    font-size: var(--text-display);
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .content-section-lead__summary {
+    margin: 0;
+    color: var(--color-ink-secondary);
+    font-size: var(--text-lg);
+  }
+
+  .content-section-lead__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .content-section-lead__media {
+    width: 100%;
+  }
+</style>

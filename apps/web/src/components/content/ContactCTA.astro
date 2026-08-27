@@ -1,0 +1,62 @@
+---
+/* content/ContactCTA - WF-04. Closing collaboration block: statement plus
+   a primary action and an optional secondary, both composed from ui/Button
+   (so variants, 44px targets, hover/focus parity stay owned by the
+   primitive). One primary CTA per viewport is a caller rule. No ambient
+   pulse, no motion - the block is static. Seams: a new action shape is a
+   ContactCTA variant proposal; statement and labels are caller-owned
+   locale strings via props. Theming cascades from tokens. */
+import Button from "../ui/Button.astro";
+
+interface CtaAction {
+  label: string;
+  href?: string;
+}
+interface Props {
+  statement: string;
+  primary: CtaAction;
+  secondary?: CtaAction;
+}
+const { statement, primary, secondary } = Astro.props;
+---
+<section class="content-contact-cta">
+  <p class="content-contact-cta__statement">{statement}</p>
+  <div class="content-contact-cta__actions">
+    <Button href={primary.href}>{primary.label}</Button>
+    {
+      secondary && (
+        <Button variant="secondary" href={secondary.href}>
+          {secondary.label}
+        </Button>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .content-contact-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-5);
+    padding: var(--space-8);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .content-contact-cta__statement {
+    margin: 0;
+    max-width: var(--measure-prose);
+    color: var(--color-ink);
+    font-size: var(--text-xl);
+  }
+
+  .content-contact-cta__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+  }
+</style>

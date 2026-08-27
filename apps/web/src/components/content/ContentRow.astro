@@ -1,0 +1,137 @@
+---
+/* content/ContentRow - WF-04. List row for any record family: type badge,
+   title (linked when href is set), excerpt, metadata (via MetadataGroup),
+   taxonomy chips for tags, status badge, and a caller-owned action slot.
+   Optional data collapses without placeholders - absent excerpt, metadata,
+   tags, or status simply render no nodes. Meaning comes from badge label
+   text, never colour alone. Seams: statusTone maps to Badge semantic
+   tones; new row shapes extend props here, not per template. Theming
+   cascades from tokens. */
+import Badge from "../ui/Badge.astro";
+import Chip from "../ui/Chip.astro";
+import MetadataGroup from "./MetadataGroup.astro";
+
+interface MetadataItem {
+  label: string;
+  value: string;
+  ltr?: boolean;
+}
+interface Props {
+  type?: string;
+  title: string;
+  href?: string;
+  excerpt?: string;
+  metadata?: MetadataItem[];
+  tags?: string[];
+  status?: string;
+  statusTone?: "neutral" | "brand" | "signature" | "research" | "context";
+}
+const { type, title, href, excerpt, metadata, tags, status, statusTone = "neutral" } = Astro.props;
+const hasAction = Astro.slots.has("action");
+const visibleTags = (tags ?? []).filter((tag) => tag && tag.trim().length > 0);
+---
+<article class="content-row">
+  <div class="content-row__body">
+    {
+      (type || status) && (
+        <p class="content-row__meta">
+          {type && <Badge variant="type">{type}</Badge>}
+          {status && (
+            <Badge variant="status" tone={statusTone}>
+              {status}
+            </Badge>
+          )}
+        </p>
+      )
+    }
+    <h3 class="content-row__title">
+      {href ? <a href={href}>{title}</a> : title}
+    </h3>
+    {excerpt && <p class="content-row__excerpt">{excerpt}</p>}
+    {metadata && metadata.length > 0 && <MetadataGroup items={metadata} />}
+    {
+      visibleTags.length > 0 && (
+        <ul class="content-row__tags" role="list">
+          {visibleTags.map((tag) => (
+            <li>
+              <Chip variant="taxonomy">{tag}</Chip>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </div>
+  {
+    hasAction && (
+      <div class="content-row__action">
+        <slot name="action" />
+      </div>
+    )
+  }
+</article>
+
+<style>
+  .content-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4) var(--space-6);
+    padding-block: var(--space-5);
+    border-block-end: 1px solid var(--color-border-subtle);
+  }
+
+  .content-row__body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+    flex: 1 1 auto;
+    min-inline-size: 0;
+  }
+
+  .content-row__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+  }
+
+  .content-row__title {
+    margin: 0;
+    color: var(--color-ink);
+    font-size: var(--text-lg);
+    font-weight: 600;
+  }
+
+  .content-row__title a {
+    color: var(--color-ink);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  .content-row__title a:hover,
+  .content-row__title a:focus-visible {
+    color: var(--color-brand);
+    text-decoration: underline;
+  }
+
+  .content-row__excerpt {
+    margin: 0;
+    color: var(--color-ink-secondary);
+  }
+
+  .content-row__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .content-row__action {
+    flex-shrink: 0;
+  }
+</style>
