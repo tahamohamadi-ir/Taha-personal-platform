@@ -286,4 +286,9 @@ admin_api.add_router("/timeline", timeline_router)
 from apps.api.admin_media_ext import register_media_ext  # noqa: E402
 
 register_media_ext(admin_api)
+
+# AB-05/AB-06: graph authoring router + pure validator service.
+from apps.api.admin_graph import graph_router  # noqa: E402
+
+admin_api.add_router("/graph", graph_router)
 # [ADMIN-API] Track AB end
