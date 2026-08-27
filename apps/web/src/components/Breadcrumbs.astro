@@ -6,12 +6,15 @@ interface Crumb {
 
 interface Props {
   items: Crumb[];
+  /** Localized nav landmark name; callers pass it per locale (IA-CONTRACT
+      S7). Default keeps the current landmark for pages not yet migrated. */
+  label?: string;
 }
 
-const { items } = Astro.props;
+const { items, label = "Breadcrumb" } = Astro.props;
 ---
 
-<nav class="breadcrumbs" aria-label="Breadcrumb">
+<nav class="breadcrumbs" aria-label={label}>
   <ol class="breadcrumbs-list">
     {
       items.map((item, index) => (

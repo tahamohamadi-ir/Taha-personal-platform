@@ -79,6 +79,37 @@ const effectiveOrigin = cmsBuildOrigin ?? (isCms ? "cms" : "snapshot");
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!--
+      WF-03 theme activation (default "system", owner decision 2026-08-26).
+      Inline + pre-paint: resolves the stored light|dark|system mode (fallback
+      system) onto data-theme on <html> before first paint so no theme flash
+      is possible. System mode keeps tracking OS changes. No-JS fallback is
+      the un-themed Light table. The toggle control lives in ThemeToggle.astro.
+    -->
+    <script is:inline>
+      (function () {
+        var mode = "system";
+        try {
+          var stored = localStorage.getItem("theme");
+          if (stored === "light" || stored === "dark" || stored === "system") mode = stored;
+        } catch (e) {}
+        var media = window.matchMedia("(prefers-color-scheme: dark)");
+        var apply = function () {
+          var resolved =
+            mode === "system" ? (media.matches ? "dark" : "light") : mode;
+          document.documentElement.dataset.theme = resolved;
+        };
+        apply();
+        var onMediaChange = function () {
+          if (mode === "system") apply();
+        };
+        if (typeof media.addEventListener === "function") {
+          media.addEventListener("change", onMediaChange);
+        } else if (typeof media.addListener === "function") {
+          media.addListener(onMediaChange);
+        }
+      })();
+    </script>
     <meta name="theme-color" content="#f7f8f5" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <title>{effectiveTitle}</title>

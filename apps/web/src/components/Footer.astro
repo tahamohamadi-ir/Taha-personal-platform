@@ -33,6 +33,25 @@ const cmsTagline = await getSiteTagline();
 const isCms = isCmsOriginBuild();
 const displayName = cmsBrand ?? (isCms ? "" : content.name);
 const displayTagline = cmsTagline ?? (isCms ? "" : content.footer.tagline);
+/* Explore = the full live sitemap (IA-CONTRACT S4): locale home, section
+   roots, P8 catalogs, creative + teaching, CV, contact, search. Every href
+   below has a real page for both locales; nothing inactive is listed. */
+const exploreItems = [
+  { href: `/${content.lang}/`, label: content.footer.homeLabel },
+  { href: `/${content.lang}/about/`, label: content.about.heading },
+  { href: `/${content.lang}/research/`, label: content.research.heading },
+  { href: `/${content.lang}/projects/`, label: content.projects.heading },
+  { href: `/${content.lang}/writing/`, label: content.blog.heading },
+  { href: `/${content.lang}/publications/`, label: content.catalog.publicationsHeading },
+  { href: `/${content.lang}/books/`, label: content.catalog.booksHeading },
+  { href: `/${content.lang}/talks/`, label: content.catalog.talksHeading },
+  { href: `/${content.lang}/downloads/`, label: content.catalog.downloadsHeading },
+  { href: `/${content.lang}/creative/`, label: content.creative.heading },
+  { href: `/${content.lang}/teaching/`, label: content.teaching.heading },
+  { href: `/${content.lang}/cv/`, label: content.downloads.heading },
+  { href: `/${content.lang}/contact/`, label: content.contact.heading },
+  { href: `/${content.lang}/search/`, label: content.search.navLabel },
+];
 ---
 
 <footer class="site-footer">
@@ -51,14 +70,11 @@ const displayTagline = cmsTagline ?? (isCms ? "" : content.footer.tagline);
     </div>
   </div>
   <nav class="footer-explore" aria-label={content.footer.exploreLabel}>
-    <a href={`/${content.lang}/`}>{content.footer.homeLabel}</a>
-    <a href={`/${content.lang}/about/`}>{content.about.heading}</a>
-    <a href={`/${content.lang}/research/`}>{content.research.heading}</a>
-    <a href={`/${content.lang}/projects/`}>{content.projects.heading}</a>
-    <a href={`/${content.lang}/writing/`}>{content.blog.heading}</a>
-    <a href={`/${content.lang}/cv/`}>{content.downloads.heading}</a>
-    <a href={`/${content.lang}/contact/`}>{content.contact.heading}</a>
-    <a href={`/${content.lang}/search/`}>{content.search.navLabel}</a>
+    {
+      exploreItems.map((item) => (
+        <a href={item.href}>{item.label}</a>
+      ))
+    }
   </nav>
   <div class="footer-meta">
     <a
@@ -129,10 +145,10 @@ const displayTagline = cmsTagline ?? (isCms ? "" : content.footer.tagline);
     gap: 1.5rem;
     padding-block: 2.5rem;
     padding-inline: clamp(1rem, 5vw, 2.5rem);
-    max-width: 1280px;
+    max-width: var(--measure-page);
     margin-inline: auto;
     width: 100%;
-    background-color: var(--canvas-deep, #0b1630);
+    background-color: var(--canvas-deep);
     border-block-start: 1px solid var(--glass-border-dark);
   }
 
@@ -158,13 +174,13 @@ const displayTagline = cmsTagline ?? (isCms ? "" : content.footer.tagline);
   }
 
   .footer-name {
-    color: var(--ink-hi, #f2f6fa);
+    color: var(--ink-hi);
     font-weight: 600;
     overflow-wrap: anywhere;
   }
 
   .footer-tagline {
-    color: var(--ink-mid, #a8b8c8);
+    color: var(--ink-mid);
     font-size: 0.875rem;
     overflow-wrap: anywhere;
   }
@@ -176,7 +192,7 @@ const displayTagline = cmsTagline ?? (isCms ? "" : content.footer.tagline);
   }
 
   .footer-explore a {
-    color: var(--ink-mid, #a8b8c8);
+    color: var(--ink-mid);
     text-decoration: none;
     font-weight: 600;
     min-height: 2.75rem;
@@ -186,7 +202,7 @@ const displayTagline = cmsTagline ?? (isCms ? "" : content.footer.tagline);
 
   .footer-explore a:hover,
   .footer-explore a:focus-visible {
-    color: var(--brand-text, #3dd6c5);
+    color: var(--brand-text);
   }
 
   .footer-meta {
@@ -201,10 +217,10 @@ const displayTagline = cmsTagline ?? (isCms ? "" : content.footer.tagline);
     align-items: center;
     min-height: 2.75rem;
     padding-inline: 0.875rem;
-    color: var(--brand-text, #3dd6c5);
+    color: var(--brand-text);
     text-decoration: none;
     font-weight: 600;
-    border: 1px solid var(--glass-edge, rgba(255,255,255,.16));
+    border: 1px solid var(--glass-edge);
     border-radius: var(--radius-md);
     transition: border-color 140ms cubic-bezier(0.2, 0.8, 0.2, 1),
       background-color 140ms cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -212,26 +228,21 @@ const displayTagline = cmsTagline ?? (isCms ? "" : content.footer.tagline);
 
   .footer-switch:hover,
   .footer-switch:focus-visible {
-    border-color: var(--brand-text, #3dd6c5);
-    background-color: var(--glass-fill, rgba(255,255,255,.08));
+    border-color: var(--brand-text);
+    background-color: var(--glass-fill);
   }
 
   .contact-state {
-    color: var(--ink-mid, #a8b8c8);
+    color: var(--ink-mid);
     font-size: 0.875rem;
   }
 
   .site-contact {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2, 0.5rem);
+    gap: var(--space-2);
     min-width: min(100%, 22rem);
     flex: 1 1 16rem;
-  }
-
-  .contact-heading {
-    font-weight: 600;
-    color: var(--ink-hi, #f2f6fa);
   }
 
   .contact-links {
@@ -245,7 +256,7 @@ const displayTagline = cmsTagline ?? (isCms ? "" : content.footer.tagline);
   }
 
   .contact-links a {
-    color: var(--ink-mid, #a8b8c8);
+    color: var(--ink-mid);
     text-decoration: none;
     min-height: 2.75rem;
     display: inline-flex;
@@ -254,65 +265,11 @@ const displayTagline = cmsTagline ?? (isCms ? "" : content.footer.tagline);
 
   .contact-links a:hover,
   .contact-links a:focus-visible {
-    color: var(--brand-text, #3dd6c5);
-  }
-
-  .contact-form {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2, 0.5rem);
-    max-width: 26rem;
-  }
-
-  .contact-form-intro {
-    margin: 0;
-    color: var(--ink-mid, #a8b8c8);
-    font-size: 0.8125rem;
-  }
-
-  .contact-form input:not(.contact-honeypot),
-  .contact-form textarea {
-    font: inherit;
-    color: var(--ink-hi, #f2f6fa);
-    background: var(--surface-read, #101f3c);
-    border: 1px solid var(--glass-edge, rgba(255,255,255,.16));
-    border-radius: var(--radius-sm, 8px);
-    padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
-  }
-
-  .contact-form textarea {
-    resize: vertical;
-  }
-
-  .contact-form button {
-    align-self: flex-start;
-    min-height: 2.75rem;
-    padding-inline: var(--space-4, 1rem);
-    font: inherit;
-    font-weight: 600;
-    color: var(--color-inverse);
-    background: var(--brand-text, #3dd6c5);
-    border: 1px solid var(--brand-text, #3dd6c5);
-    border-radius: var(--radius-sm, 8px);
-    cursor: pointer;
-    transition: background-color var(--duration-fast, 140ms) var(--ease-out, ease-out);
-  }
-
-  .contact-form button:hover,
-  .contact-form button:focus-visible {
-    background: var(--color-brand-emphasis-hover);
-  }
-
-  .contact-honeypot {
-    position: absolute;
-    inset-inline-start: -9999px;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
+    color: var(--brand-text);
   }
 
   .footer-identity {
-    color: var(--ink-mid, #a8b8c8);
+    color: var(--ink-mid);
     font-size: 0.8125rem;
   }
 </style>

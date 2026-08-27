@@ -1,0 +1,88 @@
+---
+/* navigation/ThemeToggle - WF-03 shell control (progressive enhancement).
+   BaseLayout's pre-paint inline script already resolves light|dark|system
+   onto data-theme before first paint; this button cycles the stored mode
+   and re-applies it. Props-in/markup-out: the accessible name arrives via
+   the `label` prop from the caller's locale dictionary - no copy is
+   authored here. Renders through ui/IconButton (single button
+   implementation, 44px target, focus parity inherited); the wrapper span
+   is only the script's stable handle. Reduced motion: colour-only theme
+   swap, no animation is authored here. No-JS: control is inert and the
+   page keeps the un-themed Light default. */
+import IconButton from "../ui/IconButton.astro";
+
+interface Props {
+  label: string;
+}
+
+const { label } = Astro.props;
+---
+
+<span class="theme-toggle" data-theme-toggle>
+  <IconButton label={label} variant="quiet" type="button">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 3a9 9 0 0 1 0 18Z" fill="currentColor" stroke="none" />
+    </svg>
+  </IconButton>
+</span>
+
+<style>
+  .theme-toggle {
+    display: inline-flex;
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    var MODES = ["light", "dark", "system"];
+    var apply = function (mode) {
+      var resolved =
+        mode === "system"
+          ? window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light"
+          : mode;
+      document.documentElement.dataset.theme = resolved;
+    };
+    var storedMode = function () {
+      try {
+        var stored = localStorage.getItem("theme");
+        if (stored === "light" || stored === "dark" || stored === "system") return stored;
+      } catch (e) {}
+      return "system";
+    };
+    var sync = function (box) {
+      box.setAttribute("data-mode", storedMode());
+    };
+    var init = function () {
+      var boxes = document.querySelectorAll("[data-theme-toggle]");
+      for (var i = 0; i < boxes.length; i++) sync(boxes[i]);
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", init);
+    } else {
+      init();
+    }
+    document.addEventListener("click", function (event) {
+      var box =
+        event.target instanceof Element
+          ? event.target.closest("[data-theme-toggle]")
+          : null;
+      if (!box) return;
+      var next = MODES[(MODES.indexOf(storedMode()) + 1) % MODES.length];
+      try {
+        localStorage.setItem("theme", next);
+      } catch (e) {}
+      apply(next);
+      sync(box);
+    });
+  })();
+</script>

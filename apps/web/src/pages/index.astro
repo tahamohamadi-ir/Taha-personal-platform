@@ -1,9 +1,16 @@
 ﻿---
+/* Language Gateway (WF-03) - IA-CONTRACT S1: "/" is NOT a homepage and never
+   redirects; it offers both locale roots and nothing else. Standalone document
+   (no BaseLayout): the gateway is always-night, so <html> pins
+   data-theme="dark" and the ui/Button primitive renders its Dark palette over
+   the night canvas. Copy comes only from the content.ts gateway/identity
+   strings. Glass panel consumes the shared .glass-surface--dark utility
+   (DESIGN-CONTRACT S2b - gateway is one of the two allowed glass surfaces). */
 import "../styles/global.css";
 import { site } from "../data/site";
 import { content } from "../data/content";
 import { websiteJsonLd, validateStructuredData } from "../data/structured";
-import logoGateway from "../branding/logo-gateway.png";
+import Button from "../components/ui/Button.astro";
 
 const structured = websiteJsonLd();
 validateStructuredData(structured);
@@ -13,26 +20,33 @@ const fa = content.fa;
 const title = en.gateway.title;
 const description = `${title} — ${en.gateway.prompt} / ${fa.gateway.prompt}`;
 const canonical = new URL("/", site.url).href;
+
+/* Intrinsic size of public/logo-gateway.png (256x233); attributes reserve the
+   box so the panel cannot shift while the image loads. */
+const markWidth = 256;
+const markHeight = 233;
 ---
 
 <!doctype html>
-<html lang="en" dir="ltr">
+<html lang="en" dir="ltr" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Mirrors the --canvas-night token; <meta> cannot reference a CSS var. -->
     <meta name="theme-color" content="#071225" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="robots" content="index,follow" />
     <link rel="canonical" href={canonical} />
-    <meta property="og:locale" content="en_US" />
-    <meta property="og:url" content={canonical} />
     <link rel="alternate" hreflang="x-default" href={canonical} />
     <link rel="alternate" hreflang="en" href={new URL("/en/", site.url).href} />
     <link rel="alternate" hreflang="fa" href={new URL("/fa/", site.url).href} />
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:url" content={canonical} />
     <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
     <script
       type="application/ld+json"
       is:inline
@@ -45,15 +59,15 @@ const canonical = new URL("/", site.url).href;
       <div class="gateway-panel glass-surface glass-surface--dark">
         <img
           class="gateway-mark"
-          src={logoGateway.src}
+          src="/logo-gateway.png"
           alt=""
-          width={logoGateway.width}
-          height={logoGateway.height}
+          width={markWidth}
+          height={markHeight}
           loading="eager"
         />
         <h1 class="gateway-name">
-          <span class="gateway-name-en" lang="en" dir="ltr">{en.name}</span>
-          <span class="gateway-name-fa" lang="fa" dir="rtl">{fa.name}</span>
+          <span class="gateway-name-line" lang="en" dir="ltr">{en.name}</span>
+          <span class="gateway-name-line" lang="fa" dir="rtl">{fa.name}</span>
         </h1>
         <p class="gateway-kicker">
           <span lang="en" dir="ltr">{en.hero.eyebrow}</span>
@@ -62,25 +76,19 @@ const canonical = new URL("/", site.url).href;
         </p>
         <p class="gateway-prompt">
           <span lang="en" dir="ltr">{en.gateway.prompt}</span>
-          <span class="gateway-prompt-divider" aria-hidden="true">/</span>
+          <span aria-hidden="true">/</span>
           <span lang="fa" dir="rtl">{fa.gateway.prompt}</span>
         </p>
         <nav
           class="gateway-actions"
           aria-label={`${en.gateway.prompt} / ${fa.gateway.prompt}`}
         >
-          <a class="gateway-action gateway-action--en" href="/en/" hreflang="en" lang="en" dir="ltr">
+          <Button variant="primary" href="/en/">
             {en.gateway.englishLabel}
-          </a>
-          <a
-            class="gateway-action gateway-action--fa"
-            href="/fa/"
-            hreflang="fa"
-            lang="fa"
-            dir="rtl"
-          >
-            {fa.gateway.persianLabel}
-          </a>
+          </Button>
+          <Button variant="secondary" href="/fa/">
+            <span lang="fa" dir="rtl">{fa.gateway.persianLabel}</span>
+          </Button>
         </nav>
       </div>
     </main>
@@ -96,7 +104,6 @@ const canonical = new URL("/", site.url).href;
     background-color: var(--canvas-night);
     color: var(--ink-hi);
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
     place-items: center;
   }
 
@@ -106,8 +113,6 @@ const canonical = new URL("/", site.url).href;
     min-height: 100svh;
     display: grid;
     place-items: center;
-    position: relative;
-    z-index: 1;
     padding: clamp(1.25rem, 4vw, 2rem);
     min-width: 0;
   }
@@ -125,7 +130,6 @@ const canonical = new URL("/", site.url).href;
     max-width: 100%;
     min-width: 0;
     margin-block: auto;
-    position: relative;
     border-radius: var(--radius-lg);
     padding: clamp(2rem, 7vw, 3.5rem) clamp(1.25rem, 6vw, 2.5rem);
   }
@@ -151,44 +155,12 @@ const canonical = new URL("/", site.url).href;
     overflow-wrap: anywhere;
   }
 
-  .gateway-name-en,
-  .gateway-name-fa {
+  .gateway-name-line {
     unicode-bidi: isolate;
   }
 
-  .gateway-name-fa {
+  .gateway-name-line[lang="fa"] {
     font-weight: 500;
-  }
-
-  /* Gold signature line under the bilingual name — decorative only,
-     drawn from ::after so the DOM structure stays unchanged. */
-  .gateway-name::after {
-    content: "";
-    display: block;
-    width: clamp(3.5rem, 32%, 6rem);
-    height: 2px;
-    border-radius: var(--radius-pill);
-    background: linear-gradient(
-      90deg,
-      transparent,
-      var(--gold) 30%,
-      var(--gold) 70%,
-      transparent
-    );
-    box-shadow: 0 0 12px rgba(227, 185, 92, 0.35);
-  }
-
-  .gateway-prompt {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.55rem;
-    flex-wrap: wrap;
-    margin: 0;
-    color: var(--ink-mid);
-    max-width: 100%;
-    min-width: 0;
-    overflow-wrap: anywhere;
   }
 
   .gateway-kicker {
@@ -196,6 +168,7 @@ const canonical = new URL("/", site.url).href;
     align-items: center;
     justify-content: center;
     gap: 0.45rem;
+    flex-wrap: wrap;
     margin: 0;
     color: var(--brand-text);
     font-size: var(--text-xs);
@@ -215,13 +188,21 @@ const canonical = new URL("/", site.url).href;
     letter-spacing: 0;
   }
 
-  .gateway-prompt span {
-    unicode-bidi: isolate;
+  .gateway-prompt {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+    margin: 0;
+    color: var(--ink-mid);
+    max-width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
-  .gateway-prompt-divider {
-    color: var(--gold);
-    opacity: 0.8;
+  .gateway-prompt span {
+    unicode-bidi: isolate;
   }
 
   .gateway-actions {
@@ -233,56 +214,14 @@ const canonical = new URL("/", site.url).href;
     min-width: 0;
   }
 
-  /* Language cards — §0 glass recipe: fill + edge, hover brightens the fill
-     only so the brand label colors stay AA on night (no color inversion). */
-  .gateway-action {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 7.5rem;
-    min-height: 3rem;
-    padding: 0.75rem 1.5rem;
-    border-radius: var(--radius-md);
-    background-color: var(--glass-fill);
-    color: var(--ink-hi);
-    border: 1px solid var(--glass-edge);
-    text-decoration: none;
-    font-weight: 700;
-    overflow-wrap: anywhere;
-    cursor: pointer;
-    transition: background-color var(--duration-night-fast) var(--ease-night),
-      border-color var(--duration-night-fast) var(--ease-night);
-  }
-
-  .gateway-action:hover,
-  .gateway-action:focus-visible {
-    background-color: var(--glass-fill-strong);
-  }
-
-  .gateway-action--en {
-    color: var(--brand-text);
-  }
-
-  .gateway-action--fa {
-    color: var(--gold);
-  }
-
-  .gateway-action:focus-visible {
-    outline-color: var(--ink-hi);
-    outline-offset: 3px;
-  }
-
   @media (max-width: 28rem) {
     .gateway-actions {
       width: min(100%, 18rem);
       flex-direction: column;
     }
 
-    .gateway-action {
+    .gateway-actions :global(.ui-button) {
       width: 100%;
-      max-width: 100%;
-      min-width: 0;
-      padding-inline: 1rem;
     }
   }
 </style>

@@ -3,7 +3,7 @@ import type { LocaleContent } from "../data/content";
 import { content as allContent } from "../data/content";
 import { getSiteBrand } from "../lib/cms/siteSettings";
 import { isCmsOriginBuild } from "../lib/cms/client";
-import logo from "../branding/logo.png";
+import ThemeToggle from "./navigation/ThemeToggle.astro";
 
 interface Props {
   content: LocaleContent;
@@ -20,10 +20,22 @@ const switchLabel =
     : other.gateway.persianLabel;
 const switchLang = otherLang;
 
-const currentPath = Astro.url.pathname.replace(/\/+$/, "") || "/";
-const isCurrent = (href: string) =>
-  currentPath === (href.replace(/\/+$/, "") || "/");
+// Intrinsic size of the authoritative public/logo.png (256x233); CSS scales
+// it down, the attributes reserve the box and prevent layout shift.
+const logoWidth = 256;
+const logoHeight = 233;
+
+const currentPath = Astro.url.pathname;
 const homeHref = `/${content.lang}/`;
+/* Active-route markers (IA-CONTRACT S4): the locale home only ever matches
+   exactly, while section links stay active across their child routes
+   (parent-section activation, e.g. /fa/writing/{slug}/ marks Writing). */
+const normalize = (href: string) => href.replace(/\/+$/, "") || "/";
+const isExact = (href: string) => normalize(currentPath) === normalize(href);
+const isInSection = (href: string) =>
+  href !== homeHref && (currentPath === href || currentPath.startsWith(href));
+const isActive = (href: string) => isExact(href) || isInSection(href);
+
 const cmsBrand = await getSiteBrand();
 const isCms = isCmsOriginBuild();
 const displayName = cmsBrand ?? (isCms ? "" : content.name);
@@ -38,7 +50,11 @@ const navItems = [
 ];
 // E9/P13 (owner decision 2026-08-24, option B): P8 catalogs live in a "More"
 // disclosure group — keeps the top-level header compact, no mega-menu.
+// ESCALATE (WF-03): content.ts has no "More" key; the live label stays until
+// the dictionary gains one (same for the theme-toggle label below).
 const moreLabel = content.lang === "fa" ? "بیشتر" : "More";
+const themeLabel =
+  content.lang === "fa" ? "\u062A\u063A\u06CC\u06CC\u0631 \u062A\u0645" : "Toggle theme";
 const moreItems = [
   {
     href: `/${content.lang}/publications/`,
@@ -51,7 +67,7 @@ const moreItems = [
     label: content.catalog.downloadsHeading,
   },
 ];
-const moreActive = moreItems.some((item) => isCurrent(item.href));
+const moreActive = moreItems.some((item) => isActive(item.href));
 ---
 
 <header class="site-header glass-surface glass-surface--dark">
@@ -60,14 +76,14 @@ const moreActive = moreItems.some((item) => isCurrent(item.href));
       href={homeHref}
       class="brand"
       aria-label={displayName !== "" ? displayName : content.name}
-      aria-current={isCurrent(homeHref) ? "page" : undefined}
+      aria-current={isExact(homeHref) ? "page" : undefined}
     >
       <img
-        src={logo.src}
+        src="/logo.png"
         alt=""
         class="brand-logo"
-        width={logo.width}
-        height={logo.height}
+        width={logoWidth}
+        height={logoHeight}
         loading="eager"
       />
       <span class="brand-name">{displayName}</span>
@@ -79,7 +95,7 @@ const moreActive = moreItems.some((item) => isCurrent(item.href));
             <a
               href={item.href}
               class="header-link"
-              aria-current={isCurrent(item.href) ? "page" : undefined}
+              aria-current={isActive(item.href) ? "page" : undefined}
             >
               {item.label}
             </a>
@@ -101,7 +117,7 @@ const moreActive = moreItems.some((item) => isCurrent(item.href));
                 <a
                   href={item.href}
                   class="nav-more-link"
-                  aria-current={isCurrent(item.href) ? "page" : undefined}
+                  aria-current={isActive(item.href) ? "page" : undefined}
                 >
                   {item.label}
                 </a>
@@ -114,7 +130,7 @@ const moreActive = moreItems.some((item) => isCurrent(item.href));
             <a
               href={item.href}
               class="header-link"
-              aria-current={isCurrent(item.href) ? "page" : undefined}
+              aria-current={isActive(item.href) ? "page" : undefined}
             >
               {item.label}
             </a>
@@ -122,6 +138,7 @@ const moreActive = moreItems.some((item) => isCurrent(item.href));
         }
       </nav>
       <nav class="header-actions" aria-label={content.footer.switchLabel}>
+        <ThemeToggle label={themeLabel} />
         <a
           href={switchHref}
           hreflang={switchLang}
@@ -155,7 +172,7 @@ const moreActive = moreItems.some((item) => isCurrent(item.href));
     gap: 0.5rem;
     padding-block: 0.625rem;
     padding-inline: clamp(1rem, 5vw, 2.5rem);
-    max-width: 1280px;
+    max-width: var(--measure-page);
     margin-inline: auto;
     width: 100%;
     box-sizing: border-box;
@@ -230,7 +247,7 @@ const moreActive = moreItems.some((item) => isCurrent(item.href));
     inset-inline: 0.45rem;
     inset-block-end: 0.35rem;
     height: 2px;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     background-color: var(--color-brand);
   }
 
