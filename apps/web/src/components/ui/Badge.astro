@@ -1,0 +1,83 @@
+---
+/* ui/Badge - ATLAS-02 primitive. Status/type marker. Meaning is carried by
+   the label text plus a shape (dot for status, rounded square for type) -
+   never by colour alone. Seams: variants status|type, tones mapped only to
+   semantic accent roles (gold stays scarce: one badge per page is the
+   caller's budget). Label via default slot; theming cascades. */
+interface Props {
+  variant?: "status" | "type";
+  tone?: "neutral" | "brand" | "signature" | "research" | "context";
+}
+const { variant = "type", tone = "neutral" } = Astro.props;
+---
+<span
+  class:list={["ui-badge", `ui-badge--${variant}`, `ui-badge--tone-${tone}`]}
+>
+  <span class="ui-badge__shape" aria-hidden="true"></span>
+  <span class="ui-badge__label">
+    <slot />
+  </span>
+</span>
+
+<style>
+  .ui-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--space-6);
+    padding-inline: var(--space-3);
+    border-radius: var(--radius-pill);
+    background-color: var(--color-surface-muted);
+    color: var(--color-ink);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+  }
+
+  [dir="rtl"] .ui-badge {
+    letter-spacing: 0;
+  }
+
+  .ui-badge__shape {
+    width: var(--space-2);
+    height: var(--space-2);
+    border-radius: var(--radius-pill);
+    background-color: var(--color-ink-tertiary);
+  }
+
+  .ui-badge--type .ui-badge__shape {
+    border-radius: var(--radius-xs);
+  }
+
+  .ui-badge--tone-brand {
+    background-color: var(--color-brand-soft);
+  }
+
+  .ui-badge--tone-brand .ui-badge__shape {
+    background-color: var(--color-brand);
+  }
+
+  .ui-badge--tone-signature {
+    background-color: var(--color-signature-soft);
+  }
+
+  .ui-badge--tone-signature .ui-badge__shape {
+    background-color: var(--color-signature);
+  }
+
+  .ui-badge--tone-research {
+    background-color: var(--color-research-soft);
+  }
+
+  .ui-badge--tone-research .ui-badge__shape {
+    background-color: var(--color-research);
+  }
+
+  .ui-badge--tone-context {
+    background-color: var(--color-context-soft);
+  }
+
+  .ui-badge--tone-context .ui-badge__shape {
+    background-color: var(--color-context);
+  }
+</style>

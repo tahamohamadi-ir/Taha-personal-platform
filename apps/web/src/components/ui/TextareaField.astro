@@ -1,0 +1,144 @@
+---
+/* ui/TextareaField - ATLAS-02 primitive. Multi-line text control.
+   Persistent <label for>, id autogen from name, hint/error ids wired via
+   aria-describedby, error sets aria-invalid and renders an icon + text
+   message (never colour-only). The server-rendered value prop is kept as
+   the control's content, so typed text survives failed submissions.
+   Seams: pass id to override the autogen; error/hint strings are
+   caller-owned locale copy. Theming cascades from tokens. */
+interface Props {
+  label: string;
+  name: string;
+  id?: string;
+  hint?: string;
+  error?: string;
+  required?: boolean;
+  disabled?: boolean;
+  value?: string;
+}
+const {
+  label,
+  name,
+  id,
+  hint,
+  error,
+  required = false,
+  disabled = false,
+  value,
+} = Astro.props;
+const fieldId = id ?? name;
+const hintId = hint ? `${fieldId}-hint` : undefined;
+const errorId = error ? `${fieldId}-error` : undefined;
+const describedBy = [hintId, errorId].filter(Boolean).join(" ") || undefined;
+---
+<div class:list={["ui-field", error ? "ui-field--error" : null]}>
+  <label class="ui-field__label" for={fieldId}>
+    {label}
+  </label>
+  <textarea
+    class="ui-field__control"
+    id={fieldId}
+    name={name}
+    aria-describedby={describedBy}
+    aria-invalid={error ? "true" : undefined}
+    required={required}
+    disabled={disabled}
+  >{value}</textarea>
+  {
+    hint && (
+      <p class="ui-field__hint" id={hintId}>
+        {hint}
+      </p>
+    )
+  }
+  {
+    error && (
+      <p class="ui-field__error" id={errorId}>
+        <svg
+          class="ui-field__error-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M12 3 2 21h20L12 3Zm0 7v5m0 3.5v.01" />
+        </svg>
+        {error}
+      </p>
+    )
+  }
+</div>
+
+<style>
+  .ui-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .ui-field__label {
+    color: var(--color-ink);
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  .ui-field__control {
+    min-height: var(--space-11);
+    padding-inline: var(--space-3);
+    border: 1px solid var(--color-control-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+    font-size: var(--text-base);
+    transition:
+      border-color var(--duration-fast) var(--ease-out),
+      box-shadow var(--duration-fast) var(--ease-out);
+  }
+
+  textarea.ui-field__control {
+    min-height: var(--space-16);
+    padding-block: var(--space-3);
+    resize: vertical;
+  }
+
+  .ui-field__control:focus-visible {
+    border-color: var(--color-brand);
+  }
+
+  .ui-field--error .ui-field__control {
+    border-color: var(--danger);
+  }
+
+  .ui-field__control:disabled {
+    border-color: var(--color-border-subtle);
+    background-color: var(--color-surface-muted);
+    color: var(--color-ink-tertiary);
+    cursor: not-allowed;
+  }
+
+  .ui-field__hint {
+    margin: 0;
+    color: var(--color-ink-tertiary);
+    font-size: var(--text-xs);
+  }
+
+  .ui-field__error {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    color: var(--color-ink);
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  .ui-field__error-icon {
+    flex-shrink: 0;
+    width: var(--space-4);
+    height: var(--space-4);
+    color: var(--danger);
+  }
+</style>

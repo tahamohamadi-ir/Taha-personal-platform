@@ -1,0 +1,136 @@
+---
+/* ui/Button - ATLAS-02 primitive. Native <button>/<a> only (never a
+   clickable div). Seams: variants primary|secondary|quiet, size md|sm
+   (padding/typography only - the 44px floor never shrinks), leading icon
+   slot. One primary CTA per viewport is a caller rule. Every string
+   arrives via slots; theming cascades from tokens, never authored here.
+   disabled applies to the button element only - unavailable destinations
+   must not render as links at the route layer. */
+interface Props {
+  variant?: "primary" | "secondary" | "quiet";
+  size?: "md" | "sm";
+  href?: string;
+  type?: "button" | "submit";
+  disabled?: boolean;
+}
+const {
+  variant = "primary",
+  size = "md",
+  href,
+  type = "button",
+  disabled = false,
+} = Astro.props;
+const classes = [
+  "ui-button",
+  `ui-button--${variant}`,
+  size === "sm" ? "ui-button--sm" : null,
+].filter(Boolean);
+const hasIcon = Astro.slots.has("icon");
+---
+{
+  href ? (
+    <a class:list={classes} href={href}>
+      {hasIcon && (
+        <span class="ui-button__icon">
+          <slot name="icon" />
+        </span>
+      )}
+      <span class="ui-button__label">
+        <slot />
+      </span>
+    </a>
+  ) : (
+    <button class:list={classes} type={type} disabled={disabled}>
+      {hasIcon && (
+        <span class="ui-button__icon">
+          <slot name="icon" />
+        </span>
+      )}
+      <span class="ui-button__label">
+        <slot />
+      </span>
+    </button>
+  )
+}
+
+<style>
+  .ui-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: var(--space-11);
+    padding-inline: var(--space-5);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    font-size: var(--text-base);
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background-color var(--duration-fast) var(--ease-out),
+      border-color var(--duration-fast) var(--ease-out),
+      color var(--duration-fast) var(--ease-out);
+  }
+
+  .ui-button__icon {
+    display: inline-flex;
+  }
+
+  .ui-button__icon > :global(svg) {
+    width: var(--space-5);
+    height: var(--space-5);
+  }
+
+  .ui-button--sm {
+    padding-inline: var(--space-3);
+    font-size: var(--text-sm);
+  }
+
+  .ui-button--primary {
+    background-color: var(--color-brand);
+    border-color: var(--color-brand);
+    color: var(--color-inverse);
+  }
+
+  .ui-button--primary:hover,
+  .ui-button--primary:focus-visible {
+    background-color: var(--color-brand-emphasis-hover);
+    border-color: var(--color-brand-emphasis-hover);
+  }
+
+  .ui-button--secondary {
+    background-color: transparent;
+    border-color: var(--color-control-border);
+    color: var(--color-ink);
+  }
+
+  .ui-button--secondary:hover,
+  .ui-button--secondary:focus-visible {
+    background-color: var(--color-surface-muted);
+    border-color: var(--color-border-strong);
+  }
+
+  .ui-button--secondary:active {
+    background-color: var(--color-border-subtle);
+  }
+
+  .ui-button--quiet {
+    background-color: transparent;
+    border-color: transparent;
+    color: var(--color-brand);
+  }
+
+  .ui-button--quiet:hover,
+  .ui-button--quiet:focus-visible {
+    color: var(--color-brand-emphasis-hover);
+    text-decoration: underline;
+  }
+
+  .ui-button:disabled {
+    background-color: var(--color-surface-muted);
+    border-color: var(--color-border-subtle);
+    color: var(--color-ink-tertiary);
+    cursor: not-allowed;
+  }
+</style>

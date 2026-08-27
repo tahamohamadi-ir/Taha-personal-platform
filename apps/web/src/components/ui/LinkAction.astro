@@ -1,0 +1,112 @@
+---
+/* ui/LinkAction - ATLAS-02 primitive. Labelled link with an optional
+   directional arrow that flips in RTL via rotate(180deg); DOM reading
+   order is never reversed. Seams: variants inline (prose measure) |
+   standalone (44px control), arrowSide start|end, dir isolates
+   mixed-direction label text. Label via slot; theming cascades. */
+import type { Direction } from "../../design-system/contracts";
+
+interface Props {
+  href: string;
+  variant?: "inline" | "standalone";
+  dir?: Direction;
+  arrow?: boolean;
+  arrowSide?: "start" | "end";
+}
+const {
+  href,
+  variant = "inline",
+  dir,
+  arrow = false,
+  arrowSide = "end",
+} = Astro.props;
+const classes = ["ui-link-action", `ui-link-action--${variant}`];
+---
+<a class:list={classes} href={href} dir={dir}>
+  {
+    arrow && arrowSide === "start" && (
+      <span class="ui-link-action__arrow" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
+      </span>
+    )
+  }
+  <span class="ui-link-action__label">
+    <slot />
+  </span>
+  {
+    arrow && arrowSide === "end" && (
+      <span class="ui-link-action__arrow" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
+      </span>
+    )
+  }
+</a>
+
+<style>
+  .ui-link-action {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--color-brand);
+    text-decoration: underline;
+    cursor: pointer;
+    transition:
+      color var(--duration-fast) var(--ease-out),
+      background-color var(--duration-fast) var(--ease-out),
+      border-color var(--duration-fast) var(--ease-out);
+  }
+
+  .ui-link-action:hover,
+  .ui-link-action:focus-visible {
+    color: var(--color-brand-emphasis-hover);
+  }
+
+  .ui-link-action--standalone {
+    min-height: var(--space-11);
+    padding-inline: var(--space-4);
+    border: 1px solid var(--color-control-border);
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .ui-link-action--standalone:hover,
+  .ui-link-action--standalone:focus-visible {
+    background-color: var(--color-brand-soft);
+    border-color: var(--color-brand);
+    text-decoration: underline;
+  }
+
+  .ui-link-action__arrow {
+    display: inline-flex;
+  }
+
+  .ui-link-action__arrow > :global(svg) {
+    width: var(--space-4);
+    height: var(--space-4);
+  }
+
+  [dir="rtl"] .ui-link-action__arrow {
+    transform: rotate(180deg);
+  }
+</style>

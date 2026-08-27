@@ -1,0 +1,126 @@
+---
+/* ui/ContentState - ATLAS-02 primitive. Honest state panel for the exact
+   six kinds of the shared ContentState type (consumed from
+   src/design-system/contracts, never redefined). heading/explanation are
+   caller-owned locale strings passed via props; at most one recovery
+   action arrives through the named "action" slot. Each kind gets its own
+   icon shape and ARIA treatment (error announces as alert, loading is
+   busy); loading keeps a fixed min-height so the swap-in cannot shift
+   layout. Theming cascades from tokens. */
+import type { ContentState } from "../../design-system/contracts";
+
+interface Props {
+  kind: ContentState;
+  heading?: string;
+  explanation?: string;
+  headingTag?: "h2" | "h3" | "h4";
+}
+const { kind, heading, explanation, headingTag = "h2" } = Astro.props;
+const KINDS = new Set<ContentState>([
+  "ready",
+  "loading",
+  "empty",
+  "no-results",
+  "error",
+  "unavailable-translation",
+]);
+if (!KINDS.has(kind)) {
+  throw new Error(`ContentState received an unknown kind: ${kind}`);
+}
+const HeadingTag = headingTag;
+const hasAction = Astro.slots.has("action");
+const ICON_PATHS: Record<ContentState, string> = {
+  ready: "M20 6 9 17l-5-5",
+  loading: "M21 12a9 9 0 1 1-9-9",
+  empty: "M7 3h7l5 5v13H7Zm7 5h-5V3",
+  "no-results": "M11 4a7 7 0 1 1 0 14 7 7 0 0 1 0-14Zm10 17-4.35-4.35",
+  error: "M12 3 2 21h20L12 3Zm0 7v5m0 3.5v.01",
+  "unavailable-translation":
+    "M12 3a9 9 0 1 1 0 18 9 9 0 0 1 0-18Zm-9 9h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18",
+};
+---
+<section
+  class:list={["ui-content-state", `ui-content-state--${kind}`]}
+  role={kind === "error" ? "alert" : "status"}
+  aria-busy={kind === "loading" ? "true" : undefined}
+>
+  <svg
+    class="ui-content-state__icon"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d={ICON_PATHS[kind]} />
+  </svg>
+  {heading && <HeadingTag class="ui-content-state__heading">{heading}</HeadingTag>}
+  {
+    explanation && (
+      <p class="ui-content-state__explanation">
+        {explanation}
+      </p>
+    )
+  }
+  {
+    hasAction && (
+      <div class="ui-content-state__action">
+        <slot name="action" />
+      </div>
+    )
+  }
+</section>
+
+<style>
+  .ui-content-state {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+    max-width: var(--measure-prose);
+    padding: var(--space-8);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .ui-content-state__icon {
+    width: var(--space-6);
+    height: var(--space-6);
+    color: var(--color-ink-tertiary);
+  }
+
+  .ui-content-state--loading {
+    min-height: var(--space-24);
+  }
+
+  .ui-content-state--loading .ui-content-state__icon {
+    color: var(--color-brand);
+    animation: ui-spin var(--duration-base) linear infinite;
+  }
+
+  .ui-content-state__heading {
+    margin: 0;
+    color: var(--color-ink);
+    font-size: var(--text-xl);
+    font-weight: 600;
+  }
+
+  .ui-content-state__explanation {
+    margin: 0;
+    color: var(--color-ink-secondary);
+  }
+
+  .ui-content-state__action {
+    margin-block-start: var(--space-2);
+  }
+
+  @keyframes ui-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+</style>

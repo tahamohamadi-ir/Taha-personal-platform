@@ -1,0 +1,91 @@
+---
+/* ui/IconButton - ATLAS-02 primitive. Icon-only control; the accessible
+   name is mandatory and enforced at render time. Seams: variants
+   quiet|outlined, optional href renders a native anchor instead of a
+   button. 44px target never shrinks. Strings (only the label) via props;
+   theming cascades from tokens. */
+interface Props {
+  label: string;
+  variant?: "quiet" | "outlined";
+  href?: string;
+  type?: "button" | "submit";
+  disabled?: boolean;
+}
+const {
+  label,
+  variant = "quiet",
+  href,
+  type = "button",
+  disabled = false,
+} = Astro.props;
+if (!label || label.trim() === "") {
+  throw new Error(
+    "IconButton requires a non-empty label prop for its accessible name",
+  );
+}
+const classes = ["ui-icon-button", `ui-icon-button--${variant}`];
+---
+{
+  href ? (
+    <a class:list={classes} href={href} aria-label={label}>
+      <slot />
+    </a>
+  ) : (
+    <button class:list={classes} type={type} aria-label={label} disabled={disabled}>
+      <slot />
+    </button>
+  )
+}
+
+<style>
+  .ui-icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--space-11);
+    min-height: var(--space-11);
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    background-color: transparent;
+    color: var(--color-ink-secondary);
+    cursor: pointer;
+    transition:
+      background-color var(--duration-fast) var(--ease-out),
+      border-color var(--duration-fast) var(--ease-out),
+      color var(--duration-fast) var(--ease-out);
+  }
+
+  .ui-icon-button > :global(svg) {
+    width: var(--space-5);
+    height: var(--space-5);
+  }
+
+  .ui-icon-button--quiet:hover,
+  .ui-icon-button--quiet:focus-visible {
+    background-color: var(--color-surface-muted);
+    color: var(--color-brand);
+  }
+
+  .ui-icon-button--outlined {
+    border-color: var(--color-control-border);
+    color: var(--color-ink);
+  }
+
+  .ui-icon-button--outlined:hover,
+  .ui-icon-button--outlined:focus-visible {
+    background-color: var(--color-surface-muted);
+    border-color: var(--color-border-strong);
+  }
+
+  .ui-icon-button--outlined:active {
+    background-color: var(--color-border-subtle);
+  }
+
+  .ui-icon-button:disabled {
+    background-color: transparent;
+    border-color: var(--color-border-subtle);
+    color: var(--color-ink-tertiary);
+    cursor: not-allowed;
+  }
+</style>
