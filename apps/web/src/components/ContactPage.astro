@@ -1,14 +1,48 @@
 ---
+/* content/ContactPage - WF-07H. Contact family body, adopted onto the
+   UtilityTemplate content slot by the route pages. Props-in/markup-out:
+   the contact record arrives from the route loader (getSiteContact),
+   never fetched here. The form keeps the frozen /api/contact contract -
+   same urlencoded field names (locale, website honeypot, name, email,
+   message) and the content.ts label dictionary - rebuilt on the ui
+   primitives (InputField/TextareaField/Button) so persistent labels,
+   aria-invalid and value retention stay owned by the shared layer.
+   Distinct submit states: success renders a ready panel (role=status)
+   and failure an error panel (role=alert), both driven by the Astro.url
+   query round-trip (?sent=1 / ?sent=0 plus the entered fields); the
+   primitives re-render entries via their value props so a failed
+   submission keeps what was typed. The endpoint still answers 503
+   honestly when SMTP is unset - the page never fakes success.
+   Alternative contact paths render verbatim from the CMS contact
+   record; phones/personal webmail addresses are excluded upstream
+   (board A10).
+   Seams: a new contact path is a ContactCTA/details variant proposal;
+   form fields extend InputField/TextareaField - do not fork field
+   markup. Theming cascades from tokens. */
+import InputField from "./ui/InputField.astro";
+import TextareaField from "./ui/TextareaField.astro";
+import Button from "./ui/Button.astro";
+import ContentState from "./ui/ContentState.astro";
 import type { LocaleContent } from "../data/content";
-import { getSiteContact, type PublicSiteContactDto } from "../lib/cms/siteSettings";
+import type { PublicSiteContactDto } from "../lib/cms/siteSettings";
 
 interface Props {
   content: LocaleContent;
+  contact: PublicSiteContactDto | null;
 }
 
-const { content } = Astro.props;
-const contact: PublicSiteContactDto | null = await getSiteContact();
-const telHref = (value: string) => `tel:${value.replace(/[^+\d]/g, "")}`;
+const { content, contact } = Astro.props;
+const contactCopy = content.contact;
+
+/* WF-07H value retention: on a failed submission the flow round-trips
+   through the query string (?sent=0&name=...&email=...&message=...);
+   the primitives re-render the entries via their value props so the
+   user never retypes them. Build-time renders (no params) stay empty. */
+const params = Astro.url.searchParams;
+const sent = params.get("sent") === "1";
+const failed = params.get("sent") === "0";
+const restore = (field: string): string => params.get(field) ?? "";
+
 const hasContact = Boolean(
   contact &&
     (contact.email !== "" ||
@@ -19,10 +53,7 @@ const hasContact = Boolean(
 );
 ---
 
-<section class="contact-page">
-  <h1>{content.contact.heading}</h1>
-  <p class="contact-intro">{content.contact.intro}</p>
-
+<div class="contact-body">
   {
     hasContact && contact ? (
       <ul class="contact-details">
@@ -70,14 +101,18 @@ const hasContact = Boolean(
         )}
       </ul>
     ) : (
-      <p class="contact-unavailable">{content.contact.unavailable}</p>
+      <p class="contact-unavailable">{contactCopy.unavailable}</p>
     )
   }
 
   {
     contact && contact.formEnabled && contact.email !== "" && (
       <form class="contact-form" method="post" action="/api/contact">
-        <h2>{content.contact.formIntro}</h2>
+        <h2>{contactCopy.formIntro}</h2>
+        {sent && <ContentState kind="ready" heading={contactCopy.sentHeading} />}
+        {failed && (
+          <ContentState kind="error" heading={contactCopy.errorHeading} />
+        )}
         <input type="hidden" name="locale" value={content.lang} />
         <input
           type="text"
@@ -88,58 +123,32 @@ const hasContact = Boolean(
           autocomplete="off"
           aria-hidden="true"
         />
-        <label for="page-contact-name">{content.contact.nameLabel}</label>
-        <input
-          id="page-contact-name"
-          type="text"
+        <InputField
+          label={contactCopy.nameLabel}
           name="name"
-          maxlength={120}
-          autocomplete="name"
+          value={restore("name")}
         />
-        <label for="page-contact-email">{content.contact.emailLabel}</label>
-        <input
-          id="page-contact-email"
-          type="email"
+        <InputField
+          label={contactCopy.emailLabel}
           name="email"
           required
-          maxlength={254}
-          autocomplete="email"
+          value={restore("email")}
         />
-        <label for="page-contact-message">{content.contact.messageLabel}</label>
-        <textarea
-          id="page-contact-message"
+        <TextareaField
+          label={contactCopy.messageLabel}
           name="message"
-          rows={6}
           required
-          maxlength={4000}
+          value={restore("message")}
         />
-        <button type="submit">{content.contact.sendLabel}</button>
+        <div class="contact-form__submit">
+          <Button type="submit">{contactCopy.sendLabel}</Button>
+        </div>
       </form>
     )
   }
-</section>
+</div>
 
 <style>
-  .contact-page {
-    max-width: var(--measure-page, 1280px);
-    margin-inline: auto;
-    width: 100%;
-    padding-block: var(--space-section, 3rem) var(--space-section, 3rem);
-    padding-inline: clamp(1rem, 5vw, 2.5rem);
-  }
-
-  h1 {
-    font-size: var(--text-display, 2.5rem);
-    line-height: 1.15;
-    margin: 0 0 var(--space-4, 1rem);
-  }
-
-  .contact-intro {
-    max-width: var(--measure-prose, 62ch);
-    color: var(--color-ink-secondary);
-    margin: 0 0 var(--space-6, 1.5rem);
-  }
-
   .contact-details {
     list-style: none;
     margin: 0 0 var(--space-8, 2rem);
@@ -161,7 +170,7 @@ const hasContact = Boolean(
   .detail-label {
     flex: 0 0 6.5rem;
     color: var(--color-ink-secondary);
-    font-size: 0.875rem;
+    font-size: var(--text-sm, 0.875rem);
     font-weight: 600;
   }
 
@@ -184,50 +193,14 @@ const hasContact = Boolean(
   }
 
   .contact-form h2 {
-    font-size: 1.125rem;
+    font-size: var(--text-lg, 1.125rem);
     margin: 0 0 var(--space-2, 0.5rem);
     color: var(--color-ink);
   }
 
-  .contact-form label {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--color-ink-secondary);
-    margin-block-start: var(--space-2, 0.5rem);
-  }
-
-  .contact-form input:not(.contact-honeypot),
-  .contact-form textarea {
-    font: inherit;
-    color: var(--color-ink);
-    background: var(--color-surface);
-    border: 1px solid var(--color-border-subtle);
-    border-radius: var(--radius-sm, 8px);
-    padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
-  }
-
-  .contact-form textarea {
-    resize: vertical;
-  }
-
-  .contact-form button {
+  .contact-form__submit {
     align-self: flex-start;
     margin-block-start: var(--space-3, 0.75rem);
-    min-height: 2.75rem;
-    padding-inline: var(--space-5, 1.25rem);
-    font: inherit;
-    font-weight: 600;
-    color: var(--color-inverse);
-    background: var(--color-brand);
-    border: 1px solid var(--color-brand);
-    border-radius: var(--radius-sm, 8px);
-    cursor: pointer;
-    transition: background-color var(--duration-fast, 140ms) var(--ease-out, ease-out);
-  }
-
-  .contact-form button:hover,
-  .contact-form button:focus-visible {
-    background: var(--color-brand-emphasis-hover);
   }
 
   .contact-honeypot {

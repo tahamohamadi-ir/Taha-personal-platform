@@ -214,6 +214,8 @@ export interface LocaleContent {
     emailLabel: string;
     messageLabel: string;
     sendLabel: string;
+    sentHeading: string;
+    errorHeading: string;
   };
   search: {
     heading: string;
@@ -482,6 +484,8 @@ export const content: Record<LocaleCode, LocaleContent> = {
       emailLabel: "Your email",
       messageLabel: "Message",
       sendLabel: "Send message",
+      sentHeading: "Message sent",
+      errorHeading: "Message not sent",
     },
     search: {
       heading: "Search",
@@ -749,6 +753,8 @@ export const content: Record<LocaleCode, LocaleContent> = {
       emailLabel: "ایمیل شما",
       messageLabel: "پیام",
       sendLabel: "ارسال پیام",
+      sentHeading: "پیام شما ارسال شد",
+      errorHeading: "پیام ارسال نشد",
     },
     search: {
       heading: "جستجو",

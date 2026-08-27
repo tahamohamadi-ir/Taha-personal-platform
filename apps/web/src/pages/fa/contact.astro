@@ -1,10 +1,25 @@
 ---
+/* WF-07H: contact adopted onto UtilityTemplate (IA-CONTRACT S7: Contact
+   carries no breadcrumbs, so the breadcrumb slot stays unfilled and the
+   template renders no wrapper gap). The lead slot is the single H1 via
+   SectionLead with the contact heading + intro dictionary strings; the
+   content slot is ContactPage (alternative paths + form on ui
+   primitives). The contact loader is a build-time fetch here so the
+   component stays props-in/markup-out; loader/DTO/field names and the
+   /api/contact endpoint are unchanged. */
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import UtilityTemplate from "../../layouts/UtilityTemplate.astro";
+import SectionLead from "../../components/content/SectionLead.astro";
 import ContactPage from "../../components/ContactPage.astro";
 import { content } from "../../data/content";
 import { isCmsOriginBuild } from "../../lib/cms/client";
+import {
+  getSiteContact,
+  type PublicSiteContactDto,
+} from "../../lib/cms/siteSettings";
 
 const fa = content.fa;
+const contact: PublicSiteContactDto | null = await getSiteContact();
 ---
 
 <BaseLayout
@@ -12,5 +27,13 @@ const fa = content.fa;
   alternateHref="/en/contact/"
   cmsBuildOrigin={isCmsOriginBuild() ? "cms" : "snapshot"}
 >
-  <ContactPage content={fa} />
+  <UtilityTemplate>
+    <SectionLead
+      slot="lead"
+      as="h1"
+      heading={fa.contact.heading}
+      summary={fa.contact.intro}
+    />
+    <ContactPage slot="content" content={fa} contact={contact} />
+  </UtilityTemplate>
 </BaseLayout>
