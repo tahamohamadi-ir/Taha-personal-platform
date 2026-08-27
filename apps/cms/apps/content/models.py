@@ -11,6 +11,7 @@ import re
 import uuid
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from django.utils.html import strip_tags
@@ -1685,3 +1686,105 @@ class HomeModule(LifecycleMixin):
 
     def __str__(self) -> str:
         return f"{self.key} ({self.locale})"
+
+
+_DETAIL_URL_ABS_RE = re.compile(r"^https?://\S+$", re.IGNORECASE)
+
+
+def validate_detail_url(value: str) -> None:
+    """Accept blank, site-relative (single leading '/') or absolute http(s) only.
+
+    Rejects other schemes (``javascript:``, ``ftp://``) and scheme-less
+    garbage; ``//host/path`` is cross-origin, not site-relative, so it is
+    rejected too.
+    """
+    url = (value or "").strip()
+    if not url:
+        return
+    if url.startswith("/") and not url.startswith("//"):
+        return
+    if _DETAIL_URL_ABS_RE.match(url):
+        return
+    raise ValidationError(
+        "detail_url must be blank, site-relative (starting with a single '/') "
+        "or an absolute http(s) URL."
+    )
+
+
+class TimelineRecordType(models.TextChoices):
+    """Timeline/journey record kinds (BK-02); names mirror existing entities."""
+
+    EXPERIENCE = "experience", "Experience"
+    EDUCATION = "education", "Education"
+    PROJECT = "project", "Project"
+    MILESTONE = "milestone", "Milestone"
+    TALK = "talk", "Talk"
+    PUBLICATION = "publication", "Publication"
+
+
+class TimelineRecordQuerySet(ContentQuerySet):
+    """Timeline gates mirror HomeModule: locale scope + lifecycle publication."""
+
+    def for_locale(self, locale: str) -> TimelineRecordQuerySet:
+        """All rows for one locale in stable display order (preview/admin scope)."""
+        return self.filter(locale=locale).order_by("order", "id")
+
+    def published_for_locale(self, locale: str) -> TimelineRecordQuerySet:
+        """Published rows for one locale in stable display order (public scope)."""
+        return self.public().filter(locale=locale).order_by("order", "id")
+
+
+class TimelineRecordManager(models.Manager.from_queryset(TimelineRecordQuerySet)):
+    """Default manager; ``published_for_locale`` is the public read gate."""
+
+
+class TimelineRecord(LifecycleMixin):
+    """Ordered reusable timeline/journey record (BK-02; admin writes are AB-03).
+
+    Locale-row convention matches HomeModule: each locale carries its own
+    records. ``attach`` optionally pins a record to a Profile row (CV
+    context); null keeps it standalone. ``order`` repeats freely across
+    types — no uniqueness ships here; reorder semantics are AB-03.
+    """
+
+    locale = models.CharField(max_length=2, choices=Locale.choices, db_index=True)
+    attach = models.ForeignKey(
+        Profile,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="timeline_records",
+    )
+    type = models.CharField(max_length=32, choices=TimelineRecordType.choices)
+    label = models.CharField(max_length=200)
+    period_label = models.CharField(max_length=100, blank=True)
+    body = models.TextField(blank=True)
+    role = models.CharField(max_length=300, blank=True)
+    weight = models.PositiveSmallIntegerField(default=0)
+    detail_url = models.CharField(
+        max_length=300,
+        blank=True,
+        validators=[validate_detail_url],
+    )
+    order = models.PositiveIntegerField(default=1)
+
+    objects = TimelineRecordManager()
+
+    class Meta:
+        db_table = "content_timeline_record"
+        ordering = ["locale", "order", "id"]
+        indexes = [
+            models.Index(
+                fields=["locale", "order"],
+                name="timeline_record_loc_order_idx",
+            ),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(order__gte=1),
+                name="content_timeline_record_order_gte_1",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.label} ({self.locale})"
