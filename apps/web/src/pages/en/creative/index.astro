@@ -1,6 +1,17 @@
 ---
+/* WF-07D: creative index adopted onto CollectionIndexTemplate. Results are
+   a MediaTile grid (reserved 4/3 frame, caption, record link per tile);
+   the list DTO carries no image fields, so tiles honestly render the
+   MediaTile failed-variant placeholder - no invented imagery. Creative has
+   no URL-backed filters and no pagination today, so the filters and
+   pagination slots are left unfilled (nothing invented). */
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Breadcrumbs from "../../../components/Breadcrumbs.astro";
+import CollectionIndexTemplate from "../../../layouts/CollectionIndexTemplate.astro";
+import SectionLead from "../../../components/content/SectionLead.astro";
+import MediaTile from "../../../components/content/MediaTile.astro";
+import MetadataGroup from "../../../components/content/MetadataGroup.astro";
+import ContentState from "../../../components/ui/ContentState.astro";
 import { content } from "../../../data/content";
 import { isCmsOriginBuild } from "../../../lib/cms/client";
 import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../data/structured";
@@ -29,30 +40,47 @@ validateStructuredData(...structured);
   alternateHref="/fa/creative/"
 >
   {structured.map((block) => <script type="application/ld+json" is:inline set:html={jsonLdScriptContent(block)} />)}
-  <section class="catalog-page">
-    <Breadcrumbs items={[{ label: pageContent.name, href: `/${locale}/` }, { label: t.heading }]} />
-    <h1>{t.heading}</h1>
-    <p class="lead">{t.intro}</p>
-    {items.length === 0 ? (
-      <p class="empty">{t.empty}</p>
-    ) : (
-      <ul class="catalog-list">
-        {items.map((item) => (
-          <li>
-            <a href={`/${locale}/creative/${item.slug}/`}>{item.title}</a>
-            {item.description && <p class="meta">{item.description}</p>}
-            <p class="meta">{t.creatorLabel}: {item.creator_name || "—"} {item.creator_role ? `· ${item.creator_role}` : ""}</p>
-          </li>
-        ))}
-      </ul>
-    )}
-  </section>
+  <CollectionIndexTemplate>
+    <Breadcrumbs slot="breadcrumbs" items={[{ label: pageContent.name, href: `/${locale}/` }, { label: t.heading }]} />
+    <SectionLead slot="sectionLead" as="h1" heading={t.heading} summary={t.intro} />
+    {
+      items.length === 0 ? (
+        <ContentState slot="results" kind="empty" explanation={t.empty} />
+      ) : (
+        <div slot="results" class="creative-grid">
+          {items.map((item) => (
+            <div class="creative-grid__cell">
+              <MediaTile
+                caption={item.title}
+                record={{ href: `/${locale}/creative/${item.slug}/`, label: item.title }}
+                width={4}
+                height={3}
+              />
+              <MetadataGroup
+                items={[
+                  { label: t.creatorLabel, value: item.creator_name },
+                  { label: t.roleLabel, value: item.creator_role },
+                  { label: t.dateLabel, value: item.creation_date ?? "" },
+                ]}
+              />
+            </div>
+          ))}
+        </div>
+      )
+    }
+  </CollectionIndexTemplate>
 </BaseLayout>
 
 <style>
-  .catalog-page { max-width: 44rem; margin-inline: auto; padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem; }
-  .catalog-page h1 { font-family: var(--font-display); font-size: clamp(1.75rem, 4vw, 2.4rem); margin: 0 0 0.5rem; }
-  .lead, .meta, .empty { color: var(--color-ink-muted); }
-  .catalog-list { list-style: none; padding: 0; margin: 1.5rem 0 0; display: grid; gap: 1.25rem; }
-  .catalog-list a { font-family: var(--font-display); font-size: 1.15rem; }
+  .creative-grid {
+    display: grid;
+    gap: var(--space-6);
+    grid-template-columns: repeat(auto-fill, minmax(var(--space-24), 1fr));
+  }
+
+  .creative-grid__cell {
+    display: grid;
+    align-content: start;
+    gap: var(--space-3);
+  }
 </style>
