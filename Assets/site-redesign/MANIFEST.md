@@ -24,6 +24,14 @@ and full digest are independently recorded here and in `SHA256SUMS.txt`.
 | `concepts/home-light-concept-v3-final.png` | 853×1844 | 1,654,930 | Authoritative Light Home art direction |
 | `concepts/home-mobile-fa-light-concept-v1.png` | 853×1844 | 1,549,163 | Persian RTL mobile Home art direction |
 | `concepts/language-gateway-dark-concept-v1.png` | 1487×1058 | 1,742,366 | Separate language gateway art direction |
+| `concepts/page-families/about-cv-light.png` | 862×1824 | 1,394,358 | PF-07 About/CV Light Editorial art direction |
+| `concepts/page-families/contact-dark.png` | 862×1825 | 1,657,790 | PF-08 Contact Dark Scientific Atlas art direction |
+| `concepts/page-families/creative-detail-dark.png` | 793×1983 | 1,708,334 | PF-02 visual-work detail art direction |
+| `concepts/page-families/creative-index-light.png` | 864×1821 | 1,441,765 | PF-01 Creative/Gallery index art direction |
+| `concepts/page-families/projects-index-dark.png` | 853×1844 | 1,639,345 | PF-04 sanitized Projects index art direction |
+| `concepts/page-families/research-publications-index-light.png` | 863×1823 | 1,352,681 | PF-05 Research/Publications index art direction |
+| `concepts/page-families/teaching-index-dark.png` | 875×1798 | 1,645,708 | PF-06 Learning/Teaching index art direction |
+| `concepts/page-families/writing-index-light.png` | 888×1771 | 1,409,529 | PF-03 independent Writing/Blog index art direction |
 | `concepts/project-detail-fa-dark-concept-v1.png` | 1487×1058 | 1,162,881 | Persian project detail art direction |
 | `concepts/requested-2026-08-25/home-dark-final-reference.png` | 853×1844 | 1,788,288 | Requested copy; byte-identical to Dark Home v3 final |
 | `concepts/requested-2026-08-25/home-dark-safe-reference.png` | 853×1844 | 1,742,898 | Requested copy; byte-identical to P14 Dark v2-safe |
@@ -31,10 +39,11 @@ and full digest are independently recorded here and in `SHA256SUMS.txt`.
 | `concepts/requested-2026-08-25/home-light-final-reference.png` | 853×1844 | 1,654,930 | Requested copy; byte-identical to Light Home v3 final |
 | `concepts/requested-2026-08-25/language-gateway-centered-dark-reference.png` | 1487×1058 | 1,742,366 | Requested copy; byte-identical to existing gateway concept |
 
-The `concepts/` files are exact copies of their counterparts in
-`docs/design-redesign/visuals/`. The brand files are exact copies of the named
-existing public files. The `art/` files are project-specific generated masters;
-their prompts are in `PROMPTS.md`.
+The original seven top-level `concepts/` files are exact copies of their
+counterparts in `docs/design-redesign/visuals/`. The eight `page-families/`
+files are P14C project-bound generated concepts. The brand files are exact
+copies of the named existing public files. The `art/` files are project-specific
+generated masters; prompts and provenance are in `PROMPTS.md`.
 
 The optional `others/` directory is an unmanaged owner/drop-zone folder and is
 excluded from this manifest and the approval/hash contract.

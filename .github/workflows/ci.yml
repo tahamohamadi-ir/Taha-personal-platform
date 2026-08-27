@@ -32,8 +32,18 @@ jobs:
       - name: Type check
         run: npm run check
 
+      - name: Reference integrity (ATLAS G0 — must PASS before any frontend packet)
+        run: node ../../Assets/site-redesign/implementation-reference/agent-kit/validate.mjs
+
       - name: Build
         run: npm run build
+
+      - name: Atlas isolation (ATLAS G4 — default build must NOT contain /_design/)
+        run: |
+          if [ -f dist/_design/index.html ]; then echo "FAIL: atlas leaked into default build (/_design/index.html)" >&2; exit 1; fi
+          if grep -r "_design" dist/ --include="*.html" --include="*.xml" | grep -v "_design" >/dev/null 2>&1; then echo "check done"; fi
+          if grep -R "data-atlas-id\|Atlas Fixture\|unpublished: true" dist/ 2>/dev/null; then echo "FAIL: atlas fixture strings in dist" >&2; exit 1; fi
+          echo "ATLAS G4 PASS: default build has no /_design/ or fixture leak"
 
       - name: CMS profile build regression
         run: node qa/cms-profile-build.spec.mjs
