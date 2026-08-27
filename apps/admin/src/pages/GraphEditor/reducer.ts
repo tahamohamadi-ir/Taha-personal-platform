@@ -1,4 +1,4 @@
-// Pure state machine for the Graph Editor screen (Track AF-04).
+// Pure state machine for the Graph Editor screen (Tracks AF-04/AF-05).
 // Doctrine: reducer-first — every transition is a named action, unit-testable
 // without React. (Runner note: apps/admin has no vitest/jest in package.json;
 // automated tests are skipped per packet instruction — deps are frozen. The
@@ -6,8 +6,20 @@
 //
 // Server-cache vs editor-draft separation: `saved` mirrors the server payload,
 // `draft` owns dirty editing state; server cache invalidates only after a
-// successful save. Validation UX + activation refinements are AF-05 — this
-// packet ships the shell plus basic activate wiring.
+// successful save. Validation UX is AF-05: the bottom bar polls the SERVER
+// validator (GET /graph/validation/{id}) — there is deliberately no client
+// rule mirror (AF-04's structuralIssues placeholder was removed with it).
+//
+// Validation lifecycle: a draft mutation (patchDraft) flips `validation` to
+// "loading"; the screen debounces 800ms then calls the endpoint and reports
+// back with VALIDATION_SUCCESS/VALIDATION_ERROR. States:
+// - "idle"        nothing loaded yet (no version on the canvas)
+// - "loading"     poll scheduled or in flight (spinner chip; stale chips
+//                 are hidden — stale counts would be dishonest)
+// - "ready"       latest server result; chips = per-code error counts
+//                 (every validator code is an error per the backend)
+// - "unavailable" poll failed (offline/5xx) → honest
+//                 validation-unavailable chip, never silent
 
 import {
   type GraphEdge,
@@ -60,6 +72,9 @@ export interface GraphEditorToast {
   text: GraphToastText;
 }
 
+/** Server-validation polling lifecycle (AF-05 bottom bar). */
+export type GraphValidationStatus = "idle" | "loading" | "ready" | "unavailable";
+
 export interface GraphEditorState {
   phase: GraphEditorPhase;
   versions: GraphVersionRow[];
@@ -86,6 +101,10 @@ export interface GraphEditorState {
   serverIssues: GraphIssue[];
   /** True when serverIssues came from an activate attempt (banner wording). */
   issuesFromActivate: boolean;
+  /** Latest server validation poll lifecycle (AF-05). */
+  validation: GraphValidationStatus;
+  /** Latest server validation issues (empty when validation === "ready" = clean). */
+  validationIssues: GraphIssue[];
   toast: GraphEditorToast | null;
   loadError: "load-failed" | null;
 }
@@ -114,6 +133,9 @@ export type GraphEditorAction =
   | { type: "ACTIVATE_SUCCESS" }
   | { type: "ACTIVATE_BLOCKED"; issues: GraphIssue[] }
   | { type: "ACTIVATE_ERROR" }
+  | { type: "VALIDATION_START" }
+  | { type: "VALIDATION_SUCCESS"; issues: GraphIssue[] }
+  | { type: "VALIDATION_ERROR" }
   | { type: "CONFLICT_KEEP_MINE" }
   | { type: "TOAST_DISMISS" };
 
@@ -136,6 +158,8 @@ export function initialGraphEditorState(): GraphEditorState {
     activateConfirmOpen: false,
     serverIssues: [],
     issuesFromActivate: false,
+    validation: "idle",
+    validationIssues: [],
     toast: null,
     loadError: null,
   };
@@ -145,36 +169,6 @@ export function payloadEquals(a: GraphPayload, b: GraphPayload): boolean {
   return (
     JSON.stringify(a) === JSON.stringify(b)
   );
-}
-
-/**
- * Client-side structural mirror of the smallest validator rules (placeholder
- * until AF-05 wires the validation endpoint): duplicate node id + self edge.
- * Codes/messageTokens mirror admin_graph_validate.py (keep in sync).
- */
-export function structuralIssues(payload: GraphPayload): GraphIssue[] {
-  const issues: GraphIssue[] = [];
-  const seen = new Set<string>();
-  for (const node of payload.nodes) {
-    if (seen.has(node.id)) {
-      issues.push({
-        code: "DUPLICATE_NODE_ID",
-        nodeId: node.id,
-        messageToken: "graph.duplicateNodeId",
-      });
-    }
-    seen.add(node.id);
-  }
-  for (const edge of payload.edges) {
-    if (edge.source === edge.target) {
-      issues.push({
-        code: "SELF_EDGE",
-        edgeId: edge.id,
-        messageToken: "graph.selfEdge",
-      });
-    }
-  }
-  return issues;
 }
 
 function mapNode(
@@ -196,7 +190,9 @@ function mapEdge(
 /**
  * Applies one draft mutation. No-op detection is by CONTENT (mapNode/mapEdge
  * always allocate a new object), and dirty is always computed against the
- * server snapshot — never assumed.
+ * server snapshot — never assumed. A real content change also invalidates the last server
+ * validation (status becomes "loading"; the screen debounces 800ms, then
+ * re-polls the endpoint and discards in-flight responses for older content).
  */
 function patchDraft(
   state: GraphEditorState,
@@ -209,6 +205,7 @@ function patchDraft(
     ...state,
     draft,
     dirty: state.saved === null || !payloadEquals(state.saved, draft),
+    validation: "loading",
     serverIssues: [],
   };
 }
@@ -237,6 +234,8 @@ export function graphEditorReducer(
         conflictOpen: false,
         activateConfirmOpen: false,
         serverIssues: [],
+        validation: "idle",
+        validationIssues: [],
         toast: null,
         selection: null,
       };
@@ -262,6 +261,8 @@ export function graphEditorReducer(
         serverIssues: [],
         conflictOpen: false,
         activateConfirmOpen: false,
+        validation: "idle",
+        validationIssues: [],
         loadError: null,
       };
     }
@@ -346,6 +347,10 @@ export function graphEditorReducer(
         conflictOpen: false,
       };
     case "SAVE_SUCCESS":
+      // The backend runs the same validator on PUT and answers 400 with the
+      // issues, so a successful PUT IS a clean server validation. Deriving
+      // the chips from the save result keeps Activate usable immediately
+      // (draft === saved) without an extra round-trip.
       return {
         ...state,
         saving: false,
@@ -354,16 +359,22 @@ export function graphEditorReducer(
         dirty: false,
         conflictOpen: false,
         serverIssues: [],
+        validation: "ready",
+        validationIssues: [],
         toast: { kind: "success", text: "saved" },
       };
     case "SAVE_CONFLICT":
       return { ...state, saving: false, conflictOpen: true };
     case "SAVE_ISSUES":
+      // PUT 400 issues were produced by the server validator against exactly
+      // this draft content, so they double as the latest validation result.
       return {
         ...state,
         saving: false,
         serverIssues: action.issues,
         issuesFromActivate: false,
+        validation: "ready",
+        validationIssues: action.issues,
         toast: null,
       };
     case "SAVE_ERROR":
@@ -381,15 +392,21 @@ export function graphEditorReducer(
         activateConfirmOpen: false,
         readOnly: true,
         dirty: false,
+        validation: "ready",
+        validationIssues: [],
         toast: { kind: "success", text: "activated" },
       };
     case "ACTIVATE_BLOCKED":
+      // The 409 body lists the blocking issues from the server validator for
+      // the stored (== saved) payload; they are the latest validation result.
       return {
         ...state,
         activating: false,
         activateConfirmOpen: false,
         serverIssues: action.issues,
         issuesFromActivate: true,
+        validation: "ready",
+        validationIssues: action.issues,
         toast: null,
       };
     case "ACTIVATE_ERROR":
@@ -403,6 +420,22 @@ export function graphEditorReducer(
       // Keeps editing the current draft; revision stays stale until a
       // successful reload-then-save cycle.
       return { ...state, conflictOpen: false };
+    case "VALIDATION_START":
+      // Poll started (or debounce elapsed). Last chips stay out of the UI
+      // while loading (the screen renders the spinner chip instead); the
+      // issues array is kept so a VALIDATION_ERROR can be told apart from a
+      // never-validated state by status alone.
+      return { ...state, validation: "loading" };
+    case "VALIDATION_SUCCESS":
+      return {
+        ...state,
+        validation: "ready",
+        validationIssues: action.issues,
+      };
+    case "VALIDATION_ERROR":
+      // Offline / 5xx / timeout: honest "validation-unavailable" chip on the
+      // screen; the next draft mutation schedules a fresh poll.
+      return { ...state, validation: "unavailable" };
     case "TOAST_DISMISS":
       return { ...state, toast: null };
     default: {

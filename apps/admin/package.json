@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "check": "tsc -b --noEmit",
+    "qa:tokens": "node scripts/check-graph-tokens.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

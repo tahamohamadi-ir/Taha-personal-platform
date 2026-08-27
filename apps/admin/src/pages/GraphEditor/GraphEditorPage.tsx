@@ -1,10 +1,14 @@
-// Graph Editor screen (Track AF-04) — composes the pure reducer (./reducer),
-// the pure viewport math (./canvas), the SVG canvas (./GraphCanvas), the
-// versions/groups panel (./VersionsPanel), the inspector (./InspectorPanel)
-// and the existing SPA kit (RevisionConflictDialog additive reuse,
-// AdminDialog for the basic activate confirm — AF-05 refines both flows).
-// Screen anatomy: left versions+groups → center canvas → right inspector →
-// bottom bar (structural issue chips, Save draft, Activate).
+// Graph Editor screen (Tracks AF-04/AF-05) — composes the pure reducer
+// (./reducer), the pure viewport math (./canvas), the SVG canvas
+// (./GraphCanvas), the versions/groups panel (./VersionsPanel), the inspector
+// (./InspectorPanel) and the existing SPA kit (RevisionConflictDialog
+// additive reuse, AdminDialog for the activate confirm, which now lists
+// blocking issues when present).
+// Screen anatomy: left versions+groups -> center canvas -> right inspector ->
+// bottom bar (SERVER validation chips: per-code error counts from the
+// debounced GET /graph/validation/{id} poll, spinner while pending, honest
+// validation-unavailable chip on failure; Save draft; Activate gated on
+// dirty AND on the latest server validation result).
 // The screen has no locale route segment: the version row owns the locale, so
 // UI chrome resolves the fa-first dictionary (document dir is rtl globally).
 // Draft autosave is OFF v1 — explicit Save only + leave guard.
@@ -27,17 +31,17 @@ import {
   getGraphPayload,
   getGraphVersions,
   putGraphPayload,
+  validateGraphVersion,
   type GraphIssue,
   type GraphIssueCode,
   type GraphLocale,
   type GraphNode,
   type GraphVersionRow,
 } from "../../lib/adminApiExt";
-import { tRedesign } from "../../i18n/redesign";
+import { graphIssueMessage, tRedesign } from "../../i18n/redesign";
 import {
   graphEditorReducer,
   initialGraphEditorState,
-  structuralIssues,
 } from "./reducer";
 import GraphCanvas from "./GraphCanvas";
 import InspectorPanel from "./InspectorPanel";
@@ -58,6 +62,29 @@ function toGraphIssues(raw: AdminIssue[]): GraphIssue[] {
       GRAPH_ISSUE_TOKENS[issue.code as GraphIssueCode] ??
       issue.code,
   }));
+}
+
+/** Localized validator issue list (fieldTokenMessage-style mapping via graphIssueMessage). */
+function GraphIssueList(props: { issues: GraphIssue[] }): ReactElement {
+  return (
+    <ul className="admin-field-error">
+      {props.issues.map((issue, index) => (
+        <li key={index} className="flex flex-wrap items-center gap-1">
+          <span>{graphIssueMessage(UI_LOCALE, issue)}</span>
+          {issue.nodeId !== undefined && (
+            <span className="admin-muted" style={{ unicodeBidi: "plaintext" }}>
+              [{issue.nodeId}]
+            </span>
+          )}
+          {issue.edgeId !== undefined && (
+            <span className="admin-muted" style={{ unicodeBidi: "plaintext" }}>
+              [{issue.edgeId}]
+            </span>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 export default function GraphEditorPage(): ReactElement {
@@ -129,6 +156,56 @@ export default function GraphEditorPage(): ReactElement {
     return () => window.clearTimeout(timer);
   }, [state.toast]);
 
+  // ---- AF-05 server-validation polling ---------------------------------
+  // Debounced 800ms auto-poll of GET /graph/validation/{id} after every
+  // draft mutation. In-flight cancellation is token-based: each run takes a
+  // sequence number; a response only lands when its sequence is still the
+  // newest AND the loaded version has not changed in between. The debounce
+  // effect also cancels queued-but-not-fired polls by clearing the timer on
+  // every draft change (re-scheduled by the next render's effect).
+  const validationSeqRef = useRef(0);
+
+  const runValidation = useCallback(async (): Promise<void> => {
+    const versionId = stateRef.current.versionId;
+    if (versionId === null || stateRef.current.draft === null) {
+      return;
+    }
+    const seq = ++validationSeqRef.current;
+    dispatch({ type: "VALIDATION_START" });
+    try {
+      const issues = await validateGraphVersion(versionId);
+      if (
+        seq !== validationSeqRef.current ||
+        stateRef.current.versionId !== versionId
+      ) {
+        return; // superseded by a newer edit or a version switch
+      }
+      dispatch({ type: "VALIDATION_SUCCESS", issues });
+    } catch {
+      if (
+        seq !== validationSeqRef.current ||
+        stateRef.current.versionId !== versionId
+      ) {
+        return;
+      }
+      dispatch({ type: "VALIDATION_ERROR" });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (
+      state.phase !== "ready" ||
+      state.versionId === null ||
+      state.draft === null
+    ) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      void runValidation();
+    }, 800);
+    return () => window.clearTimeout(timer);
+  }, [state.draft, state.phase, state.versionId, runValidation]);
+
   const draft = state.draft;
   const selectedNode =
     draft !== null &&
@@ -143,18 +220,18 @@ export default function GraphEditorPage(): ReactElement {
       ? draft.edges.find((edge) => edge.id === state.selection?.id) ?? null
       : null;
 
-  const localIssues = useMemo(
-    () => (draft === null ? [] : structuralIssues(draft)),
-    [draft]
-  );
-  const localIssueCounts = useMemo(() => {
+  // Bottom-bar chips: per-code counts of the LATEST SERVER validation result
+  // (every validator code is an error per the backend; no severity split).
+  const validationCounts = useMemo(() => {
     const counts = new Map<GraphIssueCode, number>();
-    for (const issue of localIssues) {
+    for (const issue of state.validationIssues) {
       const code = issue.code as GraphIssueCode;
       counts.set(code, (counts.get(code) ?? 0) + 1);
     }
     return counts;
-  }, [localIssues]);
+  }, [state.validationIssues]);
+  const validationIssueCount =
+    state.validation === "ready" ? state.validationIssues.length : 0;
 
   function selectVersion(versionId: number): void {
     const current = stateRef.current;
@@ -384,23 +461,7 @@ export default function GraphEditorPage(): ReactElement {
                   ? t("redesign.graph.blocked")
                   : t("redesign.graph.issuesTitle")}
               </p>
-              <ul className="admin-field-error">
-                {state.serverIssues.map((issue, index) => (
-                  <li key={index} className="flex flex-wrap items-center gap-1">
-                    <span>{t(issue.messageToken)}</span>
-                    {issue.nodeId !== undefined && (
-                      <span className="admin-muted" style={{ unicodeBidi: "plaintext" }}>
-                        [{issue.nodeId}]
-                      </span>
-                    )}
-                    {issue.edgeId !== undefined && (
-                      <span className="admin-muted" style={{ unicodeBidi: "plaintext" }}>
-                        [{issue.edgeId}]
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
+              <GraphIssueList issues={state.serverIssues} />
             </div>
           )}
 
@@ -489,21 +550,44 @@ export default function GraphEditorPage(): ReactElement {
 
           <div className="admin-action-row mt-4 items-center">
             <span className="admin-muted text-xs">{t("redesign.graph.issues")}:</span>
-            {localIssueCounts.size === 0 ? (
+            {state.validation === "loading" && (
+              <span
+                className="admin-status-badge admin-status-unknown"
+                role="status"
+                aria-live="polite"
+              >
+                {t("redesign.graph.validating")}
+              </span>
+            )}
+            {state.validation === "unavailable" && (
+              <span
+                className="admin-status-badge admin-status-missing"
+                title={t("redesign.graph.validationUnavailable")}
+              >
+                {t("redesign.graph.validationUnavailable")}
+              </span>
+            )}
+            {state.validation === "ready" && validationIssueCount === 0 && (
               <span className="admin-status-badge admin-status-unknown">
                 {t("redesign.graph.issuesNone")}
               </span>
-            ) : (
-              GRAPH_ISSUE_CODES.filter((code) => localIssueCounts.has(code)).map(
-                (code) => (
-                  <span
-                    key={code}
-                    className="admin-status-badge admin-status-missing"
-                  >
-                    {localIssueCounts.get(code)} × {t(GRAPH_ISSUE_TOKENS[code])}
-                  </span>
-                )
-              )
+            )}
+            {state.validation === "ready" && validationIssueCount > 0 && (
+              <>
+                <span className="admin-status-badge admin-status-missing">
+                  {validationIssueCount} {t("redesign.graph.issuesCount")}
+                </span>
+                {GRAPH_ISSUE_CODES.filter((code) => validationCounts.has(code)).map(
+                  (code) => (
+                    <span
+                      key={code}
+                      className="admin-status-badge admin-status-missing"
+                    >
+                      {validationCounts.get(code)} × {t(GRAPH_ISSUE_TOKENS[code])}
+                    </span>
+                  )
+                )}
+              </>
             )}
             <div className="ms-auto flex items-center gap-2">
               <button
@@ -520,14 +604,19 @@ export default function GraphEditorPage(): ReactElement {
                 type="button"
                 className="admin-btn"
                 title={
-                  state.dirty ? t("redesign.graph.activateNeedsSave") : undefined
+                  state.dirty
+                    ? t("redesign.graph.activateNeedsSave")
+                    : validationIssueCount > 0
+                      ? t("redesign.graph.activateHasIssues")
+                      : undefined
                 }
                 disabled={
                   state.readOnly ||
                   state.dirty ||
                   state.saving ||
                   state.activating ||
-                  state.versionId === null
+                  state.versionId === null ||
+                  validationIssueCount > 0
                 }
                 onClick={() => dispatch({ type: "ACTIVATE_CONFIRM_OPEN" })}
               >
@@ -569,6 +658,12 @@ export default function GraphEditorPage(): ReactElement {
         <p className="admin-muted text-sm leading-7">
           {t("redesign.graph.activateConfirmBody")}
         </p>
+        {state.serverIssues.length > 0 && (
+          <div className="mt-2">
+            <p className="text-sm font-medium">{t("redesign.graph.blocked")}</p>
+            <GraphIssueList issues={state.serverIssues} />
+          </div>
+        )}
       </AdminDialog>
 
       <RevisionConflictDialog

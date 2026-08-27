@@ -253,6 +253,7 @@ function toApiError(response: Response, data: unknown): ApiError {
     message: partial.message ?? `درخواست ناموفق (کد ${response.status})`,
     fields: partial.fields,
     currentUpdatedAt: partial.currentUpdatedAt,
+    issues: partial.issues,
   };
 }
 

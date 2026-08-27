@@ -139,6 +139,11 @@ export const redesignEn: Record<string, string> = {
   "redesign.graph.confirm": "Confirm",
   "redesign.graph.dirtyLeave": "You have unsaved changes. Switching the version discards them. Continue?",
   "redesign.graph.createFailed": "Creating the draft failed.",
+  // AF-05 server-validation bottom bar
+  "redesign.graph.validating": "Validating…",
+  "redesign.graph.validationUnavailable": "Validation unavailable.",
+  "redesign.graph.issuesCount": "issues",
+  "redesign.graph.activateHasIssues": "This version has validation issues.",
   // graph validator issue tokens (mirror of admin_graph_validate.py)
   "graph.duplicateNodeId": "Duplicate node id.",
   "graph.selfEdge": "Edge connects a node to itself.",

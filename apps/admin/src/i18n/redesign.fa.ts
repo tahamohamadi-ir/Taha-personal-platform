@@ -144,6 +144,11 @@ export const redesignFa: Record<string, string> = {
   "redesign.graph.confirm": "تأیید",
   "redesign.graph.dirtyLeave": "تغییرات ذخیره‌نشده وجود دارد. با تغییر نسخه از دست می‌روند. ادامه می‌دهید؟",
   "redesign.graph.createFailed": "ساخت پیش‌نویس ناموفق بود.",
+  // AF-05 server-validation bottom bar (composites flagged for owner review)
+  "redesign.graph.validating": "در حال اعتبارسنجی…",
+  "redesign.graph.validationUnavailable": "اعتبارسنجی در دسترس نیست.",
+  "redesign.graph.issuesCount": "خطا",
+  "redesign.graph.activateHasIssues": "نسخه دارای خطای اعتبارسنجی است.",
   // graph validator issue tokens (mirror of admin_graph_validate.py
   // _MESSAGE_TOKENS; composites flagged for owner review)
   "graph.duplicateNodeId": "شناسهٔ گره تکراری است.",

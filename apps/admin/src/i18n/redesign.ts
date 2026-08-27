@@ -4,10 +4,12 @@
 
 import type { ContentLocale } from "../lib/api";
 import type {
+  GraphIssueCode,
   HomeKey,
   HomeLocale,
   HomeSelectionMode,
 } from "../lib/adminApiExt";
+import { GRAPH_ISSUE_TOKENS } from "../lib/adminApiExt";
 import { redesignFa } from "./redesign.fa";
 import { redesignEn } from "./redesign.en";
 
@@ -39,4 +41,22 @@ export function fieldTokenMessage(
   const dictKey = `redesign.token.${token}`;
   const mapped = DICTS[locale][dictKey] ?? DICTS.fa[dictKey];
   return mapped ?? token;
+}
+
+/**
+ * fieldTokenMessage-style mapping for graph validator issues (AF-05): the
+ * server `messageToken` is the dict key (graph.* namespace, mirrored in
+ * GRAPH_ISSUE_TOKENS); resolution order = server token, then the client
+ * code-to-token mirror, then the raw code. Unknown tokens never render as
+ * raw English on the fa UI beyond the structural code itself.
+ */
+export function graphIssueMessage(
+  locale: ContentLocale,
+  issue: { code: string; messageToken: string }
+): string {
+  const token =
+    issue.messageToken !== ""
+      ? issue.messageToken
+      : (GRAPH_ISSUE_TOKENS[issue.code as GraphIssueCode] ?? issue.code);
+  return DICTS[locale][token] ?? DICTS.fa[token] ?? issue.code;
 }

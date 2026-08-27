@@ -471,6 +471,21 @@ export const GRAPH_ISSUE_TOKENS: Record<GraphIssueCode, string> = {
   MISSING_POSITION: "graph.missingPosition",
 };
 
+// SYNC-GUARD (AF-05): GRAPH_ISSUE_CODES + GRAPH_ISSUE_TOKENS mirror
+// apps/cms/apps/api/admin_graph_validate.py GRAPH_ISSUE_CODES +
+// _MESSAGE_TOKENS; keep in sync. scripts/check-graph-tokens.mjs (npm run
+// qa:tokens) is the automated cross-language guard; this dev-assert is the
+// in-app safety net (lengths must match 1:1, every code needs a token).
+if (import.meta.env.DEV) {
+  const tokenCount = Object.keys(GRAPH_ISSUE_TOKENS).length;
+  if (
+    tokenCount !== GRAPH_ISSUE_CODES.length ||
+    GRAPH_ISSUE_CODES.some((code) => (GRAPH_ISSUE_TOKENS[code] ?? "") === "")
+  ) {
+    throw new Error("GRAPH_ISSUE_TOKENS out of sync with GRAPH_ISSUE_CODES");
+  }
+}
+
 /** GET /api/v1/admin/graph/versions → bare array ordered by (locale, -id). */
 export async function getGraphVersions(): Promise<GraphVersionRow[]> {
   return request<GraphVersionRow[]>("/graph/versions");
@@ -522,4 +537,23 @@ export async function activateGraphVersion(
     `/graph/versions/${String(versionId)}/activate`,
     { method: "POST" }
   );
+}
+
+/** GET /api/v1/admin/graph/validation/{id} response (report, no mutation). */
+export interface GraphValidationReport {
+  issues: GraphIssue[];
+}
+
+/**
+ * GET /api/v1/admin/graph/validation/{id} → validator issues for the stored
+ * payload (empty array = clean). AF-05 bottom bar polls this after each draft
+ * mutation; 404/network surface as ApiError rejections.
+ */
+export async function validateGraphVersion(
+  versionId: number
+): Promise<GraphIssue[]> {
+  const report = await request<GraphValidationReport>(
+    `/graph/validation/${String(versionId)}`
+  );
+  return report.issues;
 }
