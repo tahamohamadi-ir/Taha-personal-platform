@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 240" role="img" aria-labelledby="title desc">
+  <title id="title">Taha Mohammadi refined monochrome monogram</title>
+  <desc id="desc">Single-color version of the polished existing monogram.</desc>
+  <path
+    d="M72 12H144L160 28V96H224L244 116V208L224 228H156L132 204V124H92V228H56V124H12V96H56V28L72 12ZM92 48V96H124V48H92ZM164 132V192H216V132H164Z"
+    fill="#071225"
+    fill-rule="evenodd"
+  />
+</svg>

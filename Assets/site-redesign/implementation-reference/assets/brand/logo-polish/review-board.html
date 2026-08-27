@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Taha mark — conservative polish review</title>
+    <style>
+      :root { color-scheme: light; font-family: Inter, Arial, sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #ece8df; color: #071225; }
+      main { width: 1400px; min-height: 900px; padding: 64px; }
+      header { display: flex; align-items: end; justify-content: space-between; margin-bottom: 36px; }
+      h1 { margin: 0; font: 600 38px/1.1 Georgia, serif; }
+      p { margin: 8px 0 0; color: #526071; font-size: 16px; }
+      .label { color: #0c8f86; font: 700 12px/1.2 Arial, sans-serif; letter-spacing: .18em; text-transform: uppercase; }
+      .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+      .card { min-height: 510px; padding: 28px; border: 1px solid #cfc8bc; background: #f8f5ef; border-radius: 24px; }
+      .card.dark { background: #071225; border-color: #1d3750; color: #f7f4ee; }
+      .stage { height: 350px; display: grid; place-items: center; }
+      .stage img { width: 286px; height: 286px; object-fit: contain; }
+      .stage .refined { width: 270px; height: 254px; }
+      h2 { margin: 0; font: 600 25px/1.2 Georgia, serif; }
+      .card.dark p { color: #a8b7c6; }
+      .sizes { margin-top: 24px; padding: 26px 30px; border: 1px solid #cfc8bc; background: #f8f5ef; border-radius: 24px; display: flex; align-items: center; gap: 36px; }
+      .sizes img { object-fit: contain; }
+      .size { display: grid; justify-items: center; gap: 10px; color: #657283; font-size: 12px; }
+      .notes { margin-left: auto; max-width: 610px; line-height: 1.65; color: #344357; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <div class="label">Conservative geometry polish</div>
+          <h1>Same identity. Cleaner construction.</h1>
+          <p>No new symbol, metaphor, lettering or decorative element.</p>
+        </div>
+        <div class="label">Review candidate · not live</div>
+      </header>
+      <section class="compare">
+        <article class="card">
+          <div class="stage"><img src="../taha-mark-primary.png" alt="Current mark" /></div>
+          <h2>Current mark</h2>
+          <p>Recognizable original geometry, preserved as the identity anchor.</p>
+        </article>
+        <article class="card dark">
+          <div class="stage"><img class="refined" src="taha-mark-refined-dark.svg" alt="Refined mark" /></div>
+          <h2>Refined mark</h2>
+          <p>Aligned grid, consistent outline rhythm, tighter canvas and dark-surface colorway.</p>
+        </article>
+      </section>
+      <section class="sizes">
+        <div class="size"><img src="taha-mark-refined.svg" width="16" height="16" alt="16 pixel" /><span>16</span></div>
+        <div class="size"><img src="taha-mark-refined.svg" width="24" height="24" alt="24 pixel" /><span>24</span></div>
+        <div class="size"><img src="taha-mark-refined.svg" width="32" height="32" alt="32 pixel" /><span>32</span></div>
+        <div class="size"><img src="taha-mark-refined.svg" width="48" height="48" alt="48 pixel" /><span>48</span></div>
+        <div class="size"><img src="taha-mark-refined.svg" width="64" height="64" alt="64 pixel" /><span>64</span></div>
+        <div class="size"><img src="taha-mark-refined.svg" width="96" height="96" alt="96 pixel" /><span>96</span></div>
+        <div class="notes"><strong>What changed:</strong> consistent 4 px grid, aligned counters, equalized outline layers, normalized chamfers and tighter safe area. The monogram itself is unchanged.</div>
+      </section>
+    </main>
+  </body>
+</html>
