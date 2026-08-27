@@ -328,3 +328,198 @@ export async function updateMediaPresentation(
     body: JSON.stringify(patch),
   });
 }
+
+// ---------- Graph authoring (AB-05 / AF-04) ----------
+// Contract source of truth: apps/cms/apps/api/admin_graph.py (FROZEN — AF
+// consumes, never redefines). Payload shapes are the AGENT-COORDINATION.md §4
+// GraphNodePublic/GraphEdgePublic camelCase contracts (one payload everywhere:
+// admin API and the future public BK-05 read serve the same shapes).
+// updatedAt doubles as the PUT If-Match revision. Edge id is composed
+// server-side (`source->target:relationType`) and ignored on write.
+
+export type GraphLocale = HomeLocale;
+
+/** admin_graph.py GraphVersionStatus (draft/active; active archives the previous). */
+export type GraphVersionStatus = "draft" | "active";
+
+export interface GraphVersionRow {
+  id: number;
+  locale: GraphLocale;
+  status: GraphVersionStatus;
+  createdAt: string;
+  updatedAt: string;
+  nodeCount: number;
+  edgeCount: number;
+}
+
+export interface GraphRelatedRecord {
+  family: string;
+  id: string;
+}
+
+export interface GraphNodePosition {
+  x: number;
+  y: number;
+  z?: number;
+}
+
+/** Camel node (admin_graph.py _serialize_node); `id` IS the node_id string. */
+export interface GraphNode {
+  id: string;
+  type: string;
+  label: string;
+  summary?: string;
+  accessibleLabel: string;
+  colorRole: string;
+  iconRole: string;
+  /** 0..1 integral only (validator rejects fractions until storage widens). */
+  weight: number;
+  position?: GraphNodePosition;
+  relatedRecords: GraphRelatedRecord[];
+}
+
+export interface GraphEdge {
+  /** Composed server-side; ignored on write. */
+  id: string;
+  source: string;
+  target: string;
+  relationType: string;
+  directed: boolean;
+  weight: number;
+  explanation?: string;
+}
+
+export interface GraphGroup {
+  name: string;
+  nodeIds: string[];
+}
+
+export interface GraphPayload {
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  groups: GraphGroup[];
+}
+
+export interface GraphVersionDetail {
+  id: number;
+  locale: GraphLocale;
+  status: GraphVersionStatus;
+  createdAt: string;
+  updatedAt: string;
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  groups: GraphGroup[];
+}
+
+/** Validator issue (admin_graph_validate.py issue shape). */
+export interface GraphIssue {
+  code: string;
+  nodeId?: string;
+  edgeId?: string;
+  messageToken: string;
+}
+
+export interface GraphRevisionResult {
+  revision: string;
+}
+
+export interface GraphActivateResult {
+  id: number;
+  status: string;
+}
+
+/** admin_graph.py GRAPH_RELATED_FAMILIES keys (forward family -> model table). */
+export const GRAPH_RELATED_FAMILIES = [
+  "landing",
+  "profile",
+  "article",
+  "series",
+  "researchtopic",
+  "researchstatement",
+  "project",
+  "publication",
+  "book",
+  "talk",
+  "download",
+] as const;
+
+export type GraphRelatedFamily = (typeof GRAPH_RELATED_FAMILIES)[number];
+
+/**
+ * Mirror of apps/cms/apps/api/admin_graph_validate.py GRAPH_ISSUE_CODES +
+ * _MESSAGE_TOKENS; keep in sync (AF-05 adds the token-sync test).
+ */
+export const GRAPH_ISSUE_CODES = [
+  "DUPLICATE_NODE_ID",
+  "SELF_EDGE",
+  "DUPLICATE_EDGE",
+  "BROKEN_RELATED",
+  "MISSING_ACCESSIBLE_LABEL",
+  "BAD_WEIGHT",
+  "MISSING_POSITION",
+] as const;
+
+export type GraphIssueCode = (typeof GRAPH_ISSUE_CODES)[number];
+
+export const GRAPH_ISSUE_TOKENS: Record<GraphIssueCode, string> = {
+  DUPLICATE_NODE_ID: "graph.duplicateNodeId",
+  SELF_EDGE: "graph.selfEdge",
+  DUPLICATE_EDGE: "graph.duplicateEdge",
+  BROKEN_RELATED: "graph.brokenRelated",
+  MISSING_ACCESSIBLE_LABEL: "graph.missingAccessibleLabel",
+  BAD_WEIGHT: "graph.badWeight",
+  MISSING_POSITION: "graph.missingPosition",
+};
+
+/** GET /api/v1/admin/graph/versions → bare array ordered by (locale, -id). */
+export async function getGraphVersions(): Promise<GraphVersionRow[]> {
+  return request<GraphVersionRow[]>("/graph/versions");
+}
+
+/** POST /api/v1/admin/graph/versions {locale} → 201 empty draft row. */
+export async function createGraphVersion(
+  locale: GraphLocale
+): Promise<GraphVersionRow> {
+  return request<GraphVersionRow>("/graph/versions", {
+    method: "POST",
+    body: JSON.stringify({ locale }),
+  });
+}
+
+/** GET /api/v1/admin/graph/versions/{id} → full camel payload. */
+export async function getGraphPayload(
+  versionId: number
+): Promise<GraphVersionDetail> {
+  return request<GraphVersionDetail>(`/graph/versions/${String(versionId)}`);
+}
+
+/**
+ * PUT /api/v1/admin/graph/versions/{id}/payload with If-Match (updatedAt ISO).
+ * 400 {"issues":[...]} / 409 IMMUTABLE_ACTIVE / 409 STALE_REVISION /
+ * 428 PRECONDITION_REQUIRED surface as ApiError rejections (issues preserved
+ * on the ApiError by the shared client).
+ */
+export async function putGraphPayload(
+  versionId: number,
+  payload: GraphPayload,
+  ifMatch: string
+): Promise<GraphRevisionResult> {
+  return request<GraphRevisionResult>(
+    `/graph/versions/${String(versionId)}/payload`,
+    {
+      method: "PUT",
+      headers: { "If-Match": ifMatch },
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+/** POST /api/v1/admin/graph/versions/{id}/activate → {id, status:"active"}. */
+export async function activateGraphVersion(
+  versionId: number
+): Promise<GraphActivateResult> {
+  return request<GraphActivateResult>(
+    `/graph/versions/${String(versionId)}/activate`,
+    { method: "POST" }
+  );
+}

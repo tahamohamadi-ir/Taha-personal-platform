@@ -22,12 +22,22 @@ export interface DashboardSummary {
   published: number;
 }
 
+/** Structured issue row (graph validator shape, admin_graph_validate.py). */
+export interface AdminIssue {
+  code: string;
+  nodeId?: string;
+  edgeId?: string;
+  messageToken?: string;
+}
+
 export interface ApiError {
   status: number;
   code: string;
   message: string;
   fields?: Record<string, string[]>;
   currentUpdatedAt?: string;
+  /** 400 {"issues":[...]} (graph PUT) / 409 VALIDATION_BLOCKED (activate). */
+  issues?: AdminIssue[];
 }
 
 export type ContentEntity =

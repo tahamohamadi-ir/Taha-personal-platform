@@ -15,6 +15,7 @@ import TagsPage from "./pages/TagsPage";
 import FeaturedPage from "./pages/FeaturedPage";
 import SecurityPage from "./pages/SecurityPage";
 import HomeComposerPage from "./pages/HomeComposer/HomeComposerPage";
+import GraphEditorPage from "./pages/GraphEditor/GraphEditorPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 function ContentEditRedirect(): ReactElement {
@@ -55,6 +56,7 @@ export default function App() {
               element={<Navigate to="/home-composer/fa" replace />}
             />
             <Route path="/home-composer/:locale" element={<HomeComposerPage />} />
+            <Route path="/graph-editor" element={<GraphEditorPage />} />
           </Route>
         </Route>
         <Route path="*" element={<NotFoundPage />} />
