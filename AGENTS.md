@@ -1,23 +1,25 @@
 # Agent and Developer Contract
 
-Read this file first, then **`docs/README.md`** — it is the documentation entry point
-and tells you which file owns which fact, where to record outcomes, and when to stop.
+Read this file first, then **`Assets/site-redesign/implementation-reference/README.md`** — it is the canonical next-generation frontend brief (P14 ATLAS, branch `p14c-visual-atlas`, commit `7d9b87f`) — then **`docs/README.md`** — it is the documentation entry point and tells you which file owns which fact, where to record outcomes, and when to stop.
 
 Then read `PROJECT_MANIFEST.md`, the active Task Spec (`docs/plan/README.md`), and
 only the contract cards your task needs:
 `docs/contracts/IA-CONTRACT.md` for routing and URLs,
 `docs/contracts/DESIGN-CONTRACT.md` for visual and token rules.
 
-`docs/design.md` and `docs/user-journey-information-architecture.md` are deep
-reference. Do not read them end to end; the contract cards restate their binding rules.
+`docs/design.md` and `docs/user-journey-information-architecture.md` are **history / deep reference**. Do not read them end to end; the contract cards restate their binding rules for current runtime. Next-generation design intent is now owned by `Assets/site-redesign/implementation-reference/MASTER-SPEC.md` and `Assets/site-redesign/implementation-reference/agent-kit/*.json` (see `DOCUMENT-MIGRATION-MAP.md`). For tokens, `MASTER-SPEC.md` outranks `reDesign_plan.md` §12–13 when they conflict.
 
 ## Current gate
 
-P0-G0 is **PASS for static-only P1** (2026-08-14). Staging is decommissioned (ADR-0025). Deploy requires CI green (web + cms) + production smoke. Development and deployment happen directly on `tahamohamadi.ir`.
+**P14 / ATLAS — next-generation frontend brief is canonical (planning, not live).** The public frontend will be **rebuilt from scratch in `apps/web/` as Astro + TypeScript + Tailwind v4 + React islands**, based exclusively on `Assets/site-redesign/implementation-reference/` (read order: `README.md` → `MASTER-SPEC.md` §1–6, §11 → `AGENT-COORDINATION.md` → `MULTI-AGENT-TASK-LIST.md` global constraints + execution board → `agent-kit/*.json` + `ACCEPTANCE-GATES.md`). Reference package: branch `p14c-visual-atlas`, commit `7d9b87f` (`7d9b87f3c2b04542e13c189adab3b57f2108d84a`) — `Assets/site-redesign/implementation-reference/` is the brief. **No P14 frontend rebuild has started; the reference is planning/handoff, not live.** Existing live routes and CMS projections below remain current runtime until a P14 packet is accepted and merged.
+
+Staging remains **decommissioned** (ADR-0025). Deploy still requires **CI green (web + cms) + production smoke** (`/admin/login/` + `/staff/login/` + `/health/` / `/health.json`). Development and deployment happen directly on `tahamohamadi.ir`. **Public pages stay no-JS readable; React remains an island, not the public-site shell** (MASTER-SPEC §2–3, §9).
+
+**Frontend / admin separation is invariant (ADR-0026):** `apps/web` (public Astro frontend) and `apps/cms` + `apps/cms/admin-frontend` (custom React admin SPA at `/admin/`, Django staff HTML at `/staff/` under `LOGIN_URL`) remain **separate projects, separate builds, separate routes**. No shared writable worktree, no merged bundle. The local-only Visual Atlas (`DESIGN_ATLAS=1` → `/_design/`) imports production components for review; it is **never a second library, never a content source, and never in a default production build**.
+
+**Public `/api/` and `/media/` remain published-only projections (live, 2026-08-17, `DEFER-0017` CLOSED).** Caddy proxies Ninja JSON for articles, research, and projects only when published; `/media/` is proxied as `is_active` only for anonymous. Contact persistence, media *upload*, drafts, private notes, phone/personal Gmail, and inactive assets are never exposed. Loopback rebuild: `rebuild-static.sh` until Caddy web cutover; after cutover use `rebuild-web.sh` (LOG-0173).
 
 **P3 CMS runtime (live):** Compose `taha-cms`; custom React admin SPA at `/admin/` (ADM-1 cutover, LOG-0163); Django staff HTML at `/staff/` (LOGIN_URL, preview, MFA fallback — Wagtail removed, `DEBT-0003` CLOSED / LOG-0193); `/static/*` proxied; `/health/` CMS JSON; `/health.json` static; TOTP enrolled (`RISK-0009` CLOSED). Hashed TOTP recovery codes are in repo (`DEFER-0015` CLOSED; owner rebuild still needed to use them on production). Staff draft preview is `/staff/preview/`; public share tokens at `/preview/share/<token>/` (DEFER-0016 CLOSED, LOG-0204). **`RISK-0003` CLOSED** (2026-08-17, LOG-0140). Canonical Caddy: `infra/cms/Caddyfile.cms.snippet` / `infra/caddy/Caddyfile`.
-
-**Public `/api/` (live, 2026-08-17):** Caddy proxies published-only Ninja JSON for articles, research, and projects (`DEFER-0017` CLOSED). `/media/` is proxied; contact persistence and media *upload* stay unpublished. Loopback rebuild: `rebuild-static.sh` until Caddy web cutover; after cutover use `rebuild-web.sh` (LOG-0173).
 
 **P4–P6 public routes (live):** `/{locale}/writing/`, `/{locale}/research/`, `/{locale}/projects/`. Header/footer may link those destinations because they exist. `/{locale}/blog/` permanently redirects to the writing tree (IA writing-canonical). RSS/Atom is `/{locale}/writing/rss.xml` (`DEFER-0018` CLOSED).
 
@@ -33,18 +35,21 @@ P0-G0 is **PASS for static-only P1** (2026-08-14). Staging is decommissioned (AD
 
 ## Ownership
 
-- `apps/web/`: public frontend only.
-- `apps/cms/`: Django/Ninja only (Wagtail removal authorized per ADR-0026; custom React admin SPA lives under `apps/cms/admin-frontend/` once scaffolded).
+- `apps/web/`: public frontend only. Next-gen rebuild is Astro + TypeScript + Tailwind v4 + React islands from `Assets/site-redesign/implementation-reference/`; the conditional Visual Atlas (`DESIGN_ATLAS=1` → `/_design/`) is **local-only and must not appear in a default production build** (no atlas route, fixtures, or nav in `npm run build` output).
+- `apps/cms/`: Django/Ninja only (Wagtail removal authorized per ADR-0026; custom React admin SPA lives under `apps/cms/admin-frontend/`).
 - `infra/`: deploy, Caddy, Compose and backup only.
 - `docs/`: policies, ADRs, planning and status only.
 - `.github/`: GitHub Actions and repository automation only.
+- `Assets/site-redesign/implementation-reference/`: **next-gen frontend brief only** (planning/handoff, not live runtime) — `MASTER-SPEC.md`, `agent-kit/*.json`, `AGENT-COORDINATION.md`, `MULTI-AGENT-TASK-LIST.md`, `ACCEPTANCE-GATES.md`. Authority is brief ownership; runtime authority remains `apps/web/src/styles/global.css` and the merged source until a packet is accepted.
 
 Do not recreate `frontend/` or `backend/`; the canonical paths are `apps/web/` and `apps/cms/`.
+
+Do not invent a new infrastructure service (Redis, Celery, OpenSearch, Neo4j, Kubernetes, self-hosted runner, or other always-on service) — VPS is Compose `taha-cms` + Caddy + static web only per `PROJECT_MANIFEST.md`.
 
 ## Non-negotiable contracts
 
 - Public root is a Language Gateway; `/fa/` and `/en/` are direct locale roots. Persian and English content, slug, SEO and status are independent but linked.
-- Main public content remains readable without JavaScript. React is an island, not the public-site shell.
+- Main public content remains readable without JavaScript. React is an island, not the public-site shell. The Visual Atlas is local-only; default production output is atlas-free.
 - Do not invent endpoints, DTO fields, models, metrics, content, translations, secret values or service choices.
 - Public projections never expose drafts, private media, internal notes, credentials or inactive assets.
 - Every work item has a Task Spec and every actual action receives a `WORK_LOG.md` entry. Deferred work must have an ID in `deferred-validation.md`.
@@ -54,6 +59,8 @@ Do not recreate `frontend/` or `backend/`; the canonical paths are `apps/web/` a
 
 Use the commands and versions in `PROJECT_MANIFEST.md`. The default `python` command currently resolves to a Hermes-owned interpreter and is not the project interpreter. When an authorized CMS bootstrap begins, install/use the latest supported Python 3.12 patch and create a project-local `.venv` with `uv`.
 
+`DESIGN_ATLAS=1` is the **local-only** Visual Atlas launcher (`npm run atlas` via `apps/web/scripts/design-atlas.mjs` → conditional `injectRoute` for `/_design/` in `apps/web/astro.config.mjs`). Default `npm run build` must not contain `/_design/`, atlas fixtures, or atlas navigation. Validate the kit with `node Assets/site-redesign/implementation-reference/agent-kit/validate.mjs`.
+
 ## CI and deployment
 
-GitHub Actions hosted runners are the CI baseline. Do not install Gitea or a self-hosted runner on the production VPS. No deployment occurs without owner approval, a documented rollback path and passing release gate.
+GitHub Actions hosted runners are the CI baseline. Do not install Gitea or a self-hosted runner on the production VPS. No deployment occurs without owner approval, a documented rollback path and passing release gate (CI green for `web` + `cms` plus production smoke).

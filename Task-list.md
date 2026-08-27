@@ -1,12 +1,18 @@
-# Fast Safe Go-Live Implementation Plan
+# Implementation Plan — Taha Personal Platform (ATLAS-aligned)
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` (recommended) or `superpowers:executing-plans` to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **Frontend rebuild source:** `Assets/site-redesign/implementation-reference/` — branch `p14c-visual-atlas`, commit `7d9b87f` — is the canonical next-generation frontend brief (planning/handoff, not live). See `docs/plan/README.md` (ATLAS-00..12 execution board) + `AGENT-COORDINATION.md` + `ACCEPTANCE-GATES.md` (G0..G9). For tokens, `MASTER-SPEC.md` outranks `reDesign_plan.md` §12–13.
 
-**Goal:** ?????? ????????? ????? ?????? ???? ? ???? ?????? ?? production? ?? ?? P1 ?????? static ? ???? ????? CMS? database ?? contact persistence ????? ??? ?????? ???????? P2 ?? P11 ?? ??? ???? ???? ??????? ? ?????????????? ??????????.
+**Goal:** Ship a versioned, production-safe static frontend + CMS-backed content lifecycle to `https://tahamohamadi.ir` incrementally — P1 static → CMS/database + contact persistence controlled → P2..P11 content families — while keeping **frontend vs admin separation invariant** and delivering the next-generation frontend **from scratch** per the site-redesign reference.
 
-**Architecture:** ???? ????? ?? Astro ? HTML ????? ????? ? ??????? artifact ???????? ?? Caddy ????? ??????. React ??? ???? interaction ????????? ??????? island ???? ??????? Django/Ninja/PostgreSQL ?? P3 ???? runtime ??????? ? Wagtail ??? ADR-0026 (2026-08-18) ?? ????? ??????? React ??????? ??????. ????? ? ??????? ????? ??? ????????? ? `/` ??? Language Gateway ???.
+**Architecture (ATLAS-aligned):**
+- Public frontend `apps/web/` — Astro 7 + TypeScript 5.9 + Tailwind CSS 4 + React 19 islands, **rebuilt from scratch** as dual-theme Design System (24 components + 6 templates) + local-only Visual Atlas `DESIGN_ATLAS=1` → `/_design/` (must NOT appear in default `npm run build`). Public content remains semantic and readable without JavaScript; React is an island, not the public-site shell (MASTER-SPEC §2–3, §9).
+- Backend/CMS `apps/cms/` — Django 5.2.9 + Django Ninja 1.6.2 + PostgreSQL 17 + custom React admin SPA at `/admin/` + Django staff HTML at `/staff/` per ADR-0026 (Wagtail removed, `DEBT-0003` CLOSED). Single Compose project `taha-cms` = `db` + `cms` + `web` + `caddy` (profile `edge`). Public `/api/` + `/media/` are published-only projections (`is_active` for anonymous).
+- Root `/` is Language Gateway; `/fa/` (RTL) and `/en/` (LTR) are direct locale roots; Persian/English slug/SEO/status independent but linked.
+- **Invariant (ADR-0026): `apps/web` and `apps/cms` (+ `admin-frontend`) remain separate projects, separate builds, separate routes** — no shared writable worktree, no merged bundle. Violations must be rejected.
 
-**Tech Stack:** Astro + TypeScript? Tailwind ? Design Tokens ??????? React Islands ??? ?? ???? ????? `motion`? `gsap` ? `three` ??? ???????? dependency ??????? ???? slice ????? ? ???? ??????? ?? P1? GitHub Actions hosted? Docker Compose + Caddy? ?? P3 ?? ??? Python 3.12 + Django 5.2 LTS + Django Ninja + PostgreSQL? ????? ??????? React (SPA) ??? `/admin/` ??? ADR-0026 ?????? Wagtail.
+**Tech Stack:** Astro + TypeScript + Tailwind v4 + Design Tokens + React Islands for public web (Nanostores not required); `motion`/`gsap`/`three` remain **bounded** lockfile deps used only when a slice's Task Spec explicitly authorizes their island/behavior; GitHub Actions hosted runners + Docker Compose + Caddy; for P3+ backend Python 3.12 + Django LTS + Ninja + PostgreSQL + custom React admin SPA at `/admin/` per ADR-0026.
+> **Note:** This file retains the historic P0→P11 checkbox history for traceability. **Active execution order for frontend rebuild is `docs/plan/README.md` (ATLAS-00..12)** — this `Task-list.md` must not duplicate or diverge from that board; link rather than copy. CMS/admin phases ADM-0..ADM-6 remain in §17.
 
 ## Wave 1 — web polish (2026-08-22)
 
@@ -98,18 +104,19 @@
 - **P0-G0 + P3 code-first gate (owner-authorized):** production P1 live on **release-6031441** (checksum `031943b1`) at https://tahamohamadi.ir since 2026-08-16 (LOG-0111); CI green on `main` (web + cms). A1-A5, B3-B5, C1-C3, C5, C6, C7 (no-CV scope), P1-09 (JSON-LD), D8 done. **Server upgraded** (Ubuntu 26.04 LTS, 2 vCPU / ~4 GiB RAM / 30 GB disk; owner decision: keep 4 GiB — `RISK-0007` CLOSED) and the live stack inventory-confirmed via `docker ps` 2026-08-16 (`RISK-0004` CLOSED). **Staging decommissioned** (ADR-0025, 2026-08-15): gate is now CI (web + cms) + production smoke only. **P3 `apps/cms/` code-first complete:** 70 pytest PASS, ruff clean, ADR-0020..0024, `ci-cms.yml`, NoIndexMiddleware + real JSON logging + enumeration/XSS tests, infra candidates NOT-APPLIED (LOG-0107, LOG-0110). CHANGELOG/BACKLOG updated. **KI-0001 CLOSED** (`profile.fa.ts` single-m fix; `rg tahamohammadi apps/web/src` clean — LOG-0110). **C4 DONE (md, 2026-08-16):** owner placed `Assets/Taha_Mohammadi_Master_CV_Website_Profile.md` + `Assets/Taha_Mohammadi_Industry_Resume_Software_AI.md`; published as Markdown downloads via `Downloads.astro` on `/en/cv/` + `/fa/cv/` (title/note/size; PDF replacement optional — owner). **Header logo added:** 8 KB PNG derived from `Assets/Taha Logo/Taha Logo base.png` (cropped 4000x4000 margins, transparent bg; ACCEPT-WITH-NOTES) replaces the `brand-mark` span in `Header.astro`; sitemap includes both CV routes. Local QA: overflow=0, dir ltr/rtl correct, 2 links/page, logo loads (Playwright on built dist, port 8899); `npm run check` 0 errors; `npm run build` 8 pages. **B1 DONE (inventory):** owner pasted `apt list --upgradable` (57 pkgs, Ubuntu 26.04 updates incl. docker/containerd/grub/apparmor); the upgrade itself needs an owner maintenance-window decision.
 - **Remaining (owner/server):** B2 (SSH port decision), DEFER-0009 (OG), DEFER-0013 (200% zoom), DEFER-0014 (alt-by-locale). **P3 runtime live (2026-08-16):** Compose `taha-cms`; `/admin/` + `/static/*` + TOTP (`RISK-0009` CLOSED, LOG-0129); recovery codes in repo (`DEFER-0015` CLOSED — owner rebuild); staff preview in repo (P3-07 DONE; `DEFER-0016` public token). `RISK-0003` needs CMS-postgres restore evidence. `/api/` and `/media/` unpublished (`DEFER-0017` for public blog API). **P4 Blog/Writing:** code-first `PARTIAL`/`DONE` in repo on `main` (PR #14 + security harden PR #15; LOG-0133/0134). Owner still owns prod migrate (after RISK-0003), optional `CMS_API_BASE` build, and DEFER-0018 feed.
 
-## Global Constraints
+## Global Constraints (ATLAS-aligned — supersedes P0-G0 phrasing for frontend)
 
-- ????? ???? gate ????? `P0-G0` ???. ??? scaffold? manifest ??????? dependency? API? schema? service ?? deploy ??? ?? PASS/exception ????? ? Task Spec ???? ????.
-- ??? ?? ?? task ?? Task Spec ???? ?? `docs/templates/TASK_SPEC_TEMPLATE.md` ????? ???? ?? ??? ????? ?? entry ?? `docs/status/WORK_LOG.md` ???????.
-- ?? ????? ????? ??? ?? release ???? ID ????? ???? ?? ?? `docs/status/deferred-validation.md` ?? `docs/status/RISK_REGISTER.md` ?????? ??? ???? ??? ledger ????.
-- Stop-the-line? Critical? High ???? ????? ???? ???? ? ???? ????? Minimum Safe Gate ???? ????? ??????.
-- endpoint? DTO? model? slug? metric? copy? translation? asset? secret? service ? command ????????? ?????? ????.
-- ????????? install/test/build/deploy ??? ?? ?? ????? ????? ? ??? ?? `PROJECT_MANIFEST.md` canonical ?????? ??? ?????? ????? command ????? ????? ???????.
-- `/` Language Gateway? `/fa/` ?????/RTL ? `/en/` ???????/LTR ?????. ?????? ????? ???? ??? ? fallback ????? ????? ???.
-- main content ???? JavaScript ????? ???????. `motion`? `gsap` ? `three` ?? lockfile ?????????? ??? heavy motion? canvas? WebGL? D3 ? ?? import/runtime ???? ???? ????? live ???? ?????? ? ????? global ?? render-blocking ????.
-- production ? ?? environment ??????? ????? ???? database? media? secret ?? backend ????? ?????? (staging ?? 2026-08-15 decommission ??? ??? — ADR-0025). P1 static ???? runtime ??????????? ????? ??????.
-- ??? merge? push ?? deploy ???? ?????? ???? ???? ????? ???????? ??? ???????? task-owned stage/commit ???????.
+- **Reference authority:** `Assets/site-redesign/implementation-reference/` is the canonical next-gen frontend brief (branch `p14c-visual-atlas`, commit `7d9b87f`). No packet is executable until integration lead activates its Task Spec per `AGENT-COORDINATION.md` §2 & §6. Reference validator `node Assets/site-redesign/implementation-reference/agent-kit/validate.mjs` must PASS (24 components, 6 templates, 10 assets) for G0.
+- Every task has a Task Spec from `docs/templates/TASK_SPEC_TEMPLATE.md` and every actual action appends one entry to `docs/status/WORK_LOG.md` with real command outputs.
+- Any skipped test/QA/hardening or accepted imperfection gets an ID in `docs/status/deferred-validation.md` (`DEFER-*`), `docs/status/TECH_DEBT.md` (`DEBT-*`), or `docs/status/RISK_REGISTER.md` (`RISK-*`) + `known-issues.md` (`KI-*`) + `BACKLOG.md` — never conversation-only.
+- Stop-the-line: Critical/High blocker → stop, report, do not improvise; see `docs/README.md` §5.
+- Never invent endpoint, DTO, model, slug, metric, copy, translation, asset, secret, or service choice — authority files decide (see `docs/README.md` §3 Who owns which fact).
+- Only run install/test/build/deploy commands that are canonical in `PROJECT_MANIFEST.md` and `AGENTS.md`; unverified commands are forbidden.
+- `/` Language Gateway, `/fa/` Persian RTL, `/en/` English LTR are invariant. Browser locale may suggest, never force redirect. Missing translation → explain + parent link + alternate link, never silent fallback or bare 404 (IA-CONTRACT §3).
+- Main content stays readable without JavaScript; `motion`/`gsap`/`three` are lockfile-bounded — no heavy motion/canvas/WebGL/D3 with import/runtime leak unless slice's Task Spec explicitly authorizes their island/behavior; public pages use progressive enhancement, reduced-motion disables continuous motion (`agent-kit/tokens.json`).
+- Staging is decommissioned (ADR-0025, 2026-08-15) — no production/staging database/media/secret intermix. P1 static path stays via Compose `taha-cms` caddy edge; deploy requires CI green (web + cms) + production smoke.
+- No merge/push/deploy without owner approval, documented rollback (previous artifact via `infra/deploy/update-release.sh`), and passing release gate (see `docs/governance/RELEASE_POLICY.md`).
+- **Frontend/admin separation invariant (ADR-0026):** `apps/web` and `apps/cms` (+ `admin-frontend`) remain separate projects/builds/routes — no shared writable worktree, no merged bundle. Default `npm run build` must NOT contain `/_design/`, atlas fixtures, or atlas nav.
 
 ---
 

@@ -6,6 +6,7 @@ You know which document to trust, which to edit, and when to stop.
 You need:
 - `AGENTS.md` at the repository root
 - `PROJECT_MANIFEST.md` at the repository root
+- `Assets/site-redesign/implementation-reference/README.md` for next-gen frontend intent (P14 ATLAS)
 - This file
 
 Audience:
@@ -22,13 +23,15 @@ Read in this order. Stop as soon as you have what the task needs.
 
 1. `AGENTS.md` — contracts you may never break.
 2. `PROJECT_MANIFEST.md` — approved versions and canonical commands.
-3. Your Task Spec in `docs/plan/` — see `docs/plan/README.md` for which one is active.
-4. Only the contract cards you need:
+3. `Assets/site-redesign/implementation-reference/README.md` → `MASTER-SPEC.md` (§1–6, §11) + `agent-kit/*.json` (+ `AGENT-COORDINATION.md`, `MULTI-AGENT-TASK-LIST.md`, `ACCEPTANCE-GATES.md`) — canonical next-gen frontend brief (P14 ATLAS, commit `7d9b87f`, branch `p14c-visual-atlas`). Planning/handoff only — not live runtime. For tokens, `MASTER-SPEC.md` outranks `reDesign_plan.md` §12–13.
+4. Your Task Spec in `docs/plan/` — see `docs/plan/README.md` for which one is active.
+5. Only the contract cards you need:
    - `docs/contracts/IA-CONTRACT.md` — binding navigation and URL rules.
    - `docs/contracts/DESIGN-CONTRACT.md` — binding visual and token rules.
-5. Deep reference only if the contract card does not answer the question:
-   - `docs/user-journey-information-architecture.md` (~3900 lines)
-   - `docs/design.md` (~3560 lines)
+6. Deep reference / history only if the contract card does not answer the question:
+   - `docs/design.md` (~3560 lines) — **history**, superseded by `MASTER-SPEC.md`.
+   - `docs/user-journey-information-architecture.md` (~3900 lines) — **history**, superseded by `MASTER-SPEC.md`.
+   Both are deep reference history; binding runtime rules are in the contract cards, binding next-gen intent is in `MASTER-SPEC.md` + `agent-kit`.
 
 Do not read the deep reference files end to end.
 They are reference, not instructions.
@@ -42,19 +45,23 @@ You can name the one file that owns the fact you are about to change.
 
 Do not infer current state from a plan file. Plans describe intent.
 
-| Question | Answer as of 2026-08-19 | Source of truth |
+| Question | Answer as of 2026-08-26 | Source of truth |
 |---|---|---|
-| What is live publicly? | Language Gateway `/`, `/fa/`, `/en/`, About, CV, blog, research, projects, 404, robots, sitemap | `apps/web/src/pages/`; LOG-0143; LOG-0150 |
-| Is the CMS live? | Yes — React SPA `/admin/`, Django staff `/staff/`, `/static/*`, `/health/` | `infra/cms/Caddyfile.cms.snippet`; LOG-0163; LOG-0193 |
-| Is `/api/` public? | Yes — published-only Ninja JSON for articles, research, and projects | `DEFER-0017` CLOSED; LOG-0143 |
-| Is `/media/` public? | Proxied; upload unpublished. This branch serves files only when `is_active` (anonymous). | LOG-0143; LOG-0167 |
+| What is live publicly? | Language Gateway `/`, `/fa/`, `/en/`, About, CV, blog/writing, research, projects, 404, robots, sitemap; P8 catalogs (`publications`, `books`, `talks`, `downloads`) + `/{locale}/search/` (Pagefind) — catalogs empty-honest until CMS content | `apps/web/src/pages/`; LOG-0143; LOG-0150; LOG-0216 |
+| Has the P14 frontend rebuild started? | **No** — `Assets/site-redesign/implementation-reference/` is **planning/handoff only**; no token, component, template, or route from it is live. Existing `apps/web` static routes remain current runtime until a P14 packet is accepted and merged. | `Assets/site-redesign/implementation-reference/README.md` (branch `p14c-visual-atlas`, commit `7d9b87f`); `AGENTS.md` Current gate |
+| What is the next-gen frontend brief? | `Assets/site-redesign/implementation-reference/` — dual-theme Design System, 24 components, 6 templates, local-only Visual Atlas (`DESIGN_ATLAS=1` → `/_design/`), `agent-kit/*.json` + `ACCEPTANCE-GATES.md`. Not live; `apps/web/src/styles/global.css` remains current runtime token authority. | `MASTER-SPEC.md`; `agent-kit/README.md`; `DOCUMENT-MIGRATION-MAP.md` |
+| Is the CMS live? | Yes — Compose `taha-cms` (`db` + `cms` + `web` nginx + `caddy` edge); React SPA `/admin/`, Django staff `/staff/`, `/static/*`, `/health/` + `/health.json` | `infra/cms/Caddyfile.cms.snippet`; LOG-0163; LOG-0193; LOG-0210; LOG-0216 |
+| Is `/api/` public? | Yes — **published-only** Ninja JSON for articles, research, and projects | `DEFER-0017` CLOSED; LOG-0143 |
+| Is `/media/` public? | Proxied; upload unpublished. Serves files only when `is_active` (anonymous). | LOG-0143; LOG-0167 |
 | Is contact published? | No — honest "not published" copy | `DEFER-0007` CLOSED |
 | Is About CMS-managed? | Yes on `main` (PR #31). Public About uses CMS when the build has `CMS_API_BASE`; `profile.snapshot.json` only when base is unset (local/offline). With base set, API outage fails the build (no silent snapshot). | LOG-0150; LOG-0182; ADR-0027 Slice 3; `DEFER-0022` |
 | Where is the custom admin? | SPA at `/admin/` (cutover done). Wagtail package removed (`DEBT-0003` CLOSED); staff HTML at `/staff/`. | LOG-0163; LOG-0193; `DEFER-0023` CLOSED |
-| Is there search? | No. Pagefind remains later | `PROJECT_MANIFEST.md` |
-| Is React the public shell? | No | `apps/web/package.json` |
+| Is there search? | Yes — `/{locale}/search/` (Pagefind, Wave 5). | LOG-0215; LOG-0216 |
+| Is React the public shell? | No — Astro static shell; React is island-only. Atlas is local-only; default build has no `/_design/`. | `apps/web/package.json`; `MASTER-SPEC.md` §2–3; `AGENTS.md` |
+| Is `DESIGN_ATLAS=1` live? | No — local playground only. Default `npm run build` must not contain `/_design/`, fixtures, or atlas nav. | `AGENTS.md`; `Assets/site-redesign/implementation-reference/MASTER-SPEC.md` §2 |
 | Is staging alive? | No — decommissioned | `docs/adr/0025-staging-decommission.md` |
 | Is `RISK-0003` open? | No — CLOSED | LOG-0140 |
+| Are `docs/design.md` and `user-journey-…` current? | No — **history / deep reference**. Next-gen visual and journey intent is now in `MASTER-SPEC.md` + `agent-kit/*.json`; current runtime rules are in contract cards. | `AGENTS.md`; `DOCUMENT-MIGRATION-MAP.md`; `SOURCE-INVENTORY.md` |
 
 Warning:
 This checkout is not always the same as production. Feature branches may hold
@@ -71,12 +78,15 @@ One fact, one owner. Update the owner first, then any file that quotes it.
 |---|---|---|
 | Non-negotiable contracts | `AGENTS.md` | plan files, design.md |
 | Approved versions, canonical commands | `PROJECT_MANIFEST.md` | README, task specs |
+| Next-gen design tokens, components, templates, atlas, and brief | `Assets/site-redesign/implementation-reference/MASTER-SPEC.md` + `Assets/site-redesign/implementation-reference/agent-kit/*.json` (+ `AGENT-COORDINATION.md`, `MULTI-AGENT-TASK-LIST.md`, `ACCEPTANCE-GATES.md`) | `docs/design.md` (history), `apps/web/src/styles/global.css` (current runtime only until ATLAS-01 accepted) |
+| Current runtime visual/token authority | `apps/web/src/styles/global.css` | `agent-kit/tokens.json` (next-gen brief, not active runtime) |
 | Architecture decision | `docs/adr/NNNN-*.md` | master plan, design.md |
 | Phase order and scope | `docs/taha-personal-platform-development-master-plan-fa.md` | task specs |
 | Execution checkboxes | `Task-list.md` | master plan |
 | Which spec is active | `docs/plan/README.md` | S-Plan, backlog |
 | Navigation / URL rules | `docs/contracts/IA-CONTRACT.md` | design.md |
-| Tokens, spacing, colour rules | `docs/contracts/DESIGN-CONTRACT.md` + `apps/web/src/styles/global.css` | design.md |
+| Tokens, spacing, colour rules (current runtime) | `docs/contracts/DESIGN-CONTRACT.md` + `apps/web/src/styles/global.css` | design.md |
+| Visual / journey history (superseded) | `docs/design.md`, `docs/user-journey-information-architecture.md` — **history / deep reference only** | `MASTER-SPEC.md` + contract cards (next-gen intent / current runtime) |
 | What actually happened | `docs/status/WORK_LOG.md` | CHANGELOG |
 | Unresolved blocker | `docs/status/RISK_REGISTER.md` | work log |
 | Accepted compromise | `docs/status/TECH_DEBT.md` | code comments |
@@ -142,6 +152,7 @@ Stopping costs minutes. Inventing costs a release.
 
 | Path | Contains | Edit rule |
 |---|---|---|
+| `Assets/site-redesign/implementation-reference/` | Next-gen frontend brief: `MASTER-SPEC.md`, `agent-kit/*.json`, `AGENT-COORDINATION.md`, `MULTI-AGENT-TASK-LIST.md`, `ACCEPTANCE-GATES.md` (planning/handoff, not live) | Read-only until P14 packet activated; do not treat as runtime |
 | `docs/contracts/` | Short binding cards for IA and design | Change only with the owning deep doc |
 | `docs/governance/` | Release, documentation, deploy, backup, incident, server policy | Policy change needs owner approval |
 | `docs/adr/` | Architecture decisions | Never rewrite an accepted decision; supersede it |
@@ -149,10 +160,11 @@ Stopping costs minutes. Inventing costs a release.
 | `docs/status/` | Ledgers: work log, risks, debt, deferred, known issues, changelog, backlog | Append; never delete history |
 | `docs/templates/` | Task Spec template | Copy, do not edit in place |
 
-Deep reference files live directly in `docs/`:
+Deep reference / history files live directly in `docs/`:
 `design.md`, `user-journey-information-architecture.md`,
 `taha-personal-platform-development-master-plan-fa.md`,
 `taha-personal-platform-technology-architecture-baseline-fa.md`.
+`design.md` and `user-journey-…` are **history**; next-gen intent is in `Assets/site-redesign/implementation-reference/MASTER-SPEC.md` + `agent-kit/*.json`.
 
 ---
 
@@ -175,4 +187,4 @@ If the code is finished but documentation is not, the task is `PARTIAL`, not `DO
 You know the read order, the owner of each fact, where to record outcomes, and when to stop.
 
 Next:
-Open `docs/plan/README.md` and find the active Task Spec.
+Open `Assets/site-redesign/implementation-reference/MASTER-SPEC.md` (§1–6, §11) and `agent-kit/README.md`, then `docs/plan/README.md` and find the active Task Spec.
