@@ -11,6 +11,8 @@ import re
 import uuid
 
 from django.conf import settings
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
@@ -1788,3 +1790,279 @@ class TimelineRecord(LifecycleMixin):
 
     def __str__(self) -> str:
         return f"{self.label} ({self.locale})"
+
+
+class GraphVersionStatus(models.TextChoices):
+    """Graph publishing lifecycle (BK-04): draft | active, one active per locale."""
+
+    DRAFT = "draft", "Draft"
+    ACTIVE = "active", "Active"
+
+
+class GraphVersionQuerySet(models.QuerySet):
+    """Graph read gates; the active row per locale is the public candidate."""
+
+    def active_for_locale(self, locale: str) -> GraphVersionQuerySet:
+        """Active version rows for one locale (public read scope)."""
+        return self.filter(locale=locale, status=GraphVersionStatus.ACTIVE)
+
+    def latest_active(self, locale: str) -> GraphVersion | None:
+        """Newest active version for a locale, or ``None`` (fail-closed seam)."""
+        return self.active_for_locale(locale).order_by("-id").first()
+
+
+class GraphVersionManager(models.Manager.from_queryset(GraphVersionQuerySet)):
+    """Default manager; ``latest_active`` is the public read gate."""
+
+
+class GraphVersion(models.Model):
+    """Per-locale graph version (BK-04 storage; admin writes are AB-06).
+
+    Graph versions are not lifecycle content: ``draft``/``active`` is a
+    two-state editor lifecycle, so this model does not mix in
+    ``LifecycleMixin``. At most one ``active`` row per locale is enforced by
+    a conditional unique constraint (partial unique index on Postgres).
+    Public reads (BK-05) go through :meth:`GraphVersionQuerySet.latest_active`
+    only.
+    """
+
+    locale = models.CharField(max_length=2, choices=Locale.choices, db_index=True)
+    status = models.CharField(
+        max_length=20,
+        choices=GraphVersionStatus.choices,
+        default=GraphVersionStatus.DRAFT,
+        db_index=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = GraphVersionManager()
+
+    class Meta:
+        db_table = "content_graph_version"
+        ordering = ["locale", "-id"]
+        indexes = [
+            models.Index(fields=["locale", "status"], name="graph_version_loc_st_idx"),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["locale"],
+                condition=models.Q(status=GraphVersionStatus.ACTIVE),
+                name="content_graph_version_unique_active_locale",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"Graph {self.locale} #{self.pk} ({self.status})"
+
+    def clean(self) -> None:
+        """Validate the whole version payload: edge rules and related targets."""
+        super().clean()
+        if self.pk is None:
+            return
+        problems: list[ValidationError] = []
+        for edge in self.edges.select_related("source", "target"):
+            try:
+                edge.clean()
+            except ValidationError as exc:
+                problems.append(exc)
+        related_rows = GraphNodeRelated.objects.filter(
+            node__version_id=self.pk
+        ).select_related("content_type")
+        for row in related_rows:
+            try:
+                row.clean()
+            except ValidationError as exc:
+                problems.append(exc)
+        if problems:
+            raise ValidationError(problems)
+
+
+class GraphGroup(models.Model):
+    """Editor-side node grouping within one graph version (MASTER-SPEC §8).
+
+    Authoring structure only — not part of the phase-1 public payload
+    (``GraphNodePublic`` maps no group key today).
+    """
+
+    version = models.ForeignKey(
+        GraphVersion,
+        on_delete=models.CASCADE,
+        related_name="groups",
+    )
+    label = models.CharField(max_length=200)
+    color_role = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = "content_graph_group"
+        ordering = ["id"]
+
+    def __str__(self) -> str:
+        return f"{self.label} ({self.version_id})"
+
+
+class GraphNode(models.Model):
+    """Node row of one graph version (BK-04).
+
+    Columns map 1:1 to the ``GraphNodePublic`` target (AGENT-COORDINATION
+    §4): ``node_id``->id, ``type``, ``label``, ``summary`` (blank -> absent),
+    ``accessible_label``->accessibleLabel, ``color_role``->colorRole,
+    ``icon_role``->iconRole, ``weight``, ``pos_x/pos_y/pos_z``->position
+    (nullable until an editor pins coordinates). camelCase naming happens at
+    the API layer (BK-05), never in storage.
+    """
+
+    version = models.ForeignKey(
+        GraphVersion,
+        on_delete=models.CASCADE,
+        related_name="nodes",
+    )
+    node_id = models.CharField(max_length=100)
+    label = models.CharField(max_length=200)
+    type = models.CharField(max_length=100)
+    summary = models.TextField(blank=True)
+    accessible_label = models.CharField(max_length=300, blank=True)
+    color_role = models.CharField(max_length=100)
+    icon_role = models.CharField(max_length=100)
+    weight = models.PositiveSmallIntegerField(default=0)
+    pos_x = models.FloatField(null=True, blank=True)
+    pos_y = models.FloatField(null=True, blank=True)
+    pos_z = models.FloatField(null=True, blank=True)
+    group = models.ForeignKey(
+        GraphGroup,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="members",
+    )
+
+    class Meta:
+        db_table = "content_graph_node"
+        ordering = ["version", "node_id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["version", "node_id"],
+                name="content_graph_node_unique_version_node_id",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.label} ({self.node_id})"
+
+
+class GraphNodeRelated(models.Model):
+    """Generic record reference from a node (``GraphNodePublic.relatedRecords``).
+
+    ``family`` is not stored: the API layer derives it from ``content_type``
+    (single source of truth). Dangling targets (deleted rows) are allowed —
+    validation only rejects references to existing but unpublished objects
+    ("published-or-null", BK-04).
+    """
+
+    node = models.ForeignKey(
+        GraphNode,
+        on_delete=models.CASCADE,
+        related_name="related_records",
+    )
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField(db_index=True)
+    content_object = GenericForeignKey("content_type", "object_id")
+
+    class Meta:
+        db_table = "content_graph_node_related"
+        ordering = ["id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["node", "content_type", "object_id"],
+                name="content_graph_node_related_unique_target",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.node_id} <- {self.content_type_id}:{self.object_id}"
+
+    def clean(self) -> None:
+        """Reject references to existing objects that are not publicly readable."""
+        super().clean()
+        target = self.content_object
+        if target is None:
+            return
+        public = getattr(type(target).objects, "public", None)
+        if public is None or not public().filter(pk=target.pk).exists():
+            raise ValidationError(
+                {
+                    "object_id": (
+                        "Related records must reference a published object or be null."
+                    )
+                }
+            )
+
+
+class GraphEdge(models.Model):
+    """Directed/undirected edge within one graph version (BK-04).
+
+    Maps to ``GraphEdgePublic`` (AGENT-COORDINATION §4): ``source``/``target``
+    are :class:`GraphNode` rows serialized as their stable ``node_id``
+    strings, ``relation_type``->relationType, ``explanation`` blank -> absent
+    at the API layer. The stable public ``id`` string is composed by BK-05.
+    """
+
+    version = models.ForeignKey(
+        GraphVersion,
+        on_delete=models.CASCADE,
+        related_name="edges",
+    )
+    source = models.ForeignKey(
+        GraphNode,
+        on_delete=models.CASCADE,
+        related_name="outgoing_edges",
+    )
+    target = models.ForeignKey(
+        GraphNode,
+        on_delete=models.CASCADE,
+        related_name="incoming_edges",
+    )
+    relation_type = models.CharField(max_length=100)
+    directed = models.BooleanField(default=True)
+    weight = models.PositiveSmallIntegerField(default=0)
+    explanation = models.TextField(blank=True)
+
+    class Meta:
+        db_table = "content_graph_edge"
+        ordering = ["id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["version", "source", "target", "relation_type"],
+                name="content_graph_edge_unique_version_pair_rel",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.relation_type}: {self.source_id}->{self.target_id}"
+
+    def clean(self) -> None:
+        """Same-version endpoints; undirected pairs must not duplicate in reverse."""
+        super().clean()
+        if self.version_id is None or self.source_id is None or self.target_id is None:
+            return
+        errors: dict[str, str] = {}
+        if (
+            self.source.version_id != self.version_id
+            or self.target.version_id != self.version_id
+        ):
+            errors["version"] = "Edge endpoints must belong to the same graph version."
+        if not errors and not self.directed:
+            mirror = GraphEdge.objects.filter(
+                version_id=self.version_id,
+                source_id=self.target_id,
+                target_id=self.source_id,
+                relation_type=self.relation_type,
+            )
+            if self.pk:
+                mirror = mirror.exclude(pk=self.pk)
+            if mirror.exists():
+                errors["source"] = (
+                    "An undirected edge must not duplicate an existing reversed pair."
+                )
+        if errors:
+            raise ValidationError(errors)
