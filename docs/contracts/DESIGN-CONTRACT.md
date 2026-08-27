@@ -5,7 +5,7 @@ You can build a page that matches the product's visual identity without reading
 `docs/design.md` end to end, and without guessing what "editorial" means.
 
 Source of truth for **tokens — Light is live, Dark is design-target**:
-`apps/web/src/styles/global.css` is the **runtime authority**; `Assets/site-redesign/implementation-reference/agent-kit/tokens.json` v1.0.0 is the **contract** that defines both Light (runtime-authoritative) and Dark (design-target) semantic roles. They MUST agree byte-for-role on Light; Dark becomes runtime only when ATLAS-01 is accepted. See `MASTER-SPEC.md` §6.
+`apps/web/src/styles/global.css` is the **runtime authority**; `Assets/site-redesign/implementation-reference/agent-kit/tokens.json` v1.1.0 is the **contract** that defines both Light (runtime-authoritative) and Dark (design-target) semantic roles. They MUST agree byte-for-role on Light; Dark becomes runtime only when ATLAS-01 is accepted. See `MASTER-SPEC.md` §6.
 
 Source of truth for **visual intent (next-gen)**:
 `Assets/site-redesign/implementation-reference/MASTER-SPEC.md` §6 + `agent-kit/tokens.json` / `components.json` / `templates.json`.
@@ -63,6 +63,7 @@ This table is live. `global.css` and `tokens.json:semanticLight` MUST agree byte
 | Hairline border | `--color-border-subtle` | `#dde5e3` |
 | Strong border | `--color-border-strong` | `#b9c7c3` |
 | Focus ring | `--color-focus` | `#087c73` |
+| Danger / destructive | `--color-danger` | `#b3261e` |
 | Latin font (runtime) | `--font-latin` | `Inter Variable` |
 | Persian font (runtime) | `--font-persian` | `Vazirmatn Variable` |
 
@@ -94,6 +95,7 @@ Dark semantic roles are now LANDED in `global.css` behind `[data-theme="dark"]` 
 | Strong border | `--color-border-strong` | `#405476` |
 | Control border | `--color-control-border` | `#71839e` |
 | Focus ring | `--color-focus` | `#6be6d9` |
+| Danger / destructive | `--color-danger` | `#ef6b68` |
 
 Primitive reference (both themes): `navy950 #071225`, `navy900 #0b1630`, `navy800 #122343`, `turquoise500 #16b8a6`, `turquoise600 #0d9689`, `turquoise700 #087c73`, `gold500 #c89b3c`, `gold600 #a77b28`, `purple500 #6047b8`, `emerald500 #137a62`, `coral500 #d45f45`.
 

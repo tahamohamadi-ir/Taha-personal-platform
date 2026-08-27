@@ -70,6 +70,11 @@
      hairlines keep border-subtle/strong. */
   --color-control-border: #748682;
   --color-focus: #087c73;
+  /* TOK-DANGER (WF-02 escalation closed): semantic danger for BOTH themes.
+     Non-text >=3:1: 6.13:1 on Light canvas #f7f8f5 and 6.54:1 on surface
+     #ffffff; Dark counterpart #ef6b68 is 6.21:1 on night canvas #071225.
+     Enforced by qa/design-tokens.spec.mjs. */
+  --color-danger: #b3261e;
 
   /* radius / spacing in design.md */
   --radius-md: 12px;
@@ -187,7 +192,10 @@
   --brand-deep: #0d9689;
   --gold: #e3b95c;
   --violet: #8e75e6;
-  --danger: #ff6b5e;
+  /* TOK-DANGER: night danger aliases the semantic token so consumers
+     (InputField/TextareaField error states) resolve the theme-valid value
+     in both themes instead of the failing ad-hoc #ff6b5e (2.79:1 on white). */
+  --danger: var(--color-danger);
 
   /*
     Night motion language (reDesign_plan §۱.۵ M0 ladder). Deliberately new
@@ -241,6 +249,7 @@
   --color-border-strong: #405476;
   --color-control-border: #71839e;
   --color-focus: #6be6d9;
+  --color-danger: #ef6b68;
 }
 
 /* design-tokens: end */

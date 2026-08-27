@@ -13,8 +13,10 @@
 //      component/class rules after the token section is a failure);
 //   e) WCAG 2.x relative-luminance contrast: >= 4.5:1 for ink/canvas and
 //      ink-secondary/canvas, >= 3:1 for control-border/canvas, in BOTH
-//      themes. Brand pairs are computed and PRINTED only (report data,
-//      not a gate) so hover/primary rest states stay visible in the log.
+//      themes, and >= 3:1 for danger on Light canvas+surface and Dark
+//      canvas (TOK-DANGER, non-text). Brand pairs are computed and PRINTED
+//      only (report data, not a gate) so hover/primary rest states stay
+//      visible in the log.
 
 import { readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
@@ -59,6 +61,7 @@ const ROLE_TO_PROP = {
   borderStrong: "--color-border-strong",
   controlBorder: "--color-control-border",
   focus: "--color-focus",
+  danger: "--color-danger",
 };
 
 // --- WCAG 2.x relative luminance / contrast ratio -------------------------
@@ -234,6 +237,10 @@ const pairs = [
   { theme: "Dark", fgRole: "ink", bgRole: "canvas", min: 4.5 },
   { theme: "Dark", fgRole: "inkSecondary", bgRole: "canvas", min: 4.5 },
   { theme: "Dark", fgRole: "controlBorder", bgRole: "canvas", min: 3 },
+  // TOK-DANGER (WF-02 escalation): semantic danger, non-text >= 3:1.
+  { theme: "Light", fgRole: "danger", bgRole: "canvas", min: 3 },
+  { theme: "Light", fgRole: "danger", bgRole: "surface", min: 3 },
+  { theme: "Dark", fgRole: "danger", bgRole: "canvas", min: 3 },
 ];
 
 for (const p of pairs) {
