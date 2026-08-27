@@ -279,4 +279,11 @@ admin_api.add_router("/home-modules", home_router)
 from apps.api.admin_timeline import timeline_router  # noqa: E402
 
 admin_api.add_router("/timeline", timeline_router)
+
+# AB-04: direct root-group registration (not add_router) so the literal
+# media/licenses path resolves before the legacy untyped media/<media_id>
+# route; see apps/api/admin_media_ext.py module docstring.
+from apps.api.admin_media_ext import register_media_ext  # noqa: E402
+
+register_media_ext(admin_api)
 # [ADMIN-API] Track AB end
