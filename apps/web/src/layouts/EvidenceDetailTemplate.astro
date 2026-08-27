@@ -1,0 +1,66 @@
+---
+/* layouts/EvidenceDetailTemplate - WF-05. Evidence/visual detail for the
+   project, research, publication and creative detail families (books,
+   talks and downloads details project onto it). Ordered evidence
+   anatomy: breadcrumbs, evidence lead, MetadataGroup definition-list
+   metadata, optional media, body, optional limitations/rights, and the
+   related close (IA-CONTRACT S6: a detail page never ends with only the
+   footer). Media and limitations render only when their slot has
+   content - no wrapper gap. Semantic composition only: no data
+   fetching, no CMS calls, no route policy; header and footer landmarks
+   are owned by BaseLayout. A linked detail page must never render an
+   empty shell: a missing lead or body slot throws at build time.
+   Seams: metadata item shape is owned by content/MetadataGroup; media
+   variants by content/MediaTile. Theming cascades from tokens. */
+const hasLead = Astro.slots.has("lead");
+const hasBody = Astro.slots.has("body");
+const hasMedia = Astro.slots.has("media");
+const hasLimitations = Astro.slots.has("limitations");
+if (!hasLead) {
+  throw new Error(
+    "EvidenceDetailTemplate: required slot 'lead' is empty - a linked detail page must never render an empty shell",
+  );
+}
+if (!hasBody) {
+  throw new Error(
+    "EvidenceDetailTemplate: required slot 'body' is empty - a linked detail page must never render an empty shell",
+  );
+}
+---
+<div class="tpl-evidence">
+  <div class="tpl-evidence__breadcrumbs"><slot name="breadcrumbs" /></div>
+  <div class="tpl-evidence__lead"><slot name="lead" /></div>
+  <div class="tpl-evidence__metadata"><slot name="metadata" /></div>
+  {
+    hasMedia && (
+      <div class="tpl-evidence__media">
+        <slot name="media" />
+      </div>
+    )
+  }
+  <div class="tpl-evidence__body"><slot name="body" /></div>
+  {
+    hasLimitations && (
+      <div class="tpl-evidence__limitations">
+        <slot name="limitations" />
+      </div>
+    )
+  }
+  <div class="tpl-evidence__related"><slot name="related" /></div>
+</div>
+
+<style>
+  .tpl-evidence {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    max-width: var(--measure-page);
+    margin-inline: auto;
+    padding-inline: var(--space-gutter);
+    padding-block: var(--space-section);
+  }
+
+  .tpl-evidence__body {
+    max-width: var(--measure-prose);
+  }
+</style>

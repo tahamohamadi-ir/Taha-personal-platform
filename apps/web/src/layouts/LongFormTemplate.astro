@@ -1,0 +1,49 @@
+---
+/* layouts/LongFormTemplate - WF-05. Long-form reading layout for the
+   writing/teaching detail families. Semantic composition only: the route
+   fills the named slots - Breadcrumbs, SectionLead as="h1" article lead,
+   content/TableOfContents, the portable rich body (story blocks or
+   prose), and the related/next-step close so a detail page never ends
+   with only the footer (IA-CONTRACT S6). Header and footer landmarks
+   are owned by BaseLayout. A linked detail page must never render an
+   empty shell: a missing articleLead or body slot throws at build time.
+   No data fetching, no CMS calls, no route policy.
+   Seams: body block types are content-component proposals; TOC depth is
+   owned by content/TableOfContents. Theming cascades from tokens. */
+const hasLead = Astro.slots.has("articleLead");
+const hasBody = Astro.slots.has("body");
+if (!hasLead) {
+  throw new Error(
+    "LongFormTemplate: required slot 'articleLead' is empty - a linked detail page must never render an empty shell",
+  );
+}
+if (!hasBody) {
+  throw new Error(
+    "LongFormTemplate: required slot 'body' is empty - a linked detail page must never render an empty shell",
+  );
+}
+---
+<div class="tpl-longform">
+  <div class="tpl-longform__breadcrumbs"><slot name="breadcrumbs" /></div>
+  <div class="tpl-longform__lead"><slot name="articleLead" /></div>
+  <div class="tpl-longform__toc"><slot name="toc" /></div>
+  <div class="tpl-longform__body"><slot name="body" /></div>
+  <div class="tpl-longform__related"><slot name="related" /></div>
+</div>
+
+<style>
+  .tpl-longform {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    max-width: var(--measure-page);
+    margin-inline: auto;
+    padding-inline: var(--space-gutter);
+    padding-block: var(--space-section);
+  }
+
+  .tpl-longform__toc,
+  .tpl-longform__body {
+    max-width: var(--measure-prose);
+  }
+</style>

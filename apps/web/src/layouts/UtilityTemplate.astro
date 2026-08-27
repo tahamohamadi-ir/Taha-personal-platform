@@ -1,0 +1,38 @@
+---
+/* layouts/UtilityTemplate - WF-05. Utility layout for the about, cv,
+   contact and search families. Semantic composition only: the route
+   fills the named slots - SectionLead as="h1" opener and the typed
+   records or approved contact path body. Header and footer landmarks
+   are owned by BaseLayout. Breadcrumbs keep their templates.json seam
+   but render only when their slot has content: IA-CONTRACT S7 forbids
+   breadcrumbs on About, Contact and Search while CV may carry them, so
+   an unfilled breadcrumb slot leaves no wrapper gap. No data fetching,
+   no CMS calls, no route policy.
+   Seams: about tabs, gated detail bodies and the contact form are
+   content-component compositions inside the content slot. Theming
+   cascades from tokens. */
+const hasBreadcrumbs = Astro.slots.has("breadcrumbs");
+---
+<div class="tpl-utility">
+  {
+    hasBreadcrumbs && (
+      <div class="tpl-utility__breadcrumbs">
+        <slot name="breadcrumbs" />
+      </div>
+    )
+  }
+  <div class="tpl-utility__lead"><slot name="lead" /></div>
+  <div class="tpl-utility__content"><slot name="content" /></div>
+</div>
+
+<style>
+  .tpl-utility {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    max-width: var(--measure-page);
+    margin-inline: auto;
+    padding-inline: var(--space-gutter);
+    padding-block: var(--space-section);
+  }
+</style>

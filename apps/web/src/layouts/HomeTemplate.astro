@@ -1,0 +1,92 @@
+---
+/* layouts/HomeTemplate - WF-05. Locale-home narrative template: the
+   canonical 8-block identity story from agent-kit templates.json
+   (homepageOrder). Pure slot composition: the route fills each block
+   with accepted shell/content components (SectionLead as="h1" identity
+   lead, the semantic graph list with its linked-list equivalent,
+   research fit, TimelineNode journey, FeaturedRecord/ContentRow project
+   and publication selections, MediaTile/ContentRow preview rails,
+   ContactCTA close); header and footer landmarks are owned by
+   BaseLayout, which every adopted page composes around this template.
+   No data fetching, no CMS calls, no route policy.
+   Guarded ordering (templates.json: "home composition with guarded
+   ordering"): the optional `order` prop takes a CMS composition
+   (WF-07A homeComposition adapter) as a subset permutation of the
+   canonical blocks; unknown names, duplicates, or a missing narrative
+   frame block throw at build time. Blocks 2-7 render only when their
+   slot has content (IA-CONTRACT S9: omit rather than invent), so an
+   absent optional region leaves no wrapper gap.
+   Seams: a new home block is a templates.json homepageOrder proposal
+   first; customization below the block seam is forbidden. Theming
+   cascades from tokens. */
+type HomeBlock =
+  | "lead"
+  | "graph"
+  | "researchFit"
+  | "journey"
+  | "projects"
+  | "publications"
+  | "previews"
+  | "cta";
+
+const CANONICAL_ORDER: HomeBlock[] = ["lead", "graph", "researchFit", "journey", "projects", "publications", "previews", "cta"];
+
+/* Narrative frame: identity lead and collaboration/contact close are the
+   only blocks a composition may never drop (templates.json home required
+   regions minus the shell-owned Header/Footer). */
+const REQUIRED_BLOCKS: HomeBlock[] = ["lead", "cta"];
+
+interface Props {
+  /** CMS home composition (WF-07A): subset permutation of the canonical
+      blocks. Absent = canonical order. Frame blocks must stay in the
+      plan; optional blocks may be omitted and render only when their
+      slot has content. */
+  order?: HomeBlock[];
+}
+
+const { order } = Astro.props;
+const plan = order ?? CANONICAL_ORDER;
+
+const seen = new Set<HomeBlock>();
+for (const block of plan) {
+  if (!CANONICAL_ORDER.includes(block)) {
+    throw new Error(`HomeTemplate: unknown home block "${block}"`);
+  }
+  if (seen.has(block)) {
+    throw new Error(`HomeTemplate: duplicate home block "${block}"`);
+  }
+  seen.add(block);
+}
+for (const block of REQUIRED_BLOCKS) {
+  if (!seen.has(block)) {
+    throw new Error(
+      `HomeTemplate: required home block "${block}" is missing from the composition order`,
+    );
+  }
+}
+
+const blocksHtml: string[] = [];
+for (const block of plan) {
+  const required = REQUIRED_BLOCKS.includes(block);
+  if (!required && !Astro.slots.has(block)) continue;
+  const content = await Astro.slots.render(block);
+  blocksHtml.push(
+    `<div class="tpl-home__block tpl-home__block--${block}">${content}</div>`,
+  );
+}
+---
+<div class="tpl-home">
+  <Fragment set:html={blocksHtml.join("\n")} />
+</div>
+
+<style>
+  .tpl-home {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    max-width: var(--measure-page);
+    margin-inline: auto;
+    padding-inline: var(--space-gutter);
+    padding-block: var(--space-section);
+  }
+</style>
