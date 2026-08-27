@@ -1,43 +1,29 @@
 ---
-import type { LocaleContent } from "../data/content";
-import type { Profile } from "../data/profile";
-import HeroSection from "./sections/HeroSection.astro";
-import PerspectiveGrid from "./sections/PerspectiveGrid.astro";
-import FocusStrip from "./sections/FocusStrip.astro";
-import EvidenceSection from "./sections/EvidenceSection.astro";
-import WritingLatest from "./sections/WritingLatest.astro";
-import ContactCTA from "./sections/ContactCTA.astro";
-
-interface Props {
-  content: LocaleContent;
-  profile: Profile;
-}
-
-const { content, profile } = Astro.props;
+/* Landing - WF-07A. Night-stage wrapper for the locale home (ADR-0031).
+   After the HomeTemplate adoption the 8-block composition moved to the
+   routes (src/pages/{fa,en}/index.astro composing HomeTemplate slots with
+   the homeComposition adapter), and this component keeps only the home's
+   fixed night canvas plus the §1.2 aurora fields, forwarded as a single
+   default slot.
+   The stage remaps the semantic role tokens to their §0 night counterparts
+   for its subtree - the same swap [data-theme="dark"] performs - so the
+   theme-aware WF-04 content components (ContentRow, PublicationRow,
+   ContactCTA, ui primitives) stay readable on the night canvas in BOTH
+   themes. Every value is a var() reference into the global token tables;
+   no new raw design values are introduced.
+   Seams: home blocks are HomeTemplate slots (order via the WF-07A adapter);
+   another fixed-night page reuses this wrapper instead of re-authoring the
+   stage. Theming cascades from tokens. */
 ---
-
-<!--
-  Landing is pure composition now (reDesign_plan §۴ home order):
-  Hero → Perspective Grid → Focus Strip → Selected Evidence →
-  Latest Writing → Contact CTA. Journey (M3/GSAP) slots in between
-  Evidence and Writing when C-05 lands.
--->
 <div class="landing">
-  <HeroSection content={content} />
-  <PerspectiveGrid content={content} />
-  <FocusStrip content={content} profile={profile} />
-  <EvidenceSection content={content} profile={profile} />
-  <WritingLatest content={content} />
-  <ContactCTA content={content} />
+  <slot />
 </div>
 
 <style>
   /*
-    Night canvas for the home experience (ADR-0031): the migrated sections
-    consume §0 night tokens, so the landing carries its own deep-navy stage —
-    same pattern as the gateway/404 pages — with the §۱.۲ aurora fields
-    recreated inside it (the fixed body-level aurora paints behind this
-    wrapper's opaque background).
+    Night canvas for the home experience (ADR-0031): the fixed deep-navy
+    stage with the §1.2 aurora fields recreated inside it (the fixed
+    body-level aurora paints behind this wrapper's opaque background).
   */
   .landing {
     background-color: var(--canvas-night, #071225);
@@ -54,5 +40,28 @@ const { content, profile } = Astro.props;
       );
     color: var(--ink-hi, #f2f6fa);
     overflow-x: clip;
+    /* Semantic role remap for the night stage (both themes): mirrors the
+       [data-theme="dark"] swap using the §0 night token set. */
+    --color-canvas: var(--canvas-night);
+    --color-surface: var(--surface-read);
+    --color-surface-muted: var(--glass-fill-strong);
+    --color-ink: var(--ink-hi);
+    --color-ink-secondary: var(--ink-mid);
+    --color-ink-tertiary: var(--ink-low);
+    --color-inverse: var(--canvas-night);
+    --color-brand: var(--brand);
+    --color-brand-emphasis-hover: var(--brand-text);
+    --color-brand-soft: var(--glass-fill-strong);
+    --color-signature: var(--gold);
+    --color-signature-soft: var(--glass-fill-strong);
+    --color-research: var(--violet);
+    --color-research-soft: var(--glass-fill-strong);
+    --color-context: var(--brand-deep);
+    --color-context-soft: var(--glass-fill-strong);
+    --color-border-subtle: var(--glass-edge);
+    --color-border-strong: var(--ink-low);
+    --color-control-border: var(--ink-low);
+    --color-focus: var(--brand-text);
+    --shadow-sm: var(--glass-shadow-dark);
   }
 </style>

@@ -1,12 +1,35 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import HomeTemplate from "../../layouts/HomeTemplate.astro";
 import Landing from "../../components/Landing.astro";
+import HeroSection from "../../components/sections/HeroSection.astro";
+import FocusStrip from "../../components/sections/FocusStrip.astro";
+import SectionLead from "../../components/content/SectionLead.astro";
+import ContentRow from "../../components/content/ContentRow.astro";
+import PublicationRow from "../../components/content/PublicationRow.astro";
+import ContactCTA from "../../components/content/ContactCTA.astro";
 import { content } from "../../data/content";
-import { loadLandingProfile } from "../../lib/cms/landing";
+import { DEFAULT_HOME_ORDER } from "../../data/site";
 import type { Profile } from "../../data/profile";
+import { isCmsOriginBuild } from "../../lib/cms/client";
+import { fetchHomeComposition } from "../../lib/cms/homeComposition";
+import { loadLandingProfile } from "../../lib/cms/landing";
+import { getPublishedArticles } from "../../lib/cms/articles";
+import { getProjects } from "../../lib/cms/projects";
+import { getPublications } from "../../lib/cms/publications";
+import { formatDate } from "../../lib/format";
 
-const en = content.en;
-const landing = await loadLandingProfile("en");
+/* WF-07A (LAUNCH-CRITICAL, Option B): the locale home composes the
+   HomeTemplate 8-block narrative. Block order/visibility comes from the
+   published CMS composition (BK-01 GET /api/home-composition/{locale} via
+   lib/cms/homeComposition); 404/absent resolves the documented
+   DEFAULT_HOME_ORDER (never a build failure - warn once, snapshot builds
+   stay quiet). Blocks with missing module data omit honestly (IA-CONTRACT
+   S9): graph stays omitted until WF-08, and researchFit/journey have no
+   home-wired data source yet. */
+const locale = "en" as const;
+const pageContent = content[locale];
+const landing = await loadLandingProfile(locale);
 const profile: Profile =
   landing.kind === "profile"
     ? landing.profile
@@ -22,8 +45,82 @@ const profile: Profile =
         socials: [],
         availability: "",
       } as Profile);
+
+const composition = await fetchHomeComposition(locale);
+if (composition.order === null && isCmsOriginBuild()) {
+  console.warn(
+    `[home] no published home composition for ${locale}; using DEFAULT_HOME_ORDER`,
+  );
+}
+const order = composition.order ?? DEFAULT_HOME_ORDER;
+
+const projects = (await getProjects(locale)).slice(0, 3);
+const publications = (await getPublications(locale)).slice(0, 3);
+const previews = (await getPublishedArticles(locale)).slice(0, 3);
+const home = `/${pageContent.lang}/`;
 ---
 
-<BaseLayout content={en} alternateHref="/fa/" cmsBuildOrigin={landing.source}>
-  <Landing content={en} profile={profile} />
+<BaseLayout content={pageContent} alternateHref="/fa/" cmsBuildOrigin={landing.source}>
+  <Landing>
+    <HomeTemplate order={order}>
+      <HeroSection slot="lead" content={pageContent} />
+      {profile.availability && (
+        <FocusStrip slot="lead" content={pageContent} profile={profile} />
+      )}
+      {
+        projects.length > 0 && (
+          <Fragment slot="projects">
+            <SectionLead as="h2" heading={pageContent.projects.heading} />
+            {projects.map((project) => (
+              <ContentRow
+                title={project.title}
+                href={`${home}projects/${project.slug}/`}
+                excerpt={project.objective || undefined}
+              />
+            ))}
+          </Fragment>
+        )
+      }
+      {
+        publications.length > 0 && (
+          <Fragment slot="publications">
+            <SectionLead as="h2" heading={pageContent.research.publicationsHeading} />
+            {publications.map((publication) => (
+              <PublicationRow
+                title={publication.title}
+                authors={publication.authors.split(/,\s*/)}
+                venue={publication.venue || undefined}
+                date={
+                  publication.date
+                    ? formatDate(publication.date, locale) || undefined
+                    : undefined
+                }
+                identifier={publication.doi || undefined}
+              />
+            ))}
+          </Fragment>
+        )
+      }
+      {
+        previews.length > 0 && (
+          <Fragment slot="previews">
+            <SectionLead as="h2" heading={pageContent.blog.heading} />
+            {previews.map((article) => (
+              <ContentRow
+                title={article.title}
+                href={`${home}writing/${article.slug}/`}
+                excerpt={article.excerpt || undefined}
+                tags={article.topic_tags.map((tag) => tag.name)}
+              />
+            ))}
+          </Fragment>
+        )
+      }
+      <ContactCTA
+        slot="cta"
+        statement={pageContent.contact.formIntro}
+        primary={{ label: pageContent.contact.sendLabel, href: `${home}contact/` }}
+      />
+    </HomeTemplate>
+  </Landing>
 </BaseLayout>
