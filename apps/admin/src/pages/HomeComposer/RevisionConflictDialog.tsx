@@ -25,6 +25,9 @@ interface RevisionConflictDialogProps {
   serverRows: string[];
   onReload: () => void;
   onKeepMine: () => void;
+  /** Additive (AF-02): aria id prefix so a second dialog instance on another
+   * screen cannot collide with the Home Composer ids. Defaults unchanged. */
+  idPrefix?: string;
 }
 
 export default function RevisionConflictDialog({
@@ -37,6 +40,7 @@ export default function RevisionConflictDialog({
   serverRows,
   onReload,
   onKeepMine,
+  idPrefix = "home-conflict",
 }: RevisionConflictDialogProps): ReactElement | null {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
@@ -95,14 +99,14 @@ export default function RevisionConflictDialog({
         className="admin-modal max-w-xl"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="home-conflict-title"
-        aria-describedby="home-conflict-body"
+        aria-labelledby={`${idPrefix}-title`}
+        aria-describedby={`${idPrefix}-body`}
         onKeyDown={handleKeyDown}
       >
-        <h2 id="home-conflict-title" className="mb-3 text-base font-bold">
+        <h2 id={`${idPrefix}-title`} className="mb-3 text-base font-bold">
           {title}
         </h2>
-        <p id="home-conflict-body" className="admin-muted mb-3 text-sm leading-7">
+        <p id={`${idPrefix}-body`} className="admin-muted mb-3 text-sm leading-7">
           {body}
         </p>
         <div className="admin-section-card mb-4">

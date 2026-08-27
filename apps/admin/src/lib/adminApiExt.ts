@@ -116,3 +116,153 @@ export async function validateHomeModules(
 export function isValidationProblem(err: ApiError): boolean {
   return err.status === 400 && err.code === "VALIDATION";
 }
+
+// ---------- Timeline records (AB-03 / AF-02) ----------
+// Contract source of truth: apps/cms/apps/api/admin_timeline.py (FROZEN — AF
+// consumes, never redefines). updatedAt doubles as the per-row If-Match
+// revision; `order` is reorder-only (never PATCH-editable).
+
+export type TimelineLocale = HomeLocale;
+
+/** admin_timeline.py VALID_TYPES = TimelineRecordType.values. */
+export const TIMELINE_TYPES = [
+  "experience",
+  "education",
+  "project",
+  "milestone",
+  "talk",
+  "publication",
+] as const;
+
+export type TimelineType = (typeof TIMELINE_TYPES)[number];
+
+const TIMELINE_TYPE_SET: ReadonlySet<string> = new Set(TIMELINE_TYPES);
+
+export function isTimelineType(value: string): value is TimelineType {
+  return TIMELINE_TYPE_SET.has(value);
+}
+
+/** admin_timeline.py TimelineAdminOut projection. */
+export interface TimelineRecord {
+  id: number;
+  type: TimelineType;
+  label: string;
+  period_label: string;
+  body: string;
+  role: string;
+  weight: number;
+  detail_url: string;
+  order: number;
+  attach: number | null;
+  updatedAt: string;
+}
+
+/** Fields PATCH accepts (attach null clears the attachment; order excluded). */
+export type TimelinePatchInput = Partial<
+  Pick<
+    TimelineRecord,
+    | "type"
+    | "label"
+    | "period_label"
+    | "body"
+    | "role"
+    | "weight"
+    | "detail_url"
+    | "attach"
+  >
+>;
+
+export interface TimelineCreateInput {
+  type: TimelineType;
+  label: string;
+  period_label?: string;
+  body?: string;
+  role?: string;
+  weight?: number;
+  detail_url?: string;
+  attach?: number | null;
+  /** Insert after this row id instead of appending. */
+  after_id?: number;
+}
+
+/** PositiveSmallIntegerField storage bound (admin_timeline.py WEIGHT_MAX). */
+export const TIMELINE_WEIGHT_MAX = 32767;
+
+/** Stable ProblemDetails field tokens (admin_timeline.py constants). */
+export const TIMELINE_FIELD_TOKENS = [
+  "BAD_TYPE",
+  "INVALID_DETAIL_URL",
+  "BAD_WEIGHT",
+  "UNKNOWN_ID",
+  "DUPLICATE_ORDER",
+] as const;
+
+/** Client-side mirror of apps/content/models.py validate_detail_url:
+ * blank | site-relative (single leading '/') | absolute http(s). */
+export function isValidTimelineDetailUrl(value: string): boolean {
+  const url = value.trim();
+  if (url === "") {
+    return true;
+  }
+  if (url.startsWith("/") && !url.startsWith("//")) {
+    return true;
+  }
+  return /^https?:\/\/\S+$/i.test(url);
+}
+
+/** GET /api/v1/admin/timeline/{locale} → bare array (optional profile filter). */
+export async function listTimeline(
+  locale: TimelineLocale,
+  profileId?: number
+): Promise<TimelineRecord[]> {
+  const query = profileId === undefined ? "" : `?profile=${String(profileId)}`;
+  return request<TimelineRecord[]>(`/timeline/${locale}${query}`);
+}
+
+/** POST /api/v1/admin/timeline/{locale} → created item (position=append default). */
+export async function createTimeline(
+  locale: TimelineLocale,
+  input: TimelineCreateInput
+): Promise<TimelineRecord> {
+  return request<TimelineRecord>(`/timeline/${locale}`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+/** PATCH /api/v1/admin/timeline/{locale}/{id} with If-Match → fresh item. */
+export async function updateTimeline(
+  locale: TimelineLocale,
+  id: number,
+  patch: TimelinePatchInput,
+  ifMatch: string
+): Promise<TimelineRecord> {
+  return request<TimelineRecord>(`/timeline/${locale}/${String(id)}`, {
+    method: "PATCH",
+    headers: { "If-Match": ifMatch },
+    body: JSON.stringify(patch),
+  });
+}
+
+/** DELETE /api/v1/admin/timeline/{locale}/{id} with If-Match → 204. */
+export async function deleteTimeline(
+  locale: TimelineLocale,
+  id: number,
+  ifMatch: string
+): Promise<void> {
+  await request<null>(`/timeline/${locale}/${String(id)}`, {
+    method: "DELETE",
+    headers: { "If-Match": ifMatch },
+  });
+}
+
+/** POST /api/v1/admin/timeline/{locale}/reorder {ids} → fresh full array. */
+export async function reorderTimeline(
+  locale: TimelineLocale,
+  ids: number[]
+): Promise<TimelineRecord[]> {
+  return request<TimelineRecord[]>(`/timeline/${locale}/reorder`, {
+    method: "POST",
+    body: JSON.stringify({ ids }),
+  });
+}
