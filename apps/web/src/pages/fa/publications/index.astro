@@ -1,6 +1,18 @@
 ---
+/* WF-07B adoption: publications index onto CollectionIndexTemplate (frozen
+   route-map family "publications"). Rows render through content/
+   PublicationRow (citation-first; unverified venue/date omit themselves)
+   wrapped in the canonical /publications/{slug}/ detail link so the p8
+   API-count == dist-links parity holds. Zero publications renders the
+   honest ui/ContentState empty panel with the family next-action note.
+   The filters/pagination slots stay unfilled: this catalog has no filter
+   controls and no pagination to preserve. Copy from the locale dictionary. */
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Breadcrumbs from "../../../components/Breadcrumbs.astro";
+import CollectionIndexTemplate from "../../../layouts/CollectionIndexTemplate.astro";
+import SectionLead from "../../../components/content/SectionLead.astro";
+import PublicationRow from "../../../components/content/PublicationRow.astro";
+import ContentState from "../../../components/ui/ContentState.astro";
 import { content } from "../../../data/content";
 import { isCmsOriginBuild } from "../../../lib/cms/client";
 import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../data/structured";
@@ -24,7 +36,7 @@ validateStructuredData(...structured);
   content={{
     ...pageContent,
     meta: {
-      title: `${catalog.publicationsHeading} — ${pageContent.name}`,
+      title: `${catalog.publicationsHeading} \u2014 ${pageContent.name}`,
       description: catalog.publicationsIntro,
     },
   }}
@@ -39,64 +51,53 @@ validateStructuredData(...structured);
       />
     ))
   }
-  <section class="catalog-page">
+  <CollectionIndexTemplate>
     <Breadcrumbs
+      slot="breadcrumbs"
       items={[
         { label: pageContent.name, href: `/${locale}/` },
         { label: catalog.publicationsHeading },
       ]}
     />
-    <h1>{catalog.publicationsHeading}</h1>
-    <p class="lead">{catalog.publicationsIntro}</p>
-    {
-      publications.length === 0 ? (
-        <div class="empty-state">
-          <p>{catalog.publicationsEmpty}</p>
-          <p>{catalog.emptyNextAction}</p>
-        </div>
-      ) : (
-        <ul class="catalog-list">
-          {publications.map((pub) => (
-            <li>
-              <a href={`/${locale}/publications/${pub.slug}/`}>{pub.title}</a>
-              {pub.authors && <p class="meta">{pub.authors}</p>}
-              {(pub.venue || pub.date) && (
-                <p class="meta">
-                  {[pub.venue, pub.date].filter(Boolean).join(" · ")}
-                </p>
-              )}
-            </li>
-          ))}
-        </ul>
-      )
-    }
-  </section>
+    <SectionLead
+      slot="sectionLead"
+      as="h1"
+      heading={catalog.publicationsHeading}
+      summary={catalog.publicationsIntro}
+    />
+    <div slot="results">
+      {
+        publications.length === 0 ? (
+          <ContentState kind="empty" explanation={catalog.publicationsEmpty}>
+            <p slot="action">{catalog.emptyNextAction}</p>
+          </ContentState>
+        ) : (
+          publications.map((pub) => (
+            <a
+              class="publication-row-link"
+              href={`/${locale}/publications/${pub.slug}/`}
+            >
+              <PublicationRow
+                title={pub.title}
+                authors={pub.authors ? [pub.authors] : []}
+                venue={pub.venue || undefined}
+                date={pub.date ?? undefined}
+              />
+            </a>
+          ))
+        )
+      }
+    </div>
+  </CollectionIndexTemplate>
 </BaseLayout>
 
 <style>
-  .catalog-page {
-    max-width: 44rem;
-    margin-inline: auto;
-    padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem;
+  .publication-row-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
   }
-  .catalog-page h1 {
-    font-family: var(--font-display);
-    font-size: clamp(1.75rem, 4vw, 2.4rem);
-    margin: 0 0 0.5rem;
-  }
-  .lead,
-  .meta {
-    color: var(--color-ink-muted);
-  }
-  .catalog-list {
-    list-style: none;
-    padding: 0;
-    margin: 1.5rem 0 0;
-    display: grid;
-    gap: 1.25rem;
-  }
-  .catalog-list a {
-    font-family: var(--font-display);
-    font-size: 1.15rem;
+  .publication-row-link:hover :global(.content-publication__title) {
+    color: var(--color-brand);
   }
 </style>

@@ -1,6 +1,18 @@
 ---
+/* WF-07B adoption: research topic detail onto CollectionIndexTemplate
+   (frozen route-map family "research topics"). The topic lead opens the
+   collection; sibling topics render as Chip links in the filters slot
+   (current topic marked selected); the topic body (story projection or
+   prose sections) and the related project/publication ContentRow lists
+   fill the results slot; each empty list stays honestly empty. All copy
+   comes from the locale dictionary. */
 import BaseLayout from "../../../../layouts/BaseLayout.astro";
 import Breadcrumbs from "../../../../components/Breadcrumbs.astro";
+import CollectionIndexTemplate from "../../../../layouts/CollectionIndexTemplate.astro";
+import SectionLead from "../../../../components/content/SectionLead.astro";
+import ContentRow from "../../../../components/content/ContentRow.astro";
+import ContentState from "../../../../components/ui/ContentState.astro";
+import Chip from "../../../../components/ui/Chip.astro";
 import { content } from "../../../../data/content";
 import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../../data/structured";
 import { getResearchTopic, getResearchTopics } from "../../../../lib/cms/research";
@@ -21,6 +33,7 @@ const topic = await getResearchTopic(locale, slug);
 if (!topic) {
   return Astro.redirect(`/${locale}/research/`, 302);
 }
+const allTopics = await getResearchTopics(locale);
 
 const structured = [
   breadcrumbJsonLd([
@@ -38,84 +51,148 @@ const topicHasStory = hasPublishedStory(topic.story);
   content={{
     ...pageContent,
     meta: {
-      title: `${topic.title} — ${pageContent.name}`,
+      title: `${topic.title} \u2014 ${pageContent.name}`,
       description: topic.summary || research.intro,
     },
   }}
   alternateHref={alternateExists ? `/fa/research/topics/${topic.slug}/` : null}
 >
   <script type="application/ld+json" is:inline set:html={jsonLdScriptContent(structured[0])} />
-  <section class="research-page">
+  <CollectionIndexTemplate>
     <Breadcrumbs
+      slot="breadcrumbs"
       items={[
         { label: pageContent.name, href: `/${locale}/` },
         { label: research.heading, href: `/${locale}/research/` },
         { label: topic.title },
       ]}
     />
-    {!alternateExists && <p class="missing">{research.missingTranslation}</p>}
-    <h1>{topic.title}</h1>
+    <div slot="sectionLead">
+      <SectionLead
+        as="h1"
+        heading={topic.title}
+        summary={topic.summary || undefined}
+      />
+      {
+        !alternateExists && (
+          <ContentState
+            kind="unavailable-translation"
+            explanation={research.missingTranslation}
+          />
+        )
+      }
+    </div>
     {
-      topicHasStory && topic.story ? (
-        <StoryBody locale={locale} story={topic.story} />
-      ) : (
-        <>
-          {topic.summary && <p class="lead">{topic.summary}</p>}
-          {topic.motivation && <><h2>Motivation</h2><p>{topic.motivation}</p></>}
-          {topic.problems && <><h2>Problems</h2><p>{topic.problems}</p></>}
-          {topic.research_questions && <><h2>Research questions</h2><p>{topic.research_questions}</p></>}
-          {topic.methods && <><h2>Methods</h2><p>{topic.methods}</p></>}
-          {topic.future_directions && <><h2>Future directions</h2><p>{topic.future_directions}</p></>}
-        </>
-      )
-    }
-    <h2>{research.relatedHeading}</h2>
-    <h3>{research.projectsHeading}</h3>
-    {
-      topic.projects.length === 0 ? (
-        <p class="empty">{research.empty}</p>
-      ) : (
-        <ul>
-          {topic.projects.map((p) => (
-            <li>
-              <a href={`/${locale}/research/projects/${p.slug}/`}>{p.title}</a>
-            </li>
+      allTopics.length > 0 && (
+        <nav slot="filters" class="topic-chips" aria-label={research.topicsHeading}>
+          {allTopics.map((t) => (
+            <a
+              href={`/${locale}/research/topics/${t.slug}/`}
+              aria-current={t.slug === topic.slug ? "page" : undefined}
+            >
+              <Chip variant={t.slug === topic.slug ? "selected" : "taxonomy"}>
+                {t.title}
+              </Chip>
+            </a>
           ))}
-        </ul>
+        </nav>
       )
     }
-    <h3>{research.publicationsHeading}</h3>
-    {
-      topic.publications.length === 0 ? (
-        <p class="empty">{research.empty}</p>
-      ) : (
-        <ul>
-          {topic.publications.map((p) => (
-            <li>
-              <a href={`/${locale}/publications/${p.slug}/`}>{p.title}</a>
-            </li>
-          ))}
-        </ul>
-      )
-    }
-    <p class="contact-note">
-      <a href={`/${locale}/about/`}>{pageContent.about.heading}</a> — {research.contactNote}
-    </p>
-  </section>
+    <div slot="results" class="topic-results">
+      {
+        topicHasStory && topic.story ? (
+          <StoryBody locale={locale} story={topic.story} />
+        ) : (
+          <div class="topic-prose">
+            {topic.motivation && (
+              <>
+                <h2>Motivation</h2>
+                <p>{topic.motivation}</p>
+              </>
+            )}
+            {topic.problems && (
+              <>
+                <h2>Problems</h2>
+                <p>{topic.problems}</p>
+              </>
+            )}
+            {topic.research_questions && (
+              <>
+                <h2>Research questions</h2>
+                <p>{topic.research_questions}</p>
+              </>
+            )}
+            {topic.methods && (
+              <>
+                <h2>Methods</h2>
+                <p>{topic.methods}</p>
+              </>
+            )}
+            {topic.future_directions && (
+              <>
+                <h2>Future directions</h2>
+                <p>{topic.future_directions}</p>
+              </>
+            )}
+          </div>
+        )
+      }
+      <h2 class="topic-related-heading">{research.relatedHeading}</h2>
+      {
+        topic.projects.length === 0 ? (
+          <p class="topic-empty">{research.empty}</p>
+        ) : (
+          topic.projects.map((p) => (
+            <ContentRow
+              type={research.projectsHeading}
+              title={p.title}
+              href={`/${locale}/research/projects/${p.slug}/`}
+            />
+          ))
+        )
+      }
+      {
+        topic.publications.length === 0 ? (
+          <p class="topic-empty">{research.empty}</p>
+        ) : (
+          topic.publications.map((p) => (
+            <ContentRow
+              type={research.publicationsHeading}
+              title={p.title}
+              href={`/${locale}/publications/${p.slug}/`}
+            />
+          ))
+        )
+      }
+      <p class="topic-contact-note">
+        <a href={`/${locale}/about/`}>{pageContent.about.heading}</a>
+        {" \u2014 "}
+        {research.contactNote}
+      </p>
+    </div>
+  </CollectionIndexTemplate>
 </BaseLayout>
 
 <style>
-  .research-page {
-    max-width: 44rem;
-    margin-inline: auto;
-    padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem;
+  .topic-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
   }
-  .research-page h1 {
+  .topic-chips a {
+    text-decoration: none;
+  }
+  .topic-results h2 {
     font-family: var(--font-display);
-    font-size: clamp(1.75rem, 4vw, 2.4rem);
-    margin: 0 0 0.75rem;
+    font-size: var(--text-xl);
+    margin: var(--space-6) 0 var(--space-3);
   }
-  .lead, .empty, .missing, .contact-note { color: var(--color-ink-muted); }
-  ul { list-style: none; margin: 0 0 1rem; padding: 0; }
-  li { margin-bottom: 0.5rem; }
+  .topic-empty {
+    margin: 0 0 var(--space-4);
+    color: var(--color-ink-muted);
+  }
+  .topic-contact-note {
+    margin: var(--space-6) 0 0;
+    color: var(--color-ink-muted);
+  }
 </style>

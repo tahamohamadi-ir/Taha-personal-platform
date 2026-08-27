@@ -1,6 +1,18 @@
 ---
+/* WF-07B adoption: publication detail onto EvidenceDetailTemplate (frozen
+   route-map family "publication detail"). Evidence anatomy: lead (title +
+   authors), MetadataGroup for the labeled record facts (license, DOI as a
+   bdi-isolated omitted-when-absent item) with the unlabeled venue/date
+   source line (the locale dictionaries own no venue/date labels - none
+   were invented), body (abstract, citation block, links/files), and the
+   related close back to Research. Unavailable translation renders the
+   ContentState status panel in the lead. Copy from the locale dictionary. */
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Breadcrumbs from "../../../components/Breadcrumbs.astro";
+import EvidenceDetailTemplate from "../../../layouts/EvidenceDetailTemplate.astro";
+import SectionLead from "../../../components/content/SectionLead.astro";
+import MetadataGroup from "../../../components/content/MetadataGroup.astro";
+import ContentState from "../../../components/ui/ContentState.astro";
 import { content } from "../../../data/content";
 import {
   breadcrumbJsonLd,
@@ -30,7 +42,7 @@ if (!publication) {
 
 const description =
   (publication.abstract || "").trim() ||
-  [publication.authors, publication.venue].filter(Boolean).join(" — ") ||
+  [publication.authors, publication.venue].filter(Boolean).join(" \u2014 ") ||
   catalog.publicationsIntro;
 
 const structured = [
@@ -58,13 +70,19 @@ validateStructuredData(...structured);
 const alternateExists =
   (await getPublication("fa", publication.slug)) !== null;
 const pdfHref = publication.pdf?.url || publication.pdf_url || "";
+
+const metadataItems = [
+  { label: catalog.licenseLabel, value: publication.license },
+  { label: "DOI", value: publication.doi, ltr: true },
+];
+const hasSourceLine = Boolean(publication.venue || publication.date);
 ---
 
 <BaseLayout
   content={{
     ...pageContent,
     meta: {
-      title: `${publication.title} — ${pageContent.name}`,
+      title: `${publication.title} \u2014 ${pageContent.name}`,
       description,
     },
   }}
@@ -81,94 +99,105 @@ const pdfHref = publication.pdf?.url || publication.pdf_url || "";
       />
     ))
   }
-  <section class="catalog-page">
+  <EvidenceDetailTemplate>
     <Breadcrumbs
+      slot="breadcrumbs"
       items={[
         { label: pageContent.name, href: `/${locale}/` },
         { label: catalog.publicationsHeading, href: `/${locale}/publications/` },
         { label: publication.title },
       ]}
     />
-    {!alternateExists && <p class="missing">{catalog.missingTranslation}</p>}
-    <h1>{publication.title}</h1>
-    <p class="meta">{publication.authors}</p>
-    {
-      publication.venue && (
-        <p class="meta">
-          {publication.venue}
-          {publication.date ? ` · ${publication.date}` : ""}
-        </p>
-      )
-    }
-    {publication.doi && <p class="meta">DOI: {publication.doi}</p>}
-    <p class="meta">{catalog.licenseLabel}: {publication.license}</p>
-    {
-      publication.abstract && (
-        <>
-          <h2>{catalog.abstractHeading}</h2>
-          <p>{publication.abstract}</p>
-        </>
-      )
-    }
-    {
-      publication.citation_text ? (
-        <>
-          <h2>{catalog.citationLabel}</h2>
-          <pre class="citation">{publication.citation_text}</pre>
-        </>
-      ) : (
-        <p class="meta">{catalog.citationUnavailable}</p>
-      )
-    }
-    {
-      publication.citation_count != null && (
-        <p class="meta">Citations: {publication.citation_count}</p>
-      )
-    }
-    {
-      publication.url && (
-        <p>
-          <a href={publication.url} rel="noopener noreferrer">
-            {publication.url}
-          </a>
-        </p>
-      )
-    }
-    {
-      pdfHref ? (
-        <p>
-          <a href={pdfHref} rel="noopener noreferrer">
-            PDF
-          </a>
-        </p>
-      ) : publication.access_state !== "public" ? (
-        <p class="meta">{catalog.restrictedNote}</p>
-      ) : null
-    }
-    <p>
-      <a href={`/${locale}/research/`}>{catalog.parentResearchLabel}</a>
-    </p>
-  </section>
+    <div slot="lead">
+      <SectionLead
+        as="h1"
+        heading={publication.title}
+        summary={publication.authors || undefined}
+      />
+      {
+        !alternateExists && (
+          <ContentState
+            kind="unavailable-translation"
+            explanation={catalog.missingTranslation}
+          />
+        )
+      }
+    </div>
+    <div slot="metadata">
+      <MetadataGroup items={metadataItems} />
+      {
+        hasSourceLine && (
+          <p class="publication-source">
+            {[publication.venue, publication.date].filter(Boolean).join(" \u00b7 ")}
+          </p>
+        )
+      }
+    </div>
+    <div slot="body" class="publication-body">
+      {
+        publication.abstract && (
+          <>
+            <h2>{catalog.abstractHeading}</h2>
+            <p>{publication.abstract}</p>
+          </>
+        )
+      }
+      {
+        publication.citation_text ? (
+          <>
+            <h2>{catalog.citationLabel}</h2>
+            <pre class="citation">{publication.citation_text}</pre>
+          </>
+        ) : (
+          <p class="publication-meta">{catalog.citationUnavailable}</p>
+        )
+      }
+      {
+        publication.citation_count != null && (
+          <p class="publication-meta">Citations: {publication.citation_count}</p>
+        )
+      }
+      {
+        publication.url && (
+          <p>
+            <a href={publication.url} rel="noopener noreferrer">
+              {publication.url}
+            </a>
+          </p>
+        )
+      }
+      {
+        pdfHref ? (
+          <p>
+            <a href={pdfHref} rel="noopener noreferrer">
+              PDF
+            </a>
+          </p>
+        ) : publication.access_state !== "public" ? (
+          <p class="publication-meta">{catalog.restrictedNote}</p>
+        ) : null
+      }
+    </div>
+    <div slot="related" class="publication-related">
+      <p>
+        <a href={`/${locale}/research/`}>{catalog.parentResearchLabel}</a>
+      </p>
+    </div>
+  </EvidenceDetailTemplate>
 </BaseLayout>
 
 <style>
-  .catalog-page {
-    max-width: 44rem;
-    margin-inline: auto;
-    padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem;
+  .publication-source {
+    margin: var(--space-3) 0 0;
+    color: var(--color-ink-secondary);
+    font-size: var(--text-sm);
   }
-  .catalog-page h1 {
+  .publication-body h2 {
     font-family: var(--font-display);
-    font-size: clamp(1.75rem, 4vw, 2.4rem);
-    margin: 0 0 0.5rem;
+    font-size: var(--text-xl);
+    margin: var(--space-6) 0 var(--space-2);
   }
-  .catalog-page h2 {
-    font-family: var(--font-display);
-    font-size: 1.2rem;
-    margin: 1.5rem 0 0.5rem;
-  }
-  .meta,
-  .missing {
+  .publication-meta {
     color: var(--color-ink-muted);
   }
   .citation {

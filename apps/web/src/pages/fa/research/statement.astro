@@ -1,6 +1,15 @@
 ---
+/* WF-07B adoption: research statement onto LongFormTemplate (frozen
+   route-map family "research statement"). The prose/statement body keeps
+   its published-story projection and the PDF link fields; the honest-empty
+   ContentState renders when no statement is published. The related close
+   reuses the family contact note (IA-CONTRACT S6: a detail page never
+   ends with only the footer). All copy comes from the locale dictionary. */
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Breadcrumbs from "../../../components/Breadcrumbs.astro";
+import LongFormTemplate from "../../../layouts/LongFormTemplate.astro";
+import SectionLead from "../../../components/content/SectionLead.astro";
+import ContentState from "../../../components/ui/ContentState.astro";
 import { content } from "../../../data/content";
 import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../data/structured";
 import { getResearchStatement } from "../../../lib/cms/research";
@@ -39,77 +48,78 @@ function formatBytes(n: number | undefined): string {
 <BaseLayout
   content={{
     ...pageContent,
-    meta: { title: `${title} — ${pageContent.name}`, description },
+    meta: { title: `${title} \u2014 ${pageContent.name}`, description },
   }}
   alternateHref="/en/research/statement/"
 >
   <script type="application/ld+json" is:inline set:html={jsonLdScriptContent(structured[0])} />
-  <section class="research-page">
+  <LongFormTemplate>
     <Breadcrumbs
+      slot="breadcrumbs"
       items={[
         { label: pageContent.name, href: `/${locale}/` },
         { label: research.heading, href: `/${locale}/research/` },
         { label: research.statementHeading },
       ]}
     />
-    {
-      statement ? (
-        <>
-          <h1>{statement.title}</h1>
-          {
-            pdf?.url ? (
-              <p class="statement-pdf">
-                <a href={pdf.url} download rel="noopener">
-                  {pageContent.downloads.downloadLabel}
-                  {pdf.title ? `: ${pdf.title}` : ""}
-                </a>
-                {
-                  (pdf.mime || pdf.size) && (
-                    <span class="statement-pdf-meta">
-                      {" "}
-                      ({[pdf.mime, formatBytes(pdf.size)].filter(Boolean).join(" · ")})
-                    </span>
-                  )
-                }
-              </p>
-            ) : null
-          }
-          {
-            statementHasStory && statement.story ? (
-              <StoryBody locale={locale} story={statement.story} />
-            ) : (
-              <div class="body" set:html={statement.body} />
-            )
-          }
-        </>
-      ) : (
-        <>
-          <h1>{research.statementHeading}</h1>
-          <p class="empty">{research.statementEmpty}</p>
-        </>
-      )
-    }
-  </section>
+    <div slot="articleLead">
+      <SectionLead as="h1" heading={title} />
+      {
+        pdf?.url && (
+          <p class="statement-pdf">
+            <a href={pdf.url} download rel="noopener">
+              {pageContent.downloads.downloadLabel}
+              {pdf.title ? `: ${pdf.title}` : ""}
+            </a>
+            {
+              (pdf.mime || pdf.size) && (
+                <span class="statement-pdf-meta">
+                  {" "}
+                  ({[pdf.mime, formatBytes(pdf.size)].filter(Boolean).join(" \u00b7 ")})
+                </span>
+              )
+            }
+          </p>
+        )
+      }
+    </div>
+    <div slot="body" class="statement-body">
+      {
+        statement ? (
+          statementHasStory && statement.story ? (
+            <StoryBody locale={locale} story={statement.story} />
+          ) : (
+            <div set:html={statement.body} />
+          )
+        ) : (
+          <ContentState kind="empty" explanation={research.statementEmpty} />
+        )
+      }
+    </div>
+    <div slot="related" class="statement-related">
+      <p class="statement-contact-note">
+        <a href={`/${locale}/about/`}>{pageContent.about.heading}</a>
+        {" \u2014 "}
+        {research.contactNote}
+      </p>
+    </div>
+  </LongFormTemplate>
 </BaseLayout>
 
 <style>
-  .research-page {
-    max-width: 44rem;
-    margin-inline: auto;
-    padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem;
-  }
-  .research-page h1 {
-    font-family: var(--font-display);
-    font-size: clamp(1.75rem, 4vw, 2.4rem);
-    margin: 0 0 1rem;
-  }
   .statement-pdf {
-    margin: 0 0 1.25rem;
+    margin: var(--space-4) 0 0;
   }
   .statement-pdf-meta {
     color: var(--color-ink-muted);
-    font-size: 0.9rem;
+    font-size: var(--text-sm);
   }
-  .empty { color: var(--color-ink-muted); }
-  .body :global(p) { margin: 0 0 1rem; line-height: 1.7; }
+  .statement-contact-note {
+    margin: 0;
+    color: var(--color-ink-muted);
+  }
+  .statement-body :global(p) {
+    margin: 0 0 var(--space-4);
+    line-height: 1.7;
+  }
 </style>
