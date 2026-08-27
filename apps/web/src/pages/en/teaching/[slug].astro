@@ -1,14 +1,37 @@
 ---
+/* WF-07F adoption: teaching detail onto LongFormTemplate (frozen
+   route-map family "teaching detail"). The lead carries the H1 plus the
+   course metadata (level/format/language/availability/license/last
+   updated) through MetadataGroup with absent values omitted; the cover
+   rides the SectionLead media slot. Prerequisites and outcomes render as
+   real lists only when the CMS provides lines - absent means the section
+   is omitted, nothing invented. Body HTML, accessibility notes, the
+   honest unavailable note (role="status") and the missing-translation
+   ContentState are preserved. The related close links the teaching index
+   and contact (IA-CONTRACT S6). No enrolment, progress, or certificate
+   UI exists - this is a publishing library (PF-06). */
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Breadcrumbs from "../../../components/Breadcrumbs.astro";
+import LongFormTemplate from "../../../layouts/LongFormTemplate.astro";
+import SectionLead from "../../../components/content/SectionLead.astro";
+import MetadataGroup from "../../../components/content/MetadataGroup.astro";
+import ContentState from "../../../components/ui/ContentState.astro";
 import { content } from "../../../data/content";
 import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../data/structured";
 import { getCourse, getCourses } from "../../../lib/cms/courses";
+import { formatDate } from "../../../lib/format";
 
 export async function getStaticPaths() {
   const locale = "en" as const;
   const items = await getCourses(locale);
   return items.map((item) => ({ params: { slug: item.slug } }));
+}
+
+function toLines(value: string): string[] {
+  return value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
 }
 
 const locale = "en" as const;
@@ -19,8 +42,20 @@ const course = await getCourse(locale, slug);
 if (!course) return Astro.redirect(`/${locale}/teaching/`, 302);
 
 const alternateExists = (await getCourse("fa", slug)) !== null;
-const prerequisitesDisplay = (course.prerequisites || "").trim() || t.noPrerequisites;
 const isUnavailable = ["private", "not_available", "restricted"].includes(course.availability);
+const prerequisites = toLines(course.prerequisites);
+const outcomes = toLines(course.outcomes);
+const lastUpdated = course.last_updated ? formatDate(course.last_updated, locale) : "";
+
+const leadMeta = [
+  { label: t.levelLabel, value: course.level },
+  { label: t.formatLabel, value: course.course_format },
+  { label: t.languageLabel, value: course.course_language },
+  { label: t.availabilityLabel, value: course.availability },
+  { label: t.licenseLabel, value: course.license },
+  { label: t.lastUpdatedLabel, value: lastUpdated },
+];
+
 const structured = [
   breadcrumbJsonLd([
     { name: pageContent.name, path: `/${locale}/` },
@@ -35,62 +70,131 @@ validateStructuredData(...structured);
   content={{
     ...pageContent,
     meta: {
-      title: `${course.title} — ${pageContent.name}`,
+      title: `${course.title} â€” ${pageContent.name}`,
       description: course.description || t.intro,
     },
   }}
   alternateHref={alternateExists ? `/fa/teaching/${course.slug}/` : null}
 >
   {structured.map((block) => <script type="application/ld+json" is:inline set:html={jsonLdScriptContent(block)} />)}
-  <section class="catalog-page">
-    <Breadcrumbs items={[{ label: pageContent.name, href: `/${locale}/` }, { label: t.heading, href: `/${locale}/teaching/` }, { label: course.title }]} />
-    {!alternateExists && <p class="missing">{t.missingTranslation}</p>}
-    <h1>{course.title}</h1>
-    {course.description && <p class="lead">{course.description}</p>}
-    {course.cover?.url && <img src={course.cover.url} alt={course.cover.alt} loading="lazy" style="max-width:100%;border-radius:8px;margin:1rem 0" />}
-
-    <dl class="meta-grid">
-      <dt>{t.levelLabel}</dt><dd>{course.level}</dd>
-      <dt>{t.formatLabel}</dt><dd>{course.course_format}</dd>
-      <dt>{t.languageLabel}</dt><dd>{course.course_language}</dd>
-      <dt>{t.availabilityLabel}</dt><dd>{course.availability}</dd>
-      <dt>{t.licenseLabel}</dt><dd>{course.license}</dd>
-      {course.last_updated && <><dt>{t.lastUpdatedLabel}</dt><dd>{course.last_updated}</dd></>}
-    </dl>
-
-    {isUnavailable && <p class="unavailable" role="status">{t.unavailableNote}</p>}
-
-    <h2>{t.prerequisitesLabel}</h2>
-    <p>{prerequisitesDisplay}</p>
-
-    {course.outcomes && (
-      <>
-        <h2>{t.outcomesLabel}</h2>
-        <p style="white-space:pre-wrap">{course.outcomes}</p>
-      </>
-    )}
-
-    {course.body && <div class="body" set:html={course.body} />}
-
-    {course.accessibility_notes && (
-      <>
-        <h2>{t.accessibilityLabel}</h2>
-        <p class="meta">{course.accessibility_notes}</p>
-      </>
-    )}
-
-    <p class="meta">No LMS, enrolment, or payment functionality is provided.</p>
-    <p><a href={`/${locale}/teaching/`}>{t.heading}</a> · <a href={`/${locale}/contact/`}>{pageContent.contact.heading}</a></p>
-  </section>
+  <LongFormTemplate>
+    <Breadcrumbs slot="breadcrumbs" items={[{ label: pageContent.name, href: `/${locale}/` }, { label: t.heading, href: `/${locale}/teaching/` }, { label: course.title }]} />
+    <div slot="articleLead" class="course-lead">
+      <SectionLead as="h1" heading={course.title} summary={course.description || undefined}>
+        {
+          course.cover?.url && (
+            <img
+              slot="media"
+              class="course-cover"
+              src={course.cover.url}
+              alt={course.cover.alt}
+              loading="lazy"
+            />
+          )
+        }
+      </SectionLead>
+      {
+        !alternateExists && (
+          <ContentState kind="unavailable-translation" explanation={t.missingTranslation} />
+        )
+      }
+      <MetadataGroup items={leadMeta} />
+    </div>
+    <div slot="body" class="course-body">
+      {isUnavailable && <p class="course-unavailable" role="status">{t.unavailableNote}</p>}
+      {
+        prerequisites.length > 0 && (
+          <section class="course-section">
+            <h2>{t.prerequisitesLabel}</h2>
+            <ul class="course-lines" role="list">
+              {prerequisites.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+      {
+        outcomes.length > 0 && (
+          <section class="course-section">
+            <h2>{t.outcomesLabel}</h2>
+            <ul class="course-lines" role="list">
+              {outcomes.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+      {course.body && <div class="course-prose" set:html={course.body} />}
+      {
+        course.accessibility_notes && (
+          <section class="course-section">
+            <h2>{t.accessibilityLabel}</h2>
+            <p class="course-notes">{course.accessibility_notes}</p>
+          </section>
+        )
+      }
+    </div>
+    <div slot="related" class="course-related">
+      <p class="course-related__links">
+        <a href={`/${locale}/teaching/`}>{t.heading}</a>
+        {" \u00b7 "}
+        <a href={`/${locale}/contact/`}>{pageContent.contact.heading}</a>
+      </p>
+    </div>
+  </LongFormTemplate>
 </BaseLayout>
 
 <style>
-  .catalog-page { max-width: 44rem; margin-inline: auto; padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem; }
-  .catalog-page h1 { font-family: var(--font-display); font-size: clamp(1.75rem, 4vw, 2.4rem); margin: 0 0 0.5rem; }
-  .catalog-page h2 { font-family: var(--font-display); font-size: 1.2rem; margin: 1.5rem 0 0.5rem; }
-  .lead, .meta, .missing { color: var(--color-ink-muted); }
-  .unavailable { color: #b45309; background: #fef3c7; padding: 0.75rem; border-radius: 0.5rem; }
-  .meta-grid { display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem 1rem; margin: 1rem 0; }
-  .meta-grid dt { font-weight: 600; }
-  .body :global(a) { text-decoration: underline; }
+  .course-lead {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .course-cover {
+    width: 100%;
+    border-radius: var(--radius-md);
+  }
+
+  .course-unavailable,
+  .course-notes {
+    margin: 0;
+    color: var(--color-ink-secondary);
+  }
+
+  .course-body {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .course-section {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .course-section h2 {
+    margin: 0;
+    color: var(--color-ink);
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: 600;
+  }
+
+  .course-lines {
+    margin: 0;
+    padding-inline-start: var(--space-5);
+    display: grid;
+    gap: var(--space-2);
+    color: var(--color-ink-secondary);
+  }
+
+  .course-prose :global(a) {
+    text-decoration: underline;
+  }
+
+  .course-related__links {
+    margin: 0;
+    color: var(--color-ink-muted);
+  }
 </style>
