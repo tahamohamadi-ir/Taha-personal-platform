@@ -21,40 +21,39 @@ Validation runs before any write, so an atomic reject keeps prior rows.
 ``updated_at`` across the locale's rows, millisecond precision, empty string
 when the locale has no rows yet).
 
-Stable token constants below are declared once here; graduating them into
-``apps/api/admin_common.py`` is left to the consolidation packet (AB-07).
+Stable error tokens are declared once in ``apps/api/admin_common.py`` and
+imported from there (graduated by the AB-07 consolidation packet).
 """
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime
 
 from django.db import transaction
 from ninja import Router, Schema
 
 from apps.api.admin_common import (
+    BAD_ENUM,
+    DUPLICATE_KEY,
+    DUPLICATE_ORDER,
+    NOT_FOUND,
+    TOO_LONG,
+    UNKNOWN_KEY,
+    VALIDATION,
     AdminError,
+    _audit_log,
     _check_csrf,
-    _client_ip,
+    _format_revision,
     _require_admin_otp,
+    _require_if_match,
 )
 from apps.content.models import HomeModule, HomeModuleKey, Locale, SelectionMode
-from apps.security.models import AuditLog
 
 home_router = Router()
 
 VALID_LOCALES = tuple(Locale.values)
 CANONICAL_KEYS = tuple(HomeModuleKey.values)
 VALID_SELECTION_MODES = tuple(SelectionMode.values)
-
-# Stable error tokens (declared once; see module docstring).
-PRECONDITION_REQUIRED = "PRECONDITION_REQUIRED"
-STALE_REVISION = "STALE_REVISION"
-UNKNOWN_KEY = "UNKNOWN_KEY"
-DUPLICATE_ORDER = "DUPLICATE_ORDER"
-BAD_ENUM = "BAD_ENUM"
-DUPLICATE_KEY = "DUPLICATE_KEY"
-TOO_LONG = "TOO_LONG"
 
 PROVENANCE_NOTE_MAX = 300
 
@@ -106,71 +105,24 @@ def _latest_updated_at(rows: list[HomeModule]) -> datetime | None:
     return max((row.updated_at for row in rows), default=None)
 
 
-def _format_revision(value: datetime) -> str:
-    """ECMA-262 style ISO string at millisecond precision (mirrors admin_content)."""
-    text = value.isoformat()
-    if value.microsecond:
-        text = text[:23] + text[26:]
-    if text.endswith("+00:00"):
-        text = text.removesuffix("+00:00") + "Z"
-    return text
-
-
 def _current_revision(rows: list[HomeModule]) -> str:
     current = _latest_updated_at(rows)
     return "" if current is None else _format_revision(current)
 
 
-def _parse_revision(header: str | None) -> datetime | None:
-    raw = (header or "").strip().strip('"')
-    if not raw:
-        return None
-    try:
-        return datetime.fromisoformat(raw)
-    except ValueError:
-        return None
-
-
-def _revisions_match(expected: datetime, current: datetime) -> bool:
-    """Compare both sides at millisecond precision (JS Date round-trip safety)."""
-    try:
-        expected_ms = expected.astimezone(UTC).replace(
-            microsecond=(expected.microsecond // 1000) * 1000
-        )
-        current_ms = current.astimezone(UTC).replace(
-            microsecond=(current.microsecond // 1000) * 1000
-        )
-    except (TypeError, ValueError):
-        return False
-    return expected_ms == current_ms
-
-
 def _require_valid_locale(locale: str) -> None:
     if locale not in VALID_LOCALES:
-        raise AdminError(404, "NOT_FOUND", "Unknown locale.")
+        raise AdminError(404, NOT_FOUND, "Unknown locale.")
 
 
 def _require_current_revision(request, rows: list[HomeModule]) -> None:
-    header = request.headers.get("If-Match")
-    if header is None:
-        raise AdminError(
-            428,
-            PRECONDITION_REQUIRED,
-            "An If-Match revision is required. GET the composition first.",
-        )
-    raw = header.strip().strip('"')
-    expected = _parse_revision(raw)
-    current = _latest_updated_at(rows)
-    if current is None:
-        if expected is None and raw == "":
-            return
-        raise AdminError(
-            409, STALE_REVISION, "The home composition was modified by someone else."
-        )
-    if expected is None or not _revisions_match(expected, current):
-        raise AdminError(
-            409, STALE_REVISION, "The home composition was modified by someone else."
-        )
+    """If-Match gate: the locale revision is the latest row ``updated_at``."""
+    _require_if_match(
+        request,
+        current=_latest_updated_at(rows),
+        missing_message="An If-Match revision is required. GET the composition first.",
+        stale_message="The home composition was modified by someone else.",
+    )
 
 
 def _validate_modules(modules: list[HomeModuleIn]) -> None:
@@ -200,7 +152,7 @@ def _validate_modules(modules: list[HomeModuleIn]) -> None:
     if problems:
         raise AdminError(
             400,
-            "VALIDATION",
+            VALIDATION,
             "Home module payload failed validation.",
             fields=problems,
         )
@@ -284,12 +236,11 @@ def home_modules_put(request, locale: str, payload: HomeModulesPutIn):
     rows = _locale_rows(locale)
     _require_current_revision(request, rows)
     fresh = _save_modules(locale, payload.modules, rows)
-    AuditLog.objects.create(
-        user=request.user,
+    _audit_log(
+        request,
         action="home_modules.update",
         model_name="home",
         object_id=locale,
-        ip=_client_ip(request),
         detail=f"PUT /api/v1/admin/home-modules/{locale} -> 200; modules={len(payload.modules)}",
     )
     return HomeModulesRevisionOut(revision=_current_revision(fresh))

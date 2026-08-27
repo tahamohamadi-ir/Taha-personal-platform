@@ -7,9 +7,10 @@ in v1 (authoring-side structure only; no public contract yet).
 
 This module is PURE: no HTTP, no Django imports at module top. The
 related-record existence check is injected as ``related_resolver(family, id)
--> bool`` by the HTTP layer (``apps/api/admin_graph.py`` resolves published
-existence per family). Issues are ``{"code": str, "nodeId"?: str,
-"edgeId"?: str, "messageToken": str}``.
+-> bool`` by the HTTP layer (``apps/api/admin_graph.py`` wires the
+published-existence resolver from ``apps/api/admin_common.py``, whose
+``GRAPH_RELATED_FAMILIES`` table owns the family wire strings). Issues are
+``{"code": str, "nodeId"?: str, "edgeId"?: str, "messageToken": str}``.
 
 Stable issue codes (``GRAPH_ISSUE_CODES``, exact strings - do not rename):
 
@@ -64,6 +65,9 @@ _MESSAGE_TOKENS: dict[str, str] = {
 # SYNC-GUARD: BK-05 (public graph read) has not shipped yet, so the stable
 # public edge id composition is duplicated here. When BK-05 exports its
 # composer, import that instead and delete this copy (keep strings identical).
+# Related-record note (AB-07): the family -> model table lives in
+# apps/api/admin_common.py (GRAPH_RELATED_FAMILIES); this module stays pure
+# and receives family existence via the injected ``related_resolver``.
 def edge_public_id(source: str, target: str, relation_type: str) -> str:
     """Stable public edge id (BK-04/05 contract: composed, never stored)."""
     return f"{source}->{target}:{relation_type}"

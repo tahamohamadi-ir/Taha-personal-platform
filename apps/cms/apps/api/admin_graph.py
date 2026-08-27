@@ -58,7 +58,6 @@ Choices/deviations (reported to the integrator):
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
 from typing import Any
 
 from django.contrib.contenttypes.models import ContentType
@@ -68,135 +67,48 @@ from django.http import JsonResponse
 from ninja import Router, Schema, Status
 
 from apps.api.admin_common import (
+    ALREADY_ACTIVE,
+    DUPLICATE_GROUP_MEMBER,
+    DUPLICATE_RELATED,
+    GRAPH_RELATED_FAMILIES,
+    IMMUTABLE_ACTIVE,
+    NOT_FOUND,
+    UNKNOWN_EDGE_ENDPOINT,
+    UNKNOWN_GROUP_MEMBER,
+    VALIDATION,
+    VALIDATION_BLOCKED,
     AdminError,
+    _audit_log,
     _check_csrf,
-    _client_ip,
+    _format_revision,
+    _published_related_exists,
     _require_admin_otp,
+    _require_if_match,
 )
 from apps.api.admin_graph_validate import edge_public_id, validate_graph_payload
 from apps.content.models import (
-    Article,
-    Book,
-    Download,
     GraphEdge,
     GraphGroup,
     GraphNode,
     GraphNodeRelated,
     GraphVersion,
     GraphVersionStatus,
-    Landing,
     Locale,
-    Profile,
-    Project,
-    Publication,
-    ResearchStatement,
-    ResearchTopic,
-    Series,
-    Talk,
 )
-from apps.security.models import AuditLog
 
 graph_router = Router()
 
 VALID_LOCALES = tuple(Locale.values)
 
-# Stable error tokens (declared once; see module docstring).
-PRECONDITION_REQUIRED = "PRECONDITION_REQUIRED"
-STALE_REVISION = "STALE_REVISION"
-IMMUTABLE_ACTIVE = "IMMUTABLE_ACTIVE"
-ALREADY_ACTIVE = "ALREADY_ACTIVE"
-UNKNOWN_EDGE_ENDPOINT = "UNKNOWN_EDGE_ENDPOINT"
-DUPLICATE_RELATED = "DUPLICATE_RELATED"
-UNKNOWN_GROUP_MEMBER = "UNKNOWN_GROUP_MEMBER"
-DUPLICATE_GROUP_MEMBER = "DUPLICATE_GROUP_MEMBER"
-
-# SYNC-GUARD: the related-record family mapping. BK-05 (apps/api/api.py,
-# ``public_graph_payload``) derives the public family string as
-# ``content_type.model`` (lowercase model name) and composes edge ids as
-# ``{source}->{target}:{relationType}``; it does not export a reusable
-# helper, so the forward table (family -> model) is duplicated here with the
-# SAME lowercase keys the public read serves (one payload everywhere). When
-# BK-05 exports its mapping helper, import it here and delete this copy.
-GRAPH_RELATED_FAMILIES: dict[str, type] = {
-    "landing": Landing,
-    "profile": Profile,
-    "article": Article,
-    "series": Series,
-    "researchtopic": ResearchTopic,
-    "researchstatement": ResearchStatement,
-    "project": Project,
-    "publication": Publication,
-    "book": Book,
-    "talk": Talk,
-    "download": Download,
-}
-
-
-def _published_related_exists(family: str, record_id: str) -> bool:
-    """Resolver for validate_graph_payload: published existence per family."""
-    model = GRAPH_RELATED_FAMILIES.get(family)
-    if model is None:
-        return False
-    try:
-        pk = int(record_id)
-    except (TypeError, ValueError):
-        return False
-    public = getattr(model.objects, "public", None)
-    if public is None:
-        return False
-    return public().filter(pk=pk).exists()
-
-
-# SYNC-GUARD: _format_iso/_parse_revision/_revisions_match mirror the
-# admin_home.py (AB-02) conventions; Track AB doctrine limits cross-module
-# imports to admin_common, so they are duplicated here (keep in sync).
-def _format_iso(value: datetime) -> str:
-    """ECMA-262 style ISO string at millisecond precision (mirrors admin_home)."""
-    text = value.isoformat()
-    if value.microsecond:
-        text = text[:23] + text[26:]
-    if text.endswith("+00:00"):
-        text = text.removesuffix("+00:00") + "Z"
-    return text
-
-
-def _parse_revision(header: str | None) -> datetime | None:
-    raw = (header or "").strip().strip('"')
-    if not raw:
-        return None
-    try:
-        return datetime.fromisoformat(raw)
-    except ValueError:
-        return None
-
-
-def _revisions_match(expected: datetime, current: datetime) -> bool:
-    """Compare both sides at millisecond precision (JS Date round-trip safety)."""
-    try:
-        expected_ms = expected.astimezone(UTC).replace(
-            microsecond=(expected.microsecond // 1000) * 1000
-        )
-        current_ms = current.astimezone(UTC).replace(
-            microsecond=(current.microsecond // 1000) * 1000
-        )
-    except (TypeError, ValueError):
-        return False
-    return expected_ms == current_ms
-
 
 def _require_current_revision(request, version: GraphVersion) -> None:
-    header = request.headers.get("If-Match")
-    if header is None:
-        raise AdminError(
-            428,
-            PRECONDITION_REQUIRED,
-            "An If-Match revision is required. GET the graph version first.",
-        )
-    expected = _parse_revision(header)
-    if expected is None or not _revisions_match(expected, version.updated_at):
-        raise AdminError(
-            409, STALE_REVISION, "The graph version was modified by someone else."
-        )
+    """If-Match gate; the version's updatedAt doubles as the revision."""
+    _require_if_match(
+        request,
+        current=version.updated_at,
+        missing_message="An If-Match revision is required. GET the graph version first.",
+        stale_message="The graph version was modified by someone else.",
+    )
 
 
 def _serialize_version_row(
@@ -206,8 +118,8 @@ def _serialize_version_row(
         "id": version.pk,
         "locale": version.locale,
         "status": version.status,
-        "createdAt": _format_iso(version.created_at),
-        "updatedAt": _format_iso(version.updated_at),
+        "createdAt": _format_revision(version.created_at),
+        "updatedAt": _format_revision(version.updated_at),
         "nodeCount": node_count,
         "edgeCount": edge_count,
     }
@@ -284,17 +196,16 @@ def _stored_payload(version: GraphVersion) -> dict[str, Any]:
 def _get_version_or_404(version_id: int) -> GraphVersion:
     version = GraphVersion.objects.filter(pk=version_id).first()
     if version is None:
-        raise AdminError(404, "NOT_FOUND", "Unknown graph version.")
+        raise AdminError(404, NOT_FOUND, "Unknown graph version.")
     return version
 
 
 def _audit(request, *, action: str, version: GraphVersion, status: int, extra: str) -> None:
-    AuditLog.objects.create(
-        user=request.user,
+    _audit_log(
+        request,
         action=action,
         model_name="graph",
         object_id=str(version.pk),
-        ip=_client_ip(request),
         detail=f"{request.method} /api/v1/admin/graph/... -> {status}; {extra}",
     )
 
@@ -375,7 +286,7 @@ def _check_storage_guards(payload: dict[str, Any]) -> None:
         ):
             raise AdminError(
                 400,
-                "VALIDATION",
+                VALIDATION,
                 "Edge endpoints must reference payload nodes.",
                 fields={"edges": [UNKNOWN_EDGE_ENDPOINT]},
             )
@@ -390,7 +301,7 @@ def _check_storage_guards(payload: dict[str, Any]) -> None:
         if len(keys) != len(set(keys)):
             raise AdminError(
                 400,
-                "VALIDATION",
+                VALIDATION,
                 "A node references the same related record twice.",
                 fields={"nodes": [DUPLICATE_RELATED]},
             )
@@ -402,14 +313,14 @@ def _check_storage_guards(payload: dict[str, Any]) -> None:
             if member_id not in node_ids:
                 raise AdminError(
                     400,
-                    "VALIDATION",
+                    VALIDATION,
                     "Group members must reference payload nodes.",
                     fields={"groups": [UNKNOWN_GROUP_MEMBER]},
                 )
             if member_id in seen_members:
                 raise AdminError(
                     400,
-                    "VALIDATION",
+                    VALIDATION,
                     "A node may belong to at most one group.",
                     fields={"groups": [DUPLICATE_GROUP_MEMBER]},
                 )
@@ -494,8 +405,8 @@ def graph_versions_list(request):
             id=version.pk,
             locale=version.locale,
             status=version.status,
-            createdAt=_format_iso(version.created_at),
-            updatedAt=_format_iso(version.updated_at),
+            createdAt=_format_revision(version.created_at),
+            updatedAt=_format_revision(version.updated_at),
             nodeCount=version.node_count,
             edgeCount=version.edge_count,
         )
@@ -512,7 +423,7 @@ def graph_version_create(request, payload: GraphVersionCreateIn):
     _require_admin_otp(request)
     _check_csrf(request)
     if payload.locale not in VALID_LOCALES:
-        raise AdminError(404, "NOT_FOUND", "Unknown locale.")
+        raise AdminError(404, NOT_FOUND, "Unknown locale.")
     version = GraphVersion.objects.create(
         locale=payload.locale, status=GraphVersionStatus.DRAFT
     )
@@ -529,8 +440,8 @@ def graph_version_create(request, payload: GraphVersionCreateIn):
             id=version.pk,
             locale=version.locale,
             status=version.status,
-            createdAt=_format_iso(version.created_at),
-            updatedAt=_format_iso(version.updated_at),
+            createdAt=_format_revision(version.created_at),
+            updatedAt=_format_revision(version.updated_at),
             nodeCount=0,
             edgeCount=0,
         ),
@@ -550,8 +461,8 @@ def graph_version_detail(request, version_id: int):
         id=version.pk,
         locale=version.locale,
         status=version.status,
-        createdAt=_format_iso(version.created_at),
-        updatedAt=_format_iso(version.updated_at),
+        createdAt=_format_revision(version.created_at),
+        updatedAt=_format_revision(version.updated_at),
         nodes=payload["nodes"],
         edges=payload["edges"],
         groups=payload["groups"],
@@ -572,7 +483,7 @@ def graph_payload_put(request, version_id: int, payload: GraphPayloadIn):
             GraphVersion.objects.select_for_update().filter(pk=version_id).first()
         )
         if version is None:
-            raise AdminError(404, "NOT_FOUND", "Unknown graph version.")
+            raise AdminError(404, NOT_FOUND, "Unknown graph version.")
         if version.status != GraphVersionStatus.DRAFT:
             raise AdminError(
                 409,
@@ -588,7 +499,7 @@ def graph_payload_put(request, version_id: int, payload: GraphPayloadIn):
         _check_storage_guards(payload_dict)
         _replace_payload(version, payload_dict)
         version.save(update_fields=["updated_at"])
-        revision = _format_iso(version.updated_at)
+        revision = _format_revision(version.updated_at)
     node_count = len(payload_dict.get("nodes") or [])
     edge_count = len(payload_dict.get("edges") or [])
     _audit(
@@ -614,14 +525,14 @@ def graph_version_activate(request, version_id: int):
             GraphVersion.objects.select_for_update().filter(pk=version_id).first()
         )
         if version is None:
-            raise AdminError(404, "NOT_FOUND", "Unknown graph version.")
+            raise AdminError(404, NOT_FOUND, "Unknown graph version.")
         if version.status != GraphVersionStatus.DRAFT:
             raise AdminError(409, ALREADY_ACTIVE, "This graph version is already active.")
         issues = validate_graph_payload(
             _stored_payload(version), related_resolver=_published_related_exists
         )
         if issues:
-            return JsonResponse({"code": "VALIDATION_BLOCKED", "issues": issues}, status=409)
+            return JsonResponse({"code": VALIDATION_BLOCKED, "issues": issues}, status=409)
         GraphVersion.objects.filter(
             locale=version.locale, status=GraphVersionStatus.ACTIVE
         ).exclude(pk=version.pk).update(status=GraphVersionStatus.DRAFT)

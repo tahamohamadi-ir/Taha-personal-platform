@@ -39,13 +39,11 @@ keeps the record standalone; on PATCH an explicit ``null`` clears it.
 ``order`` is deliberately not PATCH-editable: reordering is the dedicated
 ``/reorder`` operation.
 
-Stable token constants below are declared once here; graduating them into
-``apps/api/admin_common.py`` is left to the consolidation packet (AB-07).
+Stable error tokens are declared once in ``apps/api/admin_common.py`` and
+imported from there (graduated by the AB-07 consolidation packet).
 """
 
 from __future__ import annotations
-
-from datetime import UTC, datetime
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -55,10 +53,19 @@ from django.utils import timezone
 from ninja import Field, Router, Schema
 
 from apps.api.admin_common import (
+    BAD_TYPE,
+    BAD_WEIGHT,
+    DUPLICATE_ORDER,
+    INVALID_DETAIL_URL,
+    NOT_FOUND,
+    UNKNOWN_ID,
+    VALIDATION,
     AdminError,
+    _audit_log,
     _check_csrf,
-    _client_ip,
+    _format_revision,
     _require_admin_otp,
+    _require_if_match,
 )
 from apps.content.models import (
     Locale,
@@ -67,21 +74,11 @@ from apps.content.models import (
     TimelineRecordType,
     validate_detail_url,
 )
-from apps.security.models import AuditLog
 
 timeline_router = Router()
 
 VALID_LOCALES = tuple(Locale.values)
 VALID_TYPES = tuple(TimelineRecordType.values)
-
-# Stable error tokens (declared once; see module docstring).
-PRECONDITION_REQUIRED = "PRECONDITION_REQUIRED"
-STALE_REVISION = "STALE_REVISION"
-BAD_TYPE = "BAD_TYPE"
-INVALID_DETAIL_URL = "INVALID_DETAIL_URL"
-BAD_WEIGHT = "BAD_WEIGHT"
-UNKNOWN_ID = "UNKNOWN_ID"
-DUPLICATE_ORDER = "DUPLICATE_ORDER"
 
 WEIGHT_MAX = 32767  # PositiveSmallIntegerField storage bound.
 
@@ -139,59 +136,19 @@ def _locale_rows(locale: str) -> list[TimelineRecord]:
     return list(TimelineRecord.objects.for_locale(locale))
 
 
-def _format_revision(value: datetime) -> str:
-    """ECMA-262 style ISO string at millisecond precision (mirrors admin_home)."""
-    text = value.isoformat()
-    if value.microsecond:
-        text = text[:23] + text[26:]
-    if text.endswith("+00:00"):
-        text = text.removesuffix("+00:00") + "Z"
-    return text
-
-
-def _parse_revision(header: str | None) -> datetime | None:
-    raw = (header or "").strip().strip('"')
-    if not raw:
-        return None
-    try:
-        return datetime.fromisoformat(raw)
-    except ValueError:
-        return None
-
-
-def _revisions_match(expected: datetime, current: datetime) -> bool:
-    """Compare both sides at millisecond precision (JS Date round-trip safety)."""
-    try:
-        expected_ms = expected.astimezone(UTC).replace(
-            microsecond=(expected.microsecond // 1000) * 1000
-        )
-        current_ms = current.astimezone(UTC).replace(
-            microsecond=(current.microsecond // 1000) * 1000
-        )
-    except (TypeError, ValueError):
-        return False
-    return expected_ms == current_ms
-
-
 def _require_valid_locale(locale: str) -> None:
     if locale not in VALID_LOCALES:
-        raise AdminError(404, "NOT_FOUND", "Unknown locale.")
+        raise AdminError(404, NOT_FOUND, "Unknown locale.")
 
 
 def _require_row_revision(request, row: TimelineRecord) -> None:
     """If-Match gate for one row; the row's updatedAt doubles as the revision."""
-    header = request.headers.get("If-Match")
-    if header is None:
-        raise AdminError(
-            428,
-            PRECONDITION_REQUIRED,
-            "An If-Match revision is required. GET the timeline first.",
-        )
-    expected = _parse_revision(header)
-    if expected is None or not _revisions_match(expected, row.updated_at):
-        raise AdminError(
-            409, STALE_REVISION, "The timeline record was modified by someone else."
-        )
+    _require_if_match(
+        request,
+        current=row.updated_at,
+        missing_message="An If-Match revision is required. GET the timeline first.",
+        stale_message="The timeline record was modified by someone else.",
+    )
 
 
 def _to_out(row: TimelineRecord) -> TimelineAdminOut:
@@ -213,7 +170,7 @@ def _to_out(row: TimelineRecord) -> TimelineAdminOut:
 def _validation_error(problems: dict[str, list[str]]) -> AdminError:
     return AdminError(
         400,
-        "VALIDATION",
+        VALIDATION,
         "Timeline record payload failed validation.",
         fields=problems,
     )
@@ -308,12 +265,11 @@ def timeline_create(request, locale: str, payload: TimelineCreateIn):
             detail_url=payload.detail_url,
             order=target_order,
         )
-    AuditLog.objects.create(
-        user=request.user,
+    _audit_log(
+        request,
         action="timeline.create",
         model_name="timeline",
         object_id=str(row.id),
-        ip=_client_ip(request),
         detail=f"POST /api/v1/admin/timeline/{locale} -> 200; order={row.order}",
     )
     return _to_out(row)
@@ -341,12 +297,11 @@ def timeline_reorder(request, locale: str, payload: TimelineReorderIn):
             row.order = position
             row.save(update_fields=["order", "updated_at"])
     fresh = _locale_rows(locale)
-    AuditLog.objects.create(
-        user=request.user,
+    _audit_log(
+        request,
         action="timeline.reorder",
         model_name="timeline",
         object_id=locale,
-        ip=_client_ip(request),
         detail=f"POST /api/v1/admin/timeline/{locale}/reorder -> 200; count={len(ids)}",
     )
     return [_to_out(row) for row in fresh]
@@ -372,7 +327,7 @@ def timeline_update(request, locale: str, id: int, payload: TimelinePatchIn):
             .first()
         )
         if row is None:
-            raise AdminError(404, "NOT_FOUND", "Timeline record not found.")
+            raise AdminError(404, NOT_FOUND, "Timeline record not found.")
         _require_row_revision(request, row)
         merged = {
             "type": data.get("type", row.type),
@@ -414,12 +369,11 @@ def timeline_update(request, locale: str, id: int, payload: TimelinePatchIn):
                 "updated_at",
             ]
         )
-    AuditLog.objects.create(
-        user=request.user,
+    _audit_log(
+        request,
         action="timeline.update",
         model_name="timeline",
         object_id=str(row.id),
-        ip=_client_ip(request),
         detail=f"PATCH /api/v1/admin/timeline/{locale}/{row.id} -> 200; fields={sorted(data)}",
     )
     return _to_out(row)
@@ -440,15 +394,14 @@ def timeline_delete(request, locale: str, id: int):
             .first()
         )
         if row is None:
-            raise AdminError(404, "NOT_FOUND", "Timeline record not found.")
+            raise AdminError(404, NOT_FOUND, "Timeline record not found.")
         _require_row_revision(request, row)
         row.delete()
-    AuditLog.objects.create(
-        user=request.user,
+    _audit_log(
+        request,
         action="timeline.delete",
         model_name="timeline",
         object_id=str(id),
-        ip=_client_ip(request),
         detail=f"DELETE /api/v1/admin/timeline/{locale}/{id} -> 204",
     )
     return HttpResponse(status=204)

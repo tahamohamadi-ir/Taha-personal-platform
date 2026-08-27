@@ -40,28 +40,33 @@ at any precision and quantized to two decimal places (ROUND_HALF_UP) to
 match the ``Decimal(5, 2)`` columns; the 0..100 check runs BEFORE
 quantization.
 
-Stable token constants below are declared once here; graduating them
-into ``apps/api/admin_common.py`` is left to the consolidation packet
-(AB-07).
+Stable error tokens are declared once in ``apps/api/admin_common.py`` and
+imported from there (graduated by the AB-07 consolidation packet).
 """
 
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime
 from decimal import ROUND_HALF_UP, Decimal
 
 from django.db import transaction
 from ninja import Schema
 
 from apps.api.admin_common import (
+    NOT_FOUND,
+    OUT_OF_RANGE,
+    TOO_LONG,
+    UNKNOWN_FIELD,
+    UNKNOWN_LICENSE,
+    VALIDATION,
     AdminError,
+    _audit_log,
     _check_csrf,
-    _client_ip,
+    _format_revision,
     _require_admin_otp,
+    _require_if_match,
 )
 from apps.media.models import Media, MediaLicense
-from apps.security.models import AuditLog
 
 # Body keys accepted by PATCH /{id}/presentation (frozen AB-04 subset).
 ALLOWED_PRESENTATION_FIELDS = frozenset(
@@ -82,14 +87,6 @@ PATCHABLE_TEXT_FIELDS = (
     "caption_fa",
     "caption_en",
 )
-
-# Stable error tokens (declared once; see module docstring).
-PRECONDITION_REQUIRED = "PRECONDITION_REQUIRED"
-STALE_REVISION = "STALE_REVISION"
-UNKNOWN_FIELD = "UNKNOWN_FIELD"
-OUT_OF_RANGE = "OUT_OF_RANGE"
-UNKNOWN_LICENSE = "UNKNOWN_LICENSE"
-TOO_LONG = "TOO_LONG"
 
 FOCAL_MIN = Decimal("0")
 FOCAL_MAX = Decimal("100")
@@ -123,54 +120,14 @@ class MediaLicenseOut(Schema):
     name: str
 
 
-def _format_revision(value: datetime) -> str:
-    """ECMA-262 style ISO string at millisecond precision (mirrors admin_media)."""
-    text = value.isoformat()
-    if value.microsecond:
-        text = text[:23] + text[26:]
-    if text.endswith("+00:00"):
-        text = text.removesuffix("+00:00") + "Z"
-    return text
-
-
-def _parse_revision(header: str | None) -> datetime | None:
-    raw = (header or "").strip().strip('"')
-    if not raw:
-        return None
-    try:
-        return datetime.fromisoformat(raw)
-    except ValueError:
-        return None
-
-
-def _revisions_match(expected: datetime, current: datetime) -> bool:
-    """Compare both sides at millisecond precision (JS Date round-trip safety)."""
-    try:
-        expected_ms = expected.astimezone(UTC).replace(
-            microsecond=(expected.microsecond // 1000) * 1000
-        )
-        current_ms = current.astimezone(UTC).replace(
-            microsecond=(current.microsecond // 1000) * 1000
-        )
-    except (TypeError, ValueError):
-        return False
-    return expected_ms == current_ms
-
-
 def _require_row_revision(request, media: Media) -> None:
     """If-Match gate for one row; the row's updatedAt doubles as the revision."""
-    header = request.headers.get("If-Match")
-    if header is None:
-        raise AdminError(
-            428,
-            PRECONDITION_REQUIRED,
-            "An If-Match revision is required. GET the media first.",
-        )
-    expected = _parse_revision(header)
-    if expected is None or not _revisions_match(expected, media.updated_at):
-        raise AdminError(
-            409, STALE_REVISION, "The media row was modified by someone else."
-        )
+    _require_if_match(
+        request,
+        current=media.updated_at,
+        missing_message="An If-Match revision is required. GET the media first.",
+        stale_message="The media row was modified by someone else.",
+    )
 
 
 def _quantize_focal(value: float) -> Decimal:
@@ -183,14 +140,14 @@ def _reject_unknown_fields(request) -> None:
     try:
         raw = json.loads(request.body.decode("utf-8"))
     except (ValueError, UnicodeDecodeError):
-        raise AdminError(400, "VALIDATION", "Malformed JSON body.") from None
+        raise AdminError(400, VALIDATION, "Malformed JSON body.") from None
     if not isinstance(raw, dict):
-        raise AdminError(400, "VALIDATION", "A JSON object body is required.")
+        raise AdminError(400, VALIDATION, "A JSON object body is required.")
     unknown = sorted(str(key) for key in raw if key not in ALLOWED_PRESENTATION_FIELDS)
     if unknown:
         raise AdminError(
             400,
-            "VALIDATION",
+            VALIDATION,
             "Unknown field(s) in payload.",
             fields={key: [UNKNOWN_FIELD] for key in unknown},
         )
@@ -219,7 +176,7 @@ def _patch_problems(data: dict) -> dict[str, list[str]]:
 def _validation_error(problems: dict[str, list[str]]) -> AdminError:
     return AdminError(
         400,
-        "VALIDATION",
+        VALIDATION,
         "Media presentation payload failed validation.",
         fields=problems,
     )
@@ -237,7 +194,7 @@ def media_presentation_update(request, media_id: int, payload: MediaPresentation
     with transaction.atomic():
         media = Media.objects.select_for_update().filter(pk=media_id).first()
         if media is None:
-            raise AdminError(404, "NOT_FOUND", "Media not found.")
+            raise AdminError(404, NOT_FOUND, "Media not found.")
         _require_row_revision(request, media)
         update_fields: list[str] = []
         for axis in ("focal_x", "focal_y"):
@@ -255,12 +212,11 @@ def media_presentation_update(request, media_id: int, payload: MediaPresentation
         if update_fields:
             update_fields.append("updated_at")
             media.save(update_fields=update_fields)
-    AuditLog.objects.create(
-        user=request.user,
+    _audit_log(
+        request,
         action="media.presentation_update",
         model_name="media",
         object_id=str(media_id),
-        ip=_client_ip(request),
         detail=(
             f"PATCH /api/v1/admin/media/{media_id}/presentation -> 200; "
             f"fields={sorted(data)}"
