@@ -25,6 +25,9 @@ from apps.content.models import (
     Course,
     CreativeWork,
     Download,
+    GraphNode,
+    GraphNodeRelated,
+    GraphVersion,
     HomeModule,
     Landing,
     Locale,
@@ -1409,6 +1412,167 @@ def get_home_composition(request, locale: str) -> HomeCompositionOut:
         revision=max(row.updated_at for row in rows).isoformat(),
         modules=[HomeModuleOut(key=row.key, order=row.order) for row in rows],
     )
+
+
+# --- [PUBLIC-API] Graph (BK-05) ---------------------------------------------
+# Target contract: GraphNodePublic/GraphEdgePublic of
+# Assets/site-redesign/implementation-reference/AGENT-COORDINATION.md §4.
+# Groups (GraphGroup) are editor-side only and never projected (phase 1).
+
+
+class GraphRelatedRecordOut(Schema):
+    """One published linked record behind a node (family from ContentType)."""
+
+    family: str
+    id: str
+
+
+class GraphNodePositionOut(Schema):
+    """Pinned node position; ``z`` is omitted when unpinned."""
+
+    x: float
+    y: float
+    z: float | None = None
+
+
+class GraphNodePublicOut(Schema):
+    """Public node - camelCase mapping of GraphNode.
+
+    ``summary``/``colorRole``/``iconRole`` and ``position`` are omitted when
+    blank/unpinned (response serialized with ``exclude_none``).
+    """
+
+    id: str
+    type: str
+    label: str
+    accessibleLabel: str
+    weight: int
+    summary: str | None = None
+    colorRole: str | None = None
+    iconRole: str | None = None
+    position: GraphNodePositionOut | None = None
+    relatedRecords: list[GraphRelatedRecordOut] = Field(default_factory=list)
+
+
+class GraphEdgePublicOut(Schema):
+    """Public edge - camelCase mapping of GraphEdge (blank explanation omitted)."""
+
+    id: str
+    source: str
+    target: str
+    relationType: str
+    directed: bool
+    weight: int
+    explanation: str | None = None
+
+
+class GraphPayloadOut(Schema):
+    """One active graph version: nodes + edges only (no groups in phase 1)."""
+
+    nodes: list[GraphNodePublicOut] = Field(default_factory=list)
+    edges: list[GraphEdgePublicOut] = Field(default_factory=list)
+
+
+def _graph_public_related(
+    nodes: list[GraphNode],
+) -> dict[int, list[GraphRelatedRecordOut]]:
+    """Batch-resolve node related targets; only publicly readable rows survive.
+
+    Dangling references (deleted rows), unpublished objects and models without
+    a ``public()`` gate are omitted fail-closed - re-checked at read time,
+    never trusted from authoring-time validation alone.
+    """
+    by_node: dict[int, list[GraphRelatedRecordOut]] = {node.pk: [] for node in nodes}
+    if not by_node:
+        return by_node
+    rows = GraphNodeRelated.objects.filter(node__in=by_node).select_related(
+        "content_type"
+    )
+    by_content_type: dict[int, list[GraphNodeRelated]] = {}
+    for row in rows:
+        by_content_type.setdefault(row.content_type_id, []).append(row)
+    visible: set[tuple[int, int]] = set()
+    for content_type_id, group in by_content_type.items():
+        model = group[0].content_type.model_class()
+        public = getattr(getattr(model, "objects", None), "public", None)
+        if public is None:
+            continue
+        ids = public().filter(pk__in=[row.object_id for row in group]).values_list(
+            "pk", flat=True
+        )
+        visible.update((content_type_id, pk) for pk in ids)
+    for row in rows:
+        if (row.content_type_id, row.object_id) in visible:
+            by_node[row.node_id].append(
+                GraphRelatedRecordOut(
+                    family=row.content_type.model, id=str(row.object_id)
+                )
+            )
+    return by_node
+
+
+def public_graph_payload(locale: str) -> GraphPayloadOut | None:
+    """Public projection of the ACTIVE graph version for one locale (BK-05).
+
+    Business rules live here (doctrine 8.1): fail-closed active-version gate,
+    camelCase shape mapping, blank-value omission and the stable edge id
+    composition ``{sourceNodeId}->{targetNodeId}:{relationType}``. Returns
+    ``None`` when no active version exists (the view raises 404).
+    """
+    version = GraphVersion.objects.latest_active(locale)
+    if version is None:
+        return None
+    nodes = list(version.nodes.order_by("node_id"))
+    edges = list(version.edges.select_related("source", "target").order_by("id"))
+    related = _graph_public_related(nodes)
+    out_nodes: list[GraphNodePublicOut] = []
+    for node in nodes:
+        position = None
+        if node.pos_x is not None and node.pos_y is not None:
+            position = GraphNodePositionOut(x=node.pos_x, y=node.pos_y, z=node.pos_z)
+        out_nodes.append(
+            GraphNodePublicOut(
+                id=node.node_id,
+                type=node.type,
+                label=node.label,
+                accessibleLabel=(node.accessible_label or "").strip(),
+                summary=(node.summary or "").strip() or None,
+                colorRole=(node.color_role or "").strip() or None,
+                iconRole=(node.icon_role or "").strip() or None,
+                weight=node.weight,
+                position=position,
+                relatedRecords=related.get(node.pk, []),
+            )
+        )
+    out_edges = [
+        GraphEdgePublicOut(
+            id=f"{edge.source.node_id}->{edge.target.node_id}:{edge.relation_type}",
+            source=edge.source.node_id,
+            target=edge.target.node_id,
+            relationType=edge.relation_type,
+            directed=edge.directed,
+            weight=edge.weight,
+            explanation=(edge.explanation or "").strip() or None,
+        )
+        for edge in edges
+    ]
+    return GraphPayloadOut(nodes=out_nodes, edges=out_edges)
+
+
+@api.get(
+    "/graph/{locale}",
+    response=GraphPayloadOut,
+    exclude_none=True,
+    summary="Active research graph for a locale (nodes + edges, no groups)",
+)
+def get_graph(request, locale: str) -> GraphPayloadOut:
+    """Fail-closed: 404 unless locale is fa/en and an active version exists."""
+    if locale not in Locale.values:
+        raise HttpError(404, "graph not found")
+    payload = public_graph_payload(locale)
+    if payload is None:
+        raise HttpError(404, "graph not found")
+    return payload
 
 
 from apps.api.public_contact import contact_router  # noqa: E402

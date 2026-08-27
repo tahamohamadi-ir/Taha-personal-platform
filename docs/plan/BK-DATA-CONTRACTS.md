@@ -122,3 +122,8 @@ Unconsumed by web today: /api/landings/*, Ninja /api/profiles/* (shadowed), /api
 | Endpoint | Shape | Gating |
 |---|---|---|
 | GET /api/home-composition/{locale} | {revision: ISO-timestamp of latest projected row, modules: [{key, order}]} | status=published AND published_at<=now AND visible=true, per-locale rows (content.0017_home_modules); 404 'home composition not found' when locale invalid or zero projected rows (apps/cms/apps/api/api.py, tests: apps/cms/tests/test_api_home_composition.py) |
+## Addendum - BK-05 shipped (2026-08-27)
+
+| Endpoint | Shape | Gating |
+|---|---|---|
+| GET /api/graph/{locale} | {nodes:[GraphNodePublic camel], edges:[GraphEdgePublic camel]} - key-omission for blank optional fields; stable edge id {source}->{target}:{relationType}; relatedRecords re-checked fail-closed at read (draft/dangling omitted); groups excluded v1 | active GraphVersion only per locale (draft never served); 404 'graph not found' on invalid locale or no active version |
