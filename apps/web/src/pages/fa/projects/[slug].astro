@@ -1,6 +1,24 @@
 ---
+/* WF-07C: projects detail adopted onto EvidenceDetailTemplate. Lead =
+   SectionLead as="h1" plus the case-study depth badge as status (the
+   objective summary renders in the lead only on the story branch, where the
+   body does not repeat it; the case-study body keeps its existing objective
+   paragraph). Metadata = MetadataGroup over dates/license with existing
+   dictionary labels - role/methods have no labels in the projects
+   dictionary, so they are omitted rather than invented (escalated for a
+   follow-up dictionary addition). Body preserves the case-study/story
+   rendering verbatim, including the sanitized-evidence source disclosure.
+   The loader exposes no restricted/evidence note fields, so the limitations
+   slot stays unfilled. Related = real CMS topics/publications on the story
+   branch; the case-study body already closes with the same related lists. */
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Breadcrumbs from "../../../components/Breadcrumbs.astro";
+import EvidenceDetailTemplate from "../../../layouts/EvidenceDetailTemplate.astro";
+import SectionLead from "../../../components/content/SectionLead.astro";
+import MetadataGroup from "../../../components/content/MetadataGroup.astro";
+import ContentRow from "../../../components/content/ContentRow.astro";
+import Badge from "../../../components/ui/Badge.astro";
+import ContentState from "../../../components/ui/ContentState.astro";
 import CaseStudyDetail from "../../../components/projects/CaseStudyDetail.astro";
 import StoryBody from "../../../components/StoryBody.astro";
 import { content } from "../../../data/content";
@@ -28,6 +46,21 @@ if (!project) {
   return Astro.redirect(`/${locale}/projects/`, 302);
 }
 
+const alternateExists = (await getProject("en", project.slug)) !== null;
+const projectHasStory = hasPublishedStory(project.story);
+
+function dateRange(start: string | null, end: string | null): string {
+  const from = start ? start.slice(0, 10) : "";
+  const to = end ? end.slice(0, 10) : "";
+  if (from && to) return `${from} - ${to}`;
+  return from || to;
+}
+
+const metadata = [
+  { label: projectsCopy.dateLabel, value: dateRange(project.start_date, project.end_date), ltr: true },
+  { label: projectsCopy.licenseLabel, value: project.license, ltr: true },
+];
+
 const creative = creativeWorkJsonLd({
   locale,
   title: project.title,
@@ -45,8 +78,6 @@ const structured = [
 ];
 if (creative) structured.push(creative);
 validateStructuredData(...structured);
-const alternateExists = (await getProject("en", project.slug)) !== null;
-const projectHasStory = hasPublishedStory(project.story);
 ---
 
 <BaseLayout
@@ -64,38 +95,70 @@ const projectHasStory = hasPublishedStory(project.story);
       <script type="application/ld+json" is:inline set:html={jsonLdScriptContent(block)} />
     ))
   }
-  <section class="projects-page">
+  <EvidenceDetailTemplate>
     <Breadcrumbs
+      slot="breadcrumbs"
       items={[
         { label: pageContent.name, href: `/${locale}/` },
         { label: projectsCopy.heading, href: `/${locale}/projects/` },
         { label: project.title },
       ]}
     />
-    {!alternateExists && <p class="missing">{projectsCopy.missingTranslation}</p>}
-    <h1>{project.title}</h1>
-    {
-      projectHasStory && project.story ? (
+    <Fragment slot="lead">
+      <SectionLead
+        as="h1"
+        heading={project.title}
+        summary={projectHasStory && project.objective ? project.objective : undefined}
+      />
+      {
+        project.has_case_study && project.case_study_depth && (
+          <p>
+            <Badge variant="status">
+              {projectsCopy.depthLabel}: {project.case_study_depth}
+            </Badge>
+          </p>
+        )
+      }
+      {!alternateExists && (
+        <ContentState kind="unavailable-translation" explanation={projectsCopy.missingTranslation} />
+      )}
+    </Fragment>
+    <MetadataGroup slot="metadata" items={metadata} />
+    <Fragment slot="body">
+      {projectHasStory && project.story ? (
         <StoryBody locale={locale} story={project.story} />
       ) : (
         <CaseStudyDetail locale={locale} project={project} copy={projectsCopy} />
+      )}
+    </Fragment>
+    {
+      projectHasStory && (project.topics.length > 0 || project.publications.length > 0) && (
+        <Fragment slot="related">
+          <h2>{projectsCopy.relatedHeading}</h2>
+          {project.topics.length > 0 && (
+            <>
+              <h3>{projectsCopy.topicsHeading}</h3>
+              {project.topics.map((topic) => (
+                <ContentRow
+                  title={topic.title}
+                  href={`/${locale}/research/topics/${topic.slug}/`}
+                />
+              ))}
+            </>
+          )}
+          {project.publications.length > 0 && (
+            <>
+              <h3>{projectsCopy.publicationsHeading}</h3>
+              {project.publications.map((publication) => (
+                <ContentRow
+                  title={publication.title}
+                  href={`/${locale}/publications/${publication.slug}/`}
+                />
+              ))}
+            </>
+          )}
+        </Fragment>
       )
     }
-  </section>
+  </EvidenceDetailTemplate>
 </BaseLayout>
-
-<style>
-  .projects-page {
-    max-width: 44rem;
-    margin-inline: auto;
-    padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem;
-  }
-  .projects-page h1 {
-    font-family: var(--font-display);
-    font-size: clamp(1.75rem, 4vw, 2.4rem);
-    margin: 0 0 0.75rem;
-  }
-  .missing {
-    color: var(--color-ink-muted);
-  }
-</style>

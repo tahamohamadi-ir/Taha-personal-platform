@@ -1,7 +1,19 @@
 ---
+/* WF-07C: projects index adopted onto CollectionIndexTemplate. Results are
+   ContentRow rows; the type badge label is the CMS source value (survey: the
+   public frontend has no type dictionary today - types render the raw
+   project_type source in both locales, so the source is kept, not
+   re-translated). Filters are the existing URL-backed type/sort params
+   exposed as a real method="get" form that works without JavaScript; the
+   inline enhancement script keeps today's instant client-side apply plus
+   URL sync. The loader exposes no featured flag, so no FeaturedRecord is
+   rendered - nothing is invented. */
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Breadcrumbs from "../../../components/Breadcrumbs.astro";
-import ProjectsCatalog from "../../../components/ProjectsCatalog.astro";
+import CollectionIndexTemplate from "../../../layouts/CollectionIndexTemplate.astro";
+import SectionLead from "../../../components/content/SectionLead.astro";
+import ContentRow from "../../../components/content/ContentRow.astro";
+import ContentState from "../../../components/ui/ContentState.astro";
 import { content } from "../../../data/content";
 import { isCmsOriginBuild } from "../../../lib/cms/client";
 import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../data/structured";
@@ -11,6 +23,19 @@ const locale = "fa" as const;
 const pageContent = content[locale];
 const projectsCopy = pageContent.projects;
 const projects = await getProjects(locale);
+
+function excerptFrom(text: string, max = 180): string {
+  const clean = text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  if (clean.length <= max) return clean;
+  return `${clean.slice(0, max).trimEnd()}…`;
+}
+
+function dateLabel(iso: string | null): string {
+  if (!iso) return "";
+  return iso.slice(0, 10);
+}
+
+const types = Array.from(new Set(projects.map((project) => project.project_type))).sort();
 
 const structured = [
   breadcrumbJsonLd([
@@ -32,31 +57,175 @@ validateStructuredData(...structured);
   alternateHref="/en/projects/"
 >
   <script type="application/ld+json" is:inline set:html={jsonLdScriptContent(structured[0])} />
-  <section class="projects-page">
+  <CollectionIndexTemplate>
     <Breadcrumbs
+      slot="breadcrumbs"
       items={[
         { label: pageContent.name, href: `/${locale}/` },
         { label: projectsCopy.heading },
       ]}
     />
-    <h1>{projectsCopy.heading}</h1>
-    <p class="lead">{projectsCopy.intro}</p>
-    <ProjectsCatalog locale={locale} content={pageContent} projects={projects} />
-  </section>
+    <SectionLead slot="sectionLead" as="h1" heading={projectsCopy.heading} summary={projectsCopy.intro} />
+    {
+      projects.length > 0 && (
+        <form
+          slot="filters"
+          class="project-filters"
+          method="get"
+          action={`/${locale}/projects/`}
+        >
+          <label class="project-filters__control">
+            <span>{projectsCopy.filterLabel}</span>
+            <select data-project-filter name="type">
+              <option value="all">{projectsCopy.filterAll}</option>
+              {types.map((type) => (
+                <option value={type}>{type}</option>
+              ))}
+            </select>
+          </label>
+          <label class="project-filters__control">
+            <span>{projectsCopy.sortLabel}</span>
+            <select data-project-sort name="sort">
+              <option value="title">{projectsCopy.sortTitle}</option>
+              <option value="newest">{projectsCopy.sortNewest}</option>
+            </select>
+          </label>
+          <button type="submit">{projectsCopy.filterLabel}</button>
+        </form>
+      )
+    }
+    {
+      projects.length === 0 ? (
+        <ContentState slot="results" kind="empty" explanation={projectsCopy.empty} />
+      ) : (
+        <div slot="results" data-project-catalog>
+          <div data-project-list>
+            {projects.map((project) => (
+              <div
+                data-type={project.project_type}
+                data-title={project.title}
+                data-published={project.published_at ?? ""}
+              >
+                <ContentRow
+                  type={project.project_type}
+                  title={project.title}
+                  href={`/${locale}/projects/${project.slug}/`}
+                  excerpt={project.objective ? excerptFrom(project.objective) : undefined}
+                  metadata={
+                    project.published_at
+                      ? [{ label: projectsCopy.dateLabel, value: dateLabel(project.published_at), ltr: true }]
+                      : undefined
+                  }
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    }
+  </CollectionIndexTemplate>
 </BaseLayout>
 
+<script>
+  function applyProjectsCatalog() {
+    const filter = document.querySelector<HTMLSelectElement>("[data-project-filter]");
+    const sort = document.querySelector<HTMLSelectElement>("[data-project-sort]");
+    const list = document.querySelector<HTMLElement>("[data-project-list]");
+    if (!filter || !sort || !list) return;
+
+    const items = Array.from(list.querySelectorAll<HTMLElement>(":scope > *"));
+
+    const apply = () => {
+      const type = filter.value;
+      const mode = sort.value;
+      const visible = items.filter((item) => {
+        const match = type === "all" || item.dataset.type === type;
+        item.hidden = !match;
+        return match;
+      });
+
+      visible.sort((a, b) => {
+        if (mode === "newest") {
+          return (b.dataset.published ?? "").localeCompare(a.dataset.published ?? "");
+        }
+        return (a.dataset.title ?? "").localeCompare(b.dataset.title ?? "", undefined, {
+          sensitivity: "base",
+        });
+      });
+
+      for (const item of visible) {
+        list.appendChild(item);
+      }
+    };
+
+    const syncUrl = () => {
+      const next = new URLSearchParams(window.location.search);
+      if (filter.value && filter.value !== "all") next.set("type", filter.value);
+      else next.delete("type");
+      const defaultSort = sort.options[0]?.value ?? "";
+      if (sort.value && sort.value !== defaultSort) next.set("sort", sort.value);
+      else next.delete("sort");
+      const qs = next.toString();
+      const url = qs
+        ? `${window.location.pathname}?${qs}${window.location.hash}`
+        : `${window.location.pathname}${window.location.hash}`;
+      window.history.replaceState({}, "", url);
+    };
+
+    const applyAndSync = () => {
+      apply();
+      syncUrl();
+    };
+
+    filter.addEventListener("change", applyAndSync);
+    sort.addEventListener("change", applyAndSync);
+
+    const params = new URLSearchParams(window.location.search);
+    const typeFromUrl = params.get("type");
+    const sortFromUrl = params.get("sort");
+    if (typeFromUrl && [...filter.options].some((option) => option.value === typeFromUrl)) {
+      filter.value = typeFromUrl;
+    }
+    if (sortFromUrl && [...sort.options].some((option) => option.value === sortFromUrl)) {
+      sort.value = sortFromUrl;
+    }
+    apply();
+  }
+
+  applyProjectsCatalog();
+</script>
+
 <style>
-  .projects-page {
-    max-width: 44rem;
-    margin-inline: auto;
-    padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 5vw, 2.5rem) 3rem;
+  .project-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--space-4) var(--space-6);
   }
-  .projects-page h1 {
-    font-family: var(--font-display);
-    font-size: clamp(1.75rem, 4vw, 2.4rem);
-    margin: 0 0 0.5rem;
+
+  .project-filters__control {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    color: var(--color-ink-secondary);
+    font-size: var(--text-sm);
+    font-weight: 600;
   }
-  .lead {
-    color: var(--color-ink-muted);
+
+  .project-filters select,
+  .project-filters button {
+    min-height: var(--space-11);
+    padding-inline: var(--space-3);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+    font: inherit;
+  }
+
+  .project-filters select:focus-visible,
+  .project-filters button:focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
   }
 </style>
