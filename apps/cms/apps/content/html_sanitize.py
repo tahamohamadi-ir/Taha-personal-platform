@@ -1,11 +1,9 @@
-"""Local HTML allowlist sanitizer (replaces ``wagtail.whitelist.Whitelister``).
+"""Local HTML allowlist sanitizer for rich-text fields.
 
-Behavior matches Wagtail's historic default element rules for XSS stripping
-(script unwrap, ``javascript:`` href drop, event attrs drop) and extends the
-allowlist with ``blockquote`` / ``code`` so public projection keeps ADR-0022
-editor features. ``img`` / embeds are intentionally excluded (editor never
-allowed them). BeautifulSoup is a direct dependency so this survives Wagtail
-uninstall.
+Strips XSS vectors (script unwrap, ``javascript:`` href drop, event attrs drop)
+and allows a minimal element set including ``blockquote`` / ``code`` so public
+projection keeps ADR-0022 editor features. ``img`` / embeds are intentionally
+excluded (the editor never allowed them). BeautifulSoup is a direct dependency.
 """
 
 from __future__ import annotations

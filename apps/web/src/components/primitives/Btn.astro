@@ -1,0 +1,18 @@
+---
+interface Props {
+  variant?: "primary" | "ghost" | "quiet";
+  size?: "md" | "sm";
+  href?: string;
+  type?: "button" | "submit";
+  ariaLabel?: string;
+}
+const { variant = "primary", size = "md", href, type = "button", ariaLabel } = Astro.props;
+const cls = ["btn", `btn--${variant}`];
+if (size === "sm") cls.push("btn--sm");
+const label = ariaLabel ?? undefined;
+---
+{href ? (
+  <a class={cls.join(" ")} href={href} aria-label={label}><slot /></a>
+) : (
+  <button class={cls.join(" ")} type={type} aria-label={label}><slot /></button>
+)}

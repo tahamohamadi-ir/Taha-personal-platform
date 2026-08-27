@@ -37,7 +37,7 @@
 | مایلستون | محتوا | هدف کاربر-محور |
 |---|---|---|
 | **M0 — Quick wins** | F1، E0، E6(P12)، F5، C1، D1–D3 | امنیت + جلوگیری از گم‌شدن کار + اصلاح لینک‌های بازنشسته |
-| **M1 — بنیان توکن طراحی** | E1–E5، E8، E10 | رفع فروپاشی layout (P1) و شکست‌های AA؛ پیش‌نیاز دارک‌مود |
+| **M1 — بنیان توکن طراحی** | E1–E5، E8، E10 + **WS-R فازهای ۰–۲ (ADR-0031)** | رفع فروپاشی layout (P1) و شکست‌های AA؛ هویت شب و لایهٔ کامپوننت |
 | **M2 — محتوا تمام-CMS** | A1–A4، A7–A9 (+A5/A6 اختیاری) | هیچ محتوای استاتیکی در پروداکشن؛ خانه/CV/nav/footer از ادمین |
 | **M3 — تکمیل پنل ادمین** | B1–B8، B11، B12 | ادمین کامل و کارآمد |
 | **M4 — اتوماسیون CI/CD** | C2–C10، C5 | عملیات روتین بدون SSH |
@@ -113,7 +113,7 @@
 - [ ] **B1 — ممیزی UI/UX جامع SPA + رفع یافته‌ها** — `P1` · `agent` · `L` · deps: —
   - گام ۱ (docs): گزارش ممیزی `admin-frontend` مقابل توکن‌ها/contract: حالت loading/error/empty در همه صفحات، پیام اعتبارسنجی فیلدها، focus states، RTL/LTR، ترتیب tab، پیام‌های خطای API (`{status,code,message,fields[]}`) نمایش انسانی، responsive ≥360px.
   - گام ۲ (code): رفع به تفکیک PR کوچک؛ هر PR با اسکرین‌شات before/after در WORK_LOG.
-  - پذیرش: چک‌لیست ممیزی صفر مورد بحرانی؛ `cd apps/cms/admin-frontend && npm run build && npx tsc --noEmit` PASS؛ Playwright admin matrix همچنان PASS.
+  - پذیرش: چک‌لیست ممیزی صفر مورد بحرانی؛ `cd apps/admin && npm run check && npm run build` PASS (ADR-0032: SPA lives in apps/admin)؛ Playwright admin matrix همچنان PASS.
   - شواهد: LOG-____
 
 - [ ] **B2 — ادیتورهای detail دوزبانه برای سایر موجودیت‌ها (صف P7-admin-detail-pages)** — `P2` · `agent` · `L` · deps: B1
@@ -246,6 +246,8 @@
 
 # WS-E — نواقص UI عمومی (P1–P19 از DESIGN-UI-CURRENT-PROBLEMS)
 
+> فایل‌های مرجع این WS (`DESIGN-UI-CURRENT-PROBLEMS.md` و proposals) به `docs/plan/archive/` منتقل شدند — یافته‌ها همه ID دفتری دارند و E-fix ها بسته‌اند؛ فقط تاریخچه‌اند.
+
 - [x] **E0 — مجوز مالک + تخصیص ID دفتری برای P1–P19** — `P0` · `owner→agent` · `S`
   - بر اساس جدول «Suggested ledger mapping» در فایل مشکلات؛ KI/DEBT/RISK/DEFER واقعی ساخته شود تا این یافته‌ها گم نشوند.
   - شواهد: LOG-0224 (KI-0002..0006، DEBT-0008..0015، DEFER-0033..0037، RISK-0014؛ مجوز مالک: attestation گفت‌وگوی 2026-08-23)
@@ -316,7 +318,7 @@
 | DEFER-0020 | collections پژوهش | G2 | OPEN |
 | DEFER-0021 | allowlist demo + CSP enforce | **F2** | PARTIAL |
 | DEFER-0022 | sign-off preview محلی About | **F7** | OPEN |
-| DEFER-0025 | dark mode | **F4** | OPEN |
+| DEFER-0025 | dark mode | **F4** | CLOSED (superseded by ADR-0031 — single night theme) |
 | DEFER-0032 | QA دستی S6 | B9 | PARTIAL |
 
 - [x] **F1 — RISK-0008: مالک credential 9Router را revoke/rotate و فقط در password manager نگه می‌دارد** — `P0` · `owner` · `S`
@@ -327,10 +329,8 @@
   - پذیرش: embed آزمایشی روی دامنه‌ی مجاز کار می‌کند؛ دامتهای خارج frame-src بلاک؛ smokeها سبز؛ DEFER-0021 → CLOSED.
   - شواهد: LOG-____
 
-- [ ] **F4 — Dark mode کامل (DEFER-0025)** — `P2` · `agent` · `L` · deps: E1
-  - توکن‌های dark در `@theme`، استراتژی prefers-color-scheme بدون force-redirect (IA rule)، ممیزی کنتراست مجدد، RTL/no-JS، تصمیم toggle یا auto-only در Task Spec.
-  - پذیرش: QA هر دو تم روی صفحات کلیدی؛ بودجه bundle تغییری نکند.
-  - شواهد: LOG-____
+- [x] ~~**F4 — Dark mode کامل (DEFER-0025)**~~ **SUPERSEDED by ADR-0031 (2026-08-24)** — the redesign ships one night theme as the only theme; no dual-theme work remains. Night tokens = DESIGN-CONTRACT §0; execution = reDesign_plan.md v2 phases.
+  - شواهد: ADR-0031؛ DEFER-0025 CLOSED (superseded)؛ جایگزین اجرایی = فازهای ۰–۵ سند بازطراحی.
 
 - [ ] **F6 — DEFER-0013: جلسه‌ی دستی مالک — zoom 200% + ماتریس موبایل واقعی (320/390/768/1024/1280/1440)** — `P2` · `owner` · `S`
   - پس از E1/E2 تا نتایج گمراه‌کننده نباشد. خروجی: اسکرین‌شات‌ها + بستن/تمدید دیفر.

@@ -155,8 +155,19 @@ Header → Hero → Explore by Perspective (live paths only) → Selected Eviden
 → Short About → honest Contact state → Footer
 ```
 
+**Redesign v2 order (ADR-0031) — LIVE since #111/#112:**
+
+```text
+Header (night glass) → HeroSection (constellation identity + drag-rotate island)
+→ PerspectiveGrid → FocusStrip → Selected Evidence → [JourneySection slot, reserved]
+→ Latest Writing → ContactCTA → Footer (night)
+```
+
 - Omit a section rather than fill it with placeholder content.
 - Every perspective card MUST lead somewhere real or carry no link at all.
+- JourneySection ships in a later wave into the reserved slot; until then the
+  order above is the shipped reality (no legacy sections remain on home).
+- JourneySection and any evidence-backed numbers follow §10; no invented milestones.
 
 ### Target ATLAS — default narrative order (not live, MASTER-SPEC §5 + templates.json)
 

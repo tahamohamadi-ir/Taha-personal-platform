@@ -1,0 +1,16 @@
+{
+  "version": "1.0.0",
+  "rule": "Use production assets as media only. Never slice concept screenshots into controls.",
+  "assets": [
+    { "id": "logo", "path": "Assets/site-redesign/implementation-reference/assets/brand", "role": "owner-authoritative PNG derivatives; native SVG not owner-supplied", "status": "implementation-asset" },
+    { "id": "home-light", "path": "Assets/site-redesign/implementation-reference/assets/concepts/home-light-concept-v3-final.png", "role": "Light hierarchy and art direction", "status": "reference-only" },
+    { "id": "home-dark", "path": "Assets/site-redesign/implementation-reference/assets/concepts/home-dark-concept-v3-final.png", "role": "Dark hierarchy and graph language", "status": "reference-only" },
+    { "id": "gateway", "path": "Assets/site-redesign/implementation-reference/assets/concepts/language-gateway-dark-concept-v1.png", "role": "separate language gateway direction", "status": "reference-only" },
+    { "id": "mobile-fa", "path": "Assets/site-redesign/implementation-reference/assets/concepts/home-mobile-fa-light-concept-v1.png", "role": "RTL mobile recomposition", "status": "reference-only" },
+    { "id": "blog-detail-fa", "path": "Assets/site-redesign/implementation-reference/assets/concepts/blog-detail-fa-light-concept-v1.png", "role": "long-form RTL reference", "status": "reference-only" },
+    { "id": "project-detail-fa", "path": "Assets/site-redesign/implementation-reference/assets/concepts/project-detail-fa-dark-concept-v1.png", "role": "evidence detail RTL reference", "status": "reference-only" },
+    { "id": "graph-editor", "path": "Assets/site-redesign/implementation-reference/assets/concepts/admin-graph-editor-dark-concept-v1.png", "role": "admin Phase 1 behavior reference", "status": "reference-only" },
+    { "id": "asset-pack", "path": "Assets/site-redesign/implementation-reference/assets/README.md", "role": "authoritative paths, provenance, crop, alt and usage guidance", "status": "authority" },
+    { "id": "page-family-register", "path": "Assets/site-redesign/implementation-reference/assets/page-families/PRODUCTION-REGISTER.md", "role": "eight page-family concepts and integrity hashes", "status": "authority" }
+  ]
+}

@@ -5,6 +5,11 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
+# ADR-0032: the admin SPA is an independent project (apps/admin). Django only
+# serves it when ADMIN_SPA_ROOT points at a built dist (e2e stack / transition
+# fallback); production edge (Caddy) routes /admin/* to the admin container.
+ADMIN_SPA_ROOT = os.environ.get("ADMIN_SPA_ROOT", "")
+
 SECRET_KEY = "insecure-dev-key-not-for-production"
 DEBUG = False
 ALLOWED_HOSTS: list[str] = []

@@ -1,0 +1,9 @@
+---
+interface Props { items: string[] }
+const { items } = Astro.props;
+---
+{items.length > 0 && (
+  <p class="meta-row">
+    {items.filter(Boolean).map((item) => <span>{item}</span>)}
+  </p>
+)}

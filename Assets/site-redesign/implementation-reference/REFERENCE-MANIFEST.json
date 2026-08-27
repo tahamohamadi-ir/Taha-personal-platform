@@ -1,0 +1,43 @@
+{
+  "version": "1.0.0",
+  "recordedAt": "2026-08-26",
+  "canonicalRoot": "Assets/site-redesign/implementation-reference",
+  "branch": "p14c-visual-atlas",
+  "referenceCommit": "7d9b87f3c2b04542e13c189adab3b57f2108d84a",
+  "sourceWorktree": "D:/Project/Taha-personal-platform/.worktrees/p14c-visual-atlas",
+  "worktreePolicy": "snapshot-only-no-git-metadata-copy",
+  "authority": {
+    "implementationBrief": "MASTER-SPEC.md",
+    "agentTasks": "MULTI-AGENT-TASK-LIST.md",
+    "coordination": "AGENT-COORDINATION.md",
+    "gates": "ACCEPTANCE-GATES.md",
+    "machineContracts": "agent-kit",
+    "runtimeTokensCurrent": "apps/web/src/styles/global.css",
+    "routesCurrent": "docs/contracts/IA-CONTRACT.md",
+    "visualConcepts": "Assets/site-redesign/implementation-reference/assets/concepts",
+    "productionAssets": "Assets/site-redesign/implementation-reference/assets/art and Assets/site-redesign/implementation-reference/assets/brand"
+  },
+  "status": {
+    "referencePackage": "validated",
+    "frontendImplementation": "not-started",
+    "cmsMigration": "not-authorized",
+    "figma": "optional-local-builder",
+    "production": "unchanged"
+  },
+  "requiredFiles": [
+    "README.md",
+    "MASTER-SPEC.md",
+    "MULTI-AGENT-TASK-LIST.md",
+    "AGENT-COORDINATION.md",
+    "ACCEPTANCE-GATES.md",
+    "DOCUMENT-MIGRATION-MAP.md",
+    "SOURCE-INVENTORY.md",
+    "WORKTREE-SNAPSHOT.md",
+    "agent-kit/README.md",
+    "agent-kit/tokens.json",
+    "agent-kit/components.json",
+    "agent-kit/templates.json",
+    "agent-kit/assets.json",
+    "agent-kit/validate.mjs"
+  ]
+}

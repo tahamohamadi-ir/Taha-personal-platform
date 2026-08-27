@@ -9,6 +9,7 @@
     "pagefind:index": "node scripts/pagefind-index.mjs",
     "preview": "astro preview",
     "check": "astro check",
+    "test": "vitest run --dir src",
     "test:e2e": "playwright test",
     "test:e2e:report": "playwright show-report qa/playwright-report"
   },
@@ -19,7 +20,6 @@
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.2.4",
     "gsap": "^3.15.0",
-    "motion": "^13.1.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "tailwindcss": "^4.3.3",
@@ -33,6 +33,7 @@
     "@types/three": "^0.185.4",
     "pagefind": "^1.4.0",
     "playwright": "^1.62.1",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "vitest": "^4.1.0"
   }
 }

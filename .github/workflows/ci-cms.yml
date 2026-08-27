@@ -72,16 +72,17 @@ jobs:
           cache: npm
           cache-dependency-path: |
             apps/web/package-lock.json
-            apps/cms/admin-frontend/package-lock.json
 
       - name: Install CMS Python deps
         working-directory: apps/cms
         run: uv sync --python 3.12
 
-      - name: Build admin SPA
-        working-directory: apps/cms/admin-frontend
+      # ADR-0032 S1: admin SPA moved to apps/admin (own CI: ci-admin.yml).
+      # The e2e stack still serves it via ADMIN_SPA_ROOT, so build it here.
+      - name: Build admin SPA (for e2e stack)
+        working-directory: apps/admin
         run: |
-          npm ci
+          npm ci --no-audit --no-fund
           npm run build
 
       - name: Install web + Playwright

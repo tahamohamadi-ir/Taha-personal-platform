@@ -1,8 +1,7 @@
 """Typed localized content contracts — plain Django models, lifecycle-aware.
 
-Entities are plain Django models (no Wagtail Page subclasses). The public
-projection is enforced by :meth:`ContentQuerySet.public` and the associated
-manager; no other access path leaks non-public records to consumers.
+The public projection is enforced by :meth:`ContentQuerySet.public` and the
+associated manager; no other access path leaks non-public records to consumers.
 """
 
 from __future__ import annotations

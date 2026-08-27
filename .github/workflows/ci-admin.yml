@@ -1,0 +1,40 @@
+name: Admin SPA CI
+
+on:
+  pull_request:
+    paths:
+      - "apps/admin/**"
+      - ".github/workflows/ci-admin.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/admin/**"
+
+concurrency:
+  group: ci-admin-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-and-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/admin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/admin/package-lock.json
+      - name: Install
+        run: npm ci --no-audit --no-fund
+      - name: Typecheck (tsc -b --noEmit)
+        run: npm run check
+      - name: Build (tsc + vite)
+        run: npm run build
+      - name: Assert /admin base in built index
+        run: |
+          grep -q '"/admin/' dist/index.html || grep -q '=/admin/' dist/index.html || {
+            echo "dist/index.html does not reference /admin/ base"; exit 1;
+          }
