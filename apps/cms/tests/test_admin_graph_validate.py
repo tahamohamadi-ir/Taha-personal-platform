@@ -331,3 +331,37 @@ def test_published_related_record_passes():
 
 def test_edge_public_id_composition():
     assert edge_public_id("root", "leaf", "relates-to") == "root->leaf:relates-to"
+
+
+def test_graph_related_families_match_the_hardcoded_wire_table():
+    """AB-07 cross-check: the AB family table (apps/api/admin_common.py)
+    equals the expected lowercase ``content_type.model`` wire strings the
+    BK-05 public read serves (one payload everywhere)."""
+    from apps.api.admin_common import GRAPH_RELATED_FAMILIES
+    from apps.content.models import (
+        Article,
+        Book,
+        Download,
+        Landing,
+        Profile,
+        Project,
+        Publication,
+        ResearchStatement,
+        ResearchTopic,
+        Series,
+        Talk,
+    )
+
+    assert GRAPH_RELATED_FAMILIES == {
+        "landing": Landing,
+        "profile": Profile,
+        "article": Article,
+        "series": Series,
+        "researchtopic": ResearchTopic,
+        "researchstatement": ResearchStatement,
+        "project": Project,
+        "publication": Publication,
+        "book": Book,
+        "talk": Talk,
+        "download": Download,
+    }
