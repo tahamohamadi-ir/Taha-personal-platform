@@ -25,6 +25,7 @@ import {
 } from "../lib/api";
 import { formatDateTime, formatFileSize, formatNumber } from "../lib/format";
 import MediaPicker from "../components/MediaPicker";
+import MediaPresentationSection from "../components/MediaPresentationSection";
 import MediaThumb from "../components/MediaThumb";
 
 const PAGE_SIZE = 12;
@@ -353,6 +354,10 @@ function MediaEditDrawer({
   const [replaceProgress, setReplaceProgress] = useState(0);
   const [replaceError, setReplaceError] = useState<unknown>(null);
   const replaceFileRef = useRef<HTMLInputElement>(null);
+  // AF-03: gate the drawer's global Escape close while the presentation
+  // conflict dialog is open (the dialog closes itself first).
+  const [presentationConflictOpen, setPresentationConflictOpen] =
+    useState(false);
 
   useEffect(() => {
     if (media === null) {
@@ -364,6 +369,7 @@ function MediaEditDrawer({
     setError(null);
     setFieldErrors({});
     setConflictError(null);
+    setPresentationConflictOpen(false);
   }, [media]);
 
   useEffect(() => {
@@ -371,7 +377,7 @@ function MediaEditDrawer({
       return;
     }
     const handleKeyDown = (event: KeyboardEvent): void => {
-      if (event.key === "Escape") {
+      if (event.key === "Escape" && !presentationConflictOpen) {
         onClose();
       }
     };
@@ -379,7 +385,7 @@ function MediaEditDrawer({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [media, onClose]);
+  }, [media, onClose, presentationConflictOpen]);
 
   function updateField(
     key: "title" | "altText" | "altTextFa" | "altTextEn",
@@ -725,6 +731,13 @@ function MediaEditDrawer({
             </button>
           </div>
         </form>
+
+        <MediaPresentationSection
+          media={media}
+          revision={updatedAt}
+          onRevisionChange={setUpdatedAt}
+          onConflictOpenChange={setPresentationConflictOpen}
+        />
       </div>
     </div>
   );

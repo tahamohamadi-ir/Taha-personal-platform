@@ -266,3 +266,65 @@ export async function reorderTimeline(
     body: JSON.stringify({ ids }),
   });
 }
+
+// ---------- Media presentation (AB-04 / AF-03) ----------
+// Contract source of truth: apps/cms/apps/api/admin_media_ext.py (FROZEN — AF
+// consumes, never redefines). The frozen contract is write-only: there is no
+// presentation READ endpoint, so screens track per-field edits and PATCH the
+// changed subset only. updatedAt doubles as the per-row If-Match revision.
+
+/** GET /api/v1/admin/media/licenses row (ordered by name). */
+export interface MediaLicenseRow {
+  id: number;
+  name: string;
+}
+
+/** PATCH body subset; explicit null clears the field server-side. */
+export interface MediaPresentationPatch {
+  focal_x?: number | null;
+  focal_y?: number | null;
+  rights_statement_fa?: string | null;
+  rights_statement_en?: string | null;
+  license_id?: number | null;
+  caption_fa?: string | null;
+  caption_en?: string | null;
+}
+
+/** PATCH success body: row id plus the new If-Match revision. */
+export interface MediaPresentationResult {
+  id: number;
+  updatedAt: string;
+}
+
+/** Stable ProblemDetails field tokens (admin_media_ext.py constants). */
+export const MEDIA_FIELD_TOKENS = [
+  "UNKNOWN_FIELD",
+  "OUT_OF_RANGE",
+  "UNKNOWN_LICENSE",
+  "TOO_LONG",
+] as const;
+
+let mediaLicensesCache: MediaLicenseRow[] | null = null;
+
+/** GET /api/v1/admin/media/licenses; fetched once per session (module cache). */
+export async function getMediaLicenses(): Promise<MediaLicenseRow[]> {
+  if (mediaLicensesCache !== null) {
+    return mediaLicensesCache;
+  }
+  const rows = await request<MediaLicenseRow[]>("/media/licenses");
+  mediaLicensesCache = rows;
+  return rows;
+}
+
+/** PATCH /api/v1/admin/media/{id}/presentation with If-Match → {id, updatedAt}. */
+export async function updateMediaPresentation(
+  id: number,
+  patch: MediaPresentationPatch,
+  ifMatch: string
+): Promise<MediaPresentationResult> {
+  return request<MediaPresentationResult>(`/media/${String(id)}/presentation`, {
+    method: "PATCH",
+    headers: { "If-Match": ifMatch },
+    body: JSON.stringify(patch),
+  });
+}

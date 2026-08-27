@@ -19,10 +19,12 @@ interface RevisionConflictDialogProps {
   open: boolean;
   title: string;
   body: string;
-  serverRowsLabel: string;
+  /** Optional (additive, AF-03): omitted hides the server-rows section for
+   * screens (e.g. media) whose conflicted resource has no row list. */
+  serverRowsLabel?: string;
   reloadLabel: string;
   keepMineLabel: string;
-  serverRows: string[];
+  serverRows?: string[];
   onReload: () => void;
   onKeepMine: () => void;
   /** Additive (AF-02): aria id prefix so a second dialog instance on another
@@ -109,16 +111,18 @@ export default function RevisionConflictDialog({
         <p id={`${idPrefix}-body`} className="admin-muted mb-3 text-sm leading-7">
           {body}
         </p>
-        <div className="admin-section-card mb-4">
-          <div className="admin-muted mb-1 text-xs font-medium">
-            {serverRowsLabel}
+        {serverRows !== undefined && (
+          <div className="admin-section-card mb-4">
+            <div className="admin-muted mb-1 text-xs font-medium">
+              {serverRowsLabel}
+            </div>
+            <ol className="list-inside list-decimal text-sm">
+              {serverRows.map((row) => (
+                <li key={row}>{row}</li>
+              ))}
+            </ol>
           </div>
-          <ol className="list-inside list-decimal text-sm">
-            {serverRows.map((row) => (
-              <li key={row}>{row}</li>
-            ))}
-          </ol>
-        </div>
+        )}
         <div className="admin-action-row justify-end">
           <button type="button" className="admin-btn" onClick={onReload}>
             {reloadLabel}
