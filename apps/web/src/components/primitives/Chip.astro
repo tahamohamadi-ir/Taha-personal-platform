@@ -1,5 +1,0 @@
----
-interface Props { label: string; active?: boolean }
-const { label, active = false } = Astro.props;
----
-<span class:list={["chip", { "chip--active": active }]}>{label}</span>

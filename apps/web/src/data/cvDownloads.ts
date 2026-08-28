@@ -1,6 +1,5 @@
 /** Shared CV download file lists for `/fa/cv/` and `/en/cv/`. */
 
-import type { DownloadFile } from "../components/Downloads.astro";
 import { cmsBase } from "../lib/cms/client";
 import {
   getCurrentCvDownloads,
@@ -8,6 +7,19 @@ import {
 } from "../lib/cms/siteSettings";
 
 type Locale = "fa" | "en";
+
+/* WF-CLEAN: DownloadFile moved here from the deleted legacy Downloads
+   component (WF-07G adopted the rendering into UtilityTemplate; the type
+   travels with its only data consumer). */
+export interface DownloadFile {
+  title: string;
+  note: string;
+  sizeKb: number;
+  href: string;
+  downloadName?: string;
+  updatedAt?: string;
+  formatLabel?: string;
+}
 
 const STATIC_FILES: Record<Locale, DownloadFile[]> = {
   en: [

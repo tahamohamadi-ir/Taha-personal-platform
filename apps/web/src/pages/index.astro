@@ -21,6 +21,19 @@ const title = en.gateway.title;
 const description = `${title} — ${en.gateway.prompt} / ${fa.gateway.prompt}`;
 const canonical = new URL("/", site.url).href;
 
+/* WF-09 hero art (README section 3 delivery rule): portal-centered-dark is the
+   always-night gateway master (dark-only page -> dark-only art; the light
+   companion is generated but unwired - data-theme cannot drive a <picture>,
+   see WORK_LOG). Responsive AVIF/WebP srcset from /art-derived/ with the
+   lossless 800w PNG as the <img> fallback; decorative per README (empty alt,
+   aria-hidden wrapper). This art is the gateway LCP, so it is preloaded
+   (AVIF candidates only - every browser that supports imagesrcset also
+   supports AVIF) and fetched eagerly. */
+const heroBase = "/art-derived/portal-centered-dark";
+const heroWidths = [800, 1200, 1600];
+const heroSrcset = (ext: string) =>
+  heroWidths.map((w) => `${heroBase}-${w}w.${ext} ${w}w`).join(", ");
+
 /* Intrinsic size of public/logo-gateway.png (256x233); attributes reserve the
    box so the panel cannot shift while the image loads. */
 const markWidth = 256;
@@ -35,6 +48,13 @@ const markHeight = 233;
     <!-- Mirrors the --canvas-night token; <meta> cannot reference a CSS var. -->
     <meta name="theme-color" content="#071225" />
     <link rel="icon" type="image/png" href="/favicon.png" />
+    <link
+      rel="preload"
+      as="image"
+      href={`${heroBase}-800w.png`}
+      imagesrcset={heroSrcset("avif")}
+      imagesizes="100vw"
+    />
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="robots" content="index,follow" />
@@ -56,6 +76,24 @@ const markHeight = 233;
   <body class="gateway">
     <a class="skip-link" href="#main">{en.skip}</a>
     <main class="gateway-stage" id="main">
+      <div class="gateway-art" aria-hidden="true">
+        <picture>
+          <source type="image/avif" srcset={heroSrcset("avif")} sizes="100vw" />
+          <source type="image/webp" srcset={heroSrcset("webp")} sizes="100vw" />
+          <img
+            class="gateway-art-image"
+            src={`${heroBase}-800w.png`}
+            alt=""
+            width="1600"
+            height="900"
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+          />
+        </picture>
+        <div class="gateway-art-scrim"></div>
+        <div class="gateway-art-fade"></div>
+      </div>
       <div class="gateway-panel glass-surface glass-surface--dark">
         <img
           class="gateway-mark"
@@ -108,6 +146,10 @@ const markHeight = 233;
   }
 
   .gateway-stage {
+    position: relative;
+    /* Stacking context: the -1 art layer paints above the night canvas but
+       below the panel (WF-09). */
+    isolation: isolate;
     width: 100%;
     min-height: 100vh;
     min-height: 100svh;
@@ -115,6 +157,44 @@ const markHeight = 233;
     place-items: center;
     padding: clamp(1.25rem, 4vw, 2rem);
     min-width: 0;
+  }
+
+  /* WF-09 hero art: full-bleed portal-centered-dark behind the panel. The
+      flat scrim is the token-only veil (works without color-mix); the fade
+      adds the seamless canvas-night falloff where color-mix is supported.
+      Panel readability rests on the glass opaque fallback (DESIGN-CONTRACT
+      2b), not on the blur or the art. */
+  .gateway-art {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+  }
+
+  .gateway-art-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 50%;
+  }
+
+  .gateway-art-scrim {
+    position: absolute;
+    inset: 0;
+    background-color: var(--canvas-night);
+    opacity: 0.3;
+  }
+
+  .gateway-art-fade {
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--canvas-night) 58%, transparent) 0%,
+      color-mix(in srgb, var(--canvas-night) 26%, transparent) 45%,
+      var(--canvas-night) 100%
+    );
   }
 
   /* Glass background/border/shadow/blur come from the shared
