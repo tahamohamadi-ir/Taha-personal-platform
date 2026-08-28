@@ -1,9 +1,11 @@
 // Graph Editor screen (Tracks AF-04/AF-05) — composes the pure reducer
 // (./reducer), the pure viewport math (./canvas), the SVG canvas
 // (./GraphCanvas), the versions/groups panel (./VersionsPanel), the inspector
-// (./InspectorPanel) and the existing SPA kit (RevisionConflictDialog
-// additive reuse, AdminDialog for the activate confirm, which now lists
-// blocking issues when present).
+// (./InspectorPanel), the AF-06 semantic-list preview drawer
+// (./GraphPreviewPanel — renders live from the CURRENT draft; embedded
+// true-site iframe preview is explicitly DEFERRED) and the existing SPA kit
+// (RevisionConflictDialog additive reuse, AdminDialog for the activate
+// confirm, which now lists blocking issues when present).
 // Screen anatomy: left versions+groups -> center canvas -> right inspector ->
 // bottom bar (SERVER validation chips: per-code error counts from the
 // debounced GET /graph/validation/{id} poll, spinner while pending, honest
@@ -44,6 +46,9 @@ import {
   initialGraphEditorState,
 } from "./reducer";
 import GraphCanvas from "./GraphCanvas";
+import GraphPreviewPanel, {
+  type GraphPreviewTheme,
+} from "./GraphPreviewPanel";
 import InspectorPanel from "./InspectorPanel";
 import VersionsPanel from "./VersionsPanel";
 import RevisionConflictDialog from "../HomeComposer/RevisionConflictDialog";
@@ -100,6 +105,11 @@ export default function GraphEditorPage(): ReactElement {
   const [newLocale, setNewLocale] = useState<GraphLocale>("fa");
   const [creating, setCreating] = useState(false);
   const [createFailed, setCreateFailed] = useState(false);
+  // AF-06 preview drawer state (small leaf UI — local state per doctrine;
+  // the panel itself is pure and receives these as props).
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewLocale, setPreviewLocale] = useState<ContentLocale>("fa");
+  const [previewTheme, setPreviewTheme] = useState<GraphPreviewTheme>("light");
 
   const loadDetail = useCallback(async (versionId: number): Promise<void> => {
     dispatch({ type: "DETAIL_START", versionId });
@@ -207,6 +217,10 @@ export default function GraphEditorPage(): ReactElement {
   }, [state.draft, state.phase, state.versionId, runValidation]);
 
   const draft = state.draft;
+  // Versions are per-locale (GraphVersionRow.locale) — the preview locale
+  // toggle compares against this honestly instead of faking a translation.
+  const versionLocale =
+    state.versions.find((row) => row.id === state.versionId)?.locale ?? null;
   const selectedNode =
     draft !== null &&
     state.selection !== null &&
@@ -547,6 +561,37 @@ export default function GraphEditorPage(): ReactElement {
               }
             />
           </div>
+
+          {draft !== null && (
+            <section className="mt-4">
+              <button
+                type="button"
+                className="admin-btn"
+                aria-expanded={previewOpen}
+                aria-controls="graph-preview-panel"
+                onClick={() => setPreviewOpen((open) => !open)}
+              >
+                <span aria-hidden="true" className="me-1">
+                  {previewOpen ? "▾" : "▸"}
+                </span>
+                {t("redesign.graph.preview.title")}
+              </button>
+              {previewOpen && (
+                <div id="graph-preview-panel" className="mt-2">
+                  <GraphPreviewPanel
+                    nodes={draft.nodes}
+                    edges={draft.edges}
+                    locale={previewLocale}
+                    theme={previewTheme}
+                    versionLocale={versionLocale}
+                    t={t}
+                    onLocaleChange={setPreviewLocale}
+                    onThemeChange={setPreviewTheme}
+                  />
+                </div>
+              )}
+            </section>
+          )}
 
           <div className="admin-action-row mt-4 items-center">
             <span className="admin-muted text-xs">{t("redesign.graph.issues")}:</span>

@@ -1,9 +1,9 @@
-﻿// Home Composer screen (Track AF-01) â€” composes the pure reducer
+﻿// Home Composer screen (Track AF-01) — composes the pure reducer
 // (./reducer), the revision-conflict dialog (./RevisionConflictDialog) and
 // the existing SPA kit (admin-* classes, adminApiExt typed client).
-// Screen anatomy: locale tabs (fa/en, refetch on switch) â†’ 8 canonical
-// module rows (visible checkbox, order via accessible â–²â–¼ swap, selection_mode
-// chip, read-only provenance) â†’ footer (Save / Validate / revision chip).
+// Screen anatomy: locale tabs (fa/en, refetch on switch) → 8 canonical
+// module rows (visible checkbox, order via accessible ▲▼ swap, selection_mode
+// chip, read-only provenance) → footer (Save / Validate / revision chip).
 // RTL: inherits <html dir="rtl">; logical CSS only, no physical left/right.
 
 import {
@@ -226,7 +226,7 @@ export default function HomeComposerPage(): ReactElement {
             className="admin-status-badge admin-status-unknown"
             title={state.revision}
           >
-            {t("redesign.home.revision")}: {state.revision === "" ? "â€”" : state.revision}
+            {t("redesign.home.revision")}: {state.revision === "" ? "—" : state.revision}
           </span>
         </div>
       </div>
@@ -356,7 +356,7 @@ export default function HomeComposerPage(): ReactElement {
                           dispatch({ type: "MOVE", key: row.key, direction: "up" })
                         }
                       >
-                        â–²
+                        ▲
                       </button>
                       <button
                         type="button"
@@ -371,7 +371,7 @@ export default function HomeComposerPage(): ReactElement {
                           })
                         }
                       >
-                        â–¼
+                        ▼
                       </button>
                     </div>
                   </div>

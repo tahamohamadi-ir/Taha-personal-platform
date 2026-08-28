@@ -654,6 +654,16 @@ textarea.admin-input {
   stroke: var(--admin-accent);
 }
 
+/* GraphPreviewPanel (AF-06) — ASCII relation arrow mirrored in RTL so it
+   points along the reading direction. Logical CSS only (no left/right). */
+.graph-preview-arrow {
+  display: inline-block;
+}
+
+[dir="rtl"] .graph-preview-arrow {
+  transform: scaleX(-1);
+}
+
 /* Keyboard focus fallback for every interactive control (.admin-btn,
    .admin-tab, nav links, swatches…) — inputs and media cards already had
    their own; this standardizes the rest (UX_AUDIT.md P1-4 / FIX-2). */

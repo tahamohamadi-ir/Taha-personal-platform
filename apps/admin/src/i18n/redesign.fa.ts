@@ -45,6 +45,30 @@ export const redesignFa: Record<string, string> = {
   "redesign.conflict.keepMine": "نگه‌داشتن نسخهٔ من",
   "redesign.conflict.body": "نسخهٔ سمت سرور پس از آخرین بارگذاری شما تغییر کرده است. با «بارگذاری مجدد» ردیف‌ها و نسخه از سرور جایگزین می‌شوند و تغییرات شما از دست می‌رود؛ با «نگه‌داشتن نسخهٔ من» به ویرایش همین تغییرات ادامه می‌دهید.",
   "redesign.conflict.serverRows": "وضعیت فعلی سرور",
+  // timeline editor (AF-02) — Appendix A byte-exact: ویرایشگر تایم‌لاین /
+  // افزودن ردیف / حذف با تأیید / مرتب‌سازی. Composites flagged for owner
+  // review in the packet report.
+  "redesign.timeline.title": "ویرایشگر تایم‌لاین",
+  "redesign.timeline.add": "افزودن ردیف",
+  "redesign.timeline.createTitle": "افزودن ردیف",
+  "redesign.timeline.createPosition": "جایگاه",
+  "redesign.timeline.createPositionAppend": "در پایان فهرست",
+  "redesign.timeline.cancel": "انصراف",
+  "redesign.timeline.save": "ذخیره",
+  "redesign.timeline.saving": "در حال ذخیره…",
+  "redesign.timeline.delete": "حذف",
+  "redesign.timeline.deleteConfirmTitle": "حذف با تأیید",
+  "redesign.timeline.deleteCount": "تعداد ردیف‌ها",
+  "redesign.timeline.deleteConfirmBody": "این ردیف برای همیشه حذف می‌شود و بازگشت‌پذیر نیست. ادامه می‌دهید؟",
+  "redesign.timeline.attach": "پروفایل پیوست‌شده",
+  "redesign.timeline.reorder": "مرتب‌سازی",
+  "redesign.timeline.column.type": "نوع",
+  "redesign.timeline.column.label": "عنوان",
+  "redesign.timeline.column.period": "دوره",
+  "redesign.timeline.column.role": "نقش",
+  "redesign.timeline.column.weight": "وزن",
+  "redesign.timeline.column.detailUrl": "پیوند جزئیات",
+  "redesign.timeline.column.body": "متن",
   // module key labels (composed; owner review noted in WORK_LOG)
   "redesign.module.identity": "هویت",
   "redesign.module.graph": "گراف",
@@ -88,6 +112,8 @@ export const redesignFa: Record<string, string> = {
   // نسخهٔ پیش‌نویس / نسخهٔ فعال / فعال‌سازی نسخه / مسدود به دلیل خطا.
   // All other composites are flagged for owner review in the packet report.
   "redesign.graph.title": "ویرایشگر گراف",
+  "redesign.graph.locale.fa": "فارسی",
+  "redesign.graph.locale.en": "English",
   "redesign.graph.loading": "در حال بارگذاری…",
   "redesign.graph.loadFailed": "بارگذاری ناموفق بود.",
   "redesign.graph.retry": "تلاش دوباره",
@@ -149,6 +175,15 @@ export const redesignFa: Record<string, string> = {
   "redesign.graph.validationUnavailable": "اعتبارسنجی در دسترس نیست.",
   "redesign.graph.issuesCount": "خطا",
   "redesign.graph.activateHasIssues": "نسخه دارای خطای اعتبارسنجی است.",
+  // AF-06 semantic-list preview (title = Appendix A byte-exact:
+  // پیش‌نمایش فهرست معنایی; other composites flagged for owner review)
+  "redesign.graph.preview.title": "پیش‌نمایش فهرست معنایی",
+  "redesign.graph.preview.relations": "روابط",
+  "redesign.graph.preview.localeMismatch": "این نسخه {locale} است",
+  "redesign.graph.preview.themeUnavailable": "تم تیره در ادمین فعال نیست",
+  "redesign.graph.preview.relatedCount": "رکوردهای مرتبط: {count}",
+  "redesign.graph.preview.theme.light": "روشن",
+  "redesign.graph.preview.theme.dark": "تیره",
   // graph validator issue tokens (mirror of admin_graph_validate.py
   // _MESSAGE_TOKENS; composites flagged for owner review)
   "graph.duplicateNodeId": "شناسهٔ گره تکراری است.",

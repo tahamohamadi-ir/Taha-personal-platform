@@ -104,8 +104,8 @@ export default function VersionsPanel({
             value={newLocale}
             onChange={(event) => onNewLocaleChange(event.target.value as GraphLocale)}
           >
-            <option value="fa">فارسی</option>
-            <option value="en">English</option>
+            <option value="fa">{t("redesign.graph.locale.fa")}</option>
+            <option value="en">{t("redesign.graph.locale.en")}</option>
           </select>
           <button
             type="button"

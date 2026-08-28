@@ -10,7 +10,7 @@
 // Run: node scripts/check-graph-tokens.mjs  (or: npm run qa:tokens)
 // Exit 0 = in sync, exit 1 = drift (printed).
 
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -150,6 +150,90 @@ for (const key of faKeys) {
 for (const key of enKeys) {
   if (!faKeys.has(key)) {
     fail(`i18n parity: key only in en: "${key}"`);
+  }
+}
+
+// ---- 5. AF-07 extension: referenced-key coverage --------------------------
+// Every statically referenced redesign.*/graph.* key in src/** must exist in
+// BOTH dictionaries. Template-built namespaces (locale/mode/module/token) are
+// covered by explicit enumerations parsed from the frozen TS mirrors, so a
+// key referenced only via `t(\`redesign.x.${v}\`)` cannot silently 404 into
+// the raw-key fallback of tRedesign.
+const DICT_FILES = new Set([FA_PATH, EN_PATH]);
+
+function listSourceFiles(dir) {
+  const out = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      out.push(...listSourceFiles(full));
+    } else if (/\.(ts|tsx)$/.test(entry.name) && !DICT_FILES.has(full)) {
+      out.push(full);
+    }
+  }
+  return out;
+}
+
+const referencedKeys = new Set();
+for (const file of listSourceFiles(path.join(adminRoot, "src"))) {
+  const src = readFileSync(file, "utf8");
+  for (const m of src.matchAll(
+    /"((?:redesign|graph)\.[A-Za-z0-9][A-Za-z0-9.\-]*)"/g
+  )) {
+    referencedKeys.add(m[1]);
+  }
+}
+
+function constStringArray(tsSource, name) {
+  const block = tsSource.match(
+    new RegExp(`export const ${name}[^=]*=\\s*\\[([\\s\\S]*?)\\]`)
+  );
+  return block
+    ? [...block[1].matchAll(/"([A-Za-z0-9.\-]+)"/g)].map((m) => m[1])
+    : [];
+}
+const homeModuleKeys = constStringArray(ts, "HOME_MODULE_KEYS");
+const homeFieldTokens = constStringArray(ts, "HOME_FIELD_TOKENS");
+const mediaFieldTokens = constStringArray(ts, "MEDIA_FIELD_TOKENS");
+if (homeModuleKeys.length === 0) {
+  fail("HOME_MODULE_KEYS not parsed from adminApiExt.ts (dynamic key guard)");
+}
+for (const locale of ["fa", "en"]) {
+  referencedKeys.add(`redesign.home.locale.${locale}`);
+}
+for (const mode of ["manual", "rule", "hybrid"]) {
+  referencedKeys.add(`redesign.home.mode.${mode}`);
+}
+for (const key of homeModuleKeys) {
+  referencedKeys.add(`redesign.module.${key}`);
+}
+for (const token of [...homeFieldTokens, ...mediaFieldTokens]) {
+  referencedKeys.add(`redesign.token.${token}`);
+}
+
+for (const key of referencedKeys) {
+  if (!faKeys.has(key)) {
+    fail(`referenced key missing in fa dictionary: "${key}"`);
+  }
+  if (!enKeys.has(key)) {
+    fail(`referenced key missing in en dictionary: "${key}"`);
+  }
+}
+
+// Informational, non-fatal: dictionary keys with no static/enum reference.
+// Dynamic namespaces are excluded (server token lists stay open-ended).
+const DYNAMIC_PREFIXES = [
+  "redesign.token.",
+  "redesign.module.",
+  "redesign.home.mode.",
+  "redesign.home.locale.",
+];
+for (const key of faKeys) {
+  if (
+    !referencedKeys.has(key) &&
+    !DYNAMIC_PREFIXES.some((prefix) => key.startsWith(prefix))
+  ) {
+    console.error(`INFO unused dictionary key: "${key}"`);
   }
 }
 
