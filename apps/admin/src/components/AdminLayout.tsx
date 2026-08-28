@@ -36,6 +36,7 @@ const NAV_GROUPS: NavGroup[] = [
     title: "بازطراحی",
     items: [
       { label: "چیدمان صفحهٔ اصلی", to: "/home-composer/fa" },
+      { label: "ویرایشگر تایم‌لاین", to: "/timeline-editor/fa" },
       { label: "ویرایشگر گراف", to: "/graph-editor" },
     ],
   },

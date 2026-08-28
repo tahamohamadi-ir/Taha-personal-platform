@@ -198,8 +198,16 @@ const mediaFieldTokens = constStringArray(ts, "MEDIA_FIELD_TOKENS");
 if (homeModuleKeys.length === 0) {
   fail("HOME_MODULE_KEYS not parsed from adminApiExt.ts (dynamic key guard)");
 }
+// AF-02b: timeline type labels + field tokens + locale tabs are template-built
+// namespaces; enumerate them from the frozen TS mirror like the home ones.
+const timelineTypes = constStringArray(ts, "TIMELINE_TYPES");
+const timelineFieldTokens = constStringArray(ts, "TIMELINE_FIELD_TOKENS");
+if (timelineTypes.length === 0) {
+  fail("TIMELINE_TYPES not parsed from adminApiExt.ts (dynamic key guard)");
+}
 for (const locale of ["fa", "en"]) {
   referencedKeys.add(`redesign.home.locale.${locale}`);
+  referencedKeys.add(`redesign.timeline.locale.${locale}`);
 }
 for (const mode of ["manual", "rule", "hybrid"]) {
   referencedKeys.add(`redesign.home.mode.${mode}`);
@@ -207,7 +215,14 @@ for (const mode of ["manual", "rule", "hybrid"]) {
 for (const key of homeModuleKeys) {
   referencedKeys.add(`redesign.module.${key}`);
 }
-for (const token of [...homeFieldTokens, ...mediaFieldTokens]) {
+for (const type of timelineTypes) {
+  referencedKeys.add(`redesign.timeline.type.${type}`);
+}
+for (const token of [
+  ...homeFieldTokens,
+  ...mediaFieldTokens,
+  ...timelineFieldTokens,
+]) {
   referencedKeys.add(`redesign.token.${token}`);
 }
 

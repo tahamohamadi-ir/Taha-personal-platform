@@ -160,7 +160,11 @@ export type TimelineEditorAction =
   | { type: "CREATE_START" }
   | { type: "CREATE_SUCCESS"; row: TimelineRecord; afterId: number | null }
   | { type: "CREATE_ERROR"; tokens: string[] }
+  /** Clears stale server create tokens when the dialog closes without a submit. */
+  | { type: "CREATE_ERRORS_CLEAR" }
   | { type: "DELETE_REQUEST"; id: number }
+  /** Server 409 on DELETE → conflict dialog for this row. */
+  | { type: "DELETE_CONFLICT"; id: number }
   | { type: "DELETE_CANCEL" }
   | { type: "DELETE_START"; id: number }
   | { type: "DELETE_SUCCESS"; id: number }
@@ -352,8 +356,16 @@ export function timelineEditorReducer(
             ? state.toast
             : { kind: "error", text: "create-failed" },
       };
+    case "CREATE_ERRORS_CLEAR":
+      return { ...state, createErrors: [] };
     case "DELETE_REQUEST":
       return { ...state, deleteCandidateId: action.id };
+    case "DELETE_CONFLICT":
+      return {
+        ...state,
+        deleteCandidateId: null,
+        conflictId: action.id,
+      };
     case "DELETE_CANCEL":
       return { ...state, deleteCandidateId: null };
     case "DELETE_START":
@@ -364,7 +376,6 @@ export function timelineEditorReducer(
         deleteCandidateId: null,
         toast: { kind: "error", text: "delete-failed" },
       };
-    case "DELETE_SUCCESS":
     case "DELETE_SUCCESS":
       return {
         ...state,
