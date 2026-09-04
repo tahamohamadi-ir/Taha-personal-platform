@@ -182,6 +182,7 @@ services:
       cms_internal:
         aliases:
           - caddy
+      host-edge: {}
 
 volumes:
   postgres_data:
@@ -191,3 +192,6 @@ volumes:
 
 networks:
   cms_internal:
+  host-edge:
+    external: true
+    name: host-edge
