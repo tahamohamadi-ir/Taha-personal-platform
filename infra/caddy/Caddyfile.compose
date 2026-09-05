@@ -111,6 +111,27 @@ www.tahamohamadi.ir {
 	redir https://tahamohamadi.ir{uri} permanent
 }
 
+# Dedicated public ingress for the PhD Radar Telegram webhook and health checks.
+# Caddy reaches the API only over the shared external `host-edge` Docker network;
+# all other paths are intentionally closed.
+phd-radar.tahamohamadi.ir {
+	encode zstd gzip
+
+	@webhook path /integrations/telegram/webhook
+	handle @webhook {
+		reverse_proxy phd-radar-api:8000
+	}
+
+	@health path /health/live /health/ready
+	handle @health {
+		reverse_proxy phd-radar-api:8000
+	}
+
+	handle {
+		respond 404
+	}
+}
+
 http://85.192.29.196 {
 	redir https://tahamohamadi.ir{uri} permanent
 }
