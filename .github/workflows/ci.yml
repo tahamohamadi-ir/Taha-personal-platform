@@ -54,6 +54,9 @@ jobs:
       - name: P8 catalog parity (mock CMS_API_BASE → API count == dist links)
         run: node qa/p8-catalog.spec.mjs
 
+      - name: Home CMS-origin honesty (snapshot + fail-build + restore)
+        run: node qa/home-cms-build.spec.mjs
+
       - name: Write build fingerprint
         run: |
           version=$(node -p "require('./package.json').version")

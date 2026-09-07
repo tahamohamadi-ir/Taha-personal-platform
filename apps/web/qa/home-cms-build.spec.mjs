@@ -89,3 +89,24 @@ try {
 }
 
 console.log("PASS home-cms-build (snapshot offline + fail-build on unreachable CMS)");
+
+// --- Restore offline snapshot dist for downstream CI specs (OBS-1; mirrors p8-catalog.spec.mjs:466-474) ---
+for (const cacheDir of [join(webRoot, "node_modules", ".vite"), join(webRoot, "node_modules", ".astro")]) {
+  try {
+    rmSync(cacheDir, { recursive: true, force: true });
+  } catch {
+    /* best-effort cleanup */
+  }
+}
+const restoreEnv = { ...process.env };
+delete restoreEnv.CMS_API_BASE;
+const restore = spawnSync(
+  process.platform === "win32" ? "cmd.exe" : "npm",
+  process.platform === "win32" ? ["/c", "npm", "run", "build"] : ["run", "build"],
+  { cwd: webRoot, env: restoreEnv, timeout: 180_000, stdio: "pipe", encoding: "utf8" },
+);
+assert(
+  restore.status === 0,
+  `Failed to restore snapshot build after home-cms-build check; exit=${restore.status}\n${(restore.stdout ?? "").slice(-2000)}`,
+);
+console.log("PASS home-cms-build restore snapshot");
