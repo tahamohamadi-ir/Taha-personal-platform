@@ -4,8 +4,9 @@
    name, hint/error ids wired via aria-describedby, error sets
    aria-invalid and renders an icon + text message (never colour-only).
    value is re-rendered so entries survive failed submissions. Seams:
-   pass id to override the autogen; error/hint strings are caller-owned
-   locale copy. Theming cascades from tokens. */
+   pass id to override the autogen; type/autocomplete/maxlength are
+   render-only (server-side enforcement unchanged); error/hint strings
+   are caller-owned locale copy. Theming cascades from tokens. */
 interface Props {
   label: string;
   name: string;
@@ -15,6 +16,9 @@ interface Props {
   required?: boolean;
   disabled?: boolean;
   value?: string;
+  type?: "text" | "email" | "tel" | "url";
+  autocomplete?: string;
+  maxlength?: number;
 }
 const {
   label,
@@ -25,6 +29,9 @@ const {
   required = false,
   disabled = false,
   value,
+  type = "text",
+  autocomplete,
+  maxlength,
 } = Astro.props;
 const fieldId = id ?? name;
 const hintId = hint ? `${fieldId}-hint` : undefined;
@@ -39,8 +46,10 @@ const describedBy = [hintId, errorId].filter(Boolean).join(" ") || undefined;
     class="ui-field__control"
     id={fieldId}
     name={name}
-    type="text"
+    type={type}
     value={value}
+    autocomplete={autocomplete}
+    maxlength={maxlength}
     aria-describedby={describedBy}
     aria-invalid={error ? "true" : undefined}
     required={required}

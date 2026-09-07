@@ -1,3 +1,15 @@
+## LOG-0283 — 2026-09-07 — InputField/TextareaField seams (LOG-0278 escalation closed)
+
+- Outcome: closed the WF-07H escalation (`InputField lacks type/autocomplete/maxlength/rows seams — email degrades to text`): `ui/InputField.astro` gains render-only `type` (`text|email|tel|url`, default `text`), `autocomplete`, `maxlength`; `ui/TextareaField.astro` gains render-only `rows`, `maxlength`; `ContactPage.astro` wires `name` → `autocomplete="name"`, `email` → `type="email" autocomplete="email"`. No validation invented (server-side enforcement unchanged); no maxlength values wired anywhere (no invented limits).
+- Why: owner-queue-adjacent fix (escalation from LOG-0278); email keyboard + autofill on mobile, auth parity untouched.
+- Scope / files: `apps/web/src/components/ui/InputField.astro`, `apps/web/src/components/ui/TextareaField.astro`, `apps/web/src/components/ContactPage.astro`, new `apps/web/qa/inputfield-seams.spec.mjs`, this entry.
+- Commands or actions actually performed: new spec committed first → ran FAIL (`InputField lacks type seam`); implemented → `node qa/inputfield-seams.spec.mjs` PASS; `node qa/ui-primitives.spec.mjs` PASS (194 checks); `npm run check` 0 errors; rebuilt snapshot + `node qa/contact-page.spec.mjs` PASS + `node qa/contact-adopt.spec.mjs` PASS (51 checks); dist grep proves `name="email" type="email" ... autocomplete="email"` on `/en/contact/`.
+- Verification actually performed and result: embedded above; LOG ID allocated per docs/README.md §4 (max 0282 → 0283).
+- Decisions / assumptions: `rows` lives on TextareaField only (rows-on-input is meaningless — the escalation text conflated the two); design-atlas sections consume the same primitives unchanged.
+- Deferred or risk IDs: none new.
+- Rollback / recovery: revert this commit.
+- Doctrine compliance: [TDD fail-first spec in same branch; §7.1 shared-layer fix not a sibling copy; §7.3 rows 1/2/5/7/8 — check clean, keyboard/focus untouched, no hardcoded strings, no-JS form intact].
+
 ## LOG-0282 — 2026-09-07 — OBS-1 close: home-cms-build restores dist + CI wiring
 
 - Outcome: `OBS-1` (FINAL-QA-REPORT §4, flagged in LOG-0280/0281) is CLOSED — `apps/web/qa/home-cms-build.spec.mjs` no longer leaves `dist/` broken and is now wired into CI: appended a snapshot-restore block (clears `node_modules/.vite` + `.astro` caches, rebuilds with `CMS_API_BASE` deleted from env, asserts exit 0 — mirrors `p8-catalog.spec.mjs:466-474`) and added a CI step `Home CMS-origin honesty (snapshot + fail-build + restore)` to `.github/workflows/ci.yml` between P8 parity and fingerprint.

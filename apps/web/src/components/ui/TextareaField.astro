@@ -4,7 +4,8 @@
    aria-describedby, error sets aria-invalid and renders an icon + text
    message (never colour-only). The server-rendered value prop is kept as
    the control's content, so typed text survives failed submissions.
-   Seams: pass id to override the autogen; error/hint strings are
+   Seams: pass id to override the autogen; rows/maxlength are render-only
+   (server-side enforcement unchanged); error/hint strings are
    caller-owned locale copy. Theming cascades from tokens. */
 interface Props {
   label: string;
@@ -15,6 +16,8 @@ interface Props {
   required?: boolean;
   disabled?: boolean;
   value?: string;
+  rows?: number;
+  maxlength?: number;
 }
 const {
   label,
@@ -25,6 +28,8 @@ const {
   required = false,
   disabled = false,
   value,
+  rows,
+  maxlength,
 } = Astro.props;
 const fieldId = id ?? name;
 const hintId = hint ? `${fieldId}-hint` : undefined;
@@ -39,6 +44,8 @@ const describedBy = [hintId, errorId].filter(Boolean).join(" ") || undefined;
     class="ui-field__control"
     id={fieldId}
     name={name}
+    rows={rows}
+    maxlength={maxlength}
     aria-describedby={describedBy}
     aria-invalid={error ? "true" : undefined}
     required={required}

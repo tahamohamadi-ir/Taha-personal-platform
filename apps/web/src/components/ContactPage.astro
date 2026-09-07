@@ -126,11 +126,14 @@ const hasContact = Boolean(
         <InputField
           label={contactCopy.nameLabel}
           name="name"
+          autocomplete="name"
           value={restore("name")}
         />
         <InputField
           label={contactCopy.emailLabel}
           name="email"
+          type="email"
+          autocomplete="email"
           required
           value={restore("email")}
         />
