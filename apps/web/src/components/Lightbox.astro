@@ -1,12 +1,17 @@
 ---
 /**
- * Native dialog lightbox (~2KB). Progressive enhancement:
+ * Native dialog lightbox (~3KB). Progressive enhancement:
  * without JS, `a[data-lightbox]` remains a direct file link.
+ * Nav variant: anchors sharing `data-lightbox-group` (e.g. a gallery)
+ * cycle with prev/next controls + ArrowLeft/ArrowRight; ungrouped
+ * anchors navigate the whole page set. Controls hide for singletons.
  */
 ---
 
 <dialog class="site-lightbox" id="site-lightbox" aria-label="Image preview">
   <form method="dialog" class="site-lightbox-bar">
+    <button type="button" class="site-lightbox-prev" aria-label="Previous">‹</button>
+    <button type="button" class="site-lightbox-next" aria-label="Next">›</button>
     <button type="submit" class="site-lightbox-close" aria-label="Close">×</button>
   </form>
   <img class="site-lightbox-img" alt="" />
@@ -19,6 +24,8 @@
   var img = dialog.querySelector(".site-lightbox-img");
   if (!img) return;
   var lastFocus = null;
+  var current = [];
+  var currentIndex = 0;
   var reduceMotion =
     window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -32,19 +39,51 @@
   }
 
   function openFrom(anchor) {
-    var href = anchor.getAttribute("href");
-    if (!href) return;
+    current = groupOf(anchor);
+    currentIndex = Math.max(0, current.indexOf(anchor));
     lastFocus = document.activeElement;
-    img.src = href;
-    img.alt = (function () {
-      var fromData = anchor.getAttribute("data-lightbox-alt");
-      if (fromData) return fromData;
-      var nested = anchor.querySelector("img");
-      return nested && nested.alt ? nested.alt : "";
-    })();
+    showAt(currentIndex);
     dialog.showModal();
+    updateNavVisibility();
     var closeBtn = dialog.querySelector(".site-lightbox-close");
     if (closeBtn) closeBtn.focus();
+  }
+
+  function groupOf(anchor) {
+    var g = anchor.getAttribute("data-lightbox-group");
+    var sel = g
+      ? 'a[data-lightbox-group="' + g + '"]'
+      : "a[data-lightbox]";
+    return Array.prototype.slice.call(document.querySelectorAll(sel));
+  }
+
+  function altFor(anchor) {
+    var fromData = anchor.getAttribute("data-lightbox-alt");
+    if (fromData) return fromData;
+    var nested = anchor.querySelector("img");
+    return nested && nested.alt ? nested.alt : "";
+  }
+
+  function showAt(index) {
+    if (!current.length) return;
+    currentIndex = (index + current.length) % current.length;
+    var anchor = current[currentIndex];
+    var href = anchor.getAttribute("href");
+    if (!href) return;
+    img.src = href;
+    img.alt = altFor(anchor);
+  }
+
+  function step(delta) {
+    showAt(currentIndex + delta);
+  }
+
+  function updateNavVisibility() {
+    var single = current.length < 2;
+    var prev = dialog.querySelector(".site-lightbox-prev");
+    var next = dialog.querySelector(".site-lightbox-next");
+    if (prev) prev.hidden = single;
+    if (next) next.hidden = single;
   }
 
   function restoreFocus() {
@@ -69,8 +108,30 @@
 
   dialog.addEventListener("close", restoreFocus);
 
+  var prevBtn = dialog.querySelector(".site-lightbox-prev");
+  var nextBtn = dialog.querySelector(".site-lightbox-next");
+  if (prevBtn)
+    prevBtn.addEventListener("click", function () {
+      step(-1);
+    });
+  if (nextBtn)
+    nextBtn.addEventListener("click", function () {
+      step(1);
+    });
+
   dialog.addEventListener("keydown", function (event) {
-    if (event.key !== "Tab" || !dialog.open) return;
+    if (!dialog.open) return;
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      step(-1);
+      return;
+    }
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      step(1);
+      return;
+    }
+    if (event.key !== "Tab") return;
     var nodes = focusables();
     if (nodes.length === 0) return;
     var first = nodes[0];
@@ -109,7 +170,9 @@
     justify-content: flex-end;
     margin: 0 0 0.5rem;
   }
-  .site-lightbox-close {
+  .site-lightbox-close,
+  .site-lightbox-prev,
+  .site-lightbox-next {
     font: inherit;
     font-size: 1.5rem;
     line-height: 1;
@@ -119,6 +182,10 @@
     width: 2.25rem;
     height: 2.25rem;
     cursor: pointer;
+  }
+  .site-lightbox-prev,
+  .site-lightbox-next {
+    margin-inline-end: 0.5rem;
   }
   .site-lightbox-img {
     display: block;

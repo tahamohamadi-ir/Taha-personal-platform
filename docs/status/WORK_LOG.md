@@ -1,3 +1,15 @@
+## LOG-0284 — 2026-09-07 — Nav-capable lightbox variant (LOG-0277 escalation closed)
+
+- Outcome: closed the WF-07D escalation (bespoke dialog's prev/next retired with it): shared `Lightbox.astro` gains group cycling — prev/next buttons (`type="button"`, hidden for singletons) + ArrowLeft/ArrowRight + wrap-around `showAt`, opt-in grouping via `data-lightbox-group` (ungrouped anchors navigate the page set); `en/fa/creative/[slug].astro` galleries opt in with `data-lightbox-group="gallery"`. No-JS contract intact (anchors stay direct file links; unmodified-left-click guard untouched); Tab focus-trap, focus restore, Esc-via-form, reduced-motion all preserved.
+- Why: owner-queue item (3); galleries were open-once with no way to move between images.
+- Scope / files: `apps/web/src/components/Lightbox.astro`, `apps/web/src/pages/en/creative/[slug].astro`, `apps/web/src/pages/fa/creative/[slug].astro`, new `apps/web/qa/lightbox-nav.spec.mjs`, this entry.
+- Commands or actions actually performed: new spec first → FAIL (`Lightbox lacks a previous control`); implemented → `node qa/lightbox-nav.spec.mjs` PASS; `node qa/creative-adopt.spec.mjs` PASS (64 checks); `node qa/content-components.spec.mjs` PASS (240 checks); `npm run check` 0 errors; inline `<script is:inline>` extracted to a repo-temp file → `node --check` OK (astro check does not parse inline scripts) → temp deleted; `npm run build` snapshot OK.
+- Verification actually performed and result: embedded above; interactive cycling logic awaits the Playwright matrix (no snapshot-build page carries ≥2 lightbox anchors for a headless probe — recorded honestly, not skipped-silently).
+- Decisions / assumptions: prev/next `aria-label="Previous/Next"` stay English like the pre-existing `aria-label="Close"` — fa labels ride the composed-fa owner review (item 5), nothing invented; new-button CSS reuses the close-button rule (zero new raw values, token-grep clean; `margin-inline-end` keeps RTL logical).
+- Deferred or risk IDs: none new.
+- Rollback / recovery: revert this commit.
+- Doctrine compliance: [TDD fail-first; §7.1 shared-layer extension not a sibling copy; §7.3 rows 1/2/6/7/8].
+
 ## LOG-0283 — 2026-09-07 — InputField/TextareaField seams (LOG-0278 escalation closed)
 
 - Outcome: closed the WF-07H escalation (`InputField lacks type/autocomplete/maxlength/rows seams — email degrades to text`): `ui/InputField.astro` gains render-only `type` (`text|email|tel|url`, default `text`), `autocomplete`, `maxlength`; `ui/TextareaField.astro` gains render-only `rows`, `maxlength`; `ContactPage.astro` wires `name` → `autocomplete="name"`, `email` → `type="email" autocomplete="email"`. No validation invented (server-side enforcement unchanged); no maxlength values wired anywhere (no invented limits).

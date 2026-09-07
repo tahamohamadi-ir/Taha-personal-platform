@@ -96,7 +96,7 @@ validateStructuredData(...structured);
               <div class="creative-gallery">
                 {work.gallery.map((img) => (
                   <figure class="creative-gallery__item">
-                    <a href={img.url} data-lightbox data-lightbox-alt={img.alt}>
+                    <a href={img.url} data-lightbox data-lightbox-group="gallery" data-lightbox-alt={img.alt}>
                       <img src={img.url} alt={img.alt} loading="lazy" decoding="async" />
                     </a>
                     {img.caption && <figcaption>{img.caption}</figcaption>}
