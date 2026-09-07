@@ -1575,6 +1575,88 @@ def get_graph(request, locale: str) -> GraphPayloadOut:
     return payload
 
 
+GRAPH_RELATED_URL_TEMPLATES: dict[str, str] = {
+    "article": "/{locale}/writing/{slug}/",
+    "series": "/{locale}/writing/series/{slug}/",
+    "researchtopic": "/{locale}/research/topics/{slug}/",
+    "researchstatement": "/{locale}/research/statement/",
+    "project": "/{locale}/projects/{slug}/",
+    "publication": "/{locale}/publications/{slug}/",
+    "book": "/{locale}/books/{slug}/",
+    "talk": "/{locale}/talks/{slug}/",
+    "download": "/{locale}/downloads/{slug}/",
+}
+
+GRAPH_RELATED_MODELS: dict[str, type] = {
+    "article": Article,
+    "series": Series,
+    "researchtopic": ResearchTopic,
+    "researchstatement": ResearchStatement,
+    "project": Project,
+    "publication": Publication,
+    "book": Book,
+    "talk": Talk,
+    "download": Download,
+    "profile": Profile,
+    "landing": Landing,
+}
+
+
+class GraphRelatedOut(Schema):
+    """One related record resolved to its canonical public URL (or null)."""
+
+    family: str
+    id: str
+    locale: str
+    url: str | None = None
+
+
+def public_related_url(locale: str, family: str, record_id: str) -> str | None:
+    """Canonical public URL for a graph related record, or None (BK-05 follow-up).
+
+    Business rules live here (doctrine 8.1): unknown families are a caller
+    error (the view raises 404); families without a detail route
+    (landing/profile) resolve to None; the published-only gate is re-checked
+    at read time with the locale filter — never trusted from authoring time.
+    """
+    model = GRAPH_RELATED_MODELS.get(family)
+    if model is None:
+        raise HttpError(404, "related not found")
+    template = GRAPH_RELATED_URL_TEMPLATES.get(family)
+    if template is None:
+        return None
+    try:
+        pk = int(record_id)
+    except (TypeError, ValueError):
+        return None
+    public = getattr(getattr(model, "objects", None), "public", None)
+    if public is None:
+        return None
+    slug = public().filter(locale=locale, pk=pk).values_list("slug", flat=True).first()
+    if slug is None:
+        return None
+    return template.format(locale=locale, slug=slug)
+
+
+@api.get(
+    "/graph/{locale}/related/{family}/{record_id}",
+    response=GraphRelatedOut,
+    summary="Canonical public URL for one graph related record (null when not publicly readable)",
+)
+def get_graph_related(
+    request, locale: str, family: str, record_id: str
+) -> GraphRelatedOut:
+    """Fail-closed: 404 unless locale is fa/en; url null unless published in locale."""
+    if locale not in Locale.values:
+        raise HttpError(404, "related not found")
+    return GraphRelatedOut(
+        family=family,
+        id=record_id,
+        locale=locale,
+        url=public_related_url(locale, family, record_id),
+    )
+
+
 from apps.api.public_contact import contact_router  # noqa: E402
 
 api.add_router("", contact_router)

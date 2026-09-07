@@ -127,3 +127,8 @@ Unconsumed by web today: /api/landings/*, Ninja /api/profiles/* (shadowed), /api
 | Endpoint | Shape | Gating |
 |---|---|---|
 | GET /api/graph/{locale} | {nodes:[GraphNodePublic camel], edges:[GraphEdgePublic camel]} - key-omission for blank optional fields; stable edge id {source}->{target}:{relationType}; relatedRecords re-checked fail-closed at read (draft/dangling omitted); groups excluded v1 | active GraphVersion only per locale (draft never served); 404 'graph not found' on invalid locale or no active version |
+## Addendum - related-slugs read shipped (2026-09-07, LOG-0286)
+
+| Endpoint | Shape | Gating |
+|---|---|---|
+| GET /api/graph/{locale}/related/{family}/{pk} | {family, id, locale, url} - url is the canonical public path verbatim (article->/{locale}/writing/{slug}/, series->writing/series, researchtopic->research/topics, researchstatement->research/statement/ singleton, project->projects, publication/book/talk/download->their catalog) or null | family in wire table + row published AND published_at<=now in the requested locale; families without a detail route (landing/profile) resolve null with 200; 404 'related not found' on invalid locale or unknown family (apps/cms/apps/api/api.py public_related_url, tests: apps/cms/tests/test_api_graph_related.py) |
