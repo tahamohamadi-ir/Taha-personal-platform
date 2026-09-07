@@ -1,3 +1,15 @@
+## LOG-0285 — 2026-09-07 — More/ThemeToggle from content.ts (WF-03 ESCALATE closed)
+
+- Outcome: closed the WF-03 ESCALATE in `Header.astro` (owner-queue item 4, code side): new `content.nav` dictionary (`moreLabel`, `themeLabel`) in the `LocaleContent` type + both locales; header consumes `content.nav.moreLabel` / `content.nav.themeLabel` (summary label + `ThemeToggle` prop). The exact live strings relocated byte-for-byte (`More`/`Toggle theme`, `بیشتر`/`تغییر تم`) — zero new copy invented.
+- Why: last hardcoded UI strings in the public shell; dictionary ownership keeps future label changes in one place.
+- Scope / files: `apps/web/src/data/content.ts`, `apps/web/src/components/Header.astro`, new `apps/web/qa/shell-dictionary.spec.mjs`, this entry.
+- Commands or actions actually performed: new spec first → FAIL (hardcoded More ternary); implemented → `node qa/shell-dictionary.spec.mjs` PASS; `node qa/public-shell.spec.mjs` PASS (98 checks); `npm run check` 0 errors; snapshot rebuild OK; dist grep proves `بیشتر` on `/fa/` and `More` on `/en/` home output (relocation, not a copy change).
+- Verification actually performed and result: embedded above; LOG ID 0285 per docs/README.md §4.
+- Decisions / assumptions: fa `aria`/`button` strings elsewhere ride the composed-fa owner review (item 5) — untouched here.
+- Deferred or risk IDs: none new.
+- Rollback / recovery: revert this commit.
+- Doctrine compliance: [TDD fail-first; §7.1 props-in; §7.3 rows 1/2/7/8 — i18n parity same-commit, no-JS disclosure intact].
+
 ## LOG-0284 — 2026-09-07 — Nav-capable lightbox variant (LOG-0277 escalation closed)
 
 - Outcome: closed the WF-07D escalation (bespoke dialog's prev/next retired with it): shared `Lightbox.astro` gains group cycling — prev/next buttons (`type="button"`, hidden for singletons) + ArrowLeft/ArrowRight + wrap-around `showAt`, opt-in grouping via `data-lightbox-group` (ungrouped anchors navigate the page set); `en/fa/creative/[slug].astro` galleries opt in with `data-lightbox-group="gallery"`. No-JS contract intact (anchors stay direct file links; unmodified-left-click guard untouched); Tab focus-trap, focus restore, Esc-via-form, reduced-motion all preserved.

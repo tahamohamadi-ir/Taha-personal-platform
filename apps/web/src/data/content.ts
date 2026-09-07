@@ -24,6 +24,10 @@ export interface LocaleContent {
   navLabel: string;
   currentLanguage: string;
   switchAria: string;
+  nav: {
+    moreLabel: string;
+    themeLabel: string;
+  };
   hero: {
     eyebrow: string;
     primaryCta: string;
@@ -258,6 +262,10 @@ export const content: Record<LocaleCode, LocaleContent> = {
     navLabel: "Primary",
     currentLanguage: "English",
     switchAria: "Switch to Persian. Current language: English.",
+    nav: {
+      moreLabel: "More",
+      themeLabel: "Toggle theme",
+    },
     hero: {
       eyebrow: "Research · Engineering · Design",
       primaryCta: "About",
@@ -528,6 +536,10 @@ export const content: Record<LocaleCode, LocaleContent> = {
     navLabel: "اصلی",
     currentLanguage: "فارسی",
     switchAria: "تغییر زبان به انگلیسی. زبان فعلی: فارسی.",
+    nav: {
+      moreLabel: "بیشتر",
+      themeLabel: "تغییر تم",
+    },
     hero: {
       eyebrow: "پژوهش · مهندسی · طراحی",
       primaryCta: "درباره",

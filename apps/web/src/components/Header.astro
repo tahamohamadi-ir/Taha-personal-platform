@@ -50,11 +50,9 @@ const navItems = [
 ];
 // E9/P13 (owner decision 2026-08-24, option B): P8 catalogs live in a "More"
 // disclosure group — keeps the top-level header compact, no mega-menu.
-// ESCALATE (WF-03): content.ts has no "More" key; the live label stays until
-// the dictionary gains one (same for the theme-toggle label below).
-const moreLabel = content.lang === "fa" ? "بیشتر" : "More";
-const themeLabel =
-  content.lang === "fa" ? "\u062A\u063A\u06CC\u06CC\u0631 \u062A\u0645" : "Toggle theme";
+// Labels come from the content.ts locale dictionary (content.nav).
+const moreLabel = content.nav.moreLabel;
+const themeLabel = content.nav.themeLabel;
 const moreItems = [
   {
     href: `/${content.lang}/publications/`,
