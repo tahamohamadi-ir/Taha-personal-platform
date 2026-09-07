@@ -17,7 +17,7 @@ import { loadLandingProfile } from "../../lib/cms/landing";
 import { getPublishedArticles } from "../../lib/cms/articles";
 import { getProjects } from "../../lib/cms/projects";
 import { getPublications } from "../../lib/cms/publications";
-import { getResearchGraph } from "../../lib/cms/research-graph";
+import { getResearchGraph, resolveRelatedUrls } from "../../lib/cms/research-graph";
 import ResearchGraph from "../../components/research/ResearchGraph.astro";
 import { formatDate } from "../../lib/format";
 
@@ -63,6 +63,9 @@ const previews = (await getPublishedArticles(locale)).slice(0, 3);
    the fail-closed research-graph adapter; null/empty omits the block
    honestly (HomeTemplate renders slot-filled blocks only). */
 const graph = await getResearchGraph(locale);
+/* Related-slugs read: canonical URLs for the graph's related records,
+   resolved verbatim (unresolved stay URL-less, never invented). */
+const relatedUrls = await resolveRelatedUrls(locale, graph);
 const home = `/${pageContent.lang}/`;
 ---
 
@@ -79,6 +82,7 @@ const home = `/${pageContent.lang}/`;
             slot="graph"
             graph={graph}
             heading={pageContent.research.relatedHeading}
+            relatedUrls={relatedUrls}
           />
         )
       }

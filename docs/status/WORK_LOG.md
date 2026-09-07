@@ -1,3 +1,15 @@
+## LOG-0286 — 2026-09-07 — related-slugs read endpoint + web consumption (owner-queue item 10 closed)
+
+- Outcome: closed owner-queue item (10): new public read `GET /api/graph/{locale}/related/{family}/{pk}` -> `{family, id, locale, url}` (canonical path verbatim or null); web `resolveRelatedUrls` collects endpoint URLs keyed `family:id`; `ResearchGraph.astro` surfaces them ONLY as `data-graph-related-urls` (zero visible hrefs, unresolved stay URL-less); all four graph pages (en/fa home + en/fa research index) resolve + pass the prop.
+- Why: graph related records were unresolvable `{family,pk}` pairs; the island packet now has real URLs on the parity surface instead of having to invent them.
+- Scope / files (two commits): BE — `apps/cms/apps/api/api.py` (tables + service + route, no migration), `apps/cms/tests/test_api_graph_related.py` (new, 10 cases), `docs/plan/BK-DATA-CONTRACTS.md` (addendum). WEB — `apps/web/src/lib/cms/research-graph.ts`, `apps/web/src/components/research/ResearchGraph.astro`, 4 pages, `apps/web/qa/graph-consumer.spec.mjs` (extended), this entry.
+- Commands or actions actually performed: BE — new pytest first → 10 FAILED; implemented → 10 passed; full graph files (55 passed) + `manage.py check` clean + `makemigrations --check` no drift + `ruff` clean. WEB — `npm run check` 0 errors; `node qa/graph-consumer.spec.mjs` first FAIL (2 ASCII-only doctrine hits from em-dashes in my comments → fixed to ASCII); re-run → PASS 99 checks incl. CMS-mocked build proving `data-graph-related-urls` carries `/en/writing/mock-article-17/` verbatim + empty map for URL-less nodes, snapshot restore omits honestly.
+- Verification actually performed and result: embedded above; LOG ID 0286 per docs/README.md §4.
+- Decisions / assumptions: unknown family/locale → 404 (public fail-closed style, not admin ProblemDetails codes — layering); drafts/cross-locale/missing/non-int pk/landing/profile → 200 null (list consumer never fails a build over content state); no visible links rendered — the island owns visual link UI.
+- Deferred or risk IDs: none new.
+- Rollback / recovery: revert these two commits (additive endpoint; no migration).
+- Doctrine compliance: [BE §8.1 service-layer placement + §8.3 leak negatives + DTO doc; WEB TDD via extended gate spec + §7.1 props-in + ASCII-only source].
+
 ## LOG-0285 — 2026-09-07 — More/ThemeToggle from content.ts (WF-03 ESCALATE closed)
 
 - Outcome: closed the WF-03 ESCALATE in `Header.astro` (owner-queue item 4, code side): new `content.nav` dictionary (`moreLabel`, `themeLabel`) in the `LocaleContent` type + both locales; header consumes `content.nav.moreLabel` / `content.nav.themeLabel` (summary label + `ThemeToggle` prop). The exact live strings relocated byte-for-byte (`More`/`Toggle theme`, `بیشتر`/`تغییر تم`) — zero new copy invented.

@@ -198,3 +198,51 @@ export async function getResearchGraph(locale: Locale): Promise<ResearchGraph | 
   }
   return parseGraphPayload(result.data);
 }
+
+export interface GraphRelatedUrlDto {
+  family: string;
+  id: string;
+  locale: string;
+  url?: string | null;
+}
+
+/**
+ * Canonical public URLs for a graph's related records (related-slugs read).
+ * Key: `${family}:${id}`. Only endpoint-resolved URLs are returned - never
+ * invented. Fail contract mirrors getResearchGraph:
+ * - CMS_API_BASE unset -> {} (snapshot mode: the list stays link-free).
+ * - 200 with url -> collected; 200 with null url / 404 -> skipped.
+ * - transport/5xx/other 4xx -> CmsOriginError (fails the build).
+ */
+export async function resolveRelatedUrls(
+  locale: Locale,
+  graph: ResearchGraph | null,
+): Promise<Record<string, string>> {
+  const resolved: Record<string, string> = {};
+  if (graph === null) return resolved;
+  const seen = new Set<string>();
+  for (const node of graph.nodes) {
+    for (const record of node.relatedRecords) {
+      const key = `${record.family}:${record.id}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const result = await cmsFetchJson<unknown>(
+        `/api/graph/${locale}/related/${record.family}/${record.id}`,
+      );
+      throwIfCmsError(result, `graph/${locale}/related/${record.family}/${record.id}`);
+      if (result.kind === "unset") return {};
+      if (result.kind === "http") {
+        if (result.status === 404) continue;
+        throw new CmsOriginError(
+          `graph/${locale}/related: unexpected HTTP ${result.status}`,
+          result.status,
+        );
+      }
+      const data = result.data as GraphRelatedUrlDto;
+      if (typeof data.url === "string" && data.url.length > 0) {
+        resolved[key] = data.url;
+      }
+    }
+  }
+  return resolved;
+}

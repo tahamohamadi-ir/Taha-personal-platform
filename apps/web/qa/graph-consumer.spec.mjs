@@ -91,6 +91,14 @@ function doctrineScan(label, src) {
       "adapter: exports getResearchGraph",
     );
     check(
+      adapter.includes("export async function resolveRelatedUrls"),
+      "adapter: exports resolveRelatedUrls (related-slugs read)",
+    );
+    check(
+      adapter.includes("/related/"),
+      "adapter: targets the related-slugs read GET /api/graph/{locale}/related/{family}/{id}",
+    );
+    check(
       adapter.includes("/api/graph/"),
       "adapter: targets the BK-05 public read GET /api/graph/{locale}",
     );
@@ -177,9 +185,10 @@ function doctrineScan(label, src) {
       section.includes("data-graph-node") &&
         section.includes("data-graph-edge") &&
         section.includes("data-graph-related") &&
+        section.includes("data-graph-related-urls") &&
         section.includes("data-graph-accessible-label") &&
         section.includes("data-graph-weight"),
-      "section: carries the selection-parity data surface (node id, edge id, relatedRecords family/id, accessible label, weight) for the future island",
+      "section: carries the selection-parity data surface (node id, edge id, relatedRecords family/id, endpoint-resolved related URLs, accessible label, weight) for the future island",
     );
     check(
       section.includes("node.accessibleLabel || node.label"),
@@ -191,7 +200,7 @@ function doctrineScan(label, src) {
     );
     check(
       !/\bhref=/.test(section),
-      "section: renders zero hrefs (relatedRecords are family/id only - no URL may be invented; island packet owns link resolution)",
+      "section: renders zero visible hrefs (related URLs surface ONLY as data-graph-related-urls from the endpoint, verbatim; unresolved records stay URL-less)",
     );
     check(
       section.includes("nodes.length > 0"),
@@ -368,6 +377,15 @@ function startMockServer() {
       if (pathname === "/api/site") {
         return jsonOk(res, { primaryColor: "#087c73", downloads: [] });
       }
+      const relatedMatch = pathname.match(/^\/api\/graph\/(en|fa)\/related\/([^/]+)\/([^/]+)\/?$/);
+      if (relatedMatch) {
+        const [, relatedLocale, family, relatedId] = relatedMatch;
+        const url =
+          relatedLocale === "en" && family === "article" && relatedId === "17"
+            ? "/en/writing/mock-article-17/"
+            : null;
+        return jsonOk(res, { family, id: relatedId, locale: relatedLocale, url });
+      }
       if (pathname.startsWith("/api/graph/")) {
         const locale = pathname.split("/").filter(Boolean).pop();
         return jsonOk(res, GRAPH_MOCKS[locale] ?? { nodes: [], edges: [] });
@@ -473,6 +491,19 @@ function relatedAttr(section, nodeId) {
   }
 }
 
+function relatedUrlsAttr(section, nodeId) {
+  const anchor = `data-graph-node="${nodeId}"`;
+  const nodeStart = section.indexOf(anchor);
+  if (nodeStart < 0) return null;
+  const match = section.slice(nodeStart).match(/data-graph-related-urls="(\{[^}]*\})"/);
+  if (!match) return null;
+  try {
+    return JSON.parse(match[1].replaceAll("&quot;", '"'));
+  } catch {
+    return null;
+  }
+}
+
 const mock = await startMockServer();
 try {
   const built = await runBuild({ CMS_API_BASE: mock.base });
@@ -535,6 +566,17 @@ try {
         check(
           JSON.stringify(related) === JSON.stringify([{ family: "article", id: "17" }]),
           `CMS-mocked build: ${page} selection parity - data-graph-related carries the payload relatedRecords verbatim (got ${JSON.stringify(related)})`,
+        );
+        const relatedUrls = relatedUrlsAttr(section, "research-fit");
+        check(
+          relatedUrls !== null &&
+            relatedUrls["article:17"] === "/en/writing/mock-article-17/",
+          `CMS-mocked build: ${page} related-slugs read - data-graph-related-urls carries the endpoint-resolved URL verbatim (got ${JSON.stringify(relatedUrls)})`,
+        );
+        const identityUrls = relatedUrlsAttr(section, "identity");
+        check(
+          identityUrls !== null && Object.keys(identityUrls).length === 0,
+          `CMS-mocked build: ${page} records without related rows surface an empty URL map, never invented links (got ${JSON.stringify(identityUrls)})`,
         );
         check(
           !section.includes("ghost-node"),
@@ -601,5 +643,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `PASS graph-consumer (${passed.length} checks): BK-05 adapter (unset/404 -> null, transport fails build, fail-closed parser) + ResearchGraph semantic list (ordered list, type Badge, relation peers, accessible-label + relatedRecords parity surface, zero invented hrefs) wired into both home graph slots and both research indexes; CMS-mocked build renders per-locale payloads, collapses duplicate edges, drops orphan + blank-label rows; snapshot build omits honestly`,
+  `PASS graph-consumer (${passed.length} checks): BK-05 adapter (unset/404 -> null, transport fails build, fail-closed parser) + related-slugs read (resolveRelatedUrls, verbatim endpoint URLs, unresolved stay URL-less) + ResearchGraph semantic list (ordered list, type Badge, relation peers, accessible-label + relatedRecords/related-urls parity surface, zero invented hrefs) wired into both home graph slots and both research indexes; CMS-mocked build renders per-locale payloads, resolves related URLs, collapses duplicate edges, drops orphan + blank-label rows; snapshot build omits honestly`,
 );

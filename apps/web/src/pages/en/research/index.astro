@@ -15,7 +15,7 @@ import ContentState from "../../../components/ui/ContentState.astro";
 import ResearchGraph from "../../../components/research/ResearchGraph.astro";
 import { content } from "../../../data/content";
 import { isCmsOriginBuild } from "../../../lib/cms/client";
-import { getResearchGraph } from "../../../lib/cms/research-graph";
+import { getResearchGraph, resolveRelatedUrls } from "../../../lib/cms/research-graph";
 import { breadcrumbJsonLd, jsonLdScriptContent, validateStructuredData } from "../../../data/structured";
 import {
   getResearchProjects,
@@ -34,6 +34,9 @@ const statement = await getResearchStatement(locale);
 /* WF-08: the relationship graph renders from the BK-05 published payload;
    null/empty omits the section honestly. */
 const graph = await getResearchGraph(locale);
+/* Related-slugs read: canonical URLs for the graph's related records,
+   resolved verbatim (unresolved stay URL-less, never invented). */
+const relatedUrls = await resolveRelatedUrls(locale, graph);
 const empty =
   topics.length === 0 &&
   projects.length === 0 &&
@@ -219,7 +222,7 @@ validateStructuredData(...structured);
       </div>
       {
         graph && graph.nodes.length > 0 && (
-          <ResearchGraph graph={graph} heading={research.relatedHeading} />
+          <ResearchGraph graph={graph} heading={research.relatedHeading} relatedUrls={relatedUrls} />
         )
       }
     </div>

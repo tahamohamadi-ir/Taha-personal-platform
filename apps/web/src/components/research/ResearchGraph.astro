@@ -3,13 +3,15 @@
    linked-list equivalent of the relationship graph (MASTER-SPEC home block
    2), rendered from ONE published BK-05 payload (lib/cms/research-graph
    getResearchGraph) BEFORE any interactive island exists. Pure Astro
-   markup, zero client JS, zero hrefs: relatedRecords arrive as
-   {family, id} with no slug, so no related-record URL may be invented -
-   the island packet owns link/selection resolution and must consume the
-   same data surface (data-graph-node / data-graph-edge /
-   data-graph-related / data-graph-accessible-label / data-graph-weight),
-   which is the selection-parity contract: the list and any later 2D view
-   resolve identical ids from the identical payload.
+   markup, zero client JS, zero visible hrefs: related-record URLs arrive
+   via the relatedUrls prop (resolveRelatedUrls against the related-slugs
+   read endpoint, verbatim) and surface ONLY as the data-graph-related-urls
+   parity attribute for the island - no URL is ever invented here, and
+   unresolved records stay URL-less. The island packet consumes the same
+   data surface (data-graph-node / data-graph-edge / data-graph-related /
+   data-graph-related-urls / data-graph-accessible-label /
+   data-graph-weight), which is the selection-parity contract: the list and
+   any later 2D view resolve identical ids from the identical payload.
    Fail-closed: the parser already dropped missing-label nodes, orphan
    edges and duplicate edge ids; this section renders nothing when the
    node set is empty (IA-CONTRACT S9: omit rather than invent).
@@ -23,9 +25,10 @@ import type { GraphEdgeDto, ResearchGraph } from "../../lib/cms/research-graph";
 interface Props {
   graph: ResearchGraph;
   heading: string;
+  relatedUrls?: Record<string, string>;
 }
 
-const { graph, heading } = Astro.props;
+const { graph, heading, relatedUrls = {} } = Astro.props;
 
 const nodes = graph.nodes;
 const hasNodes = nodes.length > 0;
@@ -52,6 +55,11 @@ for (const edge of graph.edges) {
       <ol class="research-graph__list" role="list">
         {nodes.map((node) => {
           const relations = edgesByNode.get(node.id) ?? [];
+          const nodeRelatedUrls: Record<string, string> = {};
+          for (const record of node.relatedRecords) {
+            const url = relatedUrls[`${record.family}:${record.id}`];
+            if (url) nodeRelatedUrls[`${record.family}:${record.id}`] = url;
+          }
           return (
             <li
               class="research-graph__node"
@@ -60,6 +68,7 @@ for (const edge of graph.edges) {
               data-graph-weight={String(node.weight)}
               data-graph-accessible-label={node.accessibleLabel || node.label}
               data-graph-related={JSON.stringify(node.relatedRecords)}
+              data-graph-related-urls={JSON.stringify(nodeRelatedUrls)}
             >
               <div class="research-graph__node-head">
                 {node.type && <Badge variant="type">{node.type}</Badge>}
