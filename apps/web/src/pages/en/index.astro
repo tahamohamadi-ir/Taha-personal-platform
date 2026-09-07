@@ -19,6 +19,7 @@ import { getProjects } from "../../lib/cms/projects";
 import { getPublications } from "../../lib/cms/publications";
 import { getResearchGraph, resolveRelatedUrls } from "../../lib/cms/research-graph";
 import ResearchGraph from "../../components/research/ResearchGraph.astro";
+import ResearchGraphIsland from "../../components/research/ResearchGraphIsland";
 import { formatDate } from "../../lib/format";
 
 /* WF-07A (LAUNCH-CRITICAL, Option B): the locale home composes the
@@ -78,12 +79,20 @@ const home = `/${pageContent.lang}/`;
       )}
       {
         graph && graph.nodes.length > 0 && (
-          <ResearchGraph
-            slot="graph"
-            graph={graph}
-            heading={pageContent.research.relatedHeading}
-            relatedUrls={relatedUrls}
-          />
+          <Fragment slot="graph">
+            <ResearchGraph
+              graph={graph}
+              heading={pageContent.research.relatedHeading}
+              relatedUrls={relatedUrls}
+            />
+            <ResearchGraphIsland
+              client:visible
+              nodes={graph.nodes}
+              edges={graph.edges}
+              relatedUrls={relatedUrls}
+              label={pageContent.research.relatedHeading}
+            />
+          </Fragment>
         )
       }
       {

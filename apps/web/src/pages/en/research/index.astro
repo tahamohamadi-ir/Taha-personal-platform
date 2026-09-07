@@ -13,6 +13,7 @@ import ContentRow from "../../../components/content/ContentRow.astro";
 import Chip from "../../../components/ui/Chip.astro";
 import ContentState from "../../../components/ui/ContentState.astro";
 import ResearchGraph from "../../../components/research/ResearchGraph.astro";
+import ResearchGraphIsland from "../../../components/research/ResearchGraphIsland";
 import { content } from "../../../data/content";
 import { isCmsOriginBuild } from "../../../lib/cms/client";
 import { getResearchGraph, resolveRelatedUrls } from "../../../lib/cms/research-graph";
@@ -223,6 +224,13 @@ validateStructuredData(...structured);
       {
         graph && graph.nodes.length > 0 && (
           <ResearchGraph graph={graph} heading={research.relatedHeading} relatedUrls={relatedUrls} />
+          <ResearchGraphIsland
+            client:visible
+            nodes={graph.nodes}
+            edges={graph.edges}
+            relatedUrls={relatedUrls}
+            label={research.relatedHeading}
+          />
         )
       }
     </div>

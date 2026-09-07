@@ -55,11 +55,16 @@ for (const edge of graph.edges) {
       <ol class="research-graph__list" role="list">
         {nodes.map((node) => {
           const relations = edgesByNode.get(node.id) ?? [];
-          const nodeRelatedUrls: Record<string, string> = {};
-          for (const record of node.relatedRecords) {
-            const url = relatedUrls[`${record.family}:${record.id}`];
-            if (url) nodeRelatedUrls[`${record.family}:${record.id}`] = url;
-          }
+          /* Endpoint-resolved URLs for this node only (verbatim, never
+             invented; unresolved records stay URL-less). */
+          const nodeRelatedUrls = Object.fromEntries(
+            node.relatedRecords
+              .map((record) => [
+                `${record.family}:${record.id}`,
+                relatedUrls[`${record.family}:${record.id}`],
+              ])
+              .filter((entry) => Boolean(entry[1])),
+          );
           return (
             <li
               class="research-graph__node"
