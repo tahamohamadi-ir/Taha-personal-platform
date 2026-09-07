@@ -1,3 +1,15 @@
+## LOG-0288 — 2026-09-07 — light-art decision + contrast gate (owner-queue item 8, code side closed)
+
+- Outcome: closed the CODE side of owner-queue item (8) by proving wiring light art would be wrong, not by wiring it: gateway + landing are fixed-night BY DESIGN (ADR-0031, always-night matrix), so dark masters are correct there; a `<picture>` can key on `prefers-color-scheme` but never on the site's `data-theme` — and OS theme is not site theme, so media-query wiring would put light art on a night scrim and break legibility. New `qa/art-contrast.spec.mjs` encodes this as gates: night ink/canvas token pair measured 16.90:1 (>=7 enforced); scrim invariants enforced (aria-hidden stage, flat `var(--canvas-night)` veil >=0.3, gradient fade to opaque); light companions asserted present-but-unreferenced (future re-theme must revisit consciously, WF-07E TOC-absence pattern).
+- Why: the queue asked for "light-theme art wiring"; investigation showed the premise (theme-following surfaces) does not exist — wiring it would be a regression, not progress.
+- Scope / files: new `apps/web/qa/art-contrast.spec.mjs` (uses sharp from astro's tree, no new dep), this entry. No product change, no rebuild needed.
+- Commands or actions actually performed: spec run → first version FAILED honestly (placement-blind brightest-pixel bound 2.45:1/2.65:1 cannot hold AA — proving the prior hand numbers 7.33/6.00 have no reproducible method and are NOT re-asserted); re-scoped per budget-spec pattern (enforce invariants, report pixels) → PASS; `npm run check` 0 errors 0 warnings.
+- Verification actually performed and result: embedded above.
+- Decisions / assumptions: pixel worst-cases are REPORTED context for the owner crop sign-off (item 7), never gates; copy sits on glass (opaque-first) or fade-opaque zones, which the gates cover.
+- Deferred or risk IDs: owner questions — (a) keep shipping unused light bytes (~future use) vs prune from public/? (b) gateway/landing visual crop sign-off (item 7, needs eyes). No code answers these.
+- Rollback / recovery: revert this commit.
+- Doctrine compliance: [gate-not-fake — refused to wire wrong art to satisfy the queue item; §7.3 rows 1/2].
+
 ## LOG-0287 — 2026-09-07 — G7 interactive 2D graph island (owner-queue item 9 closed)
 
 - Outcome: closed owner-queue item (9, list-first shipped in WF-08): new `ResearchGraphIsland.tsx` (hand-rolled SVG, React already ships — zero new deps) mounted `client:visible` as a SIBLING of the semantic list on all four graph pages (en/fa home graph slot + en/fa research index): wheel zoom cursor-centered (clamp 0.25-3) + drag pan + zoom in/out/reset buttons + node selection with keyboard<->pointer parity (click == Enter/Space select the same node and reveal the same endpoint-resolved related URLs in an aria-live details panel); selection never color-only (stroke-width + aria-pressed); no autonomous motion anywhere (reduced-motion honest by construction); no-JS renders nothing (the Astro list stays).
